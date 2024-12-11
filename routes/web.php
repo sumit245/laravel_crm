@@ -5,6 +5,7 @@ use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffController;
+use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use Illuminate\Support\Facades\Auth;
@@ -34,15 +35,12 @@ Route::middleware(['auth'])->group(function () {
  Route::resource('projects', ProjectsController::class);
  Route::resource('sites', SiteController::class);
  Route::resource('inventory', InventoryController::class);
+//  Route::resource('store', StoreController::class);
+ Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.store');
+
  Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
+ Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
+ Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
+
  Route::resource('tasks', TasksController::class);
 });
-
-// Below routes should open only when authenticated. Also if the role of authenticated user is 0 I have to show staff management, revenue, role and some other modules. while if role is 1 these modules should not show
-// Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard')->middleware('auth');
-// Route::resource('staff', StaffController::class);
-// Route::resource('uservendors', VendorController::class);
-// Route::resource('projects', ProjectsController::class);
-// Route::resource('sites', SiteController::class);
-// Route::resource('inventory', InventoryController::class);
-// Route::resource('tasks', TasksController::class);

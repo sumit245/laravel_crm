@@ -11862,7 +11862,7 @@ textarea.form-control-lg {
 .form-select {
   display: block;
   width: 100%;
-  height:36px;
+  height: 36px;
   padding: 0.275rem 1.375rem;
   font-size: 0.875rem;
   font-weight: 400;
@@ -18041,6 +18041,10 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 
 .fs-6 {
   font-size: 1rem !important;
+}
+
+.font-10 {
+  font-size: 0.875rem !important;
 }
 
 .fst-italic {

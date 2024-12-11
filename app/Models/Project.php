@@ -7,16 +7,21 @@ use Illuminate\Database\Eloquent\Model;
 
 class Project extends Model
 {
-    use HasFactory;
+ use HasFactory;
 
-    protected $fillable = ['project_name', 'start_date', 'work_order_number', 'rate'];
+ protected $fillable = ['project_name', 'start_date', 'work_order_number', 'rate'];
 
-    public function sites()
-    {
-        return $this->hasMany(Site::class);
-    }
-    public function tasks()
-    {
-        return $this->hasMany(Task::class);
-    }
+ public function sites()
+ {
+  return $this->hasMany(Site::class);
+ }
+ public function tasks()
+ {
+  return $this->hasMany(Task::class);
+ }
+
+ public function stores()
+ {
+  return $this->hasMany(Stores::class);
+ }
 }

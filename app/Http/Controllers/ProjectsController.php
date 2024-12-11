@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ProjectsController extends Controller
@@ -60,8 +61,10 @@ class ProjectsController extends Controller
  public function show(string $id)
  {
   //
-  $project = Project::findOrFail($id);
-  return view('projects.show', compact('project'));
+  $project = Project::with('stores')->findOrFail($id);
+  $users   = User::where('role', '!=', 3)->get();
+
+  return view('projects.show', compact('project', 'users'));
  }
 
  /**
