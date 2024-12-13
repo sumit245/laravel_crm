@@ -19,9 +19,18 @@ class Project extends Model
  {
   return $this->hasMany(Task::class);
  }
-
+ 
  public function stores()
  {
   return $this->hasMany(Stores::class);
+ }
+  public function stateRelation()
+ {
+  return $this->belongsTo(State::class, 'state');
+ }
+
+ public function districtRelation()
+ {
+  return $this->belongsTo(City::class, 'district');
  }
 }

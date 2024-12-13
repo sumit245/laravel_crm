@@ -27,6 +27,11 @@
             <input type="date" name="date" class="form-control" id="start_date" placeholder="{{ date("Y-m-d") }}"
               value="{{ old("date", date("Y-m-d")) }}">
           </div>
+          <div class="form-group">
+            <label for="end_date" class="form-label">End Date</label>
+            <input type="date" name="date" class="form-control" id="end_date" placeholder="{{ date("Y-m-d") }}"
+              value="{{ old("date", date("Y-m-d")) }}">
+          </div>
 
           <div class="form-group">
             <label for="work_order_number" class="form-label">Work Order Number</label>
@@ -36,6 +41,12 @@
           <div class="form-group">
             <label for="rate" class="form-label">Rate</label>
             <input type="text" name="rate" class="form-control" id="rate" placeholder="50L">
+          </div>
+
+          <div class="form-group">
+            <label for="description" class="form-label text-capitalize">description</label>
+            <textarea class="form-control" style="height:80px;" id="description" placeholder="Briefly describe" name="description"
+              rows="16" cols="50">{{ old("description") }}</textarea>
           </div>
 
           <button type="submit" class="btn btn-primary">Create Project</button>

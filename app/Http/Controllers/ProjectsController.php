@@ -60,7 +60,6 @@ class ProjectsController extends Controller
   */
  public function show(string $id)
  {
-  //
   $project = Project::with('stores')->findOrFail($id);
   $users   = User::where('role', '!=', 3)->get();
 

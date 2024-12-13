@@ -41,7 +41,7 @@
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button"
               role="tab" aria-controls="tasks" aria-selected="false">
-              Tasks
+              Target
             </button>
           </li>
         </ul>

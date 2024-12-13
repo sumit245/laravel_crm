@@ -2,15 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Imports\SiteImport;
 use App\Models\City;
 use App\Models\Project;
 use App\Models\Site;
 use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class SiteController extends Controller
 {
+
+ // Import Excel file for sites
+ public function import(Request $request, $projectId)
+ {
+  $request->validate([
+   'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+  ]);
+
+  try {
+   Excel::import(new SiteImport, $request->file('file'));
+   return redirect()->route('sites.index')->with('success', 'Sites imported successfully!');
+  } catch (\Exception $e) {
+   return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+  }
+ }
 
  /**
   * Display a listing of the resource.
@@ -19,6 +36,7 @@ class SiteController extends Controller
  {
   //
   $sites = Site::all();
+
   return view('sites.index', compact('sites'));
  }
 
