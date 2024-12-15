@@ -35,25 +35,25 @@ Route::prefix('vendor')->group(function () {
     // Update Task
 });
 
-Route::prefix('projects')->group(function () {
-    Route::get('/', [ProjectController::class, 'index']); //View all vendors
-    Route::post('/', [ProjectController::class, 'create']); // Create vendor
-    Route::get('{id}', [ProjectController::class, 'show']); // View a specific vendor
-    Route::get('{id}/edit', [ProjectController::class, 'edit']); // Edit vendor (optional)
-    Route::put('{id}', [ProjectController::class, 'update']); // Update vendor
-    Route::delete('{id}', [ProjectController::class, 'destroy']); // Delete vendor
+//Route::prefix('projects')->group(function () {
+ //  Route::get('/', [ProjectController::class, 'index']); //View all vendors
+   // Route::post('/', [ProjectController::class, 'create']); // Create vendor
+    //Route::get('{id}', [ProjectController::class, 'show']); // View a specific vendor
+    //Route::get('{id}/edit', [ProjectController::class, 'edit']); // Edit vendor (optional)
+    //Route::put('{id}', [ProjectController::class, 'update']); // Update vendor
+   // Route::delete('{id}', [ProjectController::class, 'destroy']); // Delete vendor
     // Allot Site
     // Allot Task
     // Allot Inventory
     // Update Task
-});
+//});
 
 // Route::middleware('api')->group(function () {
 //     Route::apiResource('projects', ProjectController::class);
 // });
-// Route::apiResource('projects', ProjectController::class);
-Route::apiResource('sites', SiteController::class);
-Route::apiResource('tasks', TaskController::class);
+Route::apiResource('projects', ProjectController::class);
+Route::apiResource('site', SiteController::class);
+Route::apiResource('task', TaskController::class);
 Route::apiResource('inventories', InventoryController::class);
 
 

@@ -35,7 +35,7 @@ Route::middleware(['auth'])->group(function () {
  Route::resource('projects', ProjectsController::class);
  Route::resource('sites', SiteController::class);
  Route::resource('inventory', InventoryController::class);
-//  Route::resource('store', StoreController::class);
+ Route::resource('store', StoreController::class);
  Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.store');
 
  Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');

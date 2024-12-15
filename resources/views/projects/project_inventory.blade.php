@@ -7,7 +7,7 @@
   <!-- Store Creation Form (Initially Hidden) -->
   <div id="storeFormContainer" class="card mb-4 p-3" style="display: none;">
     <h6>Create Store</h6>
-    <form id="storeForm" action="{{ route("store.store", $project->id) }}" method="POST">
+    <form id="storeForm"  method="POST">
       @csrf
       <input type="hidden" name="project_id" value="{{ $project->id }}">
 
