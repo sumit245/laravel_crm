@@ -48,7 +48,7 @@ class Site extends Model
 
  public function stateRelation()
  {
-  return $this->belongsTo(State::class, 'state');
+  return $this->belongsTo(State::class, 'state', 'id');
  }
 
  public function districtRelation()
@@ -70,5 +70,4 @@ class Site extends Model
  {
   return $this->belongsTo(User::class, 'site_engineer');
  }
-
 }

@@ -28274,6 +28274,16 @@ dl li {
   border: none;
 }
 
+#siteTable th,
+#siteTable td {
+  word-wrap: break-word;
+  /* Allows text to break within a word */
+  white-space: normal;
+  /* Enables wrapping of text */
+  max-width: 260px;
+  /* Optional: Set a maximum width for columns */
+}
+
 .table.table-bordered {
   border-top: 1px solid #dee2e6;
 }

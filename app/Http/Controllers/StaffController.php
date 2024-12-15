@@ -54,18 +54,18 @@ class StaffController extends Controller
  {
   // Validate the incoming data without requiring a username
   $validated = $request->validate([
-   'name'      => 'required|string|max:255',
    'firstName' => 'required|string',
    'lastName'  => 'required|string',
    'email'     => 'required|email|unique:users,email',
    'contactNo' => 'string',
+   'role'      => 'string',
    'address'   => 'string|max:255',
    'password'  => 'required|string|min:6|confirmed',
   ]);
 
   try {
    // Generate a random unique username
-   $validated['username'] = $this->__generateUniqueUsername($validated['name']);
+   $validated['username'] = $this->__generateUniqueUsername($validated['firstName']);
    $validated['password'] = bcrypt($validated['password']); // Hash password
    // Create the staff user
    $staff = User::create($validated);

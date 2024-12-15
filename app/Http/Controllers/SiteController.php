@@ -22,7 +22,7 @@ class SiteController extends Controller
   ]);
 
   try {
-   Excel::import(new SiteImport, $request->file('file'));
+   Excel::import(new SiteImport($projectId), $request->file('file'));
    return redirect()->route('sites.index')->with('success', 'Sites imported successfully!');
   } catch (\Exception $e) {
    return redirect()->back()->withErrors(['error' => $e->getMessage()]);

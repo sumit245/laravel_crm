@@ -28,9 +28,7 @@
       <tr>
         <th>#</th>
         <th>Site Name</th>
-        <th>Location</th>
-        <th>City</th>
-        <th>State</th>
+        <th>Address</th>
         <th>Vendor</th>
         <th>Phone</th>
         <th>Actions</th>
@@ -41,9 +39,11 @@
         <tr>
           <td>{{ $loop->iteration }}</td>
           <td>{{ $member->site_name }}</td>
-          <td>{{ $member->location }}</td>
-          <td>{{ $member->district }}</td>
-          <td>{{ $member->state }}</td>
+          <td>
+            {{ $member->location }},
+            {{ optional($member->districtRelation)->name ?? "Unknown District" }},
+            {{ optional($member->stateRelation)->name ?? "Unknown State" }}
+          </td>
           <td>{{ $member->ic_vendor_name }}</td>
           <td>{{ $member->contact_no }}</td>
           <td>

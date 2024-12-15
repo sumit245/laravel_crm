@@ -10,7 +10,7 @@
         <img src="https://sugs-assets.s3.ap-south-1.amazonaws.com/logo.png" alt="logo" />
       </a>
       <a class="navbar-brand brand-logo-mini" href="{{ url("/") }}">
-        <img src="{{ asset("images/logo-mini.svg") }}" alt="logo" />
+        <img src="https://sugs-assets.s3.ap-south-1.amazonaws.com/logo.png" alt="logo" />
       </a>
     </div>
   </div>

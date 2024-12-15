@@ -11,4 +11,9 @@ class Stores extends Model
  protected $fillable = [
   'store_name', 'address', 'project_id', 'store_incharge_id',
  ];
+
+ public function user()
+ {
+  return $this->belongsTo(User::class, 'storeIncharge', 'id');
+ }
 }

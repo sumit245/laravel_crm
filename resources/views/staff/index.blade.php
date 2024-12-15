@@ -12,11 +12,11 @@
       <thead>
         <tr>
           <th>#</th>
-          <th>Name</th>
-          <th>Email</th>
           <th>First Name</th>
           <th>Last Name</th>
+          <th>Email</th>
           <th>Address</th>
+          <th>Role</th>
           <th>Phone</th>
           <th>Actions</th>
         </tr>
@@ -25,11 +25,11 @@
         @foreach ($staff as $member)
           <tr>
             <td>{{ $loop->iteration }}</td>
-            <td>{{ $member->name }}</td>
-            <td>{{ $member->email }}</td>
             <td>{{ $member->firstName }}</td>
             <td>{{ $member->lastName }}</td>
+            <td>{{ $member->email }}</td>
             <td>{{ $member->address }}</td>
+            <td>{{ $member->role == 1 ? "Coordinator" : "Project Manager" }}</td>
             <td>{{ $member->contactNo }}</td>
             <td>
               <a href="{{ route("staff.show", $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
@@ -99,15 +99,15 @@
           },
           {
             targets: 3,
-            width: "10%"
+            width: "14%"
           },
           {
             targets: 4,
-            width: "10%"
+            width: "16%"
           },
           {
             targets: 5,
-            width: "20%"
+            width: "10%"
           },
           {
             targets: 6,

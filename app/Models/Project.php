@@ -9,7 +9,7 @@ class Project extends Model
 {
  use HasFactory;
 
- protected $fillable = ['project_name', 'start_date', 'work_order_number', 'rate'];
+ protected $fillable = ['project_name', 'project_in_state', 'start_date', 'work_order_number', 'rate', 'project_capacity', 'end_date', 'description', 'total'];
 
  public function sites()
  {
@@ -19,12 +19,12 @@ class Project extends Model
  {
   return $this->hasMany(Task::class);
  }
- 
+
  public function stores()
  {
   return $this->hasMany(Stores::class);
  }
-  public function stateRelation()
+ public function stateRelation()
  {
   return $this->belongsTo(State::class, 'state');
  }
