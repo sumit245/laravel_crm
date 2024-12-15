@@ -1,16 +1,34 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
     <h5>Sites</h5>
-    <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary">Add Site</a>
+    <div class="d-flex">
+      @if ($errors->any())
+        <div class="alert alert-danger">
+          <ul>
+            @foreach ($errors->all() as $error)
+              <li>{{ $error }}</li>
+            @endforeach
+          </ul>
+        </div>
+      @endif
+      <form action="{{ route("sites.import", $project->id) }}" method="POST" enctype="multipart/form-data">
+        @csrf
+        <div class="input-group">
+          <input type="file" name="file" class="form-control form-control-sm" required>
+          <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Inventory">
+            <i class="mdi mdi-upload"></i> Import
+          </button>
+        </div>
+      </form>
+      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1">Add Site</a>
+    </div>
   </div>
   <table id="siteTable" class="table-striped table-bordered table-sm table">
     <thead>
       <tr>
         <th>#</th>
         <th>Site Name</th>
-        <th>Location</th>
-        <th>City</th>
-        <th>State</th>
+        <th>Address</th>
         <th>Vendor</th>
         <th>Phone</th>
         <th>Actions</th>
@@ -21,9 +39,11 @@
         <tr>
           <td>{{ $loop->iteration }}</td>
           <td>{{ $member->site_name }}</td>
-          <td>{{ $member->location }}</td>
-          <td>{{ $member->district }}</td>
-          <td>{{ $member->state }}</td>
+          <td>
+            {{ $member->location }},
+            {{ optional($member->districtRelation)->name ?? "Unknown District" }},
+            {{ optional($member->stateRelation)->name ?? "Unknown State" }}
+          </td>
           <td>{{ $member->ic_vendor_name }}</td>
           <td>{{ $member->contact_no }}</td>
           <td>

@@ -116,37 +116,35 @@ class VendorController extends Controller
   */
  public function update(Request $request, string $id)
  {
-  try{
-    $validated = $request->validate([
-      'name'          => 'required|string|max:255',
-      'firstName'     => 'required|string',
-      'lastName'      => 'required|string',
-      'contactPerson' => 'string',
-      'contactNo'     => 'string',
-      'address'       => 'string|max:255',
-      'aadharNumber'  => 'string|max:12',
-      'panNumber'     => 'string|max:10',
-      'gstNumber'     => 'nullable|string|max:15',
-      'accountName'   => 'string',
-      'accountNumber' => 'string',
-      'ifscCode'      => 'string|max:11',
-      'bankName'      => 'string',
-      'branch'        => 'string',
-      'email'         => 'required|email'
-    ]);
-    $vendor->update($validated);
-    return redirect()->route('uservendors.show', compact('vendor'))->with('success', 'Vendor updated successfully.');
+  try {
+   $validated = $request->validate([
+    'name'          => 'required|string|max:255',
+    'firstName'     => 'required|string',
+    'lastName'      => 'required|string',
+    'contactPerson' => 'string',
+    'contactNo'     => 'string',
+    'address'       => 'string|max:255',
+    'aadharNumber'  => 'string|max:12',
+    'panNumber'     => 'string|max:10',
+    'gstNumber'     => 'nullable|string|max:15',
+    'accountName'   => 'string',
+    'accountNumber' => 'string',
+    'ifscCode'      => 'string|max:11',
+    'bankName'      => 'string',
+    'branch'        => 'string',
+    'email'         => 'required|email',
+   ]);
+   $vendor = User::find($id)->update($validated);
+   return redirect()->route('uservendors.show', compact('vendor'))->with('success', 'Vendor updated successfully.');
+  } catch (\Exception $e) {
+   // Catch database or other errors
+   $errorMessage = $e->getMessage();
+
+   return redirect()->back()
+    ->withErrors(['error' => $errorMessage])
+    ->withInput();
   }
-  catch (\Exception $e) {
-    // Catch database or other errors
-    $errorMessage = $e->getMessage();
- 
-    return redirect()->back()
-     ->withErrors(['error' => $errorMessage])
-     ->withInput();
-   }
-   
-     
+
  }
 
  /**
@@ -155,5 +153,12 @@ class VendorController extends Controller
  public function destroy(string $id)
  {
   //
+  try {
+   $vendor = User::findOrFail($id);
+   $vendor->delete();
+   return response()->json(['success' => true]);
+  } catch (\Exception $e) {
+   return response()->json(['success' => false, 'message' => $e->getMessage()]);
+  }
  }
 }

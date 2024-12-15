@@ -124,13 +124,13 @@
     $(document).ready(function() {
       // Handle delete button click
       $('.delete-item').on('click', function() {
-        let staffId = $(this).data('id');
-        let staffName = $(this).data('name');
+        let inventoryId = $(this).data('id');
+        let inventoryName = $(this).data('name');
         let deleteUrl = $(this).data('url');
 
         Swal.fire({
           title: `Are you sure?`,
-          text: `You are about to delete ${staffName}. This action cannot be undone.`,
+          text: `You are about to delete ${inventoryName}. This action cannot be undone.`,
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#d33',
@@ -150,16 +150,16 @@
               success: function(response) {
                 Swal.fire(
                   'Deleted!',
-                  `${staffName} has been deleted.`,
+                  `${inventoryName} has been deleted.`,
                   'success'
                 );
                 // Remove the row from the table
-                $(`button[data-id="${staffId}"]`).closest('tr').remove();
+                $(`button[data-id="${inventoryId}"]`).closest('tr').remove();
               },
               error: function(xhr) {
                 Swal.fire(
                   'Error!',
-                  'There was an error deleting the staff member. Please try again.',
+                  'There was an error deleting the inventory. Please try again.',
                   'error'
                 );
               }

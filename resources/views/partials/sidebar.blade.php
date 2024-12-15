@@ -26,6 +26,12 @@
         <span class="menu-title">Tasks Management</span>
       </a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("tasks.index") }}">
+        <i class="menu-icon mdi mdi-checkbox-marked"></i>
+        <span class="menu-title">Target Management</span>
+      </a>
+    </li>
     <li class="nav-item nav-category">Inventory</li>
     <li class="nav-item">
       <a class="nav-link" href="{{ route("inventory.index") }}">

@@ -34,13 +34,20 @@ Route::middleware(['auth'])->group(function () {
  Route::resource('uservendors', VendorController::class);
  Route::resource('projects', ProjectsController::class);
  Route::resource('sites', SiteController::class);
+ Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
+
  Route::resource('inventory', InventoryController::class);
  Route::resource('store', StoreController::class);
- Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.store');
+ Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
+//  Route::resource('store', StoreController::class); 
 
  Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
  Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
  Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
+ Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
+ Route::post('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
+ Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
+ Route::get('/store/{store}/inventory/view', [StoreController::class, 'viewInventory'])->name('store.inventory.view');
 
  Route::resource('tasks', TasksController::class);
 });

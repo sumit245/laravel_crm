@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Project;
+use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -24,7 +25,8 @@ class ProjectsController extends Controller
  public function create()
  {
   //
-  return view('projects.create');
+  $states = State::all();
+  return view('projects.create', compact('states'));
  }
 
  /**
@@ -35,14 +37,18 @@ class ProjectsController extends Controller
   // Validate the incoming data without requiring a username
   $validated = $request->validate([
    'project_name'      => 'required|string',
-   'date'              => 'required|date',
+   'project_in_state'  => 'string',
+   'start_date'        => 'required|date',
+   'end_date'          => 'required|date',
    'work_order_number' => 'required|string|unique:projects',
    'rate'              => 'nullable|string',
+   'project_capacity'  => 'nullable|string',
+   'total'             => 'string',
+   'description'       => 'string',
   ]);
 
   try {
-   $validated['start_date'] = $request->date;
-   $project                 = Project::create($validated);
+   $project = Project::create($validated);
 
    return redirect()->route('projects.show', $project->id)
     ->with('success', 'Inventory created successfully.');
@@ -60,9 +66,12 @@ class ProjectsController extends Controller
   */
  public function show(string $id)
  {
-  //
-  $project = Project::with('stores')->findOrFail($id);
-  $users   = User::where('role', '!=', 3)->get();
+  $project = Project::with([
+   'stores',
+   'sites.districtRelation',
+   'sites.stateRelation',
+  ])->findOrFail($id);
+  $users = User::where('role', '!=', 3)->get();
 
   return view('projects.show', compact('project', 'users'));
  }

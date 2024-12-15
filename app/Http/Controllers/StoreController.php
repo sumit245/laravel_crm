@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\Stores;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class StoreController extends Controller
 {
@@ -33,8 +34,8 @@ class StoreController extends Controller
   */
  public function store(Request $request, $projectId)
  {
-  //
   try {
+   Log::info($request);
    $validated = $request->validate([
     'name'          => 'required|string|max:255',
     'address'       => 'required|string|max:500',
@@ -42,23 +43,23 @@ class StoreController extends Controller
    ]);
 
    Stores::create([
-    'project_id'    => $projectId,
-    'name'          => $validated['name'],
-    'address'       => $validated['address'],
-    'storeIncharge' => $validated['storeIncharge'],
+    'project_id'        => $projectId,
+    'store_name'        => $validated['name'],
+    'address'           => $validated['address'],
+    'store_incharge_id' => $validated['storeIncharge'],
    ]);
 
    $project = Project::with('stores')->findOrFail($projectId);
    $users   = User::where('role', '!=', 3)->get();
-
+   // TODO: Also remove role 1
+   Log::info($project);
 // Redirect back to the project detail page with updated data
    return view('projects.show', compact('project', 'users'))->with('success', 'Store created successfully.');
 
   } catch (\Exception $e) {
+   Log::error($e->getMessage());
    return redirect()->back()->with('error', 'Failed to create store. Please try again.');
-
   }
-
  }
 
  /**
@@ -67,6 +68,8 @@ class StoreController extends Controller
  public function show(string $id)
  {
   //
+  $store = Stores::with('user')->findOrFail($id);
+  return view('stores.show', compact('store'));
  }
 
  /**

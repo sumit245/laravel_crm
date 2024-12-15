@@ -5,7 +5,16 @@
     <div class="card">
       <div class="card-body">
         <h4 class="card-title">Add Staff</h4>
-
+        <!-- Display validation errors -->
+        @if ($errors->any())
+          <div class="alert alert-danger">
+            <ul>
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
         <form class="forms-sample" action="{{ route("staff.store") }}" method="POST">
           @csrf
           <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
@@ -105,7 +114,7 @@
             <div class="col-sm-6 col-md-6">
               <div class="form-group position-relative">
                 <label for="password_confirmation" class="form-label">Confirm Password</label>
-                <input type="password_confirmation" name="password_confirmation" class="form-control form-control-lg"
+                <input type="password" name="password_confirmation" class="form-control form-control-lg"
                   id="password_confirmation" placeholder="Password" autocomplete="current-password" required>
                 <span class="position-absolute translate-middle-y end-0 me-3" style="cursor: pointer; top:3.6rem;"
                   onclick="togglePasswordVisibility('password_confirmation','password-toggle-icon-2')">

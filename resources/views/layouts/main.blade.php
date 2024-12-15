@@ -20,7 +20,7 @@
     <!-- Plugin css for this page -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap4.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap4.min.css">
-    <!-- <link rel="stylesheet" href="{{ asset("js/select.dataTables.min.css") }}"> -->
+
     <!-- End plugin css for this page -->
     <!-- inject:css -->
     <link rel="stylesheet" href="{{ asset("css/vertical-layout-light/style.css") }}">
@@ -54,8 +54,7 @@
     <script src="{{ asset("js/off-canvas.js") }}"></script>
     <script src="{{ asset("js/hoverable-collapse.js") }}"></script>
     <script src="{{ asset("js/template.js") }}"></script>
-    <script src="{{ asset("js/settings.js") }}"></script>
-    <script src="{{ asset("js/todolist.js") }}"></script>
+
     <!-- endinject -->
 
     <!-- Custom js for this page -->
@@ -72,7 +71,6 @@
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     @stack("scripts") <!-- For page-specific scripts -->
 
   </body>

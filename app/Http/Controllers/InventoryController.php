@@ -130,11 +130,11 @@ class InventoryController extends Controller
  /**
   * Remove the specified resource from storage.
   */
- public function destroy(Inventory $item)
+ public function destroy(string $id)
  {
   //
   try {
-   $item->delete();
+   Inventory::findOrFail($id)->delete();
    return response()->json(['success' => true, 'message' => 'Item deleted successfully.']);
   } catch (\Exception $e) {
    return response()->json(['success' => false, 'message' => 'Failed to delete Item'], 500);

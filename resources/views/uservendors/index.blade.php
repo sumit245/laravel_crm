@@ -3,9 +3,9 @@
 @section("content")
   <div class="container p-2">
     <div class="d-flex justify-content-between mb-3">
-      <!-- Search box is added automatically by DataTables -->
-      <div></div> <!-- Empty div to align with search box -->
-      <a href="{{ route("uservendors.create") }}" class="btn btn-icon btn-primary" data-toggle="tooltip" title="Add New Vendor">
+      <div></div>
+      <a href="{{ route("uservendors.create") }}" class="btn btn-icon btn-primary" data-toggle="tooltip"
+        title="Add New Vendor">
         <i class="mdi mdi-plus-circle"></i>
       </a>
     </div>
@@ -33,17 +33,14 @@
             <td>{{ $member->address }}</td>
             <td>{{ $member->contactNo }}</td>
             <td>
-              <!-- View Button -->
               <a href="{{ route("uservendors.show", $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
                 title="View Details">
                 <i class="mdi mdi-eye"></i>
               </a>
-              <!-- Edit Button -->
-              <a href="{{ route("uservendors.edit", $member->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
-                title="Edit Vendor">
+              <a href="{{ route("uservendors.edit", $member->id) }}" class="btn btn-icon btn-warning"
+                data-toggle="tooltip" title="Edit Vendor">
                 <i class="mdi mdi-pencil"></i>
               </a>
-              <!-- Delete Button -->
               <button type="submit" class="btn btn-icon btn-danger delete-vendor" data-toggle="tooltip"
                 title="Delete Vendor" data-id="{{ $member->id }}" data-name="{{ $member->name }}"
                 data-url="{{ route("uservendors.destroy", $member->id) }}">
@@ -68,23 +65,23 @@
             extend: 'excel',
             text: '<i class="mdi mdi-file-excel"></i>',
             className: 'btn btn-icon btn-success',
-            titleAttr: 'Export to Excel' // Tooltip
+            titleAttr: 'Export to Excel'
           },
           {
             extend: 'pdf',
             text: '<i class="mdi mdi-file-pdf"></i>',
             className: 'btn btn-icon btn-danger',
-            titleAttr: 'Export to PDF' // Tooltip
+            titleAttr: 'Export to PDF'
           },
           {
             extend: 'print',
             text: '<i class="mdi mdi-printer"></i>',
             className: 'btn btn-icon btn-info',
-            titleAttr: 'Print Table' // Tooltip
+            titleAttr: 'Print Table'
           }
         ],
         paging: true,
-        pageLength: 50, // Show 50 rows per page
+        pageLength: 50,
         searching: true,
         ordering: true,
         responsive: true,
@@ -94,15 +91,10 @@
         }
       });
 
-      // Initialize tooltips
       $('[data-toggle="tooltip"]').tooltip();
-
-      // Adjust search box alignment
       $('.dataTables_filter input').addClass('form-control form-control-sm');
-    });
-    $(document).ready(function() {
-      // Handle delete button click
-      $('.delete-staff').on('click', function() {
+
+      $('.delete-vendor').on('click', function() {
         let staffId = $(this).data('id');
         let staffName = $(this).data('name');
         let deleteUrl = $(this).data('url');
@@ -118,13 +110,12 @@
           cancelButtonText: 'Cancel',
         }).then((result) => {
           if (result.isConfirmed) {
-            // Perform deletion via AJAX
             $.ajax({
               url: deleteUrl,
               type: 'POST',
               data: {
-                _method: 'DELETE', // Laravel requires this for delete requests
-                _token: "{{ csrf_token() }}", // CSRF token for security
+                _method: 'DELETE',
+                _token: "{{ csrf_token() }}",
               },
               success: function(response) {
                 Swal.fire(
@@ -132,7 +123,6 @@
                   `${staffName} has been deleted.`,
                   'success'
                 );
-                // Remove the row from the table
                 $(`button[data-id="${staffId}"]`).closest('tr').remove();
               },
               error: function(xhr) {

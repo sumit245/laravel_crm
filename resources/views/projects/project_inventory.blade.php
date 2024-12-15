@@ -1,13 +1,41 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
-    <h5>Store</h5>
-    <button id="addStoreButton" class="btn btn-primary">Create Store</button>
+    <div class="d-flex mx-2">
+      <div class="card bg-success mx-2">
+        <div class="card-body">
+          <h5 class="card-title">0</h5>
+          <p class="card-text">In Store Stock Value</p>
+        </div>
+      </div>
+      <div class="card bg-warning mx-2">
+        <div class="card-body">
+          <h5 class="card-title">0</h5>
+          <p class="card-text">Dispatched Stock Value</p>
+        </div>
+      </div>
+    </div>
+    <button id="addStoreButton" class="btn btn-primary" style="max-height: 2.8rem;">
+      <span>Create Store</span>
+    </button>
   </div>
 
   <!-- Store Creation Form (Initially Hidden) -->
   <div id="storeFormContainer" class="card mb-4 p-3" style="display: none;">
     <h6>Create Store</h6>
+<<<<<<< HEAD
     <form id="storeForm"  method="POST">
+=======
+    @if ($errors->any())
+      <div class="alert alert-danger">
+        <ul>
+          @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+          @endforeach
+        </ul>
+      </div>
+    @endif
+    <form id="storeForm" action="{{ route("store.create", $project->id) }}" method="POST">
+>>>>>>> 4466733e06f21e990dfe037ec84de96127cd8726
       @csrf
       <input type="hidden" name="project_id" value="{{ $project->id }}">
 
@@ -23,10 +51,10 @@
 
       <div class="form-group">
         <label for="storeIncharge">Store Incharge:</label>
-        <select class="form-select" id="storeIncharge" name="store_incharge_id" required>
+        <select class="form-select" id="storeIncharge" name="storeIncharge" required>
           <option value="">Select Incharge</option>
           @foreach ($users as $user)
-            <option value="{{ $user->id }}">{{ $user->name }}</option>
+            <option value="{{ $user->id }}">{{ $user->firstName }} {{ $user->lastName }}</option>
           @endforeach
         </select>
       </div>
@@ -46,29 +74,97 @@
     @else
       <ul class="list-group">
         @foreach ($stores as $store)
-          <li class="list-group-item">
+          <div class="list-group-item">
             <div class="d-flex justify-content-between">
               <div class="d-block mt-2">
                 <strong>{{ $store->store_name }}</strong><br>
                 Address: {{ $store->address }}<br>
-                Incharge: {{ $store->incharge_id }}
+                Incharge: {{ $store->storeIncharge }}
               </div>
               <div class="d-flex mt-2">
-                <button class="btn btn-success m-2" style="max-height: 2rem;"
-                  onclick="addInventory({{ $store->id }})">Add
-                  Inventory</button>
-                <button class="btn btn-warning m-2"
-                  style="max-height: 2rem; "onclick="dispatchInventory({{ $store->id }})">Dispatch
-                  Inventory</button>
-                <button class="btn btn-danger m-2"style="max-height: 2rem;"
-                  onclick="deleteStore({{ $store->id }})">Delete Store</button>
+                <button class="btn btn-success m-2" style="max-height: 2.8rem;"
+                  onclick="toggleAddInventory({{ $store->id }})">
+                  Add Inventory
+                </button>
+                <button class="btn btn-info m-2" style="max-height: 2.8rem;"
+                  onclick="viewStoreInventory({{ $store->id }})">
+                  View Inventory
+                </button>
+
+                <button class="btn btn-warning m-2" style="max-height: 2.8rem;"
+                  onclick="openDispatchModal({{ $store->id }})">
+                  Dispatch Inventory
+                </button>
+                <button class="btn btn-danger m-2" style="max-height: 2.8rem;"
+                  onclick="deleteStore({{ $store->id }})">
+                  Delete Store
+                </button>
               </div>
             </div>
-          </li>
+            <!-- Add Inventory Form (Initially Hidden) -->
+            <div id="addInventoryForm-{{ $store->id }}" class="mt-3" style="display: none;">
+              @if ($errors->any())
+                <div class="alert alert-danger">
+                  <ul>
+                    @foreach ($errors->all() as $error)
+                      <li>{{ $error }}</li>
+                    @endforeach
+                  </ul>
+                </div>
+              @endif
+              <form action="{{ route("inventory.import") }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="input-group">
+                  <input type="file" name="file" class="form-control form-control-sm" required>
+                  <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Inventory">
+                    <i class="mdi mdi-upload"></i> Import
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         @endforeach
       </ul>
     @endif
   </div>
+  <div id="dispatchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dispatchModalLabel"
+    aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="dispatchModalLabel">Dispatch Inventory</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="dispatchForm" action="{{ route("inventory.dispatch") }}" method="POST">
+          @csrf
+          <div class="modal-body">
+            <input type="hidden" id="dispatchStoreId" name="store_id">
+            <div class="form-group">
+              <label for="vendorName">Vendor Name:</label>
+              <input type="text" class="form-control" id="vendorName" name="vendor_name" required>
+            </div>
+            <div class="form-group">
+              <label for="items">Select Items:</label>
+              <select class="form-control" id="items" name="items[]" multiple required>
+                <!-- Populate dynamically based on store inventory -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="dispatchDate">Dispatch Date:</label>
+              <input type="date" class="form-control" id="dispatchDate" name="dispatch_date" required>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Approve</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", function() {
@@ -86,6 +182,11 @@
       addStoreButton.style.display = "block";
     });
   });
+
+  function toggleAddInventory(storeId) {
+    const form = document.getElementById(`addInventoryForm-${storeId}`);
+    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  }
 
   function addInventory(storeId) {
     // Redirect to the inventory import route with the store ID
@@ -119,5 +220,33 @@
           alert('Failed to delete store.');
         });
     }
+  }
+
+  function openDispatchModal(storeId) {
+    // Set store ID in the hidden field
+    document.getElementById('dispatchStoreId').value = storeId;
+
+    // Fetch and populate items in the dropdown
+    fetch(`/store/${storeId}/inventory`)
+      .then(response => response.json())
+      .then(data => {
+        const itemsSelect = document.getElementById('items');
+        itemsSelect.innerHTML = ''; // Clear previous options
+        data.forEach(item => {
+          const option = document.createElement('option');
+          option.value = item.id;
+          option.textContent = `${item.name} (${item.quantity})`;
+          itemsSelect.appendChild(option);
+        });
+      })
+      .catch(error => console.error('Error fetching inventory:', error));
+
+    // Show the modal
+    $('#dispatchModal').modal('show');
+  }
+
+  function viewStoreInventory(storeId) {
+    // Redirect to a page showing store inventory with export/print options
+    window.location.href = `/store/${storeId}/inventory/view`;
   }
 </script>
