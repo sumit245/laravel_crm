@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Project;
 use App\Models\State;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -72,9 +73,13 @@ class ProjectsController extends Controller
    'sites.districtRelation',
    'sites.stateRelation',
   ])->findOrFail($id);
-  $users = User::where('role', '!=', 3)->get();
+  $users     = User::where('role', '!=', 3)->get();
+  $targets   = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
+  $sites     = $project->sites; // All sites related to this project
+  $engineers = User::where('role', 1)->get(); // Engineers with role 1
+
   Log::info($project);
-  return view('projects.show', compact('project', 'users'));
+  return view('projects.show', compact('project', 'users', 'sites', 'engineers', 'targets'));
  }
 
  /**
