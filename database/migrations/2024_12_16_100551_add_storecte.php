@@ -13,7 +13,7 @@ return new class extends Migration
  {
   Schema::table('inventory', function (Blueprint $table) {
    //
-   $table->decimal('rate', 10, 2)->nullable(); // Foreign key for stores
+//    $table->decimal('rate', 10, 2)->nullable(); // Foreign key for stores
 
   });
  }
