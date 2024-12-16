@@ -22,9 +22,6 @@
   <!-- Store Creation Form (Initially Hidden) -->
   <div id="storeFormContainer" class="card mb-4 p-3" style="display: none;">
     <h6>Create Store</h6>
-<<<<<<< HEAD
-    <form id="storeForm"  method="POST">
-=======
     @if ($errors->any())
       <div class="alert alert-danger">
         <ul>
@@ -35,7 +32,6 @@
       </div>
     @endif
     <form id="storeForm" action="{{ route("store.create", $project->id) }}" method="POST">
->>>>>>> 4466733e06f21e990dfe037ec84de96127cd8726
       @csrf
       <input type="hidden" name="project_id" value="{{ $project->id }}">
 
