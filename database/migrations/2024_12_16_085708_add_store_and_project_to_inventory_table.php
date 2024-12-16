@@ -14,11 +14,11 @@ return new class extends Migration
   Schema::table('inventory', function (Blueprint $table) {
    //
    $table->unsignedBigInteger('store_id')->nullable()->after('id'); // Foreign key for stores
-   $table->unsignedBigInteger('project_id')->nullable()->after('store_id'); // Foreign key for projects
+//    $table->unsignedBigInteger('project_id')->nullable()->after('store_id'); // Foreign key for projects
 
 // Adding foreign key constraints (optional but recommended)
    $table->foreign('store_id')->references('id')->on('stores')->onDelete('set null');
-   $table->foreign('project_id')->references('id')->on('projects')->onDelete('set null');
+//    $table->foreign('project_id')->references('id')->on('projects')->onDelete('set null');
 
   });
  }
