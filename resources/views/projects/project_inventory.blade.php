@@ -1,7 +1,15 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
     <div class="d-flex mx-2">
+      <div class="card bg-info mx-2">
+
+        <div class="card-body">
+          <h5 class="card-title">0</h5>
+          <p class="card-text">Initial Stock Value</p>
+        </div>
+      </div>
       <div class="card bg-success mx-2">
+
         <div class="card-body">
           <h5 class="card-title">0</h5>
           <p class="card-text">In Store Stock Value</p>
@@ -82,10 +90,10 @@
                   onclick="toggleAddInventory({{ $store->id }})">
                   Add Inventory
                 </button>
-                <button class="btn btn-info m-2" style="max-height: 2.8rem;"
-                  onclick="viewStoreInventory({{ $store->id }})">
+                <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_name" => $store->store_name]) }}"
+                  class="btn btn-primary m-2" style="max-height: 2.8rem;">
                   View Inventory
-                </button>
+                </a>
 
                 <button class="btn btn-warning m-2" style="max-height: 2.8rem;"
                   onclick="openDispatchModal({{ $store->id }})">
@@ -108,7 +116,8 @@
                   </ul>
                 </div>
               @endif
-              <form action="{{ route("inventory.import") }}" method="POST" enctype="multipart/form-data">
+              <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
+                method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="input-group">
                   <input type="file" name="file" class="form-control form-control-sm" required>
@@ -139,7 +148,12 @@
             <input type="hidden" id="dispatchStoreId" name="store_id">
             <div class="form-group">
               <label for="vendorName">Vendor Name:</label>
-              <input type="text" class="form-control" id="vendorName" name="vendor_name" required>
+              <select class="form-select" id="storeIncharge" name="storeIncharge" required>
+                <option value="">Select Vendor</option>
+                @foreach ($users as $user)
+                  <option value="{{ $user->id }}">{{ $user->firstName }} {{ $user->lastName }}</option>
+                @endforeach
+              </select>
             </div>
             <div class="form-group">
               <label for="items">Select Items:</label>

@@ -6,6 +6,7 @@ use App\Models\Project;
 use App\Models\State;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProjectsController extends Controller
 {
@@ -72,7 +73,7 @@ class ProjectsController extends Controller
    'sites.stateRelation',
   ])->findOrFail($id);
   $users = User::where('role', '!=', 3)->get();
-
+  Log::info($project);
   return view('projects.show', compact('project', 'users'));
  }
 

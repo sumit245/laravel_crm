@@ -25,8 +25,6 @@ class SiteImport implements ToModel, WithHeadingRow
   */
  public function model(array $row)
  {
-  // Log the row for debugging
-  Log::info($row);
 
   // Fetch the district ID based on the district name
   $districtId = $this->getDistrictId($row['district']);

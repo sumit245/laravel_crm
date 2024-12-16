@@ -8,7 +8,27 @@
       <div class="col-sm-12">
         <div class="home-tab">
           <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-            <div></div>
+            <div class="dropdown d-none d-lg-block">
+              <a class="dropdown-bordered dropdown-toggle dropdown-toggle-split" id="projectDropDown" href="#"
+                data-bs-toggle="dropdown" aria-expanded="false">
+                <span id="selectedState">Select Project</span>
+              </a>
+              <div class="dropdown-menu dropdown-menu-right preview-list pb-0" aria-labelledby="projectDropDown"
+                style="max-height: 400px; overflow-y: auto;">
+                <a class="dropdown-item py-3">
+                  <p class="font-weight-medium float-left mb-0">Select Project</p>
+                </a>
+                <div class="dropdown-divider"></div>
+                @foreach ($projects as $index => $category)
+                  <a class="dropdown-item preview-item state-item" data-state-name="{{ $category->project_name }}"
+                    data-state-id="{{ $category->id }}">
+                    <div class="preview-item-content flex-grow py-2">
+                      <p class="preview-subject ellipsis font-weight-medium text-dark">{{ $category->project_name }}</p>
+                    </div>
+                  </a>
+                @endforeach
+              </div>
+            </div>
             <div>
               <div class="btn-wrapper">
                 <a href="#" class="btn btn-outline-dark">
