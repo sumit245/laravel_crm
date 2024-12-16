@@ -16,4 +16,9 @@ class Stores extends Model
  {
   return $this->belongsTo(User::class, 'storeIncharge', 'id');
  }
+ public function inventory()
+ {
+  return $this->hasMany(Inventory::class);
+ }
+
 }

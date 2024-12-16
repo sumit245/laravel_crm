@@ -8,6 +8,16 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
 class InventoryImport implements ToModel, WithHeadingRow
 {
+ protected $projectId, $storeId;
+
+ // Constructor to accept project ID
+ public function __construct($projectId, $storeId)
+ {
+  $this->projectId = $projectId;
+  $this->storeId   = $storeId;
+
+ }
+
  /**
   * @param array $row
   *
@@ -17,12 +27,16 @@ class InventoryImport implements ToModel, WithHeadingRow
  {
   return new Inventory([
    //
-   'productName' => $row[0], // Map column A
-   'brand' => $row[1], // Map column B
-   'description' => $row[2], // Map column C
-   'unit' => $row[3], // Map column D
-   'initialQuantity' => $row[4], // Map column E
-   'quantityStock' => $row[5], // Map column F
+   'project_id' => $this->projectId,
+   'store_id'   => $this->storeId,
+   'category'   => $row['category'], // Map column B
+   'sub_category' => $row['sub_category'], // Map column B
+   'productName' => $row['item_description'], // Map column A
+   'unit' => $row['unit'], // Map column D
+   'initialQuantity' => $row['quantity'], // Map column E
+   'rate' => $row['rate'], // Map column D
+   'total' => $row['total'],
+
 //    'receivedDate' => $row[6], // Map column G
   ]);
  }

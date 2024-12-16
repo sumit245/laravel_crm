@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Imports\InventoryImport;
 use App\Models\Inventory;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class InventoryController extends Controller
@@ -24,9 +26,11 @@ class InventoryController extends Controller
   $request->validate([
    'file' => 'required|mimes:xlsx,xls,csv|max:2048',
   ]);
-
+  $projectId = $request->projectId;
+  $storeId   = $request->storeId;
+  Log::info($storeId);
   try {
-   Excel::import(new InventoryImport, $request->file('file'));
+   Excel::import(new InventoryImport($projectId, $storeId), $request->file('file'));
    return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
   } catch (\Exception $e) {
 //    return alert('Error importing inventory: ' . $e->getMessage());
@@ -140,4 +144,24 @@ class InventoryController extends Controller
    return response()->json(['success' => false, 'message' => 'Failed to delete Item'], 500);
   }
  }
+
+ public function viewInventory(Request $request)
+ {
+
+  try {
+   $projectId = $request->project_id;
+   $storeName = $request->store_name;
+   $inventory = Inventory::whereHas('store', function ($query) use ($storeName) {
+    $query->where('store_name', $storeName);
+   })
+    ->where('project_id', $projectId)
+    ->get();
+
+   return view('inventory.view', compact('inventory', 'projectId', 'storeName'));
+
+  } catch (Exception $e) {
+   Log::info($e->getMessage());
+  }
+ }
+
 }

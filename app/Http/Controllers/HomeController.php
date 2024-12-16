@@ -29,6 +29,7 @@ class HomeController extends Controller
   */
  public function index()
  {
+  $projects     = Project::all();
   $projectCount = Project::count();
   $siteCount    = Site::count();
   $staffCount   = User::whereIn('role', [1, 2])->count(); // Count staff
@@ -69,7 +70,7 @@ class HomeController extends Controller
     'link'              => route('staff.index'), // Link to the sites page
    ],
   ];
-  return view('dashboard', compact('statistics'));
+  return view('dashboard', compact('statistics', 'projects'));
  }
 }
 
