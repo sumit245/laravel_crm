@@ -13,10 +13,12 @@ return new class extends Migration
  {
   Schema::table('inventory', function (Blueprint $table) {
    //
-   // Adding foreign key constraints (optional but recommended)
-   $table->string('category')->nullable()->after('store_id'); // Foreign key for stores
-   $table->string('sub_category')->nullable()->after('category'); // Foreign key for stores
-   $table->decimal('total', 10, 2)->nullable(); // Foreign key for stores
+   $table->unsignedBigInteger('store_id')->nullable()->after('id'); // Foreign key for stores
+   $table->unsignedBigInteger('project_id')->nullable()->after('store_id'); // Foreign key for projects
+
+// Adding foreign key constraints (optional but recommended)
+   $table->foreign('store_id')->references('id')->on('stores')->onDelete('set null');
+   $table->foreign('project_id')->references('id')->on('projects')->onDelete('set null');
 
   });
  }
