@@ -30,7 +30,7 @@
               <td>{{ $item->category }}</td>
               <td>{{ $item->sub_category }}</td>
               <td style="max-width:200px;word-wrap: break-word;white-space: normal;">{{ $item->productName }}</td>
-              <td>{{ $item->initalQuantity }}</td>
+              <td>{{ $item->initialQuantity }}</td>
               <td>{{ $item->rate }}</td>
               <td>{{ $item->total }}</td>
             </tr>

@@ -4,6 +4,10 @@
   <div class="content-wrapper">
     <div class="card p-2">
       <div class="card-body">
+        <div class="col-3 col-sm">
+          <label class="font-10 text-uppercase mg-b-10 fw-bold">State</label>
+          <p class="mg-b-0">{{ $state[0]->name }}</p>
+        </div>
         <div class="row">
           <!-- Project Details -->
           <div class="col-3 col-sm">
@@ -22,6 +26,7 @@
             <label class="font-10 text-uppercase mg-b-10 fw-bold">End Date</label>
             <p class="mg-b-0">{{ $project->end_date }}</p>
           </div>
+          <!-- Project Details -->
         </div>
         <div class="row my-2">
           <div class="col-3 col-sm">
