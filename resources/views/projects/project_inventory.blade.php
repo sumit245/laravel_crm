@@ -146,6 +146,7 @@
           @csrf
           <div class="modal-body">
             <input type="hidden" id="dispatchStoreId" name="store_id">
+            <!-- Vendor Selection -->
             <div class="form-group">
               <label for="vendorName">Vendor Name:</label>
               <select class="form-select" id="storeIncharge" name="storeIncharge" required>
@@ -155,22 +156,66 @@
                 @endforeach
               </select>
             </div>
+
+            <div class="row">
+              <div class="col-sm-6">
+                <button type="button" class="btn btn-danger btn-sm remove-item-btn mt-4">Remove Item</button>
+              </div>
+              <div class="col-sm-6">
+                <button type="button" class="btn btn-success btn-sm mt-4" id="addMoreItems">Add More Items</button>
+              </div>
+            </div>
+            <!-- Dynamic Items Section -->
+            <div id="itemsContainer">
+              <div class="item-row mb-3">
+                <div class="row">
+                  <div class="col-sm-8 form-group">
+                    <label for="items">Item:</label>
+                    <select class="form-select item-select" name="items[]" required>
+                      <option value="">Select Item</option>
+                      @foreach ($inventoryItems as $item)
+                        <option value="{{ $item->id }}" data-stock="{{ $item->initialQuantity }}">
+                          {{ $item->productName }}
+                        </option>
+                      @endforeach
+                    </select>
+
+                  </div>
+                  <div class="col-sm-4 form-group">
+                    <label for="quantity">Quantity:</label>
+                    <input type="number" class="form-control item-quantity" name="quantities[]" min="1"
+                      required>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             <div class="form-group">
-              <label for="items">Select Items:</label>
-              <select class="form-control" id="items" name="items[]" multiple required>
-                <!-- Populate dynamically based on store inventory -->
+              <label for="site">Site:</label>
+              <select class="form-select item-site" name="sites[]" required>
+                <option value="">Select Site</option>
+                @foreach ($sites as $site)
+                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                @endforeach
               </select>
             </div>
-            <div class="form-group">
+
+            <!-- Add More Items Button -->
+
+            <!-- Dispatch Date -->
+            <div class="form-group mt-4">
               <label for="dispatchDate">Dispatch Date:</label>
               <input type="date" class="form-control" id="dispatchDate" name="dispatch_date" required>
             </div>
           </div>
+
+          <!-- Modal Footer -->
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
             <button type="submit" class="btn btn-primary">Approve</button>
           </div>
         </form>
+
       </div>
     </div>
   </div>
@@ -259,4 +304,39 @@
     // Redirect to a page showing store inventory with export/print options
     window.location.href = `/store/${storeId}/inventory/view`;
   }
+</script>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const itemsContainer = document.getElementById('itemsContainer');
+    const addMoreItemsButton = document.getElementById('addMoreItems');
+
+    // Add New Item Row
+    addMoreItemsButton.addEventListener('click', function() {
+      const newItemRow = document.querySelector('.item-row').cloneNode(true);
+      newItemRow.querySelector('.item-select').value = '';
+      newItemRow.querySelector('.item-quantity').value = '';
+      // newItemRow.querySelector('.item-site').value = '';
+      itemsContainer.appendChild(newItemRow);
+    });
+
+    // Remove Item Row
+    itemsContainer.addEventListener('click', function(e) {
+      if (e.target.classList.contains('remove-item-btn')) {
+        e.target.closest('.item-row').remove();
+      }
+    });
+
+    // Validate Quantity Against Stock
+    itemsContainer.addEventListener('input', function(e) {
+      if (e.target.classList.contains('item-quantity')) {
+        const stock = e.target.closest('.item-row').querySelector('.item-select').selectedOptions[0]
+          .getAttribute('data-stock');
+        console.log(stock)
+        if (parseInt(e.target.value) > parseInt(stock)) {
+          alert('Quantity cannot exceed stock.');
+          e.target.value = stock;
+        }
+      }
+    });
+  });
 </script>

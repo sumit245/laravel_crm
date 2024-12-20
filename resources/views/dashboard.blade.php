@@ -8,27 +8,30 @@
       <div class="col-sm-12">
         <div class="home-tab">
           <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-            <div class="dropdown d-none d-lg-block">
-              <a class="dropdown-bordered dropdown-toggle dropdown-toggle-split" id="projectDropDown" href="#"
-                data-bs-toggle="dropdown" aria-expanded="false">
-                <span id="selectedState">Select Project</span>
-              </a>
-              <div class="dropdown-menu dropdown-menu-right preview-list pb-0" aria-labelledby="projectDropDown"
-                style="max-height: 400px; overflow-y: auto;">
-                <a class="dropdown-item py-3">
-                  <p class="font-weight-medium float-left mb-0">Select Project</p>
-                </a>
-                <div class="dropdown-divider"></div>
-                @foreach ($projects as $index => $category)
-                  <a class="dropdown-item preview-item state-item" data-state-name="{{ $category->project_name }}"
-                    data-state-id="{{ $category->id }}">
-                    <div class="preview-item-content flex-grow py-2">
-                      <p class="preview-subject ellipsis font-weight-medium text-dark">{{ $category->project_name }}</p>
-                    </div>
+            <div>
+              <div class="dropdown">
+                <button class="btn btn-primary dropdown-toggle" type="button" id="projectDropDown" data-bs-toggle="dropdown"
+                  aria-haspopup="false" aria-expanded="false">
+                  <span id="selectedProject" class="text-light">Select Project</span>
+                </button>
+                <div class="dropdown-menu hide" aria-labelledby="projectDropDown"
+                  style="max-height: 400px; overflow-y: auto;">
+                  <a class="dropdown-item py-3">
+                    <p class="font-weight-medium float-left mb-0">Select Project</p>
                   </a>
-                @endforeach
+                  <div class="dropdown-divider"></div>
+                  @foreach ($projects as $index => $category)
+                    <a class="dropdown-item project-item" data-project-name="{{ $category->project_name }}"
+                      data-project-id="{{ $category->id }}">
+                      <div class="preview-item-content flex-grow py-2">
+                        <p class="preview-subject ellipsis font-weight-medium text-dark">{{ $category->project_name }}</p>
+                      </div>
+                    </a>
+                  @endforeach
+                </div>
               </div>
             </div>
+
             <div>
               <div class="btn-wrapper">
                 <a href="#" class="btn btn-outline-dark">
@@ -188,3 +191,39 @@
     </div>
   </div>
 @endsection
+
+@push("scripts")
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const stateItems = document.querySelectorAll(".project-item");
+      const selectedStateSpan = document.getElementById('selectedProject');
+
+      stateItems.forEach((item) => {
+        item.addEventListener("click", function(event) {
+          event.preventDefault(); // Prevent default anchor behavior
+
+          const stateId = this.getAttribute("data-project-id");
+          const stateName = this.getAttribute('data-project-name');
+          selectedStateSpan.textContent = stateName; // Update the dropdown toggle text
+
+          // Example: Send stateId to server via AJAX
+          fetch('/update-selected-state', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              },
+              body: JSON.stringify({
+                state_id: stateId
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              console.log('Server Response:', data);
+            })
+            .catch(error => console.error('Error:', error));
+        });
+      });
+    });
+  </script>
+@endpush

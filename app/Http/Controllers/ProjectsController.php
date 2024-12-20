@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\State;
 use App\Models\Task;
@@ -73,13 +74,15 @@ class ProjectsController extends Controller
    'sites.districtRelation',
    'sites.stateRelation',
   ])->findOrFail($id);
-  $users     = User::where('role', '!=', 3)->get();
-  $targets   = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
-  $sites     = $project->sites; // All sites related to this project
-  $engineers = User::where('role', 1)->get(); // Engineers with role 1
+  $users          = User::where('role', '!=', 3)->get();
+  $targets        = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
+  $sites          = $project->sites; // All sites related to this project
+  $engineers      = User::where('role', 1)->get(); // Engineers with role 1
+  $state          = State::where('id', $project->project_in_state)->get();
+  $inventoryItems = Inventory::all();
 
-  Log::info($project);
-  return view('projects.show', compact('project', 'users', 'sites', 'engineers', 'targets'));
+  Log::info($state);
+  return view('projects.show', compact('project', 'state', 'inventoryItems', 'users', 'sites', 'engineers', 'targets'));
  }
 
  /**
@@ -88,7 +91,9 @@ class ProjectsController extends Controller
  public function edit(string $id)
  {
   $project = Project::findOrFail($id);
-  return view('projects.edit', compact('project'));
+  $state   = State::where('id', $project->project_in_state)->get();
+
+  return view('projects.edit', compact('project', 'state'));
  }
 
  /**
@@ -101,9 +106,14 @@ class ProjectsController extends Controller
    // Validate the incoming data without requiring a username
    $validated = $request->validate([
     'project_name'      => 'required|string',
-    'date'              => 'required|date',
+    'project_in_state'  => 'string',
+    'start_date'        => 'required|date',
+    'end_date'          => 'required|date',
     'work_order_number' => 'required|string|unique:projects',
     'rate'              => 'nullable|string',
+    'project_capacity'  => 'nullable|string',
+    'total'             => 'string',
+    'description'       => 'string',
    ]);
    $project->update($validated);
    return redirect()->route('projects.show', compact('project'))
