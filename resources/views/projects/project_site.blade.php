@@ -30,7 +30,7 @@
         <th>Site Name</th>
         <th>Address</th>
         <th>Vendor</th>
-        <th>Phone</th>
+        <th>Site Contact</th>
         <th>Actions</th>
       </tr>
     </thead>
