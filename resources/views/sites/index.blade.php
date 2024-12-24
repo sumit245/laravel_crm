@@ -18,7 +18,7 @@
           <th>City</th>
           <th>State</th>
           <th>Vendor</th>
-          <th>Phone</th>
+          <th>Site Contact</th>
           <th>Actions</th>
         </tr>
       </thead>
