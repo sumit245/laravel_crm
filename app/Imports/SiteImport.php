@@ -44,12 +44,12 @@ class SiteImport implements ToModel, WithHeadingRow
   return new Site([
    'project_id'       => $this->projectId,
    'district'         => $districtId,
-   'state'            => $stateId,
    'site_name'        => $row['site_name'],
    'location'         => $row['location'],
-   'ca_number'        => $row['ca_no'],
+   'state'            => $stateId,
    'sanction_load'    => $row['sanction_load_in_kwp'],
    'project_capacity' => $row['project_capacity'],
+   'ca_number'        => $row['ca_no'],
    'meter_number'     => $row['meter_no'],
    'contact_no'       => $row['contact_no'],
   ]);
