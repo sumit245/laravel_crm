@@ -74,7 +74,7 @@
               rows="20" cols="50">{{ old("description", $project->description) }}</textarea>
           </div>
 
-          <button type="submit" class="btn btn-primary">Create Project</button>
+          <button type="submit" class="btn btn-primary">Update Project</button>
         </form>
       </div>
     </div>
