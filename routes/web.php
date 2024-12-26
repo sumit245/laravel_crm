@@ -24,9 +24,6 @@ Route::middleware(['auth', 'role:0'])->group(function () {
  Route::resource('staff', StaffController::class);
  Route::get('staff/{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
  Route::post('staff/{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
-
- // Route::get('/revenue', [RevenueController::class, 'index'])->name('revenue.index');
- // Route::get('/roles', [RoleController::class, 'index'])->name('roles.index');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -36,12 +33,7 @@ Route::middleware(['auth'])->group(function () {
  Route::resource('sites', SiteController::class);
  Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
 
-// Route::resource('inventory', InventoryController::class);
-// Route::resource('store', StoreController::class);//
-// Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
-//  Route::resource('store', StoreController::class); 
  Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
-//  Route::put('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
 
  Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
  Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');

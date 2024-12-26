@@ -39,9 +39,10 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
-            <div class="mb-3">
+            <div class="form-group mb-3">
               <label for="selectSite" class="form-label">Select Site</label>
-              <select id="selectSite" name="sites[]" class="form-select" multiple required>
+              <select id="selectSite" name="sites[]" class="form-select" style="height: 200px !important;" multiple
+                required>
                 @foreach ($sites as $site)
                   <option value="{{ $site->id }}">{{ $site->site_name }}</option>
                 @endforeach
@@ -106,7 +107,7 @@
             <td>{{ $target->start_date }}</td>
             <td>{{ $target->end_date }}</td>
             <td>
-              <a href="{{ route("tasks.show", $target->id) }}" class="btn btn-sm btn-info">Edit</a>
+              <a href="{{ route("tasks.show", $target->id) }}" class="btn btn-sm btn-info">View</a>
               <a href="{{ route("tasks.edit", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
               <form action="{{ route("tasks.destroy", $target->id) }}" method="POST" style="display: inline-block;">
                 @csrf

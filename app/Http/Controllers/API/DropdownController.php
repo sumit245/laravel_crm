@@ -3,11 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Models\State;
 use App\Models\City;
-use Illuminate\View\View;
+use App\Models\State;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class DropdownController extends Controller
 {
