@@ -5,74 +5,138 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        return Task::with(['project', 'site', 'vendor'])->get();
+ /**
+  * Display a listing of the resource.
+  */
+ public function index()
+ {
+  return Task::with(['project', 'site', 'vendor'])->get();
+ }
+
+ /**
+  * Store a newly created resource in storage.
+  */
+ public function store(Request $request)
+ {
+  try {
+   $validated = $request->validate([
+    'sites'       => 'required|array',
+    'activity'    => 'required|string',
+    'engineer_id' => 'required|exists:users,id',
+    'start_date'  => 'required|date',
+    'end_date'    => 'required|date|after_or_equal:start_date',
+   ]);
+
+   $task = Task::create($validated);
+   return response()->json([
+    'message' => 'Task created successfully',
+    'task'    => $task,
+   ]);
+  } catch (\Illuminate\Validation\ValidationException $e) {
+   return response()->json([
+    'message' => 'Validation failed',
+    'errors'  => $e->errors(),
+   ], 422);
+  } catch (\Exception $e) {
+   return response()->json([
+    'message' => 'Error creating task',
+   ], 500);
+  }
+ }
+
+ /**
+  * Display the specified resource.
+  */
+ public function show($id)
+ {
+  return Task::with(['project', 'site', 'vendor'])->findOrFail($id);
+ }
+
+/**
+ * Update the specified resource in storage.
+ */
+ public function update(Request $request, $id)
+ {
+  try {
+   // Find the task by ID
+   $task = Task::findOrFail($id);
+
+   // Update task details except `document` key
+   $task->update($request->except('image'));
+
+   $uploadedFiles = [];
+   Log::info('Request data: ' . json_encode($request->all()));
+   // Check if the request has a 'document' key
+   if ($request->hasFile('image')) {
+    $document = $request->file('image');
+    Log::info('Files detected in request: ' . json_encode($document));
+    if (is_array($document)) {
+     // Handle multiple images
+     foreach ($document as $file) {
+      $uploadedFiles[] = $this->uploadToS3($file, 'tasks/' . $task->id);
+     }
+    } else {
+     // Handle single PDF document
+     if ($document->getClientOriginalExtension() === 'pdf') {
+      $uploadedFiles[] = $this->uploadToS3($document, 'tasks/' . $task->id);
+     } else {
+      return response()->json([
+       'error' => 'Invalid file type. Only PDF or images are allowed.',
+      ], 400);
+     }
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        try {
-            $validated = $request->validate([
-                'project_id' => 'required|exists:projects,id',
-                'site_id' => 'required|exists:sites,id',
-                'vendor_id' => 'required|exists:users,id',
-                'task_name' => 'required|string',
-                'start_date' => 'required|date',
-                'end_date' => 'required|date|after_or_equal:startDate',
-            ]);
+    // Update the task's documents field in the database
+    $task->update(['image' => json_encode($uploadedFiles)]);
+   } else {
+    Log::info('No files detected in request.');
+   }
 
-            $task = Task::create($validated);
-            return response()->json([
-                'message' => 'Task created successfully',
-                'task' => $task,
-            ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json([
-                'message' => 'Validation failed',
-                'errors' => $e->errors(),
-            ], 422);
-        } catch (\Exception $e) {
-            return response()->json([
-                'message' => 'Error creating task',
-            ], 500);
-        }
-    }
+   // Return success response
+   return response()->json([
+    'message'        => 'Task updated successfully.',
+    'task'           => $task,
+    'uploaded_files' => $uploadedFiles,
+   ]);
+  } catch (\Exception $e) {
+   // Log the exception for debugging
+   Log::error('Error updating task: ' . $e->getMessage());
 
-    /**
-     * Display the specified resource.
-     */
-    public function show($id)
-    {
-        return Task::with(['project', 'site', 'vendor'])->findOrFail($id);
-    }
+   return response()->json([
+    'error'   => 'An error occurred during the update process.',
+    'message' => $e->getMessage(),
+   ], 500);
+  }
+ }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id)
-    {
-        $task = Task::findOrFail($id);
-        $task->update($request->all());
-        return $task;
-    }
+/**
+ * Upload a file to the S3 bucket.
+ */
+ private function uploadToS3($file, $path)
+ {
+  try {
+   // Generate a unique file name
+   $fileName = time() . '_' . $file->getClientOriginalName();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        $task = Task::findOrFail($id);
-        $task->delete();
-        return response()->json(['message' => 'Task deleted']);
-    }
+   // Upload the file to S3 and return its path
+   return $file->storeAs($path, $fileName, 's3');
+  } catch (\Exception $e) {
+   Log::error('Error uploading to S3: ' . $e->getMessage());
+   throw $e;
+  }
+ }
+
+ /**
+  * Remove the specified resource from storage.
+  */
+ public function destroy($id)
+ {
+  $task = Task::findOrFail($id);
+  $task->delete();
+  return response()->json(['message' => 'Task deleted']);
+ }
 }
