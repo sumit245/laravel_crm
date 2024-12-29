@@ -53,8 +53,7 @@ Route::prefix('vendor')->group(function () {
 // });
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('site', SiteController::class);
-// Route::apiResource('task', TaskController::class, ['except' => ['update']]);
-Route::put('task/{id}', [TaskController::class, 'update']);
+Route::apiResource('task', TaskController::class);
 Route::apiResource('inventories', InventoryController::class);
 
 Route::post('fetch-states', [DropdownController::class, 'fetchState']);
