@@ -70,10 +70,10 @@ class TaskController extends Controller
 
    $uploadedFiles = [];
    Log::info('Request data: ' . json_encode($request->all()));
-   // Check if the request has a 'document' key
+
    if ($request->hasFile('image')) {
     $document = $request->file('image');
-    Log::info('Files detected in request: ' . json_encode($document));
+
     if (is_array($document)) {
      // Handle multiple images
      foreach ($document as $file) {
@@ -81,7 +81,7 @@ class TaskController extends Controller
      }
     } else {
      // Handle single PDF document
-     if ($document->getClientOriginalExtension() === 'pdf') {
+     if ($document->getClientOriginalExtension() === 'pdf' || in_array($document->getClientOriginalExtension(), ['jpg', 'jpeg', 'png'])) {
       $uploadedFiles[] = $this->uploadToS3($document, 'tasks/' . $task->id);
      } else {
       return response()->json([
@@ -89,11 +89,8 @@ class TaskController extends Controller
       ], 400);
      }
     }
-
-    // Update the task's documents field in the database
+    // Update the task's document or images field in the database
     $task->update(['image' => json_encode($uploadedFiles)]);
-   } else {
-    Log::info('No files detected in request.');
    }
 
    // Return success response
@@ -103,9 +100,7 @@ class TaskController extends Controller
     'uploaded_files' => $uploadedFiles,
    ]);
   } catch (\Exception $e) {
-   // Log the exception for debugging
-   Log::error('Error updating task: ' . $e->getMessage());
-
+   // Handle any exceptions
    return response()->json([
     'error'   => 'An error occurred during the update process.',
     'message' => $e->getMessage(),
@@ -121,13 +116,15 @@ class TaskController extends Controller
   try {
    // Generate a unique file name
    $fileName = time() . '_' . $file->getClientOriginalName();
-
    // Upload the file to S3 and return its path
    return $file->storeAs($path, $fileName, 's3');
   } catch (\Exception $e) {
-   Log::error('Error uploading to S3: ' . $e->getMessage());
-   throw $e;
+   return response()->json([
+    'error'   => 'An error occurred while uploading the file.',
+    'message' => $e->getMessage(),
+   ], 500);
   }
+
  }
 
  /**
