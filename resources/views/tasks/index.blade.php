@@ -26,7 +26,7 @@
           <tr>
             <td>{{ $loop->iteration }}</td>
             <td>{{ $member->task_name }}</td>
-            <td>{{ $member->vendor->name }}</td>
+//            <td>{{ $member->vendor->name }}</td>
             <td>{{ $member->site->site_name }}</td>
             <td>{{ $member->status }}</td>
             <td>{{ $member->approved_by }}</td>
