@@ -96,7 +96,7 @@
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
                 <label for="panNumber">PAN</label>
-                <input type="text" id="panNumber" name="panNumber" class="form-control"
+                <input type="text" id="panNumber" name="pan" class="form-control"
                   value="{{ old("panNumber") }}">
                 @error("panNumber")
                   <small class="text-danger">{{ $message }}</small>
@@ -113,8 +113,7 @@
                 <input type="text" id="accountName" name="accountName" class="form-control"
                   value="{{ old("accountName") }}">
                 @error("accountName")
-                  <small class="text-danger">{{ $message }}</small>
-                @enderror
+                  <small class="text-danger">{{ $message }}</small>                @enderror
               </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6">

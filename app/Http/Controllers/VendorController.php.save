@@ -136,7 +136,7 @@ class VendorController extends Controller
     'email'         => 'required|email',
    ]);
    $vendor = User::find($id)->update($validated);
-	Log::info($vendor);
+   Log::info($vendor);
    return redirect()->route('uservendors.show', compact('vendor'))->with('success', 'Vendor updated successfully.');
   } catch (\Exception $e) {
    // Catch database or other errors
