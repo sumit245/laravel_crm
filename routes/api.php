@@ -5,6 +5,7 @@ use App\Http\Controllers\API\InventoryController;
 use App\Http\Controllers\API\LoginController;
 use App\Http\Controllers\API\ProjectController;
 use App\Http\Controllers\API\SiteController;
+use App\Http\Controllers\API\StaffController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\API\VendorController;
 use Illuminate\Support\Facades\Route;
@@ -21,7 +22,7 @@ use Illuminate\Support\Facades\Route;
  */
 
 Route::post('/login', [LoginController::class, 'login']);
-
+Route::apiResource('staff', StaffController::class);
 Route::prefix('vendor')->group(function () {
  Route::get('/', [VendorController::class, 'index']); //View all vendors
  Route::post('/', [VendorController::class, 'create']); // Create vendor
@@ -29,28 +30,8 @@ Route::prefix('vendor')->group(function () {
  Route::get('{id}/edit', [VendorController::class, 'edit']); // Edit vendor (optional)
  Route::put('{id}', [VendorController::class, 'update']); // Update vendor
  Route::delete('{id}', [VendorController::class, 'destroy']); // Delete vendor
- // Allot Site
- // Allot Task
- // Allot Inventory
- // Update Task
 });
 
-//Route::prefix('projects')->group(function () {
-//  Route::get('/', [ProjectController::class, 'index']); //View all vendors
-// Route::post('/', [ProjectController::class, 'create']); // Create vendor
-//Route::get('{id}', [ProjectController::class, 'show']); // View a specific vendor
-//Route::get('{id}/edit', [ProjectController::class, 'edit']); // Edit vendor (optional)
-//Route::put('{id}', [ProjectController::class, 'update']); // Update vendor
-// Route::delete('{id}', [ProjectController::class, 'destroy']); // Delete vendor
-// Allot Site
-// Allot Task
-// Allot Inventory
-// Update Task
-//});
-
-// Route::middleware('api')->group(function () {
-//     Route::apiResource('projects', ProjectController::class);
-// });
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('site', SiteController::class);
 Route::apiResource('task', TaskController::class);
