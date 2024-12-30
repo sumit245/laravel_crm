@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
@@ -53,7 +54,25 @@ class TaskController extends Controller
   */
  public function show($id)
  {
-  return Task::with(['project', 'site', 'vendor'])->findOrFail($id);
+  $task = Task::with(['project', 'site', 'vendor'])->findOrFail($id);
+
+  // Decode the JSON image field
+  $images = json_decode($task->image, true);
+
+  // Generate full URLs
+  $fullUrls = [];
+  if (is_array($images)) {
+   foreach ($images as $image) {
+    $fullUrls[] = Storage::disk('s3')->url($image);
+   }
+  }
+
+  // Add the full URLs to the image key
+  $task->image = $fullUrls;
+  // Include full URLs in the response
+  return response()->json([
+   'task' => $task,
+  ]);
  }
 
 /**
