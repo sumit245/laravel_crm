@@ -18,7 +18,7 @@ class StaffController extends Controller
  public function index()
  {
   // Retrieve all vendors (users with roleId of 3)
-  $siteEngineers = User::where('role', 2)->get();
+  $siteEngineers = User::where('role', 1)->get();
 
   if ($siteEngineers->isEmpty()) {
    return response()->json([
