@@ -60,7 +60,7 @@
                 @if ($extension === "pdf")
                   <!-- Thumbnail for PDF -->
                   <a href="{{ $file }}" target="_blank" class="d-block">
-                    <div class="pdf-thumbnail" data-pdf-url="{{ $file }}"
+                    <div class="pdf-thumbnail" data-pdf-url="{{ $file }} id="pdf-thumbnail"
                       style="width: 100px; height: auto; border: 1px solid #ddd; display: flex; align-items: center; justify-content: center; background: #f5f5f5;">
                       <span class="text-muted">PDF</span>
                     </div>
@@ -103,32 +103,27 @@
 
       pdfThumbnails.forEach(thumbnail => {
         const pdfUrl = thumbnail.dataset.pdfUrl;
-
-        // Load PDF and render first page as thumbnail
-        const loadingTask = pdfjsLib.getDocument(pdfUrl);
-        loadingTask.promise.then(function(pdf) {
-          pdf.getPage(1).then(function(page) {
+        console.log(pdfUrl)
+        pdfjsLib.getDocument(pdfUrl).promise.then((pdf) => {
+          pdf.getPage(1).then((page) => {
             const viewport = page.getViewport({
               scale: 0.5
             });
             const canvas = document.createElement('canvas');
             const context = canvas.getContext('2d');
-
             canvas.width = viewport.width;
             canvas.height = viewport.height;
 
-            thumbnail.innerHTML = ''; // Clear placeholder
-            thumbnail.appendChild(canvas);
-
-            const renderTask = page.render({
+            // Render the page onto the canvas
+            page.render({
               canvasContext: context,
               viewport: viewport
+            }).promise.then(() => {
+              document.getElementById('pdf-thumbnail').appendChild(canvas);
             });
-            return renderTask.promise;
           });
-        }).catch(function(error) {
-          console.error("Error loading PDF: ", error);
-          thumbnail.innerHTML = '<span class="text-danger">PDF Error</span>';
+        }).catch((error) => {
+          console.error('Error loading PDF:', error);
         });
       });
     });
