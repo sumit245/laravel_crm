@@ -20,12 +20,12 @@
         <span class="menu-title">Sites Management</span>
       </a>
     </li>
-    <li class="nav-item">
+    {{-- <li class="nav-item">
       <a class="nav-link" href="{{ route("tasks.index") }}">
         <i class="menu-icon mdi mdi-checkbox-marked"></i>
         <span class="menu-title">Tasks Management</span>
       </a>
-    </li>
+    </li> --}}
     <li class="nav-item">
       <a class="nav-link" href="{{ route("tasks.index") }}">
         <i class="menu-icon mdi mdi-checkbox-marked"></i>

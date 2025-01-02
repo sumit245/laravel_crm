@@ -13,6 +13,20 @@ use Illuminate\Support\Facades\Log;
 class ProjectsController extends Controller
 {
  /**
+  * @var string[]
+  */
+ protected array $sortFields = ['start_date', 'end_date', 'rate', 'project_capacity'];
+
+ /**
+  * UsersController constructor.
+  *
+  * @param User $user
+  */
+ public function __construct(public Project $project)
+ {
+ }
+
+ /**
   * Display a listing of the resource.
   */
  public function index()

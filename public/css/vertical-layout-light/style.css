@@ -28274,13 +28274,13 @@ dl li {
   border: none;
 }
 
-#siteTable th,
-#siteTable td {
+#sitesTable th,
+#sitesTable td {
   word-wrap: break-word;
   /* Allows text to break within a word */
   white-space: normal;
   /* Enables wrapping of text */
-  max-width: 260px;
+  max-width: 220px;
   /* Optional: Set a maximum width for columns */
 }
 
@@ -35088,9 +35088,9 @@ div.tagsinput span.tag a {
 
 /* Adjust button sizes */
 .btn-icon {
-  padding: 0.3rem 0.5rem !important;
+  padding: 0.2rem 0.4rem !important;
   /* Reduce button padding */
-  font-size: 0.8rem !important;
+  font-size: 0.6rem !important;
   /* Reduce font size */
 }
 

@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class TasksController extends Controller
 {
@@ -59,6 +61,21 @@ class TasksController extends Controller
  public function show(string $id)
  {
   //
+  $task        = Task::findOrFail($id);
+  $engineer_id = $task->engineer_id;
+  $engineer    = User::findOrFail($engineer_id);
+  $images      = json_decode($task->image, true); // Ensure it's an array
+  $fullUrls    = [];
+  if (is_array($images)) {
+   foreach ($images as $image) {
+    $fullUrls[] = Storage::disk('s3')->url($image);
+   }
+  }
+
+// Add the full URLs to the image key
+  $task->image = $fullUrls;
+
+  return view('tasks.show', compact('task', 'engineer'));
  }
 
  /**
