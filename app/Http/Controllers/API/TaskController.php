@@ -155,4 +155,23 @@ class TaskController extends Controller
   $task->delete();
   return response()->json(['message' => 'Task deleted']);
  }
+
+ public function getSitesForVendor($vendorId)
+ {
+  // Fetch tasks where the given vendor_id matches and eager load the site relationship
+  $tasks = Task::with('site')
+   ->where('vendor_id', $vendorId)
+   ->get();
+
+  // Extract unique sites from the tasks
+  $sites = $tasks->pluck('site')->unique('id')->values();
+
+  // Return the response
+  return response()->json([
+   'status'    => 'success',
+   'vendor_id' => $vendorId,
+   'sites'     => $sites,
+  ], 200);
+ }
+
 }

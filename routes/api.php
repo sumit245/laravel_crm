@@ -36,6 +36,7 @@ Route::apiResource('projects', ProjectController::class);
 Route::apiResource('site', SiteController::class);
 Route::apiResource('task', TaskController::class);
 Route::apiResource('inventories', InventoryController::class);
+Route::get('/vendors/{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 
 Route::post('fetch-states', [DropdownController::class, 'fetchState']);
 Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
