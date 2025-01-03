@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Site;
 use App\Models\Task;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
@@ -88,7 +88,6 @@ class TaskController extends Controller
    $task->update($request->except('image'));
 
    $uploadedFiles = [];
-   Log::info('Request data: ' . json_encode($request->all()));
 
    if ($request->hasFile('image')) {
     $document = $request->file('image');
@@ -111,6 +110,14 @@ class TaskController extends Controller
     // Update the task's document or images field in the database
     $task->update(['image' => json_encode($uploadedFiles)]);
    }
+   $site = Site::find($task->site_id);
+   $site->update([
+    'survey_latitude'  => $request->input('survey_lat'),
+    'survey_longitude' => $request->input('survey_long'),
+    'actual_latitude'  => $request->input('lat'),
+    'actual_longitude' => $request->input('long'),
+   ]);
+   $task->save();
 
    // Return success response
    return response()->json([
