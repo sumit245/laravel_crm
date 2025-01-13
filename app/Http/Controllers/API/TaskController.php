@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Site;
 use App\Models\Task;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
@@ -91,11 +92,14 @@ class TaskController extends Controller
 
    if ($request->hasFile('image')) {
     $document = $request->file('image');
+    Log::info('Images coming in request:', $document);
 
     if (is_array($document)) {
      // Handle multiple images
      foreach ($document as $file) {
       $uploadedFiles[] = $this->uploadToS3($file, 'tasks/' . $task->id);
+      Log::info('S3 Response:', $uploadedFiles);
+
      }
     } else {
      // Handle single PDF document
