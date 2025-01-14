@@ -1,5 +1,4 @@
 <?php
-
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
@@ -85,7 +84,7 @@ class TaskController extends Controller
    // Find the task by ID
    $task = Task::findOrFail($id);
 
-   // Update task details except `document` key
+   // Update task details except the `image` key
    $task->update($request->except('image'));
    Log::info($task);
 //   $request->validate([
@@ -97,48 +96,69 @@ class TaskController extends Controller
    Log::info('Request Keys:', $request->keys());
 
    $uploadedFiles = [];
+   Log::info('Request received:', $request->all());
 
    if ($request->hasFile('image')) {
+<<<<<<< HEAD
     $document = $request->file('image');
    Log::info('Images coming in request:', $document);
+=======
+    $images = $request->file('image'); // Input format for multiple files in JSON
+>>>>>>> 099fd82f8acfd707f79d84cf2f1a5efc661e6660
 
-    if (is_array($document)) {
+    if (is_array($images)) {
      // Handle multiple images
-     foreach ($document as $file) {
-      $uploadedFiles[] = $this->uploadToS3($file, 'tasks/' . $task->id);
-      Log::info('S3 Response:', $uploadedFiles);
+     foreach ($images as $file) {
+      if ($file->isValid()) {
+       // Upload each image to S3
+       $uploadedFiles[] = $this->uploadToS3($file, 'tasks/' . $task->id);
+      } else {
+       Log::warning('Invalid image format:', $file);
+       return response()->json(['error' => 'Invalid image format.'], 400);
+      }
+     }
+    } elseif ($images instanceof \Illuminate\Http\UploadedFile) {
+     // Handle single file upload (PDF or image)
+     $extension = $images->getClientOriginalExtension();
 
+     if (in_array($extension, ['pdf', 'jpg', 'jpeg', 'png'])) {
+      $uploadedFiles[] = $this->uploadToS3($images, 'tasks/' . $task->id);
+     } else {
+      return response()->json(['error' => 'Invalid file type. Only PDF or images are allowed.'], 400);
      }
     } else {
-     // Handle single PDF document
-     if ($document->getClientOriginalExtension() === 'pdf' || in_array($document->getClientOriginalExtension(), ['jpg', 'jpeg', 'png'])) {
-      $uploadedFiles[] = $this->uploadToS3($document, 'tasks/' . $task->id);
-     } else {
-      return response()->json([
-       'error' => 'Invalid file type. Only PDF or images are allowed.',
-      ], 400);
-     }
+     // Log and return an error if the `image` key format is invalid
+     Log::warning('Unexpected format for "image" input:', ['image' => $images]);
+     return response()->json(['error' => 'Invalid "image" input format.'], 400);
     }
-    // Update the task's document or images field in the database
+
+    // Update the task's `image` field in the database
     $task->update(['image' => json_encode($uploadedFiles)]);
    }
-   $site = Site::find($task->site_id);
-   $site->update([
-    'survey_latitude'  => $request->input('survey_lat'),
-    'survey_longitude' => $request->input('survey_long'),
-    'actual_latitude'  => $request->input('lat'),
-    'actual_longitude' => $request->input('long'),
-   ]);
-   $task->save();
 
-   // Return success response
+   // Update related site details
+   $site = Site::find($task->site_id);
+
+   if ($site) {
+    $site->update([
+     'survey_latitude'  => $request->input('survey_lat'),
+     'survey_longitude' => $request->input('survey_long'),
+     'actual_latitude'  => $request->input('lat'),
+     'actual_longitude' => $request->input('long'),
+    ]);
+   }
+
+   // Save task and return success response
    return response()->json([
     'message'        => 'Task updated successfully.',
     'task'           => $task,
     'uploaded_files' => $uploadedFiles,
    ]);
+
   } catch (\Exception $e) {
-   // Handle any exceptions
+   // Log the exception
+   Log::error('Error updating task:', ['error' => $e->getMessage()]);
+
    return response()->json([
     'error'   => 'An error occurred during the update process.',
     'message' => $e->getMessage(),
@@ -152,17 +172,34 @@ class TaskController extends Controller
  private function uploadToS3($file, $path)
  {
   try {
-   // Generate a unique file name
-   $fileName = time() . '_' . $file->getClientOriginalName();
-   // Upload the file to S3 and return its path
-   return $file->storeAs($path, $fileName, 's3');
+   if (is_array($file) && isset($file['uri'], $file['name'])) {
+    // Decode the file URI and extract the file contents
+    $fileContents = file_get_contents($file['uri']);
+    $fileName     = time() . '_' . $file['name'];
+
+    // Upload to S3 using the file contents
+    Storage::disk('s3')->put($path . '/' . $fileName, $fileContents);
+
+    // Return the S3 file path
+    return Storage::disk('s3')->url($path . '/' . $fileName);
+   } elseif ($file instanceof \Illuminate\Http\UploadedFile) {
+    // Handle standard UploadedFile objects
+    $fileName = time() . '_' . $file->getClientOriginalName();
+
+    // Store file in S3
+    return $file->storeAs($path, $fileName, 's3');
+   } else {
+    throw new \Exception('Invalid file format. Expected an array or UploadedFile.');
+   }
   } catch (\Exception $e) {
+   Log::error('S3 Upload Error:', ['message' => $e->getMessage()]);
+
+   // Return error response
    return response()->json([
     'error'   => 'An error occurred while uploading the file.',
     'message' => $e->getMessage(),
    ], 500);
   }
-
  }
 
  /**
