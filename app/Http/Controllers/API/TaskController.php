@@ -87,12 +87,20 @@ class TaskController extends Controller
 
    // Update task details except `document` key
    $task->update($request->except('image'));
+   Log::info($task);
+//   $request->validate([
+//     'image.*' => 'file|mimes:jpeg,jpg,png,pdf|max:2048',
+//   ]);
+//   Log::info('Request files:', [$request->allFiles()]);
+   Log::info('Request All:', $request->all());
+   Log::info('Request Files:', $request->allFiles());
+   Log::info('Request Keys:', $request->keys());
 
    $uploadedFiles = [];
 
    if ($request->hasFile('image')) {
     $document = $request->file('image');
-    Log::info('Images coming in request:', $document);
+   Log::info('Images coming in request:', $document);
 
     if (is_array($document)) {
      // Handle multiple images
