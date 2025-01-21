@@ -99,12 +99,9 @@ class TaskController extends Controller
    Log::info('Request received:', $request->all());
 
    if ($request->hasFile('image')) {
-<<<<<<< HEAD
     $document = $request->file('image');
    Log::info('Images coming in request:', $document);
-=======
-    $images = $request->file('image'); // Input format for multiple files in JSON
->>>>>>> 099fd82f8acfd707f79d84cf2f1a5efc661e6660
+    $images = $request->file('image'); // Input format for multiple files i
 
     if (is_array($images)) {
      // Handle multiple images
