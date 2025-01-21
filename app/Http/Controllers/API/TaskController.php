@@ -127,13 +127,26 @@ class TaskController extends Controller
    $site = Site::find($task->site_id);
 
    if ($site) {
-    $site->update([
-     'survey_latitude'  => $request->input('survey_lat'),
-     'survey_longitude' => $request->input('survey_long'),
-     'actual_latitude'  => $request->input('lat'),
-     'actual_longitude' => $request->input('long'),
-    ]);
-   }
+    $siteUpdateData = [];
+
+    if ($request->has('survey_lat')) {
+        $siteUpdateData['survey_latitude'] = $request->input('survey_lat');
+    }
+    if ($request->has('survey_long')) {
+        $siteUpdateData['survey_longitude'] = $request->input('survey_long');
+    }
+    if ($request->has('lat')) {
+        $siteUpdateData['actual_latitude'] = $request->input('lat');
+    }
+    if ($request->has('long')) {
+        $siteUpdateData['actual_longitude'] = $request->input('long');
+    }
+
+    if (!empty($siteUpdateData)) {
+        $site->update($siteUpdateData);
+    }
+}
+
 
    // Save task and return success response
    return response()->json([
