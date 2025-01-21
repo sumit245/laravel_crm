@@ -29,6 +29,10 @@ class Site extends Model
   'commissioning_date',
   'remarks',
   'site_engineer',
+  'survey_latitude',
+  'survey_longitude',
+  'actual_latitude',
+  'actual_longitude'
  ];
 
  public function project()
