@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\User;
+use App\Models\Site;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -63,7 +64,9 @@ class TasksController extends Controller
   //
   $task        = Task::findOrFail($id);
   $engineer_id = $task->engineer_id;
+  $vendor = $task->vendor;
   $engineer    = User::findOrFail($engineer_id);
+  $site=         Site::findOrFail($task->site_id);
   $images      = json_decode($task->image, true); // Ensure it's an array
   $fullUrls    = [];
   if (is_array($images)) {
@@ -75,7 +78,7 @@ class TasksController extends Controller
 // Add the full URLs to the image key
   $task->image = $fullUrls;
 
-  return view('tasks.show', compact('task', 'engineer'));
+  return view('tasks.show', compact('task', 'engineer','vendor','site'));
  }
 
  /**
