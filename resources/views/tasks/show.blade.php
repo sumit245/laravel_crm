@@ -11,13 +11,17 @@
       </div>
       <div class="card-body">
         <div class="row mb-3">
-          <div class="col-md-6">
+          <div class="col-md-4">
             <h6><strong>Task Name:</strong></h6>
             <p>{{ $task->activity }}</p>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-4">
             <h6><strong>Assigned To (Engineer):</strong></h6>
             <p>{{ $engineer->firstName }} {{ $engineer->lastName }}</p>
+          </div>
+          <div class="col-md-4">
+            <h6><strong>Assigned To (Vendor):</strong></h6>
+            <p>{{ $vendor->name }}</p>
           </div>
         </div>
         <div class="row mb-3">
@@ -51,6 +55,16 @@
         <div class="row mb-3">
           <div class="col-md-6">
             <h6><strong>View Photos</strong></h6>
+            <div class="row">
+              <div class="col-sm-6">
+                  <span>Survey Latitude {{$site->survey_latitude}}</span><br/>
+                  <span>Survey Longitude {{$site->survey_longitude}}</span>
+              </div>
+                            <div class="col-sm-6">
+                  <span>Actual Latitude {{$site->actual_latitude}}</span>
+                  <span>Actual Longitude {{$site->actual_longitude}}</span>
+              </div>
+            </div>
             <div class="d-flex flex-wrap gap-2">
               @foreach ($task->image as $file)
                 {{-- <p>{{ $file }}</p> --}}
