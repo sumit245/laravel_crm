@@ -1,7 +1,11 @@
+@php
+  $selectedProjectId = session("project_id");
+@endphp
+
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav">
     <li class="nav-item">
-      <a class="nav-link" href="{{ url("/") }}">
+      <a class="nav-link" href="{{ url("/dashboard?project_id=" . $selectedProjectId) }}">
         <i class="mdi mdi-grid-large menu-icon"></i>
         <span class="menu-title">Dashboard</span>
       </a>
@@ -9,7 +13,7 @@
 
     <li class="nav-item nav-category">Project</li>
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("projects.index") }}">
+      <a class="nav-link" href="{{ route("projects.index" . $selectedProjectId) }}">
         <i class="menu-icon mdi mdi-chart-pie"></i>
         <span class="menu-title">Projects Overview</span>
       </a>
@@ -20,12 +24,6 @@
         <span class="menu-title">Sites Management</span>
       </a>
     </li>
-    {{-- <li class="nav-item">
-      <a class="nav-link" href="{{ route("tasks.index") }}">
-        <i class="menu-icon mdi mdi-checkbox-marked"></i>
-        <span class="menu-title">Tasks Management</span>
-      </a>
-    </li> --}}
     <li class="nav-item">
       <a class="nav-link" href="{{ route("tasks.index") }}">
         <i class="menu-icon mdi mdi-checkbox-marked"></i>

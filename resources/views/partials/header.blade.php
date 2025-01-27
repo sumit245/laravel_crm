@@ -28,7 +28,7 @@
           data-bs-toggle="dropdown" aria-expanded="false">
           <span id="selectedState">Select State</span>
         </a>
-        <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
+        {{-- <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
           aria-labelledby="messageDropdown" style="max-height: 400px; overflow-y: auto;">
           <a class="dropdown-item py-3">
             <p class="font-weight-medium float-left mb-0">Select State</p>
@@ -42,7 +42,7 @@
               </div>
             </a>
           @endforeach
-        </div>
+        </div> --}}
       </li>
 
       <li class="nav-item d-none d-lg-block">
