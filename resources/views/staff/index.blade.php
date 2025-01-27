@@ -1,55 +1,48 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container p-2">
-    <div class="d-flex justify-content-between mb-3">
-      <div></div>
-      <a href="{{ route("staff.create") }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Staff">
-        <i class="mdi mdi-plus-circle"></i>
-      </a>
+  <div class="content-wrapper">
+    <div class="row">
+      <div class="col-md-12 grid-margin">
+        <div class="card">
+          <div class="card-body">
+            <h4 class="card-title">Staff Performance</h4>
+
+            <!-- Filters (Optional) -->
+            <div class="mb-3">
+              <input type="text" id="searchInput" class="form-control" placeholder="Search staff by name...">
+            </div>
+
+            <table class="table-striped table" id="staffTable">
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Tasks Assigned</th>
+                  <th>Pending</th>
+                  <th>In Progress</th>
+                  <th>Completed</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach ($staff as $staff)
+                  <tr>
+                    <td>{{ $staff->firstName }} {{ $staff->lastName }}</td>
+                    <td>{{ $staff->totalTasks }}</td>
+                    <td class="text-warning">{{ $staff->pendingTasks }}</td>
+                    <td class="text-primary">{{ $staff->inProgressTasks }}</td>
+                    <td class="text-success">{{ $staff->completedTasks }}</td>
+                    <td>
+                      <a href="{{ route("staff.show", $staff->id) }}" class="btn btn-sm btn-info">View</a>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
     </div>
-    <table id="staffTable" class="table-striped table-bordered table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>First Name</th>
-          <th>Last Name</th>
-          <th>Email</th>
-          <th>Address</th>
-          <th>Role</th>
-          <th>Phone</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach ($staff as $member)
-          <tr>
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $member->firstName }}</td>
-            <td>{{ $member->lastName }}</td>
-            <td>{{ $member->email }}</td>
-            <td>{{ $member->address }}</td>
-            <td>{{ $member->role == 1 ? "Coordinator" : "Project Manager" }}</td>
-            <td>{{ $member->contactNo }}</td>
-            <td>
-              <a href="{{ route("staff.show", $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
-                title="View Details">
-                <i class="mdi mdi-eye"></i>
-              </a>
-              <a href="{{ route("staff.edit", $member->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
-                title="Edit Staff">
-                <i class="mdi mdi-pencil"></i>
-              </a>
-              <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip"
-                title="Delete Staff" data-id="{{ $member->id }}" data-name="{{ $member->name }}"
-                data-url="{{ route("staff.destroy", $member->id) }}">
-                <i class="mdi mdi-delete"></i>
-              </button>
-            </td>
-          </tr>
-        @endforeach
-      </tbody>
-    </table>
   </div>
 @endsection
 

@@ -8,7 +8,7 @@
       <div class="col-sm-12">
         <div class="home-tab">
           <div class="d-sm-flex align-items-center justify-content-between border-bottom">
-            <div>
+            <div class='d-inline-flex align-items-center'>
               <div class="dropdown">
                 <button class="btn btn-primary dropdown-toggle" type="button" id="projectDropDown" data-bs-toggle="dropdown"
                   aria-haspopup="false" aria-expanded="false">
@@ -30,6 +30,11 @@
                   @endforeach
                 </div>
               </div>
+
+              <a type="button" href="projects/create" class="btn btn-primary-outline">
+                <span>Add Project</span>
+              </a>
+
             </div>
 
             <div>
@@ -159,7 +164,8 @@
               <div>
                 <div class="dropdown">
                   <button class="btn btn-secondary dropdown-toggle toggle-dark btn-lg mb-0 me-0" type="button"
-                    id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false"> This
+                    id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    This
                     month </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
                     <h6 class="dropdown-header">Settings</h6>
@@ -195,35 +201,28 @@
 @push("scripts")
   <script>
     document.addEventListener("DOMContentLoaded", function() {
-      const stateItems = document.querySelectorAll(".project-item");
-      const selectedStateSpan = document.getElementById('selectedProject');
+      const projectItems = document.querySelectorAll(".project-item");
+      const selectedProjectSpan = document.getElementById('selectedProject');
 
-      stateItems.forEach((item) => {
+      projectItems.forEach((item) => {
         item.addEventListener("click", function(event) {
           event.preventDefault(); // Prevent default anchor behavior
 
-          const stateId = this.getAttribute("data-project-id");
-          const stateName = this.getAttribute('data-project-name');
-          selectedStateSpan.textContent = stateName; // Update the dropdown toggle text
-
-          // Example: Send stateId to server via AJAX
-          fetch('/update-selected-state', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-              },
-              body: JSON.stringify({
-                state_id: stateId
-              })
-            })
-            .then(response => response.json())
-            .then(data => {
-              console.log('Server Response:', data);
-            })
-            .catch(error => console.error('Error:', error));
-        });
+          const projectId = this.getAttribute("data-project-id");
+          const projectName = this.getAttribute('data-project-name');
+          selectedProjectSpan.textContent = projectName; // Update the dropdown toggle text
+          // Store selected project in Session Storage
+          sessionStorage.setItem("project_name", projectName);
+          sessionStorage.setItem("project_id", projectId);
+          window.location.href = "/dashboard?project_id=" + projectId;
+        })
       });
+      // Load saved project on page reload
+      let storedProjectName = sessionStorage.getItem("project_name");
+
+      if (storedProjectName) {
+        selectedProjectSpan.textContent = storedProjectName;
+      }
     });
   </script>
 @endpush
