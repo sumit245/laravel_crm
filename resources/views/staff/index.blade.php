@@ -29,8 +29,8 @@
             <td>{{ $member->address }}</td>
             @php
               $roles = [
-                  1 => "Project Manager",
-                  2 => "Site Engineer",
+                  1 => "Site Engineer",
+                  2 => "Project Manager",
                   4 => "Store Incharge",
               ];
             @endphp
