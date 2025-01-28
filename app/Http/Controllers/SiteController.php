@@ -91,6 +91,7 @@ class SiteController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
+        Log::info($search);
         $sites = Site::where('site_name', 'LIKE', "%{$search}%")
             ->limit(10) // Limit results to improve performance
             ->get(['id', 'site_name']);
