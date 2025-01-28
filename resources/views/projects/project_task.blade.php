@@ -3,7 +3,7 @@
     <div class="d-flex mx-2">
       <div class="card bg-success mx-2" style="min-width: 33%;">
         <div class="card-body">
-          <h5 class="card-title">0</h5>
+          <h5 class="card-title">$installationCount</h5>
           <p class="card-text">Installation</p>
         </div>
       </div>
@@ -40,12 +40,14 @@
           </div>
           <div class="modal-body">
             <div class="form-group mb-3">
-              <label for="selectSite" class="form-label">Select Site</label>
-              <select id="selectSite" name="sites[]" class="form-select" style="height: 200px !important;" multiple
-                required>
-                @foreach ($sites as $site)
-                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
-                @endforeach
+              <label for="siteSearch" class="form-label">Search Site</label>
+              <input type="text" id="siteSearch" placeholder="Search Site..." class="form-control">
+              <div id="siteList"></div>
+
+              <!-- Selected Sites -->
+              <ul id="selectedSites"></ul>
+              <!-- Hidden Select to Store Selected Sites -->
+              <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
               </select>
             </div>
             <div class="mb-3">
@@ -125,3 +127,53 @@
     </table>
   </div>
 </div>
+
+@push("scripts")
+  <script>
+    $(document).ready(function() {
+      $('#siteSearch').on('keyup', function() {
+        let query = $(this).val();
+        if (query.length > 1) {
+          $.ajax({
+            url: "{{ route("sites.search") }}",
+            method: 'GET',
+            data: {
+              query: query
+            },
+            success: function(response) {
+              let html = '';
+              response.forEach(site => {
+                html += `<div>
+                                    <input type="checkbox" class="siteCheckbox" data-name="${site.text}" value="${site.id}">
+                                    ${site.text}
+                                </div>`;
+              });
+              $('#siteList').html(html);
+            }
+          });
+        } else {
+          $('#siteList').html('');
+        }
+      });
+
+      $(document).on('change', '.siteCheckbox', function() {
+        let siteId = $(this).val();
+        let siteName = $(this).data('name');
+
+        if ($(this).is(':checked')) {
+          // Add to selected list
+          $('#selectedSites').append(`<li data-id="${siteId}">${siteName}</li>`);
+
+          // Add to hidden select
+          $('#selectedSitesSelect').append(`<option value="${siteId}" selected>${siteName}</option>`);
+        } else {
+          // Remove from selected list
+          $(`#selectedSites li[data-id="${siteId}"]`).remove();
+
+          // Remove from hidden select
+          $(`#selectedSitesSelect option[value="${siteId}"]`).remove();
+        }
+      });
+    });
+  </script>
+@endpush

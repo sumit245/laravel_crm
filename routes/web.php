@@ -14,34 +14,36 @@ use Illuminate\Support\Facades\Route;
 Auth::routes(['register' => false]);
 
 Route::get('/', function () {
- if (Auth::check()) {
-  return redirect()->route('dashboard'); // Redirect authenticated users
- }
- return redirect()->route('login'); // Redirect guests to login
+    if (Auth::check()) {
+        return redirect()->route('dashboard'); // Redirect authenticated users
+    }
+    return redirect()->route('login'); // Redirect guests to login
 });
 
 Route::middleware(['auth', 'role:0'])->group(function () {
- Route::resource('staff', StaffController::class);
- Route::get('staff/{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
- Route::post('staff/{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
+    Route::resource('staff', StaffController::class);
+    Route::get('staff/{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
+    Route::post('staff/{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
 });
 
 Route::middleware(['auth'])->group(function () {
- Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
- Route::resource('uservendors', VendorController::class);
- Route::resource('projects', ProjectsController::class);
- Route::resource('sites', SiteController::class);
- Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
+    Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
+    Route::resource('uservendors', VendorController::class);
+    Route::resource('projects', ProjectsController::class);
+    Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
+    Route::resource('sites', SiteController::class);
+    Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
 
- Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
 
- Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
- Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
- Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
+    Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
 
- Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
- Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
- Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
+    Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
+    Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
+    Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
 
- Route::resource('tasks', TasksController::class);
+    Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
+    Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
+    Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
+
+    Route::resource('tasks', TasksController::class);
 });

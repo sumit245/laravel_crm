@@ -85,7 +85,9 @@
 
           <!-- Tasks Tab -->
           <div class="tab-pane fade" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
-            @include("projects.project_task", ["tasks" => $project->tasks])
+            @include("projects.project_task", [
+                "tasks" => $project->tasks,
+            ])
           </div>
         </div>
       </div>
