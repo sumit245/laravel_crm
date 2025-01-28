@@ -138,7 +138,7 @@
             url: "{{ route("sites.search") }}",
             method: 'GET',
             data: {
-              query: query
+              search: query
             },
             success: function(response) {
               let html = '';
