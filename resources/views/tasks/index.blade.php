@@ -2,6 +2,19 @@
 
 @section("content")
   <div class="container p-2">
+    <div class="row">
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-header">Top Performers of the day</div>
+        </div>
+      </div>
+      <div class="col-sm-6">
+        <div class="card">
+          <div class="card-header">Top Performers of the day</div>
+        </div>
+      </div>
+
+    </div>
     <div class="d-flex justify-content-between mb-3">
       <!-- Search box is added automatically by DataTables -->
       <div></div> <!-- Empty div to align with search box -->

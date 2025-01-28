@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="{{ asset("vendors/typicons/typicons.css") }}">
     <link rel="stylesheet" href="{{ asset("vendors/simple-line-icons/css/simple-line-icons.css") }}">
     <link rel="stylesheet" href="{{ asset("vendors/css/vendor.bundle.base.css") }}">
+
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
     <link rel="stylesheet" href="{{ asset("vendors/select2-bootstrap-theme/select2-bootstrap.min.css") }}">
 
@@ -50,12 +51,11 @@
     <script src="{{ asset("vendors/chart.js/Chart.min.js") }}"></script>
     <script src="{{ asset("vendors/bootstrap-datepicker/bootstrap-datepicker.min.js") }}"></script>
     <script src="{{ asset("vendors/progressbar.js/progressbar.min.js") }}"></script>
-    <!-- End plugin js for this page -->
-
-    <!-- inject:js -->
+    <script src="{{ asset("vendors/select2/select2.min.js") }}"></script>
     <script src="{{ asset("js/off-canvas.js") }}"></script>
     <script src="{{ asset("js/hoverable-collapse.js") }}"></script>
     <script src="{{ asset("js/template.js") }}"></script>
+    {{-- <script src="{{ asset("js/select2.js") }}"></script> --}}
 
     <!-- endinject -->
 
