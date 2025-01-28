@@ -18,21 +18,21 @@ class StaffController extends Controller
         //
         $today = Carbon::today();
         $staff = User::whereIn('role', [1, 2])->get();
-        $staff->map(function ($staff) use ($today) {
-            // Total Tasks
-            $staff->totalTasks = Task::where('engineer_id', $staff->id)->count();
+        // $staff->map(function ($staff) use ($today) {
+        //     // Total Tasks
+        //     $staff->totalTasks = Task::where('engineer_id', $staff->id)->count();
 
-            // Task counts by status
-            $staff->pendingTasks = Task::where('engineer_id', $staff->id)->where('status', 'Pending')->count();
-            $staff->inProgressTasks = Task::where('engineer_id', $staff->id)->where('status', 'In Progress')->count();
-            $staff->completedTasks = Task::where('engineer_id', $staff->id)->where('status', 'Done')->count();
+        //     // Task counts by status
+        //     $staff->pendingTasks = Task::where('engineer_id', $staff->id)->where('status', 'Pending')->count();
+        //     $staff->inProgressTasks = Task::where('engineer_id', $staff->id)->where('status', 'In Progress')->count();
+        //     $staff->completedTasks = Task::where('engineer_id', $staff->id)->where('status', 'Done')->count();
 
-            // Today's Performance
-            $staff->tasksAssignedToday = Task::where('engineer_id', $staff->id)->whereDate('created_at', $today)->count();
-            $staff->tasksCompletedToday = Task::where('engineer_id', $staff->id)->whereDate('updated_at', $today)->where('status', 'Done')->count();
+        //     // Today's Performance
+        //     $staff->tasksAssignedToday = Task::where('engineer_id', $staff->id)->whereDate('created_at', $today)->count();
+        //     $staff->tasksCompletedToday = Task::where('engineer_id', $staff->id)->whereDate('updated_at', $today)->where('status', 'Done')->count();
 
-            return $staff;
-        });
+        //     return $staff;
+        // });
         return view('staff.index', compact('staff'));
     }
 

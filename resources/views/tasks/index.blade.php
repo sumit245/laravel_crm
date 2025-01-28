@@ -13,11 +13,13 @@
                     <h4 class="card-title card-title-dash text-light">Top Performer (Staff)</h4>
                   </div>
                 </div>
-                <div class="wrapper ms-3">
-                  <p class="fw-bold text-light mb-1">Staff 1</p>
-                  <small class="text-light mb-0">0</small>
-                  {{-- Staff 1 completed tasks --}}
-                </div>
+                @foreach ($topEngineers as $engineer)
+                  <div class="wrapper ms-3">
+                    <p class="fw-bold text-light mb-1">{{ $engineer->engineer->firstName ?? "Unknown" }}</p>
+                    <small class="text-light mb-0">{{ $engineer->task_count }} tasks completed</small>
+                  </div>
+                @endforeach
+
               </div>
             </div>
           </div>
@@ -33,11 +35,13 @@
                     <h4 class="card-title card-title-dash text-light">Top Performers (Vendor)</h4>
                   </div>
                 </div>
-                <div class="wrapper ms-3">
-                  <p class="fw-bold text-light mb-1">Vendor 1</p>
-                  <small class="text-light mb-0">0</small>
-                  {{-- Vendor 1's completed tasks --}}
-                </div>
+                @foreach ($topVendors as $vendor)
+                  <div class="wrapper ms-3">
+                    <p class="fw-bold text-light mb-1">{{ $vendor->vendor->firstName ?? "Unknown" }}</p>
+                    <small class="text-light mb-0">{{ $vendor->task_count }} tasks completed</small>
+                  </div>
+                @endforeach
+
               </div>
             </div>
           </div>

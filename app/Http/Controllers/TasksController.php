@@ -6,6 +6,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Models\Site;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class TasksController extends Controller
@@ -20,7 +21,7 @@ class TasksController extends Controller
         $today = now()->toDateString();
         // Query the top 5 engineers based on completed tasks today
         $topEngineers = Task::whereDate('end_date', $today)
-            ->where('status', 'Done') // Only count completed tasks
+            ->where('status', 'Completed') // Only count completed tasks
             ->groupBy('engineer_id')
             ->selectRaw('engineer_id, COUNT(*) as task_count')
             ->orderByDesc('task_count')
@@ -28,6 +29,7 @@ class TasksController extends Controller
             ->limit(5)
             ->get();
         // Query the top 5 vendors based on completed tasks today
+        Log::info($topEngineers);
         $topVendors = Task::whereDate('end_date', $today)
             ->where('status', 'Completed') // Only count completed tasks
             ->groupBy('vendor_id')
