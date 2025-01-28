@@ -90,7 +90,7 @@ class ProjectsController extends Controller
         $targets        = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
         $installationCount = Task::where('activity', 'Installation')->count();
         $rmsCount = Task::where('activity', 'RMS')->count();
-        $inspectionCount = Task::where('activity', 'Installation')->count();
+        $inspectionCount = Task::where('activity', 'Inspection')->count();
         $sites          = $project->sites; // All sites related to this project
         $engineers      = User::where('role', 1)->get(); // Engineers with role 1
         $state          = State::where('id', $project->project_in_state)->get();
