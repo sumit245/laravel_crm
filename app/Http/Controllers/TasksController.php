@@ -25,7 +25,7 @@ class TasksController extends Controller
             ->groupBy('engineer_id')
             ->selectRaw('engineer_id, COUNT(*) as task_count')
             ->orderByDesc('task_count')
-            ->with('engineer') // Load engineer details
+            ->with('user') // Load engineer details
             ->limit(5)
             ->get();
         // Query the top 5 vendors based on completed tasks today
