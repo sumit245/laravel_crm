@@ -14,7 +14,6 @@
         <tr>
           <th>#</th>
           <th>Task Name</th>
-          <th>Vendor</th>
           <th>Site</th>
           <th>Status</th>
           <th>Approved By</th>
@@ -25,8 +24,7 @@
         @foreach ($tasks as $member)
           <tr>
             <td>{{ $loop->iteration }}</td>
-            <td>{{ $member->task_name }}</td>
-//            <td>{{ $member->vendor->name }}</td>
+            <td>{{ $member->activity }}</td>
             <td>{{ $member->site->site_name }}</td>
             <td>{{ $member->status }}</td>
             <td>{{ $member->approved_by }}</td>

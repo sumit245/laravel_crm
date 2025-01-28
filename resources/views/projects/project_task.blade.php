@@ -103,7 +103,7 @@
             <td>{{ $index + 1 }}</td>
             <td>{{ $target->site->site_name }}</td>
             <td>{{ $target->activity }}</td>
-            <td>{{ $target->engineer->firstName }}</td>
+            <td>{{ $target->engineer->firstName??"N/A" }}</td>
             <td>{{ $target->start_date }}</td>
             <td>{{ $target->end_date }}</td>
             <td>
