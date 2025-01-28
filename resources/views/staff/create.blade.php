@@ -87,8 +87,10 @@
                 <label for="role" class="form-label">Role</label>
                 <select name="role" class="form-select" id="role" required>
                   <option value="">-- Select Role --</option>
-                  <option value="1">Coordinator</option>
                   <option value="2">Project Manager</option>
+                  <option value="1">Site Engineer</option>
+                  <option value="4">Store Incharge</option>
+                  <option value="5">Coordinator</option>
                 </select>
               </div>
             </div>
