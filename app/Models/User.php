@@ -10,54 +10,78 @@ use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
 {
- use HasApiTokens, HasFactory, Notifiable;
+    use HasApiTokens, HasFactory, Notifiable;
 
- /**
-  * The attributes that are mass assignable.
-  *
-  * @var array<int, string>
-  */
- protected $fillable = [
-  'name',
-  'email', // Keep email
-  'username',
-  'firstName', // Add firstName
-  'lastName', // Add lastName
-  'password', // Keep password
-  'contactNo', // Add contactNo
-  'address', // Add address
-  'role', // Add roleId (if you use this in your app)
-  'accountName',
-  'accountNumber',
-  'ifsc',
-  'bankName',
-  'branch',
-  'gstNumber',
-  'pan',
-  'aadharNumber',
-  'status', // Add status
-  'disableLogin', // Add disableLogin
-  'lastOnline', // Add lastOnline
+    /**
+     * The attributes that are mass assignable.
+     *
+     * @var array<int, string>
+     */
+    protected $fillable = [
+        'name',
+        'email',
+        'username',
+        'firstName',
+        'lastName',
+        'password',
+        'contactNo',
+        'address',
+        'role',
+        'accountName',
+        'accountNumber',
+        'ifsc',
+        'bankName',
+        'branch',
+        'gstNumber',
+        'pan',
+        'aadharNumber',
+        'status',
+        'disableLogin',
+        'lastOnline',
+        'manager_id',
+        'site_engineer_id'
+    ];
 
- ];
+    // Relationship: Project Manager has many Site Engineers
+    public function siteEngineers()
+    {
+        return $this->hasMany(User::class, 'manager_id');
+    }
 
- /**
-  * The attributes that should be hidden for serialization.
-  *
-  * @var array<int, string>
-  */
- protected $hidden = [
-  'password',
-  'remember_token',
- ];
+    // Relationship: Site Engineer belongs to a Project Manager
+    public function projectManager()
+    {
+        return $this->belongsTo(User::class, 'manager_id');
+    }
 
- /**
-  * The attributes that should be cast.
-  *
-  * @var array<string, string>
-  */
- protected $casts = [
-  'email_verified_at' => 'datetime',
-  'password'          => 'hashed',
- ];
+    // Relationship: Site Engineer has many Vendors
+    public function vendors()
+    {
+        return $this->hasMany(User::class, 'site_engineer_id');
+    }
+
+    // Relationship: Vendor belongs to a Site Engineer
+    public function siteEngineer()
+    {
+        return $this->belongsTo(User::class, 'site_engineer_id');
+    }
+    /**
+     * The attributes that should be hidden for serialization.
+     *
+     * @var array<int, string>
+     */
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'password'          => 'hashed',
+    ];
 }

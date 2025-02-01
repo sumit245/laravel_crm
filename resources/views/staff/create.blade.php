@@ -23,6 +23,20 @@
           </div>
 
           <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="team_lead" class="form-label">Team Lead</label>
+                <select name="team_lead_id" class="form-select" id="team_lead">
+                  <option value="">-- Select Team Lead --</option>
+                  @foreach ($teamLeads as $teamLead)
+                    <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
             <div class="col-sm-6 col-md-6">
               <div class="form-group">
                 <label for="firstName" class="form-label">First Name</label>

@@ -18,6 +18,16 @@
         @endif
         <form class="forms-sample" action="{{ route("projects.store") }}" method="POST">
           @csrf
+
+          <div class="form-group">
+            <label for="state" class="form-label">Select Project Type</label>
+            <select name="project_type" class="form-select" id="state">
+              <option value="" disabled selected>-- Select Project Type --</option>
+              <option value="0">Rooftop Installation</option>
+              <option value="1">Streetlight Installation</option>
+            </select>
+          </div>
+
           <div class="form-group">
             <label for="project_name" class="form-label">Project Name</label>
             <input type="text" name="project_name" class="form-control" id="project_name" placeholder="BREDA"

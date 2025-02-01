@@ -40,7 +40,22 @@ class HomeController extends Controller
         }
         $staffCount   = User::whereIn('role', [1, 2])->count(); // Count staff
         $vendorCount  = User::where('role', 3)->count(); // Count vendors
+        // Get Project Managers
+        $projectManagers = User::where('role', 1)->get()->map(function ($pm) {
+            // Get Site Engineers reporting to this PM
+            $siteEngineers = User::where('role', 2)
+                ->where('manager_id', $pm->id) // Assuming there's a `manager_id` field linking Site Engineers to their PMs
+                ->get()
+                ->map(function ($se) {
+                    // Get Vendors reporting to this Site Engineer
+                    $vendors = User::where('role', 3)
+                        ->where('site_engineer_id', $se->id) // Assuming `site_engineer_id` links Vendors to Site Engineers
+                        ->get();
+                    return (object) ['id' => $se->id, 'name' => $se->firstName, 'performance' => rand(50, 100), 'vendors' => $vendors];
+                });
 
+            return (object) ['id' => $pm->id, 'name' => $pm->firstName, 'performance' => rand(50, 100), 'siteEngineers' => $siteEngineers];
+        });
         $statistics = [
             [
                 'title'             => 'Sites',
@@ -68,6 +83,6 @@ class HomeController extends Controller
                 'link'              => route('staff.index'), // Link to the sites page
             ],
         ];
-        return view('dashboard', compact('statistics', 'projects'));
+        return view('dashboard', compact('statistics', 'projects', 'projectManagers'));
     }
 }
