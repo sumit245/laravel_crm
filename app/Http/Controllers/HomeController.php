@@ -44,12 +44,12 @@ class HomeController extends Controller
         $vendorCount = User::where('role', 3)->count(); // Count vendors
 
         // Get Project Managers
-        $projectManagers = User::where('role', 1)->get()->map(function ($pm) {
+        $projectManagers = User::where('role', 2)->get()->map(function ($pm) {
             $totalPmTasks = Task::where('engineer_id', $pm->id)->count();
             $completedPmTasks = Task::where('engineer_id', $pm->id)->where('status', 'completed')->count();
 
             // Get Site Engineers reporting to this PM
-            $siteEngineers = User::where('role', 2)->where('manager_id', $pm->id)->get()->map(function ($se) {
+            $siteEngineers = User::where('role', 1)->where('manager_id', $pm->id)->get()->map(function ($se) {
                 $totalSeTasks = Task::where('engineer_id', $se->id)->count();
                 $completedSeTasks = Task::where('engineer_id', $se->id)->where('status', 'completed')->count();
 
