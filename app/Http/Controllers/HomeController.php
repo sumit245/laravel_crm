@@ -55,7 +55,7 @@ class HomeController extends Controller
 
                     // Get Vendors under this Site Engineer
                     $vendors = User::where('role', 3)
-                        ->where('engineer_id', $se->id)
+                        ->where('site_engineer_id', $se->id)
                         ->get()
                         ->map(function ($vendor) {
                             // Total & completed tasks for Vendor
