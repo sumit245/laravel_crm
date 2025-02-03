@@ -12,6 +12,19 @@
             <input type="text" name="username" id="username" class="form-control" value="{{ old("username") }}">
           </div>
 
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="team_lead" class="form-label">Team Lead</label>
+                <select name="team_lead_id" class="form-select" id="team_lead">
+                  <option value="">-- Select Site Engineer --</option>
+                  @foreach ($siteEngineers as $teamLead)
+                    <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+          </div>
           <h6 class="card-subtitle text-bold text-info">Personal details</h6>
           <div class="form-group">
             <label for="name" class="form-label">Vendor Name</label>
@@ -82,6 +95,16 @@
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
+              <div class="form-group">
+                <label for="aadharImage" class="form-label">Upload Document</label>
+                <div class="custom-file">
+                  <input type="file" id="aadharImage" name="aadharImage" class="custom-file-input">
+                  <label class="custom-file-label" for="aadharImage">Choose file</label>
+                </div>
+                @error("aadharNumberImage")
+                  <small class="text-danger">{{ $message }}</small>
+                @enderror
+              </div>
             </div>
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
@@ -92,6 +115,13 @@
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
+              <div class="form-group">
+                <label for="aadharNumberImage" class="form-label">Upload Document</label>
+                <input type="file" id="aadharNumberImage" name="aadharNumber" class="form-control">
+                @error("aadharNumberImage")
+                  <small class="text-danger">{{ $message }}</small>
+                @enderror
+              </div>
             </div>
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
@@ -99,6 +129,13 @@
                 <input type="text" id="panNumber" name="pan" class="form-control"
                   value="{{ old("panNumber") }}">
                 @error("panNumber")
+                  <small class="text-danger">{{ $message }}</small>
+                @enderror
+              </div>
+              <div class="form-group">
+                <label for="aadharNumberImage" class="form-label">Upload Document</label>
+                <input type="file" id="aadharNumberImage" name="aadharNumber" class="form-control">
+                @error("aadharNumberImage")
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
@@ -113,7 +150,8 @@
                 <input type="text" id="accountName" name="accountName" class="form-control"
                   value="{{ old("accountName") }}">
                 @error("accountName")
-                  <small class="text-danger">{{ $message }}</small>                @enderror
+                  <small class="text-danger">{{ $message }}</small>
+                @enderror
               </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6">
@@ -173,21 +211,21 @@
                   <i id="password-toggle-icon" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
                 </span>
                 @error("password")
-                <small class="text-danger">{{ $message }}</small>
+                  <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
             </div>
             <div class="col-sm-6 col-md-6">
               <div class="form-group position-relative">
                 <label for="password_confirmation" class="form-label">Confirm Password</label>
-                <input type="password" name="password_confirmation" class="form-control form-control-lg" id="password_confirmation"
-                  placeholder="Password" autocomplete="current-password" required>
+                <input type="password" name="password_confirmation" class="form-control form-control-lg"
+                  id="password_confirmation" placeholder="Password" autocomplete="current-password" required>
                 <span class="position-absolute translate-middle-y end-0 me-3" style="cursor: pointer; top:3.6rem;"
                   onclick="togglePasswordVisibility('password_confirmation','password-toggle-icon-2')">
                   <i id="password-toggle-icon-2" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
                 </span>
                 @error("confirmed")
-                <small class="text-danger">{{ $message }}</small>
+                  <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
             </div>
@@ -200,21 +238,21 @@
   </div>
 @endsection
 
-@push('scripts')
-<script>
-  function togglePasswordVisibility(fieldId,iconId) {
-    const passwordField = document.getElementById(fieldId);
-    const toggleIcon = document.getElementById(iconId);
+@push("scripts")
+  <script>
+    function togglePasswordVisibility(fieldId, iconId) {
+      const passwordField = document.getElementById(fieldId);
+      const toggleIcon = document.getElementById(iconId);
 
-    if (passwordField.type === 'password') {
-      passwordField.type = 'text';
-      toggleIcon.classList.remove('mdi-eye');
-      toggleIcon.classList.add('mdi-eye-off');
-    } else {
-      passwordField.type = 'password';
-      toggleIcon.classList.remove('mdi-eye-off');
-      toggleIcon.classList.add('mdi-eye');
+      if (passwordField.type === 'password') {
+        passwordField.type = 'text';
+        toggleIcon.classList.remove('mdi-eye');
+        toggleIcon.classList.add('mdi-eye-off');
+      } else {
+        passwordField.type = 'password';
+        toggleIcon.classList.remove('mdi-eye-off');
+        toggleIcon.classList.add('mdi-eye');
+      }
     }
-  }
-</script>
+  </script>
 @endpush
