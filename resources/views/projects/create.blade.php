@@ -116,6 +116,38 @@
     document.addEventListener("DOMContentLoaded", function() {
       const projectTypeSelect = document.getElementById("project_type");
       const agreementFields = document.getElementById("agreement_fields");
+      const startDateInput = document.getElementById('start_date');
+      const endDateInput = document.getElementById('end_date');
+      const rateInput = document.getElementById('rate');
+      const projectCapacityInput = document.getElementById('project_capacity');
+      const totalInput = document.getElementById('total');
+
+      // Set today's date as default for start date and end date
+      const today = new Date().toISOString().split('T')[0];
+      startDateInput.placeholder = today;
+      startDateInput.value = today;
+      endDateInput.placeholder = today;
+      endDateInput.value = today;
+
+      // Set min date for end date to be equal to or greater than start date
+      startDateInput.addEventListener('change', function() {
+        const startDate = startDateInput.value;
+        endDateInput.min = startDate; // Update end date's min value
+      });
+
+      // Calculate total when rate or project capacity changes
+      function calculateTotal() {
+        const rate = parseFloat(rateInput.value) || 0;
+        const capacity = parseFloat(projectCapacityInput.value) || 0;
+        const total = rate * capacity;
+        totalInput.value = total.toFixed(2); // Set total with 2 decimal places
+      }
+
+      rateInput.addEventListener('input', calculateTotal);
+      projectCapacityInput.addEventListener('input', calculateTotal);
+
+      // Initialize end date's min value on load
+      endDateInput.min = startDateInput.value;
 
       projectTypeSelect.addEventListener("change", function() {
         if (this.value === "1") {
@@ -129,6 +161,12 @@
       if (projectTypeSelect.value === "1") {
         agreementFields.style.display = "block";
       }
+    });
+    $(document).ready(function() {
+      $('#state').select2({
+        placeholder: '-- Select State --',
+        allowClear: true
+      });
     });
   </script>
 @endpush

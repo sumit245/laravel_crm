@@ -43,6 +43,7 @@ class HomeController extends Controller
             // Total & completed tasks for the Project Manager
             $totalTasksPM = Task::where('manager_id', $pm->id)->count();
             $completedTasksPM = Task::where('manager_id', $pm->id)->where('status', 'Completed')->count();
+            $performancePercentagePM = $totalTasksPM > 0 ? ($completedTasksPM / $totalTasksPM) * 100 : 0;
 
             // Get Site Engineers under this PM
             $siteEngineers = User::where('role', 1)
@@ -52,7 +53,7 @@ class HomeController extends Controller
                     // Total & completed tasks for Site Engineer
                     $totalTasksSE = Task::where('engineer_id', $se->id)->count();
                     $completedTasksSE = Task::where('engineer_id', $se->id)->where('status', 'Completed')->count();
-
+                    $performancePercentageSE = $totalTasksSE > 0 ? ($completedTasksSE / $totalTasksSE) * 100 : 0;
                     // Get Vendors under this Site Engineer
                     $vendors = User::where('role', 3)
                         ->where('site_engineer_id', $se->id)
@@ -61,11 +62,12 @@ class HomeController extends Controller
                             // Total & completed tasks for Vendor
                             $totalTasksVendor = Task::where('vendor_id', $vendor->id)->count();
                             $completedTasksVendor = Task::where('vendor_id', $vendor->id)->where('status', 'Completed')->count();
-
+                            $performancePercentageVendor = $totalTasksVendor > 0 ? ($completedTasksVendor / $totalTasksVendor) * 100 : 0;
                             return (object) [
                                 'id' => $vendor->id,
                                 'name' => $vendor->name,
-                                'performance' => "$completedTasksVendor/$totalTasksVendor"
+                                'performance' => "$completedTasksVendor/$totalTasksVendor",
+                                'performancePercentage' => $performancePercentageVendor
                             ];
                         });
 
@@ -73,6 +75,7 @@ class HomeController extends Controller
                         'id' => $se->id,
                         'name' => $se->firstName,
                         'performance' => "$completedTasksSE/$totalTasksSE",
+                        'performancePercentage' => $performancePercentageSE,
                         'vendors' => $vendors
                     ];
                 });
@@ -81,9 +84,13 @@ class HomeController extends Controller
                 'id' => $pm->id,
                 'name' => $pm->firstName,
                 'performance' => "$completedTasksPM/$totalTasksPM",
-                'siteEngineers' => $siteEngineers
+                'siteEngineers' => $siteEngineers,
+                'performancePercentage' => $performancePercentagePM,
             ];
         });
+
+        // Sort project managers by performance percentage in descending order
+        $projectManagers = $projectManagers->sortByDesc('performancePercentage')->values();
 
         $statistics = [
             ['title' => 'Sites', 'value' => $siteCount, 'link' => route('sites.index')],

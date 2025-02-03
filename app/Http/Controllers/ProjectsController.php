@@ -51,6 +51,7 @@ class ProjectsController extends Controller
     {
         // Validate the incoming data without requiring a username
         $validated = $request->validate([
+            'project_type' => 'required|in:0,1',
             'project_name'      => 'required|string',
             'project_in_state'  => 'string',
             'start_date'        => 'required|date',
@@ -60,6 +61,8 @@ class ProjectsController extends Controller
             'project_capacity'  => 'nullable|string',
             'total'             => 'string',
             'description'       => 'string',
+            'agreement_number' => 'nullable|string|required_if:project_type,1',
+            'agreement_date' => 'nullable|date|required_if:project_type,1',
         ]);
 
         try {
