@@ -96,8 +96,11 @@
                 @enderror
               </div>
               <div class="form-group">
-                <label for="aadharNumberImage" class="form-label">Upload Document</label>
-                <input type="file" id="aadharNumberImage" name="aadharNumber" class="form-control">
+                <label for="aadharImage" class="form-label">Upload Document</label>
+                <div class="custom-file">
+                  <input type="file" id="aadharImage" name="aadharImage" class="custom-file-input">
+                  <label class="custom-file-label" for="aadharImage">Choose file</label>
+                </div>
                 @error("aadharNumberImage")
                   <small class="text-danger">{{ $message }}</small>
                 @enderror

@@ -66,7 +66,7 @@
                     <tr class="expandable-row" data-bs-toggle="collapse" data-bs-target="#pm-{{ $pm->id }}">
                       <td>Project Manager</td>
                       <td>{{ $pm->name }}</td>
-                      <td><span class="badge bg-primary">{{ $pm->performance }}%</span></td>
+                      <td><span class="badge bg-primary">{{ $pm->performance }}</span></td>
                     </tr>
                     <tr class="collapse" id="pm-{{ $pm->id }}" data-bs-parent="tbody">
                       <td colspan="3">
@@ -75,7 +75,7 @@
                             <tr class="expandable-row" data-bs-toggle="collapse" data-bs-target="#se-{{ $se->id }}">
                               <td>Site Engineer</td>
                               <td>{{ $se->name }}</td>
-                              <td><span class="badge bg-info">{{ $se->performance }}%</span></td>
+                              <td><span class="badge bg-info">{{ $se->performance }}</span></td>
                             </tr>
                             <tr class="collapse" id="se-{{ $se->id }}" data-bs-parent="#pm-{{ $pm->id }}">
                               <td colspan="3">
@@ -84,7 +84,7 @@
                                     <tr>
                                       <td>Vendor</td>
                                       <td>{{ $vendor->name }}</td>
-                                      <td><span class="badge bg-success">{{ $vendor->performance }}%</span></td>
+                                      <td><span class="badge bg-success">{{ $vendor->performance }}</span></td>
                                     </tr>
                                   @endforeach
                                 </table>
