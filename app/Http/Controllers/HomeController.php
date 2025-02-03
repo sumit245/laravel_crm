@@ -34,77 +34,61 @@ class HomeController extends Controller
         $projectId = $request->query('project_id', session('project_id'));
         $projects = Project::all();
 
-        if ($projectId) {
-            $siteCount = Site::where('project_id', $projectId)->count();
-        } else {
-            $siteCount = Site::count();
-        }
-
-        $staffCount = User::whereIn('role', [1, 2])->count(); // Count staff
-        $vendorCount = User::where('role', 3)->count(); // Count vendors
+        $siteCount = $projectId ? Site::where('project_id', $projectId)->count() : Site::count();
+        $staffCount = User::whereIn('role', [1, 2])->count();
+        $vendorCount = User::where('role', 3)->count();
 
         // Get Project Managers
         $projectManagers = User::where('role', 2)->get()->map(function ($pm) {
-            $totalPmTasks = Task::where('engineer_id', $pm->id)->count();
-            $completedPmTasks = Task::where('engineer_id', $pm->id)->where('status', 'completed')->count();
+            // Total & completed tasks for the Project Manager
+            $totalTasksPM = Task::where('manager_id', $pm->id)->count();
+            $completedTasksPM = Task::where('manager_id', $pm->id)->where('status', 'Completed')->count();
 
-            // Get Site Engineers reporting to this PM
-            $siteEngineers = User::where('role', 1)->where('manager_id', $pm->id)->get()->map(function ($se) {
-                $totalSeTasks = Task::where('engineer_id', $se->id)->count();
-                $completedSeTasks = Task::where('engineer_id', $se->id)->where('status', 'completed')->count();
+            // Get Site Engineers under this PM
+            $siteEngineers = User::where('role', 1)
+                ->where('manager_id', $pm->id)
+                ->get()
+                ->map(function ($se) {
+                    // Total & completed tasks for Site Engineer
+                    $totalTasksSE = Task::where('engineer_id', $se->id)->count();
+                    $completedTasksSE = Task::where('engineer_id', $se->id)->where('status', 'Completed')->count();
 
-                // Get Vendors reporting to this Site Engineer
-                $vendors = User::where('role', 3)->where('site_engineer_id', $se->id)->get()->map(function ($vendor) {
-                    $totalVendorTasks = Task::where('vendor_id', $vendor->id)->count();
-                    $completedVendorTasks = Task::where('vendor_id', $vendor->id)->where('status', 'completed')->count();
+                    // Get Vendors under this Site Engineer
+                    $vendors = User::where('role', 3)
+                        ->where('site_engineer_id', $se->id)
+                        ->get()
+                        ->map(function ($vendor) {
+                            // Total & completed tasks for Vendor
+                            $totalTasksVendor = Task::where('vendor_id', $vendor->id)->count();
+                            $completedTasksVendor = Task::where('vendor_id', $vendor->id)->where('status', 'Completed')->count();
+
+                            return (object) [
+                                'id' => $vendor->id,
+                                'name' => $vendor->firstName,
+                                'performance' => "$completedTasksVendor/$totalTasksVendor"
+                            ];
+                        });
+
                     return (object) [
-                        'id' => $vendor->id,
-                        'name' => $vendor->name,
-                        'performance' => "$completedVendorTasks/$totalVendorTasks"
+                        'id' => $se->id,
+                        'name' => $se->firstName,
+                        'performance' => "$completedTasksSE/$totalTasksSE",
+                        'vendors' => $vendors
                     ];
                 });
-
-                return (object) [
-                    'id' => $se->id,
-                    'name' => $se->firstName,
-                    'performance' => "$completedSeTasks/$totalSeTasks",
-                    'vendors' => $vendors
-                ];
-            });
 
             return (object) [
                 'id' => $pm->id,
                 'name' => $pm->firstName,
-                'performance' => "$completedPmTasks/$totalPmTasks",
+                'performance' => "$completedTasksPM/$totalTasksPM",
                 'siteEngineers' => $siteEngineers
             ];
         });
 
         $statistics = [
-            [
-                'title' => 'Sites',
-                'value' => $siteCount,
-                'change_class' => 'text-success',
-                'change_icon' => 'mdi-menu-down',
-                'change_percentage' => '+0.1%',
-                'link' => route('sites.index'),
-            ],
-            [
-                'title' => 'Vendors',
-                'value' => $vendorCount,
-                'change_class' => 'text-success',
-                'change_icon' => 'mdi-menu-down',
-                'change_percentage' => '+0.1%',
-                'link' => route('uservendors.index'),
-            ],
-            [
-                'title' => 'Staffs',
-                'value' => $staffCount,
-                'change_class' => 'text-success',
-                'change_icon' => 'mdi-menu-down',
-                'change_percentage' => '+0.1%',
-                'link' => route('staff.index'),
-            ],
+            ['title' => 'Sites', 'value' => $siteCount, 'link' => route('sites.index')],
+            ['title' => 'Vendors', 'value' => $vendorCount, 'link' => route('uservendors.index')],
+            ['title' => 'Staffs', 'value' => $staffCount, 'link' => route('staff.index')],
         ];
 
         return view('dashboard', compact('statistics', 'projects', 'projectManagers'));
