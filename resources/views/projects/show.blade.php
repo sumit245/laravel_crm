@@ -95,6 +95,20 @@
             ])
           </div>
 
+          <!-- Staffs Tab -->
+          <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
+            @include("projects.project_staff", [
+                "engineers" => $engineers,
+            ])
+          </div>
+
+          <!-- Vendors Tab -->
+          <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+            @include("projects.project_vendors", [
+                "vendors" => $vendors,
+            ])
+          </div>
+
           <!-- Inventory Tab -->
           <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
             @include("projects.project_inventory", [
