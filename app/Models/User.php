@@ -65,6 +65,10 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'site_engineer_id');
     }
+    public function projects()
+    {
+        return $this->belongsToMany(Project::class, 'project_user')->withPivot('role')->withTimestamps();
+    }
     /**
      * The attributes that should be hidden for serialization.
      *

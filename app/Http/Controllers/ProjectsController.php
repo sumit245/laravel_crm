@@ -92,11 +92,42 @@ class ProjectsController extends Controller
             'sites.stateRelation',
         ])->findOrFail($id);
 
-        $users          = User::where('role', '!=', 3)->get();
+        // Get all users except admin (role = 0) and vendors (role = 3)
+        $users = User::whereNotIn('role', [0, 3])->get();
+
         $engineers      = User::where('role', 1)->get();
         $vendors = User::where('role', 3)->get();
         $state          = State::where('id', $project->project_in_state)->get();
         $inventoryItems = Inventory::all();
+
+        // Get site engineers and project managers assigned to the project
+        $assignedEngineers = User::whereIn('id', function ($query) use ($project) {
+            $query->select('user_id')->from('project_user')->where('project_id', $project->id);
+        })->get();
+
+        // Fetch all available Engineers who are not assigned to this project
+        $availableEngineers = User::whereNotIn('role', [0, 3])
+            ->whereNotIn('id', $assignedEngineers->pluck('id'))
+            ->get();
+
+        // Get vendors assigned to the project
+        $assignedVendors = User::where('role', 3)->whereIn('id', function ($query) use ($project) {
+            $query->select('user_id')->from('project_user')->where('project_id', $project->id);
+        })->get();
+
+        // Fetch all available vendors who are not assigned to this project
+        $availableVendors = User::where('role', 3)
+            ->whereNotIn('id', $assignedVendors->pluck('id'))
+            ->get();
+
+
+
+        // If no site engineers or project managers are assigned
+        if ($assignedEngineers->isEmpty()) {
+            $assignedEngineersMessage = "No engineers assigned.";
+        } else {
+            $assignedEngineersMessage = null;
+        }
 
 
         $data = [
@@ -105,6 +136,11 @@ class ProjectsController extends Controller
             'inventoryItems' => $inventoryItems,
             'users'         => $users,
             'engineers'     => $engineers,
+            'assignedEngineers' => $assignedEngineers,
+            'availableEngineers' => $availableEngineers,
+            'assignedEngineersMessage' => $assignedEngineersMessage,
+            'assignedVendors'  => $assignedVendors,
+            'availableVendors' => $availableVendors,
         ];
 
         if ($project->project_type == 1) {
@@ -114,6 +150,7 @@ class ProjectsController extends Controller
             $data['surveyDoneCount']         = Streetlight::surveyDone($project->id);
             $data['installationDoneCount']   = Streetlight::installationDone($project->id);
             $data['vendors'] = $vendors;
+
             $data['targets'] = StreetlightTask::where('project_id', $project->id)->with('site', 'engineer')->get();
         } else {
             // Rooftop installation
@@ -185,5 +222,19 @@ class ProjectsController extends Controller
         } catch (\Exception $e) {
             return response()->json(['message' => $e->getMessage()]);
         }
+    }
+
+    public function assignUsers(Request $request, $projectId)
+    {
+        $project = Project::findOrFail($projectId);
+        $validated = $request->validate([
+            'user_ids'   => 'required|array',
+            'user_ids.*' => 'exists:users,id',
+        ]);
+        Log::info($request->all());
+
+        // Sync users to the project (removing unselected ones)
+        $project->users()->sync($validated['user_ids']);
+        return redirect()->back()->with('success', 'Users assigned successfully');
     }
 }

@@ -1,7 +1,33 @@
-<div>
-  @foreach ($vendors as $vendor)
+<div class="row">
+  <div class="col-md-4">
+    <h5>Assigned Vendor</h5>
     <ul>
-      <li>{{ $vendor->name }}</li>
+      @foreach ($assignedVendors as $engineer)
+        <span>{{ $engineer->name }}</span>
+      @endforeach
     </ul>
-  @endforeach
+  </div>
+  <div class="col-md-8">
+    <h5>Assign Vendor</h5>
+    <form method="POST" action="{{ route("projects.assignStaff", $project->id) }}">
+      @csrf
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Select</th>
+            <th>Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($vendors as $vendor)
+            <tr>
+              <td><input type="checkbox" name="user_ids[]" value="{{ $vendor->id }}"></td>
+              <td>{{ $vendor->name }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+      <button type="submit" class="btn btn-primary">Assign Selected</button>
+    </form>
+  </div>
 </div>

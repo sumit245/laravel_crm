@@ -30,6 +30,7 @@ Route::middleware(['auth', 'role:0'])->group(function () {
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
     Route::resource('uservendors', VendorController::class);
+    Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::resource('projects', ProjectsController::class);
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
     Route::resource('sites', SiteController::class);

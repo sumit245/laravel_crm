@@ -51,4 +51,8 @@ class Project extends Model
     {
         return $this->hasMany(Streetlight::class);
     }
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'project_user')->withPivot('role')->withTimestamps();
+    }
 }
