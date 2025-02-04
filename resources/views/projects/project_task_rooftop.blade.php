@@ -1,5 +1,4 @@
 <div>
-<<<<<<< HEAD
   <div class="d-flex justify-content-between mb-4">
     <div class="d-flex mx-2">
       <div class="card bg-success mx-2" style="min-width: 33%;">
@@ -106,7 +105,7 @@
             <td>{{ $index + 1 }}</td>
             <td>{{ $target->site->site_name }}</td>
             <td>{{ $target->activity }}</td>
-            <td>{{ $target->engineer->firstName??"N/A" }}</td>
+            <td>{{ $target->engineer->firstName }}</td>
             <td>{{ $target->start_date }}</td>
             <td>{{ $target->end_date }}</td>
             <td>
@@ -127,13 +126,54 @@
       </tbody>
     </table>
   </div>
-=======
-  @if ($project->project_type == 1)
-    {{-- Streetlight Installation Specific Display --}}
-    @include("projects.project_task_streetlight")
-  @else
-    {{-- Existing Rooftop Installation Code --}}
-    @include("projects.project_task_rooftop")
-  @endif
->>>>>>> bad73ccced0a423b5878c4300196f36d01b6770c
 </div>
+
+@push("scripts")
+  <script>
+    $(document).ready(function() {
+      $('#siteSearch').on('keyup', function() {
+        let query = $(this).val();
+        if (query.length > 1) {
+          $.ajax({
+            url: "{{ route("sites.search") }}",
+            method: 'GET',
+            data: {
+              search: query
+            },
+            success: function(response) {
+              let html = '';
+              response.forEach(site => {
+                html += `<div>
+                                    <input type="checkbox" class="siteCheckbox" data-name="${site.text}" value="${site.id}">
+                                    ${site.text}
+                                </div>`;
+              });
+              $('#siteList').html(html);
+            }
+          });
+        } else {
+          $('#siteList').html('');
+        }
+      });
+
+      $(document).on('change', '.siteCheckbox', function() {
+        let siteId = $(this).val();
+        let siteName = $(this).data('name');
+
+        if ($(this).is(':checked')) {
+          // Add to selected list
+          $('#selectedSites').append(`<li data-id="${siteId}">${siteName}</li>`);
+
+          // Add to hidden select
+          $('#selectedSitesSelect').append(`<option value="${siteId}" selected>${siteName}</option>`);
+        } else {
+          // Remove from selected list
+          $(`#selectedSites li[data-id="${siteId}"]`).remove();
+
+          // Remove from hidden select
+          $(`#selectedSitesSelect option[value="${siteId}"]`).remove();
+        }
+      });
+    });
+  </script>
+@endpush

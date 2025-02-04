@@ -16,6 +16,9 @@ return new class extends Migration
             $table->boolean('isSurveyDone')->default(false)->after('pole');
             $table->boolean('isInstallationDone')->default(false)->after('isSurveyDone');
             $table->boolean('isNetworkAvailable')->default(false)->after('isSurveyDone');
+            // sim number
+            // make
+            // Model
         });
     }
 

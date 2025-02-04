@@ -169,6 +169,21 @@ class StreetlightController extends Controller
         }
     }
 
+    public function search(Request $request)
+    {
+        $search = $request->input('search');
+        Log::info($search);
+        $sites = Streetlight::where('panchayat', 'LIKE', "%{$search}%")
+            ->limit(10) // Limit results to improve performance
+            ->get(['id', 'panchayat']);
+        return response()->json($sites->map(function ($site) {
+            return [
+                'id' => $site->id,
+                'text' => $site->panchayat
+            ];
+        }));
+    }
+
     /**
      * Remove the specified resource from storage.
      */

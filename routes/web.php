@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
@@ -46,4 +47,5 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
 
     Route::resource('tasks', TasksController::class);
+    Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
 });

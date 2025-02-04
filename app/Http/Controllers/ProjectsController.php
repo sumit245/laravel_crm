@@ -6,6 +6,7 @@ use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\State;
 use App\Models\Streetlight;
+use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -81,7 +82,7 @@ class ProjectsController extends Controller
     }
 
     /**
-     * Display the specified resource.
+     * Display the specified Project
      */
     public function show(string $id)
     {
@@ -90,32 +91,42 @@ class ProjectsController extends Controller
             'sites.districtRelation',
             'sites.stateRelation',
         ])->findOrFail($id);
+
         $users          = User::where('role', '!=', 3)->get();
-        $targets        = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
-        // Ensure counts are filtered by project_id
-        $installationCount = Task::where('project_id', $project->id)
-            ->where('activity', 'Installation')
-            ->count();
-
-        $rmsCount = Task::where('project_id', $project->id)
-            ->where('activity', 'RMS')
-            ->count();
-
-        $inspectionCount = Task::where('project_id', $project->id)
-            ->where('activity', 'Inspection')
-            ->count();
-        $engineers      = User::where('role', 1)->get(); // Engineers with role 1
+        $engineers      = User::where('role', 1)->get();
+        $vendors = User::where('role', 3)->get();
         $state          = State::where('id', $project->project_in_state)->get();
         $inventoryItems = Inventory::all();
 
+
+        $data = [
+            'project'       => $project,
+            'state'         => $state,
+            'inventoryItems' => $inventoryItems,
+            'users'         => $users,
+            'engineers'     => $engineers,
+        ];
+
         if ($project->project_type == 1) {
-            // Fetch data from Sites table
-            $sites = Streetlight::where('project_id', $project->id)->get();
+            // Streetlight installation
+            $data['sites']                  = Streetlight::where('project_id', $project->id)->get();
+            $data['totalLights']             = Streetlight::totalPoles($project->id);
+            $data['surveyDoneCount']         = Streetlight::surveyDone($project->id);
+            $data['installationDoneCount']   = Streetlight::installationDone($project->id);
+            $data['vendors'] = $vendors;
+            $data['targets'] = StreetlightTask::where('project_id', $project->id)->with('site', 'engineer')->get();
         } else {
-            $sites = $project->sites;
+            // Rooftop installation
+            $data['sites']               = $project->sites;
+            $data['installationCount']   = Task::where('project_id', $project->id)->where('activity', 'Installation')->count();
+            $data['rmsCount']            = Task::where('project_id', $project->id)->where('activity', 'RMS')->count();
+            $data['inspectionCount']     = Task::where('project_id', $project->id)->where('activity', 'Inspection')->count();
+            $data['targets'] = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
         }
-        return view('projects.show', compact('project', 'state', 'inventoryItems', 'users', 'sites', 'engineers', 'targets', 'installationCount', 'rmsCount', 'inspectionCount'));
+
+        return view('projects.show', $data);
     }
+
 
     /**
      * Show the form for editing the specified resource.

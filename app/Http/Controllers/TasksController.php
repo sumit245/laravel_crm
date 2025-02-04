@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
 use App\Models\Site;
+use App\Models\StreetlightTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -56,23 +58,36 @@ class TasksController extends Controller
     {
         $request->validate([
             'sites'       => 'required|array',
-            'activity'    => 'required|string',
             'engineer_id' => 'required|exists:users,id',
             'start_date'  => 'required|date',
             'end_date'    => 'required|date|after_or_equal:start_date',
         ]);
+        $project = Project::findOrFail($request->project_id);
 
-        foreach ($request->sites as $siteId) {
-            Task::create([
-                'project_id'  => $request->project_id,
-                'site_id'     => $siteId,
-                'activity'    => $request->activity,
-                'engineer_id' => $request->engineer_id,
-                'start_date'  => $request->start_date,
-                'end_date'    => $request->end_date,
-            ]);
+        if ($project->project_type == 1) {
+            // Store in streetlight_tasks table
+            foreach ($request->sites as $siteId) {
+                StreetlightTask::create([
+                    'project_id' => $request->project_id,
+                    'site_id'     => $siteId,
+                    'vendor_id'    => $request->vendor_id,
+                    'engineer_id' => $request->engineer_id,
+                    'start_date'  => $request->start_date,
+                    'end_date'    => $request->end_date,
+                ]);
+            }
+        } else {
+            foreach ($request->sites as $siteId) {
+                Task::create([
+                    'project_id'  => $request->project_id,
+                    'site_id'     => $siteId,
+                    'activity'    => $request->activity,
+                    'engineer_id' => $request->engineer_id,
+                    'start_date'  => $request->start_date,
+                    'end_date'    => $request->end_date,
+                ]);
+            }
         }
-
         return redirect()->route('projects.show', $request->project_id)
             ->with('success', 'Targets successfully added.');
     }
