@@ -46,6 +46,27 @@
         </div>
       </div>
     </div>
+    <div class="row mt-4">
+      @foreach ($statistics as $statistic)
+        <div class="col-sm-4">
+          <div class="card card-rounded">
+            <div class="card-body text-center">
+              <h4>{{ $statistic["title"] }}</h4>
+
+              @if (isset($statistic["values"]))
+                @foreach ($statistic["values"] as $key => $value)
+                  <p class="mb-1"><strong>{{ $key }}:</strong> {{ $value }}</p>
+                @endforeach
+              @else
+                <p class="fs-4 fw-bold">{{ $statistic["value"] }}</p>
+              @endif
+
+              <a href="{{ $statistic["link"] }}" class="btn btn-primary">View Details</a>
+            </div>
+          </div>
+        </div>
+      @endforeach
+    </div>
 
     <div class="row mt-4">
       <div class="col-sm-12">
@@ -72,7 +93,8 @@
                       <td colspan="3">
                         <table class="table-hover table">
                           @foreach ($pm->siteEngineers as $se)
-                            <tr class="expandable-row" data-bs-toggle="collapse" data-bs-target="#se-{{ $se->id }}">
+                            <tr class="expandable-row" data-bs-toggle="collapse"
+                              data-bs-target="#se-{{ $se->id }}">
                               <td>Site Engineer</td>
                               <td>{{ $se->name }}</td>
                               <td><span class="badge bg-info">{{ $se->performance }}</span></td>

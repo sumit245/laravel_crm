@@ -29,11 +29,23 @@
         <th data-select="true">
           <input type="checkbox" id="selectAll" />
         </th>
-        {{-- <th>#</th> --}}
-        <th>Site Name</th>
-        <th>Address</th>
-        <th>Vendor</th>
-        <th>Site Contact</th>
+
+        @if ($project->project_type == 0)
+          {{-- Rooftop Installation --}}
+          <th>Site Name</th>
+          <th>Address</th>
+          <th>Vendor</th>
+          <th>Site Contact</th>
+        @else
+          {{-- Streetlight Installation --}}
+          <th>State</th>
+          <th>District</th>
+          <th>Block</th>
+          <th>Panchayat</th>
+          <th>Ward</th>
+          <th>Number of poles</th>
+        @endif
+
         <th>Actions</th>
       </tr>
     </x-slot:thead>
@@ -44,15 +56,27 @@
           <td>
             <input type="checkbox" name="selected[]" value="{{ $site->id }}" class="select-checkbox">
           </td>
-          {{-- <td>{{ $loop->iteration }}</td> --}}
-          <td>{{ $site->site_name }}</td>
-          <td>
-            {{ $site->location }},
-            {{ optional($site->districtRelation)->name ?? "Unknown District" }},
-            {{ optional($site->stateRelation)->name ?? "Unknown State" }}
-          </td>
-          <td>{{ $site->ic_vendor_name }}</td>
-          <td>{{ $site->contact_no }}</td>
+
+          @if ($project->project_type == 0)
+            {{-- Rooftop Installation --}}
+            <td>{{ $site->site_name }}</td>
+            <td>
+              {{ $site->location }},
+              {{ optional($site->districtRelation)->name ?? "Unknown District" }},
+              {{ optional($site->stateRelation)->name ?? "Unknown State" }}
+            </td>
+            <td>{{ $site->ic_vendor_name }}</td>
+            <td>{{ $site->contact_no }}</td>
+          @else
+            {{-- Streetlight Installation --}}
+            <td>{{ $site->state }}</td>
+            <td>{{ $site->district }}</td>
+            <td>{{ $site->block }}</td>
+            <td>{{ $site->panchayat }}</td>
+            <td>{{ $site->ward }}</td>
+            <td>{{ $site->pole }}</td>
+          @endif
+
           <td>
             <a href="{{ route("sites.show", $site->id) }}" class="btn btn-info btn-icon" data-toggle="tooltip"
               title="View Details">
@@ -66,6 +90,7 @@
               data-name="{{ $site->site_name }}">
               <i class="mdi mdi-delete"></i>
             </button>
+
           </td>
         </tr>
       @endforeach

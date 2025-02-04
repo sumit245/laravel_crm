@@ -33,4 +33,9 @@ class Streetlight extends Model
         'beneficiary',
         'remark'
     ];
+    // Define the relationship
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
+    }
 }
