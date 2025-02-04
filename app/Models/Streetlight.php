@@ -38,4 +38,31 @@ class Streetlight extends Model
     {
         return $this->belongsTo(Project::class);
     }
+    // Scope for counting total poles
+    public function scopeTotalPoles($query, $projectId)
+    {
+        return $query->where('project_id', $projectId)->sum('pole');
+    }
+
+    // Scope for counting surveyed poles
+    public function scopeSurveyDone($query, $projectId)
+    {
+        return $query->where('project_id', $projectId)
+            ->where('isSurveyDone', true)
+            ->sum('pole');
+    }
+
+    // Scope for counting installed poles
+    public function scopeInstallationDone($query, $projectId)
+    {
+        return $query->where('project_id', $projectId)
+            ->where('isInstallationDone', true)
+            ->sum('pole');
+    }
+
+    // Relationship with engineer
+    public function engineer()
+    {
+        return $this->belongsTo(User::class, 'engineer_id');
+    }
 }
