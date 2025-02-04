@@ -46,4 +46,9 @@ class Project extends Model
     {
         return $this->belongsTo(City::class, 'district');
     }
+    // Define the inverse relationship
+    public function streetlights()
+    {
+        return $this->hasMany(Streetlight::class);
+    }
 }

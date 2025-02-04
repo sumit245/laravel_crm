@@ -35,6 +35,32 @@ class HomeController extends Controller
         $projects = Project::all();
 
         $siteCount = $projectId ? Site::where('project_id', $projectId)->count() : Site::count();
+        // Assigned sites (Sites that have at least one task assigned)
+        $assignedSites = Task::whereNotNull('site_id')
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->whereHas('site', function ($q) use ($projectId) {
+                    $q->where('project_id', $projectId);
+                });
+            })
+            ->distinct('site_id')
+            ->count();
+        // Completed sites (Sites where all tasks are completed)
+        $completedSites = Site::whereHas('tasks', function ($query) {
+            $query->where('status', 'Completed');
+        })
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id', $projectId);
+            })->count();
+        // Pending sites (Sites where tasks are still pending)
+        $pendingSites = Site::whereHas('tasks', function ($query) {
+            $query->whereIn('status', ['Pending', 'In Progress']);
+        })
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id', $projectId);
+            })
+            ->count();
+
+
         $staffCount = User::whereIn('role', [1, 2])->count();
         $vendorCount = User::where('role', 3)->count();
 
@@ -93,7 +119,16 @@ class HomeController extends Controller
         $projectManagers = $projectManagers->sortByDesc('performancePercentage')->values();
 
         $statistics = [
-            ['title' => 'Sites', 'value' => $siteCount, 'link' => route('sites.index')],
+            [
+                'title' => 'Sites',
+                'values' => [
+                    'Total' => $siteCount,
+                    'Assigned' => $assignedSites,
+                    'Completed' => $completedSites,
+                    'Pending' => $pendingSites
+                ],
+                'link' => route('sites.index')
+            ],
             ['title' => 'Vendors', 'value' => $vendorCount, 'link' => route('uservendors.index')],
             ['title' => 'Staffs', 'value' => $staffCount, 'link' => route('staff.index')],
         ];

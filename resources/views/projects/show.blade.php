@@ -4,9 +4,15 @@
   <div class="content-wrapper">
     <div class="card p-2">
       <div class="card-body">
-        <div class="col-3 col-sm">
-          <label class="font-10 text-uppercase mg-b-10 fw-bold">State</label>
-          <p class="mg-b-0">{{ $state[0]->name }}</p>
+        <div class="row my-2">
+          <div class="col-3 col-sm">
+            <label class="font-10 text-uppercase mg-b-10 fw-bold">State</label>
+            <p class="mg-b-0">{{ $state[0]->name }}</p>
+          </div>
+          <div class="col-3 col-sm">
+            <label class="font-10 text-uppercase mg-b-10 fw-bold">Project Type</label>
+            <p class="mg-b-0">{{ $project->project_type == 0 ? "Rooftop Installation" : "Streetlight Installation" }}</p>
+          </div>
         </div>
         <div class="row">
           <!-- Project Details -->
@@ -72,7 +78,9 @@
         <div class="tab-content" id="myTabContent">
           <!-- Sites Tab -->
           <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
-            @include("projects.project_site", ["sites" => $project->sites])
+            @include("projects.project_site", [
+                "sites" => $project->project_type == 1 ? $sites : $project->sites,
+            ])
           </div>
 
           <!-- Inventory Tab -->

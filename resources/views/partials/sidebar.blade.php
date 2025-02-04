@@ -19,20 +19,20 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("sites.index") }}">
+      <a class="nav-link disabled" href="{{ route("sites.index") }}">
         <i class="menu-icon mdi mdi-map-marker-outline"></i>
         <span class="menu-title">Sites Management</span>
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("tasks.index") }}">
+      <a class="nav-link disabled" href="{{ route("tasks.index") }}">
         <i class="menu-icon mdi mdi-checkbox-marked"></i>
         <span class="menu-title">Target Management</span>
       </a>
     </li>
     <li class="nav-item nav-category">Inventory</li>
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("inventory.index") }}">
+      <a class="nav-link disabled" href="{{ route("inventory.index") }}">
         <i class="menu-icon mdi mdi-store"></i>
         <span class="menu-title">Inventory Management</span>
       </a>

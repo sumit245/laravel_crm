@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Inventory;
 use App\Models\Project;
 use App\Models\State;
+use App\Models\Streetlight;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -91,15 +92,28 @@ class ProjectsController extends Controller
         ])->findOrFail($id);
         $users          = User::where('role', '!=', 3)->get();
         $targets        = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
-        $installationCount = Task::where('activity', 'Installation')->count();
-        $rmsCount = Task::where('activity', 'RMS')->count();
-        $inspectionCount = Task::where('activity', 'Inspection')->count();
-        $sites          = $project->sites; // All sites related to this project
+        // Ensure counts are filtered by project_id
+        $installationCount = Task::where('project_id', $project->id)
+            ->where('activity', 'Installation')
+            ->count();
+
+        $rmsCount = Task::where('project_id', $project->id)
+            ->where('activity', 'RMS')
+            ->count();
+
+        $inspectionCount = Task::where('project_id', $project->id)
+            ->where('activity', 'Inspection')
+            ->count();
         $engineers      = User::where('role', 1)->get(); // Engineers with role 1
         $state          = State::where('id', $project->project_in_state)->get();
         $inventoryItems = Inventory::all();
 
-        Log::info($state);
+        if ($project->project_type == 1) {
+            // Fetch data from Sites table
+            $sites = Streetlight::where('project_id', $project->id)->get();
+        } else {
+            $sites = $project->sites;
+        }
         return view('projects.show', compact('project', 'state', 'inventoryItems', 'users', 'sites', 'engineers', 'targets', 'installationCount', 'rmsCount', 'inspectionCount'));
     }
 

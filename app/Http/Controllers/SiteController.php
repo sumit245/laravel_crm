@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Imports\SiteImport;
+use App\Imports\StreetlightImport;
 use App\Models\City;
 use App\Models\Project;
 use App\Models\Site;
@@ -22,9 +23,19 @@ class SiteController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
 
+        $project = Project::find($request->project_id);
+        if (!$project) {
+            return back()->with('error', 'Project not found.');
+        }
+
         try {
-            Excel::import(new SiteImport($projectId), $request->file('file'));
-            return redirect()->route('sites.index')->with('success', 'Sites imported successfully!');
+            if ($project->project_type == 1) {
+                Excel::import(new StreetlightImport($projectId), $request->file('file'));
+                return back()->with('success', 'Streetlight data imported successfully.');
+            } else {
+                Excel::import(new SiteImport($projectId), $request->file('file'));
+                return redirect()->route('sites.index')->with('success', 'Sites imported successfully!');
+            }
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
@@ -79,7 +90,6 @@ class SiteController extends Controller
     public function show(string $id)
     {
         $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
-
         $states    = State::all();
         $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
         $projects  = Project::all();
