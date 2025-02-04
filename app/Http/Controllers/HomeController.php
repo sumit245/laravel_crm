@@ -35,6 +35,7 @@ class HomeController extends Controller
         $projects = Project::all();
 
         $siteCount = $projectId ? Site::where('project_id', $projectId)->count() : Site::count();
+
         // Assigned sites (Sites that have at least one task assigned)
         $assignedSites = Task::whereNotNull('site_id')
             ->when($projectId, function ($query) use ($projectId) {
@@ -44,14 +45,17 @@ class HomeController extends Controller
             })
             ->distinct('site_id')
             ->count();
-        // Completed sites (Sites where all tasks are completed)
+
+        // Completed sites
         $completedSites = Site::whereHas('tasks', function ($query) {
             $query->where('status', 'Completed');
         })
             ->when($projectId, function ($query) use ($projectId) {
                 return $query->where('project_id', $projectId);
-            })->count();
-        // Pending sites (Sites where tasks are still pending)
+            })
+            ->count();
+
+        // Pending sites
         $pendingSites = Site::whereHas('tasks', function ($query) {
             $query->whereIn('status', ['Pending', 'In Progress']);
         })
@@ -60,35 +64,51 @@ class HomeController extends Controller
             })
             ->count();
 
-
         $staffCount = User::whereIn('role', [1, 2])->count();
         $vendorCount = User::where('role', 3)->count();
 
-        // Get Project Managers
-        $projectManagers = User::where('role', 2)->get()->map(function ($pm) {
-            // Total & completed tasks for the Project Manager
-            $totalTasksPM = Task::where('manager_id', $pm->id)->count();
-            $completedTasksPM = Task::where('manager_id', $pm->id)->where('status', 'Completed')->count();
+        // Get Project Managers and filter performance based on the selected project
+        $projectManagers = User::where('role', 2)->get()->map(function ($pm) use ($projectId) {
+            // Total & completed tasks for the Project Manager in the selected project
+            $totalTasksPM = Task::where('manager_id', $pm->id)
+                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                ->count();
+            $completedTasksPM = Task::where('manager_id', $pm->id)
+                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                ->where('status', 'Completed')
+                ->count();
             $performancePercentagePM = $totalTasksPM > 0 ? ($completedTasksPM / $totalTasksPM) * 100 : 0;
 
             // Get Site Engineers under this PM
             $siteEngineers = User::where('role', 1)
                 ->where('manager_id', $pm->id)
                 ->get()
-                ->map(function ($se) {
-                    // Total & completed tasks for Site Engineer
-                    $totalTasksSE = Task::where('engineer_id', $se->id)->count();
-                    $completedTasksSE = Task::where('engineer_id', $se->id)->where('status', 'Completed')->count();
+                ->map(function ($se) use ($projectId) {
+                    // Total & completed tasks for Site Engineer in the selected project
+                    $totalTasksSE = Task::where('engineer_id', $se->id)
+                        ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                        ->count();
+                    $completedTasksSE = Task::where('engineer_id', $se->id)
+                        ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                        ->where('status', 'Completed')
+                        ->count();
                     $performancePercentageSE = $totalTasksSE > 0 ? ($completedTasksSE / $totalTasksSE) * 100 : 0;
+
                     // Get Vendors under this Site Engineer
                     $vendors = User::where('role', 3)
                         ->where('site_engineer_id', $se->id)
                         ->get()
-                        ->map(function ($vendor) {
-                            // Total & completed tasks for Vendor
-                            $totalTasksVendor = Task::where('vendor_id', $vendor->id)->count();
-                            $completedTasksVendor = Task::where('vendor_id', $vendor->id)->where('status', 'Completed')->count();
+                        ->map(function ($vendor) use ($projectId) {
+                            // Total & completed tasks for Vendor in the selected project
+                            $totalTasksVendor = Task::where('vendor_id', $vendor->id)
+                                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                                ->count();
+                            $completedTasksVendor = Task::where('vendor_id', $vendor->id)
+                                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                                ->where('status', 'Completed')
+                                ->count();
                             $performancePercentageVendor = $totalTasksVendor > 0 ? ($completedTasksVendor / $totalTasksVendor) * 100 : 0;
+
                             return (object) [
                                 'id' => $vendor->id,
                                 'name' => $vendor->name,
