@@ -97,7 +97,7 @@
           <th>Vendor Name</th>
           <th>Assigned Date</th>
           <th>End Date</th>
-          <th>Total Poles</th>
+          <th>Wards</th>
           <th>Status</th>
           <th>Actions</th>
         </tr>
@@ -110,7 +110,7 @@
             <td>{{ $light->vendor->name ?? "N/A" }}</td>
             <td>{{ $light->created_at }}</td>
             <td>{{ $light->end_date }}</td>
-            <td>{{ $light->pole }}</td>
+            <td>{{ $light->site->ward }}</td>
             <td>
               @if ($light->isInstallationDone)
                 <span class="badge bg-success">Installed</span>
