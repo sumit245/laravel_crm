@@ -12,13 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('streetlights', function (Blueprint $table) {
-            //
-            $table->boolean('isSurveyDone')->default(false)->after('pole');
-            $table->boolean('isInstallationDone')->default(false)->after('isSurveyDone');
-            $table->boolean('isNetworkAvailable')->default(false)->after('isSurveyDone');
-            // sim number
-            // make
-            // Model
+            //create relations to project_id
+            // Cancelled cheque
+            // Other document
         });
     }
 

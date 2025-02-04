@@ -62,6 +62,18 @@
             </button>
           </li>
           <li class="nav-item" role="presentation">
+            <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
+              role="tab" aria-controls="staff">
+              Staff Management
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="vendors-tab" data-bs-toggle="tab" data-bs-target="#vendors" type="button"
+              role="tab" aria-controls="vendors" aria-selected="true">
+              Vendor Management
+            </button>
+          </li>
+          <li class="nav-item" role="presentation">
             <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory" type="button"
               role="tab" aria-controls="inventory" aria-selected="false">
               Inventory

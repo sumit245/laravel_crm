@@ -81,27 +81,27 @@
           </div>
 
           <div class="form-group">
-            <label for="rate" class="form-label">Rate (per kW including all taxes and duties in rupees)</label>
+            <label for="rate" class="form-label">Rate (Excluding all taxes and duties in rupees)</label>
             <input type="number" step="0.01" name="rate" class="form-control" id="rate" placeholder="50L"
               value="{{ old("rate") }}">
           </div>
 
           <div class="form-group">
-            <label for="project_capacity" class="form-label">Project Capacity (kW)</label>
+            <label for="project_capacity" class="form-label">Project Capacity</label>
             <input type="number" step="0.01" name="project_capacity" class="form-control" id="project_capacity"
               placeholder="50kW" value="{{ old("project_capacity") }}">
           </div>
 
           <div class="form-group">
-            <label for="total" class="form-label">Total</label>
+            <label for="total" class="form-label">Total (INR)</label>
             <input type="number" step="0.01" name="total" class="form-control" id="total"
               placeholder="5000.82" value="{{ old("total") }}" readonly>
           </div>
 
           <div class="form-group">
-            <label for="description" class="form-label">Description</label>
+            <label for="description" class="form-label">Scope of Project</label>
             <textarea class="form-control" id="description" name="description" style="height:100px;"
-              placeholder="Briefly describe">{{ old("description") }}</textarea>
+              placeholder="Briefly describe your project here">{{ old("description") }}</textarea>
           </div>
 
           <button type="submit" class="btn btn-primary">Create Project</button>
