@@ -1,5 +1,4 @@
 <div>
-<<<<<<< HEAD
   <div class="d-flex justify-content-between mb-4">
     <div class="d-flex mx-2">
       <div class="card bg-success mx-2" style="min-width: 33%;">
@@ -71,63 +70,7 @@
             <div class="mb-3">
               <label for="startDate" class="form-label">Start Date</label>
               <input type="date" id="startDate" name="start_date" class="form-control" required>
-            </div>
-            <div class="mb-3">
-              <label for="endDate" class="form-label">End Date</label>
-              <input type="date" id="endDate" name="end_date" class="form-control" required>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="reset" class="btn btn-secondary">Reset</button>
-            <button type="submit" class="btn btn-primary">Allot Target</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Table to display targets -->
-  <div class="table-responsive mt-4">
-    <table class="table-striped table">
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Site Name</th>
-          <th>Activity</th>
-          <th>Site Engineer</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse ($targets as $index => $target)
-          <tr>
-            <td>{{ $index + 1 }}</td>
-            <td>{{ $target->site->site_name }}</td>
-            <td>{{ $target->activity }}</td>
-            <td>{{ $target->engineer->firstName??"N/A" }}</td>
-            <td>{{ $target->start_date }}</td>
-            <td>{{ $target->end_date }}</td>
-            <td>
-              <a href="{{ route("tasks.show", $target->id) }}" class="btn btn-sm btn-info">View</a>
-              <a href="{{ route("tasks.edit", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
-              <form action="{{ route("tasks.destroy", $target->id) }}" method="POST" style="display: inline-block;">
-                @csrf
-                @method("DELETE")
-                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-              </form>
-            </td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="7">No targets found.</td>
-          </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
-=======
+         
   @if ($project->project_type == 1)
     {{-- Streetlight Installation Specific Display --}}
     @include("projects.project_task_streetlight")
@@ -135,5 +78,4 @@
     {{-- Existing Rooftop Installation Code --}}
     @include("projects.project_task_rooftop")
   @endif
->>>>>>> bad73ccced0a423b5878c4300196f36d01b6770c
 </div>
