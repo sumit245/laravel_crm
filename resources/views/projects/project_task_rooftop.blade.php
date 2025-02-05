@@ -100,9 +100,8 @@
         </tr>
       </thead>
       <tbody>
-        @forelse ($targets as $index => $target)
+        @forelse ($targets as $target)
           <tr>
-            <td>{{ $index + 1 }}</td>
             <td>{{ $target->site->site_name }}</td>
             <td>{{ $target->activity }}</td>
             <td>{{ $target->engineer->firstName }}</td>
