@@ -141,6 +141,7 @@ class ProjectsController extends Controller
             'assignedEngineersMessage' => $assignedEngineersMessage,
             'assignedVendors'  => $assignedVendors,
             'availableVendors' => $availableVendors,
+            'vendors' => $vendors
         ];
 
         if ($project->project_type == 1) {
@@ -149,8 +150,6 @@ class ProjectsController extends Controller
             $data['totalLights']             = Streetlight::totalPoles($project->id);
             $data['surveyDoneCount']         = Streetlight::surveyDone($project->id);
             $data['installationDoneCount']   = Streetlight::installationDone($project->id);
-            $data['vendors'] = $vendors;
-
             $data['targets'] = StreetlightTask::where('project_id', $project->id)->with('site', 'engineer')->get();
         } else {
             // Rooftop installation
