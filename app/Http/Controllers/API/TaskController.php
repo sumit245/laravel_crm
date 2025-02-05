@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Storage;
 
 class TaskController extends Controller
 {
-<<<<<<< HEAD
  /**
   * Display a listing of the resource.
   */
@@ -129,14 +128,12 @@ class TaskController extends Controller
      // Log and return an error if the `image` key format is invalid
      Log::warning('Unexpected format for "image" input:', ['image' => $images]);
      return response()->json(['error' => 'Invalid "image" input format.'], 400);
-=======
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
         return Task::with(['project', 'site', 'vendor'])->get();
->>>>>>> f3f2037f20aba9163271753a7eae84ecbd11ad6e
     }
 
     /**
