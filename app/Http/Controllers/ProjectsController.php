@@ -158,6 +158,7 @@ class ProjectsController extends Controller
             $data['rmsCount']            = Task::where('project_id', $project->id)->where('activity', 'RMS')->count();
             $data['inspectionCount']     = Task::where('project_id', $project->id)->where('activity', 'Inspection')->count();
             $data['targets'] = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
+            Log::info($data);
         }
 
         return view('projects.show', $data);

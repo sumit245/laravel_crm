@@ -104,7 +104,13 @@
           <tr>
             <td>{{ $target->site->site_name }}</td>
             <td>{{ $target->activity }}</td>
-            <td>{{ $target->engineer->firstName }}</td>
+            <td>
+              @if ($target && $target->engineer)
+                {{ $target->engineer->firstName }}
+              @else
+                Not Assigned
+              @endif
+            </td>
             <td>{{ $target->start_date }}</td>
             <td>{{ $target->end_date }}</td>
             <td>
