@@ -90,7 +90,6 @@
     <table class="table-striped table">
       <thead>
         <tr>
-          <th>#</th>
           <th>Site Name</th>
           <th>Activity</th>
           <th>Site Engineer</th>
