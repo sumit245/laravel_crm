@@ -234,7 +234,7 @@ class ProjectsController extends Controller
         Log::info($request->all());
 
         // Sync users to the project (removing unselected ones)
-        $project->users()->sync($validated['user_ids']);
+        $project->users()->syncWithoutDetaching($validated['user_ids']);
         return redirect()->back()->with('success', 'Users assigned successfully');
     }
 }
