@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Site;
+use App\Models\StreetlightTask;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -53,9 +54,21 @@ class TaskController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show($id)
+    public function show(Request $request, $id)
     {
-        $task = Task::with(['project', 'site', 'vendor'])->findOrFail($id);
+        Log::info("Requested Task ID: " . $id);
+        Log::info("Project Type: " . $request->query('project_type'));
+        // Get the project_type from the query parameter
+        $projectType = $request->query('project_type');
+        Log::info($projectType);
+        // Conditionally fetch data based on project_type
+        if ($projectType == 1) {
+            // Fetch data from StreetlightTask model
+            $task = StreetlightTask::with(['project', 'site', 'vendor'])->findOrFail($id);
+        } else {
+            // Default to fetching data from Task model
+            $task = Task::with(['project', 'site', 'vendor'])->findOrFail($id);
+        }
 
         // Decode the JSON image field
         $images = json_decode($task->image, true);

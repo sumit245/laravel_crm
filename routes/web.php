@@ -47,6 +47,8 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
 
-    Route::resource('tasks', TasksController::class);
+    // routes/web.php
+    Route::resource('tasks', TasksController::class)->except(['show']);
+    Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
 });

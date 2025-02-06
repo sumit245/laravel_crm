@@ -119,9 +119,11 @@
               @endif
             </td>
             <td>
-              <a href="{{ route("sites.show", $light->id) }}" class="btn btn-info btn-sm">View</a>
-              <a href="{{ route("sites.edit", $light->id) }}" class="btn btn-warning btn-sm">Edit</a>
-              <form action="{{ route("sites.destroy", $light->id) }}" method="POST" style="display: inline-block;">
+              <a href="{{ route("tasks.show", [$light->id, "any" => ""]) }}?project_type=1"
+                class="btn btn-info btn-sm">View</a>
+
+              <a href="{{ route("tasks.edit", $light->id) }}" class="btn btn-warning btn-sm">Edit</a>
+              <form action="{{ route("tasks.destroy", $light->id) }}" method="POST" style="display: inline-block;">
                 @csrf
                 @method("DELETE")
                 <button type="submit" class="btn btn-danger btn-sm">Delete</button>
