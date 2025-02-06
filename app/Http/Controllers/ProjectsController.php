@@ -101,7 +101,7 @@ class ProjectsController extends Controller
         $inventoryItems = Inventory::all();
 
         // Get site engineers and project managers assigned to the project
-        $assignedEngineers = User::whereIn('id', function ($query) use ($project) {
+        $assignedEngineers = User::whereIn('role', [1, 2])->whereIn('id', function ($query) use ($project) {
             $query->select('user_id')->from('project_user')->where('project_id', $project->id);
         })->get();
 

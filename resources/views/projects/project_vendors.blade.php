@@ -3,7 +3,7 @@
     <h5>Assigned Vendor</h5>
     <ul>
       @foreach ($assignedVendors as $engineer)
-        <li>{{ $engineer->name }}</span>
+        <li>{{ $engineer->name }}</li>
       @endforeach
     </ul>
   </div>
