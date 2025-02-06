@@ -124,7 +124,8 @@ class HomeController extends Controller
                         'performancePercentage' => $performancePercentageSE,
                         'vendors' => $vendors
                     ];
-                });
+                })->sortByDesc('performancePercentage') // Sort vendors by performance
+                ->values();
 
             return (object) [
                 'id' => $pm->id,
@@ -133,7 +134,8 @@ class HomeController extends Controller
                 'siteEngineers' => $siteEngineers,
                 'performancePercentage' => $performancePercentagePM,
             ];
-        });
+        })->sortByDesc('performancePercentage') // Sort vendors by performance
+            ->values();
 
         // Sort project managers by performance percentage in descending order
         $projectManagers = $projectManagers->sortByDesc('performancePercentage')->values();
