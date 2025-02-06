@@ -4,7 +4,9 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Streetlight;
+use App\Models\StreetlightTask;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -172,7 +174,6 @@ class StreetlightController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
-        Log::info($search);
         $sites = Streetlight::where('panchayat', 'LIKE', "%{$search}%")
             ->limit(10) // Limit results to improve performance
             ->get(['id', 'panchayat']);
@@ -212,4 +213,37 @@ class StreetlightController extends Controller
     //   ], 200);
     //  }
 
+    // 1. Get tasks assigned to the logged-in Site Engineer
+    public function getEngineerTasks(Request $request)
+    {
+        $tasks = StreetlightTask::where('engineer_id', $request->id)->with('site')->get();
+        return response()->json($tasks);
+    }
+
+    // 2. Get tasks assigned to the logged-in Vendor
+    public function getVendorTasks(Request $request)
+    {
+        // $user = Auth::user();
+
+        // if ($user->role !== 3) { // Role 3 = Vendor
+        //     return response()->json(['message' => 'Unauthorized'], 403);
+        // }
+
+        $tasks = StreetlightTask::where('vendor_id', $request->id)->with('site')->get();
+        return response()->json($tasks);
+    }
+
+    // 3. Vendor submits a task, making it visible to succeeding roles
+    public function submitTask(Request $request, $taskId)
+    {
+
+        $task = StreetlightTask::findOrFail($taskId);
+
+        $task->update([
+            'status' => 'Submitted',
+            'completion_details' => $request->input('completion_details'),
+        ]);
+
+        return response()->json(['message' => 'Task submitted successfully']);
+    }
 }
