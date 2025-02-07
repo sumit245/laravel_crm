@@ -35,7 +35,9 @@ Route::prefix('vendor')->group(function () {
 
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('site', SiteController::class);
+
 Route::apiResource('task', TaskController::class);
+Route::post('/tasks/{id}/approve', [TaskController::class, 'approveTask']);
 Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEngineerTasks']);
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
 Route::apiResource('streetlight', StreetlightController::class);
