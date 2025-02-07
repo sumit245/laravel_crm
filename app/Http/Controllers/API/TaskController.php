@@ -234,4 +234,18 @@ class TaskController extends Controller
             'sites'     => $sites,
         ], 200);
     }
+
+    public function approveTask($id)
+    {
+        $task = Task::find($id);
+        if (!$task) {
+            return response()->json(['message' => 'Task not found'], 404);
+        }
+
+        $task->update(['status' => 'Completed']);
+        return response()->json([
+            'message' => 'Task approved successfully',
+            'task' => $task
+        ]);
+    }
 }
