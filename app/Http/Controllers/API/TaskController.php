@@ -246,6 +246,6 @@ class TaskController extends Controller
         return response()->json([
             'message' => 'Task approved successfully',
             'task' => $task
-        ]);
+        ]);     
     }
 }
