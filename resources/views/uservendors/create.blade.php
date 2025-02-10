@@ -88,8 +88,9 @@
           <div class="row">
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
-                <label for="aadharNumber">Aadhar Number</label>
-                <input type="text" id="aadharNumber" name="aadharNumber" class="form-control">
+                <label for="aadharNum">Aadhar Number</label>
+                <input type="text" id="aadharNum" name="aadharNumber" class="form-control"
+                  value={{ old("aadharNumber") }}>
                 @error("aadharNumber")
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
@@ -97,8 +98,8 @@
               <div class="form-group">
                 <label for="aadharImage" class="form-label">Upload Document</label>
                 <div class="custom-file">
-                  <input type="file" id="aadharImage" name="aadharImage" class="custom-file-input">
-                  <label class="custom-file-label" for="aadharImage">Choose file</label>
+                  <input type="file" id="aadharImage" name="aadhar_document" class="form-control">
+                  {{-- <label class="custom-file-label" for="aadharImage">Choose file</label> --}}
                 </div>
                 @error("aadharNumberImage")
                   <small class="text-danger">{{ $message }}</small>
@@ -115,9 +116,9 @@
                 @enderror
               </div>
               <div class="form-group">
-                <label for="aadharNumberImage" class="form-label">Upload Document</label>
-                <input type="file" id="aadharNumberImage" name="aadharNumber" class="form-control">
-                @error("aadharNumberImage")
+                <label for="gstproof" class="form-label">Upload Document</label>
+                <input type="file" id="gstproof" name="gst_document" class="form-control">
+                @error("gst_document")
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
@@ -133,7 +134,7 @@
               </div>
               <div class="form-group">
                 <label for="aadharNumberImage" class="form-label">Upload Document</label>
-                <input type="file" id="aadharNumberImage" name="aadharNumber" class="form-control">
+                <input type="file" id="aadharNumberImage" name="aadhar_document" class="form-control">
                 @error("aadharNumberImage")
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
