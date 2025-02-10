@@ -62,7 +62,7 @@ class VendorController extends Controller
             'contactPerson' => 'string',
             'contactNo'     => 'string',
             'address'       => 'string|max:255',
-            'aadharNumber'  => 'string|max:12',
+            'aadharNumber'  => 'string',
             'pan'     => 'string|max:10',
             'gstNumber'     => 'nullable|string|max:15',
             'accountName'   => 'string',
