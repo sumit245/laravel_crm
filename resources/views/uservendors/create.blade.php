@@ -89,8 +89,7 @@
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
                 <label for="aadharNumber">Aadhar Number</label>
-                <input type="text" id="aadharNumber" name="aadharNumber" class="form-control"
-                  value="{{ old("aadharNumber") }}">
+                <input type="text" id="aadharNumber" name="aadharNumber" class="form-control">
                 @error("aadharNumber")
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
