@@ -102,8 +102,9 @@ class ProjectsController extends Controller
 
         // Get site engineers and project managers assigned to the project
         $assignedEngineers = User::whereIn('role', [1, 2])
+            ->where('project_id', $project->id)
             ->whereIn('id', function ($query) use ($project) {
-                $query->select('user_id')->from('project_user')->where('project_id', $project->id);
+                $query->select('user_id')->from('project_user');
             })->get();
 
         // Fetch all available engineers whose project_id matches current project
@@ -114,8 +115,9 @@ class ProjectsController extends Controller
 
         // Get vendors assigned to the project
         $assignedVendors = User::where('role', 3)
+            ->where('project_id', $project->id)
             ->whereIn('id', function ($query) use ($project) {
-                $query->select('user_id')->from('project_user')->where('project_id', $project->id);
+                $query->select('user_id')->from('project_user');
             })->get();
 
         // Fetch all available vendors whose project_id matches current project
