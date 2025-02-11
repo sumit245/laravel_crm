@@ -33,7 +33,7 @@
           </tr>
         </thead>
         <tbody>
-          @foreach ($users as $staff)
+          @foreach ($availableEngineers as $staff)
             <tr>
               <td><input type="checkbox" name="user_ids[]" value="{{ $staff->id }}"></td>
               <td>{{ $staff->firstName }} {{ $staff->lastName }}</td>

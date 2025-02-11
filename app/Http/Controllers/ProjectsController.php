@@ -108,7 +108,7 @@ class ProjectsController extends Controller
             })->get();
 
         // Fetch all available engineers whose project_id matches current project
-        $availableEngineers = User::where('role', 1)
+        $availableEngineers = User::whereIn('role', [1, 2, 4, 5])
             ->where('project_id', $project->id)
             ->whereNotIn('id', $assignedEngineers->pluck('id'))
             ->get();
