@@ -19,7 +19,7 @@
           </tr>
         </thead>
         <tbody>
-          @foreach ($vendors as $vendor)
+          @foreach ($availableVendors as $vendor)
             <tr>
               <td><input type="checkbox" name="user_ids[]" value="{{ $vendor->id }}"></td>
               <td>{{ $vendor->name }}</td>
