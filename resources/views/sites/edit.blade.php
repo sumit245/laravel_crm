@@ -26,7 +26,7 @@
           <div class="col-md-4">
             <label for="location">Breda serial code:</label>
             <input type="text" class="form-control" id="location" name="location"
-              value="{{ old("location", $site->location) }}" @disabled(true)>
+              value="{{ old("breda_sl_no", $site->breda_sl_no) }}">
           </div>
           <div class="form-group row mt-5">
             <div class="col-md-6">
