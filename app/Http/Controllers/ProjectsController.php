@@ -101,24 +101,29 @@ class ProjectsController extends Controller
         $inventoryItems = Inventory::all();
 
         // Get site engineers and project managers assigned to the project
-        $assignedEngineers = User::whereIn('role', [1, 2])->whereIn('id', function ($query) use ($project) {
-            $query->select('user_id')->from('project_user')->where('project_id', $project->id);
-        })->get();
+        $assignedEngineers = User::whereIn('role', [1, 2])
+            ->whereIn('id', function ($query) use ($project) {
+                $query->select('user_id')->from('project_user')->where('project_id', $project->id);
+            })->get();
 
-        // Fetch all available Engineers who are not assigned to this project
-        $availableEngineers = User::whereNotIn('role', [0, 3])
+        // Fetch all available engineers whose project_id matches current project
+        $availableEngineers = User::where('role', 1)
+            ->where('project_id', $project->id)
             ->whereNotIn('id', $assignedEngineers->pluck('id'))
             ->get();
 
         // Get vendors assigned to the project
-        $assignedVendors = User::where('role', 3)->whereIn('id', function ($query) use ($project) {
-            $query->select('user_id')->from('project_user')->where('project_id', $project->id);
-        })->get();
+        $assignedVendors = User::where('role', 3)
+            ->whereIn('id', function ($query) use ($project) {
+                $query->select('user_id')->from('project_user')->where('project_id', $project->id);
+            })->get();
 
-        // Fetch all available vendors who are not assigned to this project
+        // Fetch all available vendors whose project_id matches current project
         $availableVendors = User::where('role', 3)
+            ->where('project_id', $project->id)
             ->whereNotIn('id', $assignedVendors->pluck('id'))
             ->get();
+
 
 
 
