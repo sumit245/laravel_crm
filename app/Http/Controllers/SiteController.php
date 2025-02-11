@@ -101,10 +101,18 @@ class SiteController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
-        Log::info($search);
-        $sites = Site::where('site_name', 'LIKE', "%{$search}%")
-            ->limit(10) // Limit results to improve performance
-            ->get(['id', 'site_name']);
+        $sites = Site::with(['stateRelation', 'districtRelation'])
+            ->where('breda_sl_no', 'LIKE', "%{$search}%")
+            ->orWhere('site_name', 'LIKE', "%{$search}%")
+            ->orWhere('location', 'LIKE', "%{$search}%")
+            ->orWhereHas('stateRelation', function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%{$search}%");
+            })
+            ->orWhereHas('districtRelation', function ($query) use ($search) {
+                $query->where('name', 'LIKE', "%{$search}%");
+            })
+            ->limit(10) // Limit results for performance
+            ->get(['id', 'breda_sl_no', 'site_name', 'location', 'state', 'district']);
         return response()->json($sites->map(function ($site) {
             return [
                 'id' => $site->id,
