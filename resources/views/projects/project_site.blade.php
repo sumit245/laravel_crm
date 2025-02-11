@@ -32,10 +32,11 @@
 
         @if ($project->project_type == 0)
           {{-- Rooftop Installation --}}
+          <th>Breda Sl No</th>
           <th>Site Name</th>
           <th>Address</th>
           <th>Vendor</th>
-          <th>Site Contact</th>
+          <th>Engineer</th>
         @else
           {{-- Streetlight Installation --}}
           <th>State</th>
@@ -59,14 +60,15 @@
 
           @if ($project->project_type == 0)
             {{-- Rooftop Installation --}}
+            <td>{{ $site->breda_sl_no }}</td>
             <td>{{ $site->site_name }}</td>
             <td>
               {{ $site->location }},
               {{ optional($site->districtRelation)->name ?? "Unknown District" }},
               {{ optional($site->stateRelation)->name ?? "Unknown State" }}
             </td>
-            <td>{{ $site->ic_vendor_name }}</td>
-            <td>{{ $site->contact_no }}</td>
+            <td>{{ $site->vendorRelation->name ?? "" }}</td>
+            <td>{{ $site->engineerRelation->firstName ?? "" }} {{ $site->engineerRelation->lastName ?? " " }}</td>
           @else
             {{-- Streetlight Installation --}}
             <td>{{ $site->state }}</td>

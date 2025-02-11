@@ -13,6 +13,7 @@
       <thead>
         <tr>
           <th>#</th>
+          <th>Breda Sl No</th>
           <th>Site Name</th>
           <th>Location</th>
           <th>City</th>
@@ -26,10 +27,11 @@
         @foreach ($sites as $member)
           <tr>
             <td>{{ $loop->iteration }}</td>
+            <td>{{ $member->breda_sl_no }}</td>
             <td>{{ $member->site_name }}</td>
             <td>{{ $member->location }}</td>
-            <td>{{ $member->district }}</td>
-            <td>{{ $member->state }}</td>
+            <td>{{ $member->districtRelation->name ?? "N/A" }}</td>
+            <td>{{ $member->stateRelation->name ?? "N/A" }}</td>
             <td>{{ $member->ic_vendor_name }}</td>
             <td>{{ $member->contact_no }}</td>
             <td>

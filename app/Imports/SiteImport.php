@@ -3,7 +3,7 @@
 namespace App\Imports;
 
 use App\Models\City;
-use App\Models\Site; // Assuming cities are stored in the 'City' model
+use App\Models\Site;
 use App\Models\State;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
@@ -26,22 +26,24 @@ class SiteImport implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
-        // Fetch the district ID based on the district name
+        // Fetch the district ID based on the exact district name
         $districtId = $this->getDistrictId($row['district']);
         $stateId    = $this->getStateId($row['state']);
-        // If no matching district is found, log an error and skip this row
+
+        // If no matching district or state is found, log an error and skip this row
         if (!$districtId) {
             Log::error('District not found for: ' . $row['district']);
-            return null; // Skip this row
+            return null;
         }
         if (!$stateId) {
-            //    Log::error('State not found for: ' . $row['state']);
-            return null; // Skip this row
+            Log::error('State not found for: ' . $row['state']);
+            return null;
         }
 
         return new Site([
             'project_id'       => $this->projectId,
             'site_name'        => $row['site_name'],
+            'breda_sl_no'      => $row['breda_sl_no'],
             'state'            => $stateId,
             'district'         => $districtId,
             'location'         => $row['location'],
@@ -54,53 +56,24 @@ class SiteImport implements ToModel, WithHeadingRow
     }
 
     /**
-     * Fetch the district ID based on the district name using fuzzy matching.
+     * Fetch the exact district ID based on the district name.
      *
      * @param string $districtName
      * @return int|null
      */
     private function getDistrictId($districtName)
     {
-        // Fetch all districts from the database
-        $districts = City::pluck('name', 'id')->toArray();
-
-        $closestMatch     = null;
-        $shortestDistance = -1;
-
-        foreach ($districts as $id => $name) {
-            // Calculate Levenshtein distance
-            $levenshteinDistance = levenshtein(strtolower($districtName), strtolower($name));
-
-            // Update closest match if this is the best match so far
-            if ($shortestDistance == -1 || $levenshteinDistance < $shortestDistance) {
-                $closestMatch     = $id;
-                $shortestDistance = $levenshteinDistance;
-            }
-        }
-
-        // Accept the match only if the distance is within a reasonable threshold (e.g., 3)
-        return $shortestDistance <= 3 ? $closestMatch : null;
+        return City::whereRaw('LOWER(name) = ?', [strtolower($districtName)])->value('id');
     }
+
+    /**
+     * Fetch the exact state ID based on the state name.
+     *
+     * @param string $stateName
+     * @return int|null
+     */
     private function getStateId($stateName)
     {
-        // Fetch all districts from the database
-        $states = State::pluck('name', 'id')->toArray();
-
-        $closestMatch     = null;
-        $shortestDistance = -1;
-
-        foreach ($states as $id => $name) {
-            // Calculate Levenshtein distance
-            $levenshteinDistance = levenshtein(strtolower($stateName), strtolower($name));
-
-            // Update closest match if this is the best match so far
-            if ($shortestDistance == -1 || $levenshteinDistance < $shortestDistance) {
-                $closestMatch     = $id;
-                $shortestDistance = $levenshteinDistance;
-            }
-        }
-
-        // Accept the match only if the distance is within a reasonable threshold (e.g., 3)
-        return $shortestDistance <= 3 ? $closestMatch : null;
+        return State::whereRaw('LOWER(name) = ?', [strtolower($stateName)])->value('id');
     }
 }

@@ -47,7 +47,7 @@ class SiteController extends Controller
     public function index()
     {
         //
-        $sites = Site::all();
+        $sites = Site::with(['stateRelation', 'districtRelation'])->get();
 
         return view('sites.index', compact('sites'));
     }
