@@ -23,6 +23,11 @@
 
           <!-- Basic Details -->
           <h6 class="card-subtitle text-bold text-info">Basic Details</h6>
+          <div class="col-md-4">
+            <label for="location">Breda serial code:</label>
+            <input type="text" class="form-control" id="location" name="location"
+              value="{{ old("location", $site->location) }}" @disabled(true)>
+          </div>
           <div class="form-group row mt-5">
             <div class="col-md-6">
               <label for="state">State:</label>
