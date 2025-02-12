@@ -95,7 +95,7 @@
                   <span class="card-sm card-rounded bg-light">{{ $pendingTasksCount }}</span>
                 </div>
                 <ul class="list-container">
-                  @if ($pendingTasks > 0)
+                  @if ($pendingTasksCount > 0)
                     @foreach ($pendingTasks as $task)
                       <li class="list-group-item">
                         <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
