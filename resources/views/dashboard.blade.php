@@ -67,7 +67,7 @@
         </div>
       @endforeach
     </div>
-    <div class="row mt-4">
+    {{-- <div class="row mt-4">
       <div class="col-sm-12">
         <div class="card card-rounded">
           <div class="card-body">
@@ -122,8 +122,8 @@
           </div>
         </div>
       </div>
-    </div>
-    {{-- @include("partials.performance") --}}
+    </div> --}}
+    @include("partials.performance")
   </div>
 @endsection
 
