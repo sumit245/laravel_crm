@@ -6,7 +6,7 @@
   <ul class="nav">
     <li class="nav-item nav-category">Project</li>
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("projects.index" . $selectedProjectId) }}">
+      <a class="nav-link" href="{{ route("projects.index") }}">
         <i class="menu-icon mdi mdi-chart-pie"></i>
         <span class="menu-title">Projects Overview</span>
       </a>
