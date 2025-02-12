@@ -50,7 +50,7 @@
             <div class="row">
               <div class="col">
                 <div class="list-header header-green">Assigned sites
-                  <span class="card-sm card-rounded bg-light">{{ $assignedTasksCount }}</span>
+                  <span class="btn-sm btn-rounded btn-light">{{ $assignedTasksCount }}</span>
                 </div>
                 <ul class="list-container">
                   @if ($assignedTasks->count() > 0)
@@ -90,7 +90,7 @@
 
               <div class="col">
                 <div class="list-header header-blue">Pending Sites
-                  <span class="card-sm card-rounded bg-light">{{ $pendingTasksCount }}</span>
+                  <span class="btn-sm btn-rounded btn-light">{{ $pendingTasksCount }}</span>
                 </div>
                 <ul class="list-container">
                   @if ($pendingTasksCount > 0)
@@ -110,7 +110,7 @@
 
               <div class="col">
                 <div class="list-header header-red">Rejected Sites
-                  <span class="card-sm card-rounded bg-light">{{ $rejectedTasksCount }}</span>
+                  <span class="btn-sm btn-rounded btn-light">{{ $rejectedTasksCount }}</span>
                 </div>
                 <ul class="list-container">
                   @if ($rejectedTasks->count() > 0)
