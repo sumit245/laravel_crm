@@ -61,7 +61,6 @@
                         <small>{{ $task->start_date }}</small>
                         <small>{{ $task->end_date }}</small>
                       </li>
-                      <hr>
                     @endforeach
                   @else
                     <p>No rejected tasks</p>
@@ -82,7 +81,6 @@
                         <small>{{ $task->start_date }}</small>
                         <small>{{ $task->end_date }}</small>
                       </li>
-                      <hr>
                     @endforeach
                   @else
                     <p>No rejected tasks</p>
@@ -103,7 +101,6 @@
                         <small>{{ $task->start_date }}</small>
                         <small>{{ $task->end_date }}</small>
                       </li>
-                      <hr>
                     @endforeach
                   @else
                     <p>No rejected tasks</p>
@@ -124,7 +121,6 @@
                         <small>{{ $task->start_date }}</small>
                         <small>{{ $task->end_date }}</small>
                       </li>
-                      <hr>
                     @endforeach
                   @else
                     <p>No rejected tasks</p>
