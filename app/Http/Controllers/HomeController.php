@@ -146,7 +146,7 @@ class HomeController extends Controller
 
             return (object) [
                 'id' => $pm->id,
-                'name' => $pm->firstName . " " . $pm->laseName,
+                'name' => $pm->firstName . " " . $pm->lastName,
                 'image' => $pm->image,
                 'role' => "Project Manager",
                 'performance' => "$completedTasksPM/$totalTasksPM",
