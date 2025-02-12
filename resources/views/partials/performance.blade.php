@@ -26,9 +26,13 @@
                 <div class="d-flex align-items-center">
                   <img src="{{ $item->image }}" alt="User" class="user-avatar">
                   <div>
-                    <div class="fw-bold">{{ $item->name }}</div>
-                    <div class="position-text">{{ $item->role }}</div>
-                    <div class="status-badge">{{ $item->performance }}</div>
+                    <span class="fw-bold">{{ $item->name }}</span>
+                    <span class="position-text">{{ $item->role }}</span>
+                    <div class="status-badge-container">
+                      <div class="status-badge-fill bg-primary" style="width: {{ $sub->performancePercentage }}%;">
+                      </div>
+                      <div class="status-badge-text">{{ $sub->performance }}</div>
+                    </div>
                   </div>
                 </div>
 
@@ -36,14 +40,22 @@
                   <div class="nested-list">
                     <div class="row">
                       <div class="col">
-                        @foreach ($item->siteEngineers as $sub)
+                        @foreach ($item->siteEngineers as $index => $sub)
                           <div class="user-card" onclick="toggleDropdown(this, event)">
                             <div class="d-flex align-items-center">
+                              @if ($index < 3)
+                                <span class="award-icon">{{ $awardIcons[$index] }}</span>
+                              @endif
                               <img src="{{ $sub->image }}" alt="User" class="user-avatar">
                               <div>
                                 <div class="fw-bold">{{ $sub->name }}</div>
                                 <div class="position-text">{{ $sub->role }}</div>
-                                <div class="status-badge">{{ $sub->performance }}</div>
+                                <div class="status-badge-container">
+                                  <div class="status-badge-fill bg-primary"
+                                    style="width: {{ $sub->performancePercentage }}%;">
+                                  </div>
+                                  <div class="status-badge-text">{{ $sub->performance }}</div>
+                                </div>
                               </div>
                             </div>
 
@@ -58,7 +70,12 @@
                                         <div>
                                           <div class="fw-bold">{{ $vendor->name }}</div>
                                           <div class="position-text">{{ $vendor->role }}</div>
-                                          <div class="status-badge">{{ $vendor->performance }}</div>
+                                          <div class="status-badge-container">
+                                            <div class="status-badge-fill bg-primary"
+                                              style="width: {{ $vendor->performancePercentage }}%;">
+                                            </div>
+                                            <div class="status-badge-text">{{ $vendor->performance }}</div>
+                                          </div>
                                         </div>
                                       </div>
                                     </div>
