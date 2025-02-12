@@ -51,13 +51,15 @@
               </div>
               <div class="mt-3">
                 @foreach ($siteEngineers as $se)
-                  <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
-                    <img class="img-sm rounded-10" src={{ $se->image }} alt="profile">
-                    <div class="wrapper ms-3">
-                      <p class="fw-bold mb-1 ms-1">{{ $se->name }}</p>
-                      <small class="text-muted mb-0">{{ $se->performance }}</small>
+                  <a href="{{ route("staff.show", $se->id) }}" class="text-decoration-none text-dark">
+                    <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
+                      <img class="img-sm rounded-10" src={{ $se->image }} alt="profile">
+                      <div class="wrapper ms-3">
+                        <p class="fw-bold mb-1 ms-1">{{ $se->name }}</p>
+                        <small class="text-muted mb-0">{{ $se->performance }}</small>
+                      </div>
                     </div>
-                  </div>
+                  </a>
                 @endforeach
               </div>
             </div>
