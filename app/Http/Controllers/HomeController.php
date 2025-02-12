@@ -32,8 +32,17 @@ class HomeController extends Controller
      */
     public function index(Request $request)
     {
-        $projectId = $request->query('project_id', session('project_id'));
-        $projects = Project::all();
+        $user = auth()->user();
+        // Admins & Project Managers can select any project, others are restricted
+        $projectId = $user->role == 0 || $user->role == 2
+            ? $request->query('project_id', session('project_id'))
+            : $user->project_id;
+
+        // Get only the project assigned to the logged-in user
+        $projects = ($user->role == 0 || $user->role == 2) ? Project::all() : Project::where('id', $projectId)->get();
+
+        // $projectId = $request->query('project_id', session('project_id'));
+        // $projects = Project::all();
 
         $siteCount = $projectId ? Site::where('project_id', $projectId)->count() : Site::count();
 
@@ -77,83 +86,86 @@ class HomeController extends Controller
             ->with('tasks') // Load task details
             ->get();
 
-        $staffCount = User::whereIn('role', [1, 2])->count();
-        $vendorCount = User::where('role', 3)->count();
+        $staffCount =
+            User::whereIn('role', [1, 2])->where('project_id', $projectId)->count();
+        $vendorCount =
+            User::where('role', 3)->where('project_id', $projectId)->count();
 
         // Get Project Managers and filter performance based on the selected project
-        $projectManagers = User::where('role', 2)->get()->map(function ($pm) use ($projectId) {
-            // Total & completed tasks for the Project Manager in the selected project
-            $totalTasksPM = Task::where('manager_id', $pm->id)
-                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-                ->count();
-            $completedTasksPM = Task::where('manager_id', $pm->id)
-                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-                ->where('status', 'Completed')
-                ->count();
-            $performancePercentagePM = $totalTasksPM > 0 ? ($completedTasksPM / $totalTasksPM) * 100 : 0;
+        $projectManagers = User::where('role', 2)->where('project_id', $projectId)
+            ->get()->map(function ($pm) use ($projectId) {
+                // Total & completed tasks for the Project Manager in the selected project
+                $totalTasksPM = Task::where('manager_id', $pm->id)
+                    ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                    ->count();
+                $completedTasksPM = Task::where('manager_id', $pm->id)
+                    ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                    ->where('status', 'Completed')
+                    ->count();
+                $performancePercentagePM = $totalTasksPM > 0 ? ($completedTasksPM / $totalTasksPM) * 100 : 0;
 
-            // Get Site Engineers under this PM
-            $siteEngineers = User::where('role', 1)
-                ->where('manager_id', $pm->id)
-                ->get()
-                ->map(function ($se) use ($projectId) {
-                    // Total & completed tasks for Site Engineer in the selected project
-                    $totalTasksSE = Task::where('engineer_id', $se->id)
-                        ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-                        ->count();
-                    $completedTasksSE = Task::where('engineer_id', $se->id)
-                        ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-                        ->where('status', 'Completed')
-                        ->count();
-                    $performancePercentageSE = $totalTasksSE > 0 ? ($completedTasksSE / $totalTasksSE) * 100 : 0;
+                // Get Site Engineers under this PM
+                $siteEngineers = User::where('role', 1)
+                    ->where('manager_id', $pm->id)
+                    ->get()
+                    ->map(function ($se) use ($projectId) {
+                        // Total & completed tasks for Site Engineer in the selected project
+                        $totalTasksSE = Task::where('engineer_id', $se->id)
+                            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                            ->count();
+                        $completedTasksSE = Task::where('engineer_id', $se->id)
+                            ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                            ->where('status', 'Completed')
+                            ->count();
+                        $performancePercentageSE = $totalTasksSE > 0 ? ($completedTasksSE / $totalTasksSE) * 100 : 0;
 
-                    // Get Vendors under this Site Engineer
-                    $vendors = User::where('role', 3)
-                        ->where('site_engineer_id', $se->id)
-                        ->get()
-                        ->map(function ($vendor) use ($projectId) {
-                            // Total & completed tasks for Vendor in the selected project
-                            $totalTasksVendor = Task::where('vendor_id', $vendor->id)
-                                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-                                ->count();
-                            $completedTasksVendor = Task::where('vendor_id', $vendor->id)
-                                ->when($projectId, fn($q) => $q->where('project_id', $projectId))
-                                ->where('status', 'Completed')
-                                ->count();
-                            $performancePercentageVendor = $totalTasksVendor > 0 ? ($completedTasksVendor / $totalTasksVendor) * 100 : 0;
+                        // Get Vendors under this Site Engineer
+                        $vendors = User::where('role', 3)
+                            ->where('site_engineer_id', $se->id)
+                            ->get()
+                            ->map(function ($vendor) use ($projectId) {
+                                // Total & completed tasks for Vendor in the selected project
+                                $totalTasksVendor = Task::where('vendor_id', $vendor->id)
+                                    ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                                    ->count();
+                                $completedTasksVendor = Task::where('vendor_id', $vendor->id)
+                                    ->when($projectId, fn($q) => $q->where('project_id', $projectId))
+                                    ->where('status', 'Completed')
+                                    ->count();
+                                $performancePercentageVendor = $totalTasksVendor > 0 ? ($completedTasksVendor / $totalTasksVendor) * 100 : 0;
 
-                            return (object) [
-                                'id' => $vendor->id,
-                                'name' => $vendor->name,
-                                'image' => $vendor->image,
-                                'role' => "Vendor",
-                                'performance' => "$completedTasksVendor/$totalTasksVendor",
-                                'performancePercentage' => $performancePercentageVendor
-                            ];
-                        });
+                                return (object) [
+                                    'id' => $vendor->id,
+                                    'name' => $vendor->name,
+                                    'image' => $vendor->image,
+                                    'role' => "Vendor",
+                                    'performance' => "$completedTasksVendor/$totalTasksVendor",
+                                    'performancePercentage' => $performancePercentageVendor
+                                ];
+                            });
 
-                    return (object) [
-                        'id' => $se->id,
-                        'name' => $se->firstName . " " . $se->lastName,
-                        'image' => $se->image,
-                        'role' => "Site Engineer",
-                        'performance' => "$completedTasksSE/$totalTasksSE",
-                        'performancePercentage' => $performancePercentageSE,
-                        'vendors' => $vendors
-                    ];
-                })->sortByDesc('performancePercentage') // Sort vendors by performance
-                ->values();
+                        return (object) [
+                            'id' => $se->id,
+                            'name' => $se->firstName . " " . $se->lastName,
+                            'image' => $se->image,
+                            'role' => "Site Engineer",
+                            'performance' => "$completedTasksSE/$totalTasksSE",
+                            'performancePercentage' => $performancePercentageSE,
+                            'vendors' => $vendors
+                        ];
+                    })->sortByDesc('performancePercentage') // Sort vendors by performance
+                    ->values();
 
-            return (object) [
-                'id' => $pm->id,
-                'name' => $pm->firstName . " " . $pm->lastName,
-                'image' => $pm->image,
-                'role' => "Project Manager",
-                'performance' => "$completedTasksPM/$totalTasksPM",
-                'siteEngineers' => $siteEngineers,
-                'performancePercentage' => $performancePercentagePM,
-            ];
-        })->sortByDesc('performancePercentage') // Sort vendors by performance
+                return (object) [
+                    'id' => $pm->id,
+                    'name' => $pm->firstName . " " . $pm->lastName,
+                    'image' => $pm->image,
+                    'role' => "Project Manager",
+                    'performance' => "$completedTasksPM/$totalTasksPM",
+                    'siteEngineers' => $siteEngineers,
+                    'performancePercentage' => $performancePercentagePM,
+                ];
+            })->sortByDesc('performancePercentage') // Sort vendors by performance
             ->values();
         $completedSitesCount = Site::whereHas('tasks', function ($query) {
             $query->where('status', 'Completed');
