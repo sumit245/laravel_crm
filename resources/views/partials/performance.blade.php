@@ -73,7 +73,7 @@
                         <!-- Weak Performers (Site Engineers with <50% tasks completed OR 0/0 tasks) -->
                         <h6 class="text-danger fw-bold mt-2">Weak Site Engineers</h6>
                         @foreach ($item->siteEngineers as $sub)
-                          @if ($sub->performancePercentage <= 50)
+                          @if ($sub->performancePercentage <= 1)
                             <div class="user-card" onclick="toggleDropdown(this, event)">
                               <div class="d-flex align-items-center">
                                 <img src="{{ $sub->image }}" alt="User" class="user-avatar">
@@ -88,7 +88,7 @@
                                 <div class="nested-list">
                                   <h6 class="text-danger fw-bold mt-2">Weak Vendors</h6>
                                   @foreach ($sub->vendors as $vendor)
-                                    @if ($vendor->performancePercentage <= 50)
+                                    @if ($vendor->performancePercentage <= 1)
                                       <div class="user-card">
                                         <div class="d-flex align-items-center">
                                           <img src="{{ $vendor->image }}" alt="User" class="user-avatar">
