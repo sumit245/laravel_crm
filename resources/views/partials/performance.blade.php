@@ -29,9 +29,9 @@
                     <span class="fw-bold">{{ $item->name }}</span>
                     <span class="position-text">{{ $item->role }}</span>
                     <div class="status-badge-container">
-                      <div class="status-badge-fill bg-primary" style="width: {{ $sub->performancePercentage }}%;">
+                      <div class="status-badge-fill bg-primary" style="width: {{ $item->performancePercentage }}%;">
                       </div>
-                      <div class="status-badge-text">{{ $sub->performance }}</div>
+                      <div class="status-badge-text">{{ $item->performance }}</div>
                     </div>
                   </div>
                 </div>
