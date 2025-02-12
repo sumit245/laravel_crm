@@ -105,12 +105,28 @@ class StaffController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
-        $staff = User::findOrFail($id);
-        return view('staff.show', compact('staff'));
+        $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
+
+        // Fetch tasks where this staff is assigned as an engineer, manager, or vendor
+        $tasks = Task::with('site')
+            ->where(function ($query) use ($staff) {
+                $query->where('engineer_id', $staff->id)
+                    ->orWhere('manager_id', $staff->id)
+                    ->orWhere('vendor_id', $staff->id);
+            })
+            ->get();
+
+        // Categorize tasks
+        $assignedTasks = $tasks;
+        $completedTasks = $tasks->where('status', 'Completed');
+        $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
+        $rejectedTasks = $tasks->where('status', 'Rejected');
+
+        return view('staff.show', compact('staff', 'assignedTasks', 'completedTasks', 'pendingTasks', 'rejectedTasks'));
     }
+
 
     /**
      * Show the form for editing the specified resource.

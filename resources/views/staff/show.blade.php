@@ -2,52 +2,119 @@
 
 @section("content")
   <div class="content-wrapper">
+
     <div class="row">
       <div class="col-md-12 grid-margin">
         <div class="card">
           <div class="card-body">
-            <h4 class="card-title">Contact Information</h4>
-            <div class="row">
-              <!-- Personal Details -->
-              <div class="col-md-6">
-                <h6 class="text-muted">Personal Details</h6>
-                <div class="mb-2">
-                  <strong>Firstname:</strong> <span>{{ $staff->firstName }}</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Lastname:</strong> <span>{{ $staff->lastName }}</span>
-                </div>
-              </div>
-              <!-- Contact Details -->
-              <div class="col-md-6">
-                <h6 class="text-muted">Contact Details</h6>
-                <div class="mb-2">
-                  <strong>Mobile Phone:</strong> <span>{{ $staff->contactNo }}</span>
-                </div>
-                <div class="mb-2">
-                  <strong>Email Address:</strong> <span>{{ $staff->email }}</span>
-                </div>
-              </div>
-            </div>
-            <hr>
-            <div class="row">
-              <!-- Address Details -->
-              <div class="col-md-6">
-                <h6 class="text-muted">Address</h6>
-                <p>{{ $staff->address }}</p>
-              </div>
-              <div class="col-md-6">
-                <h6 class="text-muted">Role</h6>
-                <p>{{ $staff->role == 1 ? "Coordinator" : "Project Manager" }}</p>
-              </div>
-            </div>
             <!-- Edit & Delete Buttons -->
-            <div class="d-flex justify-content-end mt-4">
+            <div class="d-flex justify-content-between align-items-center mt-4">
+              <h4 class="card-title">Personal Details</h4>
               <!-- Edit Button -->
               <a href="{{ route("staff.edit", $staff->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
                 title="Edit Staff">
                 <i class="mdi mdi-pencil"> Edit</i>
               </a>
+            </div>
+            <hr />
+            <div class="d-flex justify-content-between">
+              <!-- Personal Details -->
+              <div class="">
+                <p><strong>Name:</strong> {{ $staff->firstName }} {{ $staff->lastName }}</p>
+
+                <p><strong>Mobile Phone:</strong>{{ $staff->contactNo }}</p>
+                <p><strong>Email Address:</strong>{{ $staff->email }}</p>
+                <p><strong>Address:</strong> {{ $staff->address }}</p>
+                <p><strong>Role: </strong>
+                  {{ $staff->role == 1
+                      ? "Site Engineer"
+                      : ($staff->role == 2
+                          ? "Project Manager"
+                          : ($staff->role == 3
+                              ? "Vendor"
+                              : ($staff->role == 4
+                                  ? "Store Incharge"
+                                  : "Coordinator"))) }}
+                </p>
+                @if ($staff->role != 2 && isset($staff->projectManager))
+                  <p><strong>Manager: </strong> {{ $staff->projectManager->firstName }}
+                    {{ $staff->projectManager->lastName }}</p>
+                @endif
+              </div>
+              <!-- Contact Details -->
+              <div class="">
+                <img src={{ $staff->image }} alt="user-avatar" class="custom-image">
+              </div>
+            </div>
+            <hr />
+            <div class="row">
+              <div class="col">
+                <div class="list-header header-green">Assigned sites</div>
+                <div class="list-container">
+                  @if ($assignedTasks->count() > 0)
+                    @foreach ($assignedTasks as $task)
+                      <p>
+                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
+                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
+                      </p>
+                      <hr>
+                    @endforeach
+                  @else
+                    <p>No data available</p>
+                  @endif
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="list-header header-darkGreen">Completed Sites</div>
+                <div class="list-container">
+                  @if ($completedTasks->count() > 0)
+                    @foreach ($completedTasks as $task)
+                      <p>
+                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
+                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
+                      </p>
+                      <hr>
+                    @endforeach
+                  @else
+                    <p>No completed tasks</p>
+                  @endif
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="list-header header-blue">Pending Sites</div>
+                <div class="list-container">
+                  @if ($pendingTasks->count() > 0)
+                    @foreach ($pendingTasks as $task)
+                      <p>
+                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
+                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
+                      </p>
+                      <hr>
+                    @endforeach
+                  @else
+                    <p>No pending tasks</p>
+                  @endif
+                </div>
+              </div>
+
+              <div class="col">
+                <div class="list-header header-red">Rejected Sites</div>
+                <div class="list-container">
+                  @if ($rejectedTasks->count() > 0)
+                    @foreach ($rejectedTasks as $task)
+                      <p>
+                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
+                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
+                      </p>
+                      <hr>
+                    @endforeach
+                  @else
+                    <p>No rejected tasks</p>
+                  @endif
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -55,3 +122,102 @@
     </div>
   </div>
 @endsection
+
+@push("styles")
+  <style>
+    .custom-image {
+      width: 150px;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 10px;
+      margin-top: 50px;
+      margin-left: 0px;
+      transform: translateY(-10px);
+    }
+
+    .image-container {
+      position: relative;
+      margin-left: 250px;
+      transform: translateY(-20px);
+    }
+
+    .row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    .col {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .list-header {
+      padding: 10px;
+      color: white;
+      border-radius: 4px 4px 0 0;
+      text-align: center;
+    }
+
+    .list-container {
+      background-color: white;
+      padding: 10px;
+      border: 1px solid #dee2e6;
+      text-align: center;
+    }
+
+    .header-green {
+      background-color: #28a745;
+    }
+
+    .header-red {
+      background-color: #dc3545;
+    }
+
+    .header-blue {
+      background-color: #2d1cc0;
+      color: rgb(255, 255, 255);
+    }
+
+    .header-darkGreen {
+      background-color: #0a3314;
+    }
+
+    .user-card {
+      border: 1px solid #dee2e6;
+      margin-bottom: 8px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .user-card:hover {
+      background-color: #f8f9fa;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .nested-list {
+      margin-left: 20px;
+      display: none;
+    }
+
+    .status-badge {
+      background-color: #e9ecef;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .position-text {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+  </style>
+@endpush
