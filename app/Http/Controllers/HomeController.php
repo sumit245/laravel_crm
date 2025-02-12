@@ -184,6 +184,13 @@ class HomeController extends Controller
                 return $query->where('project_id', $projectId);
             })
             ->count();
+        $rejectedSitesCount = Site::whereHas('tasks', function ($query) {
+            $query->where('status', 'Rejected');
+        })
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id', $projectId);
+            })
+            ->count();
 
 
         $statistics = [
@@ -193,7 +200,7 @@ class HomeController extends Controller
                     'Total' => $siteCount,
                     'Unassigned' => $siteCount - ($assignedSites + $completedSitesCount + $pendingSitesCount),
                     'Completed' => $completedSitesCount,
-                    'Rejected' => $pendingSitesCount
+                    'Rejected' => $rejectedSitesCount
                 ],
                 'link' => route('sites.index')
             ],
