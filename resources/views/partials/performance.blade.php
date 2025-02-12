@@ -53,7 +53,7 @@
                                   <div class="status-badge-container">
                                     <div class="status-badge-fill bg-primary" style="width: {{ $sub->performance }}%;">
                                     </div>
-                                    <div class="status-badge-text">{{ round($sub->performance, 2) }}</div>
+                                    <div class="status-badge-text">{{ $sub->performance }}</div>
                                   </div>
                                 </div>
                               </div>
