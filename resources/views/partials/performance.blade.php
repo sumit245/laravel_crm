@@ -73,7 +73,7 @@
                         <!-- Top Performers (Site Engineers with >50% tasks completed) -->
                         <h6 class="text-success fw-bold mt-2">Top Site Engineers</h6>
                         @foreach ($item->siteEngineers as $index => $sub)
-                          @if ($sub->performancePercentage > 1)
+                          @if ($sub->performancePercentage > 10)
                             <div class="user-card" onclick="toggleDropdown(this, event)">
                               <div class="d-flex align-items-center">
                                 @if ($index < 3)
@@ -85,7 +85,8 @@
                                   <div class="fw-bold">{{ $sub->name }}</div>
                                   <div class="position-text">{{ $sub->role }}</div>
                                   <div class="status-badge-container">
-                                    <div class="status-badge-fill bg-primary" style="width: {{ $sub->performance }}%;">
+                                    <div class="status-badge-fill bg-primary"
+                                      style="width: {{ $sub->performancePercentage }}%;">
                                     </div>
                                     <div class="status-badge-text">{{ $sub->performance }}</div>
                                   </div>
@@ -96,7 +97,7 @@
                                 <div class="nested-list">
                                   <h6 class="text-success fw-bold mt-2">Top Vendors</h6>
                                   @foreach ($sub->vendors as $vendor)
-                                    @if ($vendor->performancePercentage > 1)
+                                    @if ($vendor->performancePercentage > 10)
                                       <div class="user-card">
                                         <div class="d-flex align-items-center">
                                           <img src="{{ $vendor->image }}" alt="User" class="user-avatar">
@@ -134,7 +135,7 @@
                                 <div class="nested-list">
                                   <h6 class="text-danger fw-bold mt-2">Weak Vendors</h6>
                                   @foreach ($sub->vendors as $vendor)
-                                    @if ($vendor->performancePercentage <= 1)
+                                    @if ($vendor->performancePercentage <= 10 && $vendor->performancePercentage > 0)
                                       <div class="user-card">
                                         <div class="d-flex align-items-center">
                                           <img src="{{ $vendor->image }}" alt="User" class="user-avatar">
