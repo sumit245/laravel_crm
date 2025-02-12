@@ -191,9 +191,9 @@ class HomeController extends Controller
                 'title' => 'Sites',
                 'values' => [
                     'Total' => $siteCount,
-                    'Assigned' => $assignedSites,
+                    'Unassigned' => $siteCount - ($assignedSites + $completedSitesCount + $pendingSitesCount),
                     'Completed' => $completedSitesCount,
-                    'Pending' => $pendingSitesCount
+                    'Rejected' => $pendingSitesCount
                 ],
                 'link' => route('sites.index')
             ],

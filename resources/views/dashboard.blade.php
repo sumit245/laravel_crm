@@ -48,20 +48,24 @@
     </div>
     <div class="row mt-4">
       @foreach ($statistics as $statistic)
-        <div class="col-sm-4">
+        <div class="col-md-4">
           <div class="card card-rounded">
             <div class="card-body text-center">
               <h4>{{ $statistic["title"] }}</h4>
-
               @if (isset($statistic["values"]))
-                @foreach ($statistic["values"] as $key => $value)
-                  <p class="mb-1"><strong>{{ $key }}:</strong> {{ $value }}</p>
-                @endforeach
+                <div class="row parent-card">
+                  @foreach ($statistic["values"] as $key => $value)
+                    <div class="col-sm-6 stats-card">
+                      {{-- <div class=""> --}}
+                      <h5 class="stats-title">{{ $key }}</h5>
+                      <h2 class="stats-total">{{ $value }}</h2>
+                      {{-- </div> --}}
+                    </div>
+                  @endforeach
+                </div>
               @else
                 <p class="fs-4 fw-bold">{{ $statistic["value"] }}</p>
               @endif
-
-              <a href="{{ $statistic["link"] }}" class="btn btn-primary">View Details</a>
             </div>
           </div>
         </div>
@@ -150,4 +154,36 @@
       }
     });
   </script>
+@endpush
+
+@push("styles")
+  <style>
+    .parent-card {
+      background-color: #dddddd;
+    }
+
+    .stats-card {
+      background-color: white;
+      /* border-radius: 0.6rem; */
+      padding: .5rem;
+      text-align: center;
+      border: #dddddd 1px solid;
+      height: 100%;
+      transition: transform 0.2s;
+    }
+
+    .stats-title {
+      font-size: .75rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .stats-total {
+      font-size: 1.2rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      color: #2d3748;
+    }
+  </style>
 @endpush
