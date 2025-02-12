@@ -155,6 +155,22 @@ class HomeController extends Controller
             ];
         })->sortByDesc('performancePercentage') // Sort vendors by performance
             ->values();
+        $completedSitesCount = Site::whereHas('tasks', function ($query) {
+            $query->where('status', 'Completed');
+        })
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id', $projectId);
+            })
+            ->count();
+
+        $pendingSitesCount = Site::whereHas('tasks', function ($query) {
+            $query->whereIn('status', ['Pending', 'In Progress']);
+        })
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id', $projectId);
+            })
+            ->count();
+
 
         $statistics = [
             [
@@ -162,8 +178,8 @@ class HomeController extends Controller
                 'values' => [
                     'Total' => $siteCount,
                     'Assigned' => $assignedSites,
-                    'Completed' => $completedSites,
-                    'Pending' => $pendingSites
+                    'Completed' => $completedSitesCount,
+                    'Pending' => $pendingSitesCount
                 ],
                 'link' => route('sites.index')
             ],
@@ -177,26 +193,8 @@ class HomeController extends Controller
                 'color' => 'green',
                 'data' =>
                 $projectManagers->sortByDesc('performancePercentage'),
-            ],
-            // 'worst_performers' => [
-            //     'title' => 'Weak Performers',
-            //     'color' => 'red',
-            //     'data' => $projectManagers->sortBy('performancePercentage'),
-            // ],
-            // 'completed_projects' => [
-            //     'title' => 'Completed Targets',
-            //     'color' => 'green',
-            //     'data' => $completedSites,
-            // ],
-            // 'rejected_projects' => [
-            //     'title' => 'Rejected Targets',
-            //     'color' => 'red',
-            //     'data' => $rejectedSites,
-            // ],
+            ]
         ];
-
-        Log::info($performanceData);
-
         return view('dashboard', compact('statistics', 'projects', 'projectManagers', 'performanceData'));
     }
 }
