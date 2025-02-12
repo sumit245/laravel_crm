@@ -6,17 +6,19 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
-
     use AuthenticatesUsers;
+
     protected $redirectTo = '/dashboard';
+
     public function __construct()
     {
         $this->middleware('guest')->except('logout');
-        // $this->middleware('auth')->only('logout');
     }
+
     /**
      * Handle user login with project_id validation.
      */
@@ -30,9 +32,13 @@ class LoginController extends Controller
             ]);
         }
 
-        // Store project_id in session for filtering project-specific data
+        // Clear old session data to avoid conflicts
+        Session::forget('project_id');
+
+        // Store project_id in session
         if ($user->project_id) {
             session(['project_id' => $user->project_id]);
+            Session::save(); // Ensure session is saved immediately
         }
 
         return redirect()->intended($this->redirectTo);
