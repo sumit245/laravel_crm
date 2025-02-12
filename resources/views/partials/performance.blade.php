@@ -36,6 +36,40 @@
                   <div class="nested-list">
                     <div class="row">
                       <div class="col">
+                        @foreach ($item->siteEngineers as $sub)
+                          <div class="user-card" onclick="toggleDropdown(this, event)">
+                            <div class="d-flex align-items-center">
+                              <img src="{{ $sub->image }}" alt="User" class="user-avatar">
+                              <div>
+                                <div class="fw-bold">{{ $sub->name }}</div>
+                                <div class="position-text">{{ $sub->role }}</div>
+                                <div class="status-badge">{{ $sub->performance }}</div>
+                              </div>
+                            </div>
+
+                            @if (!empty($sub->vendors))
+                              <div class="nested-list">
+                                <h6 class="text-danger fw-bold mt-2">Weak Vendors</h6>
+                                @foreach ($sub->vendors as $vendor)
+                                  @if ($vendor->performancePercentage <= 1)
+                                    <div class="user-card">
+                                      <div class="d-flex align-items-center">
+                                        <img src="{{ $vendor->image }}" alt="User" class="user-avatar">
+                                        <div>
+                                          <div class="fw-bold">{{ $vendor->name }}</div>
+                                          <div class="position-text">{{ $vendor->role }}</div>
+                                          <div class="status-badge">{{ $vendor->performance }}</div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  @endif
+                                @endforeach
+                              </div>
+                            @endif
+                          </div>
+                        @endforeach
+                      </div>
+                      <div class="col">
                         <!-- Top Performers (Site Engineers with >50% tasks completed) -->
                         <h6 class="text-success fw-bold mt-2">Top Site Engineers</h6>
                         @foreach ($item->siteEngineers as $index => $sub)
