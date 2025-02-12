@@ -1,3 +1,7 @@
+@php
+  $awardIcons = ["🥇", "🥈", "🥉"]; // Gold, Silver, Bronze
+@endphp
+
 <div class="bg-light mt-4 p-4">
   <!-- Header Section -->
   <div class="d-flex justify-content-between align-items-center mb-3">
@@ -34,15 +38,23 @@
                       <div class="col">
                         <!-- Top Performers (Site Engineers with >50% tasks completed) -->
                         <h6 class="text-success fw-bold mt-2">Top Site Engineers</h6>
-                        @foreach ($item->siteEngineers as $sub)
+                        @foreach ($item->siteEngineers as $index => $sub)
                           @if ($sub->performancePercentage > 1)
                             <div class="user-card" onclick="toggleDropdown(this, event)">
                               <div class="d-flex align-items-center">
+                                @if ($index < 3)
+                                  <span class="award-icon">{{ $awardIcons[$index] }}</span>
+                                @endif
+                                {{-- Show first three award in golden, bronze and silver --}}
                                 <img src="{{ $sub->image }}" alt="User" class="user-avatar">
                                 <div>
                                   <div class="fw-bold">{{ $sub->name }}</div>
                                   <div class="position-text">{{ $sub->role }}</div>
-                                  <div class="status-badge">{{ $sub->performance }}</div>
+                                  <div class="status-badge-container">
+                                    <div class="status-badge-fill bg-primary" style="width: {{ $sub->performance }}%;">
+                                    </div>
+                                    <div class="status-badge-text">{{ round($sub->performance, 2) }}</div>
+                                  </div>
                                 </div>
                               </div>
 
@@ -176,6 +188,35 @@
       padding: 2px 8px;
       border-radius: 12px;
       font-size: 0.8rem;
+    }
+
+    .status-badge-container {
+      position: relative;
+      width: 100px;
+      height: 20px;
+      border-radius: 12px;
+      background-color: #e9ecef;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .status-badge-fill {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      border-radius: 12px;
+    }
+
+    .status-badge-text {
+      position: absolute;
+      width: 100%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 0.8rem;
+      font-weight: bold;
+      color: black;
     }
 
     .position-text {
