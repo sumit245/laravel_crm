@@ -120,11 +120,25 @@ class StaffController extends Controller
 
         // Categorize tasks
         $assignedTasks = $tasks;
+        $assignedTasksCount = $tasks->count();
         $completedTasks = $tasks->where('status', 'Completed');
+        $completedTasksCount = $completedTasks->count();
         $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
+        $pendingTasksCount = $pendingTasks->count();
         $rejectedTasks = $tasks->where('status', 'Rejected');
+        $rejectedTasksCount = $rejectedTasks->count();
 
-        return view('staff.show', compact('staff', 'assignedTasks', 'completedTasks', 'pendingTasks', 'rejectedTasks'));
+        return view('staff.show', compact(
+            'staff',
+            'assignedTasks',
+            'completedTasks',
+            'pendingTasks',
+            'rejectedTasks',
+            'assignedTasksCount',
+            'completedTasksCount',
+            'pendingTasksCount',
+            'rejectedTasksCount'
+        ));
     }
 
 

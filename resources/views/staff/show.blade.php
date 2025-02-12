@@ -49,7 +49,9 @@
             <hr />
             <div class="row">
               <div class="col">
-                <div class="list-header header-green">Assigned sites</div>
+                <div class="list-header header-green">Assigned sites
+                  <span class="card-sm card-rounded bg-light">{{ $assignedTasksCount }}</span>
+                </div>
                 <div class="list-container">
                   @if ($assignedTasks->count() > 0)
                     @foreach ($assignedTasks as $task)
@@ -66,7 +68,9 @@
               </div>
 
               <div class="col">
-                <div class="list-header header-darkGreen">Completed Sites</div>
+                <div class="list-header header-darkGreen">Completed Sites
+                  <span class="card-sm card-rounded bg-light">{{ $completedTasksCount }}</span>
+                </div>
                 <div class="list-container">
                   @if ($completedTasks->count() > 0)
                     @foreach ($completedTasks as $task)
@@ -83,7 +87,9 @@
               </div>
 
               <div class="col">
-                <div class="list-header header-blue">Pending Sites</div>
+                <div class="list-header header-blue">Pending Sites
+                  <span class="card-sm card-rounded bg-light">{{ $pendingTasksCount }}</span>
+                </div>
                 <div class="list-container">
                   @if ($pendingTasks->count() > 0)
                     @foreach ($pendingTasks as $task)
@@ -100,7 +106,9 @@
               </div>
 
               <div class="col">
-                <div class="list-header header-red">Rejected Sites</div>
+                <div class="list-header header-red">Rejected Sites
+                  <span class="card-sm card-rounded bg-light">{{ $rejectedTasksCount }}</span>
+                </div>
                 <div class="list-container">
                   @if ($rejectedTasks->count() > 0)
                     @foreach ($rejectedTasks as $task)
