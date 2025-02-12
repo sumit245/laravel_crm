@@ -38,6 +38,8 @@ class HomeController extends Controller
             ? $request->query('project_id', session('project_id'))
             : $user->project_id;
 
+        Log::info($projectId);
+
         // Get only the project assigned to the logged-in user
         $projects = ($user->role == 0 || $user->role == 2) ? Project::all() : Project::where('id', $projectId)->get();
 
