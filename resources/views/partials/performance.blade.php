@@ -25,13 +25,15 @@
               </div>
               <div class="mt-3">
                 @foreach ($projectManagers as $projectManager)
-                  <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
-                    <img class="img-sm rounded-10" src={{ $projectManager->image }} alt="profile">
-                    <div class="wrapper ms-3">
-                      <p class="fw-bold mb-1 ms-1">{{ $projectManager->name }}</p>
-                      <small class="text-muted mb-0">{{ $projectManager->performance }}</small>
+                  <a href="{{ route("staff.show", $projectManager->id) }}" class="text-decoration-none text-dark">
+                    <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
+                      <img class="img-sm rounded-10" src={{ $projectManager->image }} alt="profile">
+                      <div class="wrapper ms-3">
+                        <p class="fw-bold mb-1 ms-1">{{ $projectManager->name }}</p>
+                        <small class="text-muted mb-0">{{ $projectManager->performance }}</small>
+                      </div>
                     </div>
-                  </div>
+                  </a>
                 @endforeach
               </div>
             </div>
@@ -79,13 +81,15 @@
               </div>
               <div class="mt-3">
                 @foreach ($vendors as $vendor)
-                  <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
-                    <img class="img-sm rounded-10" src={{ $vendor->image }} alt="profile">
-                    <div class="wrapper ms-3">
-                      <p class="fw-bold mb-1 ms-1">{{ $vendor->name }}</p>
-                      <small class="text-muted mb-0">{{ $vendor->performance }}</small>
+                  <a href="{{ route("uservendors.show", $vendor->id) }}" class="text-decoration-none text-dark">
+                    <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
+                      <img class="img-sm rounded-10" src={{ $vendor->image }} alt="profile">
+                      <div class="wrapper ms-3">
+                        <p class="fw-bold mb-1 ms-1">{{ $vendor->name }}</p>
+                        <small class="text-muted mb-0">{{ $vendor->performance }}</small>
+                      </div>
                     </div>
-                  </div>
+                  </a>
                 @endforeach
               </div>
             </div>

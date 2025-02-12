@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -96,11 +97,39 @@ class VendorController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($id)
     {
-        //
-        $vendor = User::find($id);
-        return view('uservendors.show', compact('vendor'));
+        $vendor = User::where('role', 3) // Ensure it's a vendor
+            ->with(['siteEngineer', 'projects']) // Load relationships if needed
+            ->findOrFail($id);
+
+        // Fetch tasks assigned to the vendor
+        $tasks = Task::with('site')
+            ->where('vendor_id', $vendor->id)
+            ->get();
+
+        // Categorize tasks
+        $assignedTasks = $tasks;
+        $assignedTasksCount = $tasks->count();
+        $completedTasks = $tasks->where('status', 'Completed');
+        $completedTasksCount = $completedTasks->count();
+        $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
+        $pendingTasksCount = $pendingTasks->count();
+        $rejectedTasks = $tasks->where('status', 'Rejected');
+        $rejectedTasksCount = $rejectedTasks->count();
+
+        return view('vendors.show', compact(
+            'vendor',
+            'assignedTasks',
+            'completedTasks',
+            'pendingTasks',
+            'rejectedTasks',
+            'assignedTasksCount',
+            'completedTasksCount',
+            'pendingTasksCount',
+            'rejectedTasksCount'
+
+        ));
     }
 
     /**
