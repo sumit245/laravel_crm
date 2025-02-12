@@ -55,6 +55,14 @@ class HomeController extends Controller
             })
             ->count();
 
+        $rejectedSites = Site::whereHas('tasks', function ($query) {
+            $query->where('status', 'Rejected');
+        })
+            ->when($projectId, function ($query) use ($projectId) {
+                return $query->where('project_id', $projectId);
+            })
+            ->count();
+
         // Pending sites
         $pendingSites = Site::whereHas('tasks', function ($query) {
             $query->whereIn('status', ['Pending', 'In Progress']);
@@ -155,6 +163,86 @@ class HomeController extends Controller
             ['title' => 'Staffs', 'value' => $staffCount, 'link' => route('staff.index')],
         ];
 
-        return view('dashboard', compact('statistics', 'projects', 'projectManagers'));
+        $performanceData = [
+            'top_performers' => [
+                'title' => 'Top Performers',
+                'color' => 'green',
+                'data' => $projectManagers->take(10)->map(function ($pm) {
+                    return [
+                        'id' => $pm->id,
+                        'name' => $pm->name,
+                        'role' => 'Project Manager',
+                        'status' => $pm->performance, // e.g. "3/4 Projects"
+                        'avatar' => 'path/to/avatar.jpg', // Replace with actual avatar path
+                        'subordinates' => $pm->siteEngineers->map(function ($se) {
+                            return [
+                                'id' => $se->id,
+                                'name' => $se->name,
+                                'role' => 'Site Engineer',
+                                'status' => $se->performance, // e.g. "2/3 Tasks"
+                                'avatar' => 'path/to/avatar2.jpg', // Replace with actual avatar path
+                                'subordinates' => $se->vendors->map(function ($vendor) {
+                                    return [
+                                        'id' => $vendor->id,
+                                        'name' => $vendor->name,
+                                        'role' => 'Vendor',
+                                        'status' => $vendor->performance, // e.g. "5/7 Tasks"
+                                        'avatar' => 'path/to/avatar3.jpg', // Replace with actual avatar path
+                                    ];
+                                })->toArray(), // Convert to array
+                            ];
+                        })->toArray(), // Convert to array
+                    ];
+                })->toArray(), // Convert to array
+            ],
+            'worst_performers' => [
+                'title' => 'Weak Performers',
+                'color' => 'red',
+                'data' => $projectManagers->sortBy('performancePercentage')->take(10)->map(function ($pm) {
+                    return [
+                        'id' => $pm->id,
+                        'name' => $pm->name,
+                        'role' => 'Project Manager',
+                        'status' => $pm->performance,
+                        'avatar' => 'path/to/avatar.jpg',
+                        'subordinates' => $pm->siteEngineers->map(function ($se) {
+                            return [
+                                'id' => $se->id,
+                                'name' => $se->name,
+                                'role' => 'Site Engineer',
+                                'status' => $se->performance,
+                                'avatar' => 'path/to/avatar2.jpg',
+                                'subordinates' => $se->vendors->map(function ($vendor) {
+                                    return [
+                                        'id' => $vendor->id,
+                                        'name' => $vendor->name,
+                                        'role' => 'Vendor',
+                                        'status' => $vendor->performance,
+                                        'avatar' => 'path/to/avatar3.jpg',
+                                    ];
+                                })->toArray(),
+                            ];
+                        })->toArray(),
+                    ];
+                })->toArray(),
+            ],
+            'completed_projects' => [
+                'title' => 'Completed Targets',
+                'color' => 'green',
+                'data' => [
+                    ['count' => $completedSites],
+                ],
+            ],
+            'rejected_projects' => [
+                'title' => 'Rejected Targets',
+                'color' => 'red',
+                'data' => [
+                    ['count' => $rejectedSites],
+                ],
+            ],
+        ];
+
+
+        return view('dashboard', compact('statistics', 'projects', 'projectManagers', 'performanceData'));
     }
 }

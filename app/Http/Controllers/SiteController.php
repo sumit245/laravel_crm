@@ -102,7 +102,7 @@ class SiteController extends Controller
     {
         $search = $request->input('search');
         $sites = Site::with(['stateRelation', 'districtRelation'])
-            ->where('breda_sl_no', 'LIKE', "%{$search}%")
+            ->where('breda_sl_no', $search)
             ->orWhere('site_name', 'LIKE', "%{$search}%")
             ->orWhere('location', 'LIKE', "%{$search}%")
             ->orWhereHas('stateRelation', function ($query) use ($search) {
@@ -116,7 +116,9 @@ class SiteController extends Controller
         return response()->json($sites->map(function ($site) {
             return [
                 'id' => $site->id,
-                'text' => $site->site_name
+                'text' => "{$site->breda_sl_no} - {$site->site_name} ({$site->location}) - " .
+                    ($site->stateRelation->name ?? 'N/A') . ", " .
+                    ($site->districtRelation->name ?? 'N/A')
             ];
         }));
     }

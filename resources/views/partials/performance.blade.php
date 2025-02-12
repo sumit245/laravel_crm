@@ -1,0 +1,151 @@
+<div class="bg-light mt-4 p-4">
+  <!-- Header Section -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Performance Overview</h3>
+    <select class="form-select w-auto" id="dateFilter">
+      <option value="today">Today</option>
+      <option value="week">This Week</option>
+      <option value="month">This Month</option>
+      <option value="custom">Custom Range</option>
+    </select>
+  </div>
+
+  <!-- Lists Section -->
+  <div class="row">
+    @foreach ($performanceData as $category => $items)
+      <div class="col">
+        <div class="list-header header-{{ $items["color"] }}">{{ $items["title"] }}</div>
+        <div class="list-container bg-white p-3">
+          @if (count($items["data"]) > 0)
+            @foreach ($items["data"] as $item)
+              <div class="user-card" onclick="toggleDropdown(this)">
+                <div class="d-flex align-items-center">
+                  <img src="{{ $item["avatar"] ?? "" }}" alt="User" class="user-avatar">
+                  {{-- <div>
+                    <div class="fw-bold">{{ $item["username"] }}</div>
+                    <div class="position-text">{{ $item["role"] }}</div>
+                    <div class="status-badge">{{ $item["status"] }}</div>
+                  </div> --}}
+                </div>
+                @if (!empty($item["subordinates"]))
+                  <div class="nested-list">
+                    @foreach ($item["subordinates"] as $sub)
+                      <div class="user-card" onclick="toggleDropdown(this, event)">
+                        <div class="d-flex align-items-center">
+                          <img src="{{ $sub["avatar"] }}" alt="User" class="user-avatar">
+                          <div>
+                            <div class="fw-bold">{{ $sub["name"] }}</div>
+                            <div class="position-text">{{ $sub["role"] }}</div>
+                            <div class="status-badge">{{ $sub["status"] }}</div>
+                          </div>
+                        </div>
+                      </div>
+                    @endforeach
+                  </div>
+                @endif
+              </div>
+            @endforeach
+          @else
+            <div>No data for now</div>
+          @endif
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>
+
+@push("styles")
+  <style>
+    .list-container {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .list-header {
+      padding: 10px;
+      color: white;
+      border-radius: 4px 4px 0 0;
+    }
+
+    .header-green {
+      background-color: #28a745;
+    }
+
+    .header-red {
+      background-color: #dc3545;
+    }
+
+    .header-yellow {
+      background-color: #ffc107;
+      color: black;
+    }
+
+    .user-card {
+      border: 1px solid #dee2e6;
+      margin-bottom: 8px;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
+    .user-card:hover {
+      background-color: #f8f9fa;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      margin-right: 10px;
+    }
+
+    .nested-list {
+      margin-left: 20px;
+      display: none;
+    }
+
+    .status-badge {
+      background-color: #e9ecef;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 0.8rem;
+    }
+
+    .position-text {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+  </style>
+@endpush
+
+@push("scripts")
+  <script>
+    document.getElementById('dateFilter').addEventListener('change', function(e) {
+      const customRange = document.getElementById('customDateRange');
+      if (e.target.value === 'custom') {
+        customRange.style.display = 'flex';
+      } else {
+        customRange.style.display = 'none';
+      }
+    });
+
+    function applyDateRange() {
+      const fromDate = document.getElementById('dateFrom').value;
+      const toDate = document.getElementById('dateTo').value;
+      console.log('Date range selected:', fromDate, 'to', toDate);
+
+    }
+
+    function toggleDropdown(element, event) {
+      if (event) {
+        event.stopPropagation();
+      }
+
+      const nestedList = element.querySelector('.nested-list');
+      if (nestedList) {
+        const isVisible = nestedList.style.display === 'block';
+        nestedList.style.display = isVisible ? 'none' : 'block';
+      }
+    }
+  </script>
+@endpush
