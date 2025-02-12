@@ -109,19 +109,21 @@
                 <div class="list-header header-red">Rejected Sites
                   <span class="card-sm card-rounded bg-light">{{ $rejectedTasksCount }}</span>
                 </div>
-                <div class="list-container">
+                <ul class="list-container">
                   @if ($rejectedTasks->count() > 0)
                     @foreach ($rejectedTasks as $task)
-                      <p>
-                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
-                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
-                      </p>
+                      <li class="list-group-item">
+                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
+                        <small>{{ $task->start_date }}</small>
+                        <small>{{ $task->end_date }}</small>
+                      </li>
                       <hr>
                     @endforeach
                   @else
                     <p>No rejected tasks</p>
                   @endif
-                </div>
+                </ul>
               </div>
             </div>
           </div>
