@@ -69,7 +69,7 @@
 
               <div class="col">
                 <div class="list-header header-darkGreen">Completed Sites
-                  <span class="card-sm card-rounded bg-light">{{ $completedTasksCount }}</span>
+                  <span class="btn-sm btn-rounded btn-light">{{ $completedTasksCount }}</span>
                 </div>
                 <div class="list-container">
                   @if ($completedTasks->count() > 0)
