@@ -78,14 +78,17 @@
                   @if ($completedTasks->count() > 0)
                     @foreach ($completedTasks as $task)
                       <li class="list-group-item">
-                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
-                        <small>{{ $task->start_date }}</small>
-                        <small>{{ $task->end_date }}</small>
+                        <a href="{{ route("tasks.show", $task->id) }}" class="text-decoration-none text-dark">
+                          <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                          <small>{{ $task->site->location }},
+                            {{ $task->site->districtRelation->name ?? "N/A" }}</small><br>
+                          <small><strong>Start:</strong> {{ $task->start_date }}</small><br>
+                          <small><strong>End:</strong> {{ $task->end_date }}</small>
+                        </a>
                       </li>
                     @endforeach
                   @else
-                    <p>No rejected tasks</p>
+                    <p>No completed tasks</p>
                   @endif
                 </ul>
               </div>
