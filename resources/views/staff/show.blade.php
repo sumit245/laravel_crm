@@ -52,57 +52,63 @@
                 <div class="list-header header-green">Assigned sites
                   <span class="card-sm card-rounded bg-light">{{ $assignedTasksCount }}</span>
                 </div>
-                <div class="list-container">
+                <ul class="list-container">
                   @if ($assignedTasks->count() > 0)
                     @foreach ($assignedTasks as $task)
-                      <p>
-                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
-                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
-                      </p>
+                      <li class="list-group-item">
+                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
+                        <small>{{ $task->start_date }}</small>
+                        <small>{{ $task->end_date }}</small>
+                      </li>
                       <hr>
                     @endforeach
                   @else
-                    <p>No data available</p>
+                    <p>No rejected tasks</p>
                   @endif
-                </div>
+                </ul>
               </div>
 
               <div class="col">
                 <div class="list-header header-darkGreen">Completed Sites
                   <span class="btn-sm btn-rounded btn-light">{{ $completedTasksCount }}</span>
                 </div>
-                <div class="list-container">
+                <ul class="list-container">
                   @if ($completedTasks->count() > 0)
                     @foreach ($completedTasks as $task)
-                      <p>
-                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
-                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
-                      </p>
+                      <li class="list-group-item">
+                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
+                        <small>{{ $task->start_date }}</small>
+                        <small>{{ $task->end_date }}</small>
+                      </li>
                       <hr>
                     @endforeach
                   @else
-                    <p>No completed tasks</p>
+                    <p>No rejected tasks</p>
                   @endif
-                </div>
+                </ul>
               </div>
 
               <div class="col">
                 <div class="list-header header-blue">Pending Sites
                   <span class="card-sm card-rounded bg-light">{{ $pendingTasksCount }}</span>
                 </div>
-                <div class="list-container">
-                  @if ($pendingTasks->count() > 0)
+                <ul class="list-container">
+                  @if ($pendingTasks > 0)
                     @foreach ($pendingTasks as $task)
-                      <p>
-                        <strong>Site:</strong> {{ $task->site->site_name ?? "N/A" }}<br>
-                        <strong>Task:</strong> {{ $task->task_name ?? "N/A" }}
-                      </p>
+                      <li class="list-group-item">
+                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
+                        <small>{{ $task->start_date }}</small>
+                        <small>{{ $task->end_date }}</small>
+                      </li>
                       <hr>
                     @endforeach
                   @else
-                    <p>No pending tasks</p>
+                    <p>No rejected tasks</p>
                   @endif
-                </div>
+                </ul>
               </div>
 
               <div class="col">
