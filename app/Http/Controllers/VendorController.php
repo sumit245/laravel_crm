@@ -118,7 +118,7 @@ class VendorController extends Controller
         $rejectedTasks = $tasks->where('status', 'Rejected');
         $rejectedTasksCount = $rejectedTasks->count();
 
-        return view('vendors.show', compact(
+        return view('uservendors.show', compact(
             'vendor',
             'assignedTasks',
             'completedTasks',
