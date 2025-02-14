@@ -137,9 +137,6 @@ class HomeController extends Controller
         // Fetch project managers for the project
         $projectManagers = User::where('role', 2)
             ->where('project_id', $projectId)
-            ->whereIn('id', function ($query) use ($projectId) {
-                $query->select('user_id')->from('project_user');
-            })
             ->get()
             ->map(function ($pm) use ($projectId) {
                 $totalTasksPM = Task::where('manager_id', $pm->id)
