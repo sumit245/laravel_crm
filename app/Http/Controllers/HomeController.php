@@ -65,12 +65,25 @@ class HomeController extends Controller
             ->count();
 
         // Staff and vendor count for the project
-        $staffCount = User::whereIn('role', [1, 2])->where('project_id', $projectId)->count();
-        $vendorCount = User::where('role', 3)->where('project_id', $projectId)->count();
+        $staffCount = User::whereIn('role', [1, 2])
+            ->where('project_id', $projectId)
+            ->whereIn('id', function ($query) use ($projectId) {
+                $query->select('user_id')->from('project_user');
+            })
+            ->count();
+        $vendorCount = User::where('role', 3)
+            ->where('project_id', $projectId)
+            ->whereIn('id', function ($query) use ($projectId) {
+                $query->select('user_id')->from('project_user');
+            })
+            ->count();
 
         // Fetch site engineers for the project
         $siteEngineers = User::where('role', 1)
             ->where('project_id', $projectId)
+            ->whereIn('id', function ($query) use ($projectId) {
+                $query->select('user_id')->from('project_user');
+            })
             ->get()
             ->map(function ($se) use ($projectId) {
                 $totalTasksSE = Task::where('engineer_id', $se->id)
@@ -96,6 +109,9 @@ class HomeController extends Controller
         // Fetch vendors for the project
         $vendors = User::where('role', 3)
             ->where('project_id', $projectId)
+            ->whereIn('id', function ($query) use ($projectId) {
+                $query->select('user_id')->from('project_user');
+            })
             ->get()
             ->map(function ($vendor) use ($projectId) {
                 $totalTasksVendor = Task::where('vendor_id', $vendor->id)
@@ -121,6 +137,9 @@ class HomeController extends Controller
         // Fetch project managers for the project
         $projectManagers = User::where('role', 2)
             ->where('project_id', $projectId)
+            ->whereIn('id', function ($query) use ($projectId) {
+                $query->select('user_id')->from('project_user');
+            })
             ->get()
             ->map(function ($pm) use ($projectId) {
                 $totalTasksPM = Task::where('manager_id', $pm->id)
