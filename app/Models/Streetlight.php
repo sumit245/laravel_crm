@@ -31,7 +31,8 @@ class Streetlight extends Model
         'lat',
         'lng',
         'beneficiary',
-        'remark'
+        'remark',
+        'project_id'
     ];
     // Define the relationship
     public function project()

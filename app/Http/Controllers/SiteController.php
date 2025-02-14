@@ -20,18 +20,27 @@ class SiteController extends Controller
     // Import Excel file for sites
     public function import(Request $request, $projectId)
     {
+        Log::info('Import method triggered for project ID: ' . $projectId);
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
+        Log::info('Uploaded file:', ['file' => $request->file('file')]);
 
         $project = Project::find($request->project_id);
         if (!$project) {
             return back()->with('error', 'Project not found.');
         }
 
+        if (!$project) {
+            Log::error('Project not found for ID: ' . $projectId);
+            return back()->with('error', 'Project not found.');
+        }
+
         try {
             if ($project->project_type == 1) {
+                Log::info('Importing Streetlight Data...');
                 Excel::import(new StreetlightImport($projectId), $request->file('file'));
+                Log::info('Streetlight Import Completed.');
                 return back()->with('success', 'Streetlight data imported successfully.');
             } else {
                 Excel::import(new SiteImport($projectId), $request->file('file'));

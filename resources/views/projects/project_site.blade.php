@@ -39,12 +39,12 @@
           <th>Engineer</th>
         @else
           {{-- Streetlight Installation --}}
+          <th>Site Code</th>
           <th>State</th>
           <th>District</th>
           <th>Block</th>
           <th>Panchayat</th>
           <th>Ward</th>
-          <th>Number of poles</th>
         @endif
 
         <th>Actions</th>
@@ -71,12 +71,12 @@
             <td>{{ $site->engineerRelation->firstName ?? "" }} {{ $site->engineerRelation->lastName ?? " " }}</td>
           @else
             {{-- Streetlight Installation --}}
+            <td>{{ $site->task_id }}</td>
             <td>{{ $site->state }}</td>
             <td>{{ $site->district }}</td>
             <td>{{ $site->block }}</td>
             <td>{{ $site->panchayat }}</td>
             <td>{{ $site->ward }}</td>
-            <td>{{ $site->pole }}</td>
           @endif
 
           <td>
