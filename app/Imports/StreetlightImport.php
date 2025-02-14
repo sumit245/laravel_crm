@@ -57,7 +57,7 @@ class StreetlightImport implements ToModel, WithHeadingRow, WithValidation
             'district'  => 'required',
             'block'     => 'required',
             'panchayat' => 'required',
-            'ward'      => 'nullable|string',   // ward is nullable and should be an array
+            'ward'      => 'nullable',   // ward is nullable and should be an array
         ];
     }
 }
