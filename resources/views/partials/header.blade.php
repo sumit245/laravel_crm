@@ -19,7 +19,7 @@
       <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
         <h1 class="welcome-text">Good Morning, <span
             class="fw-bold text-black">{{ Auth::user()->name ?? "Guest" }}</span></h1>
-        <h3 class="welcome-sub-text">Your performance summary this week</h3>
+        <h3 class="welcome-sub-text">Your performance summary</h3>
       </li>
     </ul>
     <ul class="navbar-nav ms-auto">
@@ -28,21 +28,6 @@
           data-bs-toggle="dropdown" aria-expanded="false">
           <span id="selectedState">Select State</span>
         </a>
-        {{-- <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
-          aria-labelledby="messageDropdown" style="max-height: 400px; overflow-y: auto;">
-          <a class="dropdown-item py-3">
-            <p class="font-weight-medium float-left mb-0">Select State</p>
-          </a>
-          <div class="dropdown-divider"></div>
-          @foreach ($states as $index => $category)
-            <a class="dropdown-item preview-item state-item" data-state-name="{{ $category->name }}"
-              data-state-id="{{ $category->id }}">
-              <div class="preview-item-content flex-grow py-2">
-                <p class="preview-subject ellipsis font-weight-medium text-dark">{{ $category->name }}</p>
-              </div>
-            </a>
-          @endforeach
-        </div> --}}
       </li>
 
       <li class="nav-item d-none d-lg-block">

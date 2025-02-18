@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Project; // Model for vendors
 use App\Models\Site;
+use App\Models\Streetlight;
+use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -39,30 +41,62 @@ class HomeController extends Controller
             ? $request->query('project_id', session('project_id'))
             : $user->project_id;
 
+        // Get the project details
+        $project = Project::findOrFail($projectId);
+
+        // Check if the project_type is 1 (StreetLight-related project)
+        $isStreetLightProject = $project->project_type == 1;
+
         // Get only the project assigned to the logged-in user
-        $projects = ($user->role == 0 || $user->role == 2) ? Project::all() : Project::where('id', $projectId)->get();
+        $projects = ($user->role == 0) ? Project::all() : Project::where('id', $projectId)->get();
 
-        // Site-related statistics
-        $siteCount = Site::where('project_id', $projectId)->count();
-        $assignedSites = Task::whereNotNull('site_id')
-            ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
-            ->distinct('site_id')
-            ->count();
+        // Site-related statistics (with conditional logic for project_type)
+        if ($isStreetLightProject) {
+            // If the project type is 1, use StreetLight and StreetLightTasks models
+            $siteCount = Streetlight::where('project_id', $projectId)->count();
+            $assignedSites = StreetlightTask::whereNotNull('street_light_id')
+                ->whereHas('streetLight', fn($q) => $q->where('project_id', $projectId))
+                ->distinct('street_light_id')
+                ->count();
 
-        $completedSitesCount = Site::whereHas('tasks', fn($query) =>
-        $query->where('status', 'Completed'))
-            ->where('project_id', $projectId)
-            ->count();
+            $completedSitesCount = StreetLight::whereHas('streetLightTasks', fn($query) =>
+            $query->where('status', 'Completed'))
+                ->where('project_id', $projectId)
+                ->count();
 
-        $pendingSitesCount = Site::whereHas('tasks', fn($query) =>
-        $query->whereIn('status', ['Pending', 'In Progress']))
-            ->where('project_id', $projectId)
-            ->count();
+            $pendingSitesCount = StreetLight::whereHas('streetLightTasks', fn($query) =>
+            $query->whereIn('status', ['Pending', 'In Progress']))
+                ->where('project_id', $projectId)
+                ->count();
 
-        $rejectedSitesCount = Site::whereHas('tasks', fn($query) =>
-        $query->where('status', 'Rejected'))
-            ->where('project_id', $projectId)
-            ->count();
+            $rejectedSitesCount = StreetLight::whereHas('streetLightTasks', fn($query) =>
+            $query->where('status', 'Rejected'))
+                ->where('project_id', $projectId)
+                ->count();
+        } else {
+            // If the project type is not 1, use the existing Site and Task models
+            $siteCount = Site::where('project_id', $projectId)->count();
+            $assignedSites = Task::whereNotNull('site_id')
+                ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
+                ->distinct('site_id')
+                ->count();
+
+            $completedSitesCount = Site::whereHas('tasks', fn($query) =>
+            $query->where('status', 'Completed'))
+                ->where('project_id', $projectId)
+                ->count();
+
+            $pendingSitesCount = Site::whereHas('tasks', fn($query) =>
+            $query->whereIn('status', ['Pending', 'In Progress']))
+                ->where('project_id', $projectId)
+                ->count();
+
+            $rejectedSitesCount = Site::whereHas('tasks', fn($query) =>
+            $query->where('status', 'Rejected'))
+                ->where('project_id', $projectId)
+                ->count();
+        }
+
 
         // Staff and vendor count for the project
         $staffCount = User::whereIn('role', [1, 2])
