@@ -66,4 +66,9 @@ class Streetlight extends Model
     {
         return $this->belongsTo(User::class, 'engineer_id');
     }
+    // In the Streetlight model
+    public function streetlightTasks()
+    {
+        return $this->hasMany(StreetlightTask::class, 'site_id');
+    }
 }

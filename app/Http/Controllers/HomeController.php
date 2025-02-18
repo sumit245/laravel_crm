@@ -54,9 +54,9 @@ class HomeController extends Controller
         if ($isStreetLightProject) {
             // If the project type is 1, use StreetLight and StreetLightTasks models
             $siteCount = Streetlight::where('project_id', $projectId)->count();
-            $assignedSites = StreetlightTask::whereNotNull('street_light_id')
-                ->whereHas('streetLight', fn($q) => $q->where('project_id', $projectId))
-                ->distinct('street_light_id')
+            $assignedSites = StreetlightTask::whereNotNull('site_id')
+                ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
+                ->distinct('site_id')
                 ->count();
 
             $completedSitesCount = StreetLight::whereHas('streetLightTasks', fn($query) =>
