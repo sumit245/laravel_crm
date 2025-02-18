@@ -122,10 +122,10 @@ class HomeController extends Controller
             ->map(function ($se) use ($projectId, $isStreetLightProject) {
                 if ($isStreetLightProject) {
                     // If it's a StreetLight project, use StreetlightTask
-                    $totalTasksSE = StreetlightTask::where('engineer_id', $se->id)
+                    $totalTasksSE = StreetlightTask::where('manager_id', $se->id)
                         ->where('project_id', $projectId)
                         ->count();
-                    $completedTasksSE = StreetlightTask::where('engineer_id', $se->id)
+                    $completedTasksSE = StreetlightTask::where('manager_id', $se->id)
                         ->where('project_id', $projectId)
                         ->where('status', 'Completed')
                         ->count();
