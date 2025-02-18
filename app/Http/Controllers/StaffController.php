@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Task;
+use App\Models\StreetLightTask;
+use App\Models\Project;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -119,7 +121,7 @@ class StaffController extends Controller
         // Check if the project type is 1 (indicating a streetlight project)
         if ($project->project_type == 1) {
             // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
-            $tasks = StreetlightTask::with('site')
+            $tasks = StreetLightTask::with('site')
                 ->where(function ($query) use ($staff) {
                     $query->where('engineer_id', $staff->id)
                         ->orWhere('manager_id', $staff->id)
