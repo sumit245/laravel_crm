@@ -57,7 +57,7 @@
                     @foreach ($assignedTasks as $task)
                       <li class="list-group-item">
                         <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <p>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</p>
+                        <p>{{ $task->site->location }},{{ $task->site->districtRelation->name ?? "N/A" }}</p>
                         <div class="d-flex w-100 justify-content-between">
                           <strong>{{ $task->start_date }}</strong>
                           <strong>{{ $task->end_date }}</strong>
@@ -102,7 +102,7 @@
                     @foreach ($pendingTasks as $task)
                       <li class="list-group-item">
                         <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
+                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name ?? "N/A" }}</small>
                         <small>{{ $task->start_date }}</small>
                         <small>{{ $task->end_date }}</small>
                       </li>
