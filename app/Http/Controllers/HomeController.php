@@ -119,14 +119,27 @@ class HomeController extends Controller
                 $query->select('user_id')->from('project_user');
             })
             ->get()
-            ->map(function ($se) use ($projectId) {
-                $totalTasksSE = Task::where('engineer_id', $se->id)
-                    ->where('project_id', $projectId)
-                    ->count();
-                $completedTasksSE = Task::where('engineer_id', $se->id)
-                    ->where('project_id', $projectId)
-                    ->where('status', 'Completed')
-                    ->count();
+            ->map(function ($se) use ($projectId, $isStreetLightProject) {
+                if ($isStreetLightProject) {
+                    // If it's a StreetLight project, use StreetlightTask
+                    $totalTasksSE = StreetlightTask::where('engineer_id', $se->id)
+                        ->where('project_id', $projectId)
+                        ->count();
+                    $completedTasksSE = StreetlightTask::where('engineer_id', $se->id)
+                        ->where('project_id', $projectId)
+                        ->where('status', 'Completed')
+                        ->count();
+                } else {
+                    // For non-StreetLight projects, use Task model
+                    $totalTasksSE = Task::where('engineer_id', $se->id)
+                        ->where('project_id', $projectId)
+                        ->count();
+                    $completedTasksSE = Task::where('engineer_id', $se->id)
+                        ->where('project_id', $projectId)
+                        ->where('status', 'Completed')
+                        ->count();
+                }
+
                 $performancePercentageSE = $totalTasksSE > 0 ? ($completedTasksSE / $totalTasksSE) * 100 : 0;
 
                 return (object) [
@@ -140,6 +153,7 @@ class HomeController extends Controller
             })->sortByDesc('performancePercentage')
             ->values();
 
+
         // Fetch vendors for the project
         $vendors = User::where('role', 3)
             ->where('project_id', $projectId)
@@ -147,14 +161,27 @@ class HomeController extends Controller
                 $query->select('user_id')->from('project_user');
             })
             ->get()
-            ->map(function ($vendor) use ($projectId) {
-                $totalTasksVendor = Task::where('vendor_id', $vendor->id)
-                    ->where('project_id', $projectId)
-                    ->count();
-                $completedTasksVendor = Task::where('vendor_id', $vendor->id)
-                    ->where('project_id', $projectId)
-                    ->where('status', 'Completed')
-                    ->count();
+            ->map(function ($vendor) use ($projectId, $isStreetLightProject) {
+                if ($isStreetLightProject) {
+                    // If it's a StreetLight project, use StreetlightTask
+                    $totalTasksVendor = StreetlightTask::where('vendor_id', $vendor->id)
+                        ->where('project_id', $projectId)
+                        ->count();
+                    $completedTasksVendor = StreetlightTask::where('vendor_id', $vendor->id)
+                        ->where('project_id', $projectId)
+                        ->where('status', 'Completed')
+                        ->count();
+                } else {
+                    // For non-StreetLight projects, use Task model
+                    $totalTasksVendor = Task::where('vendor_id', $vendor->id)
+                        ->where('project_id', $projectId)
+                        ->count();
+                    $completedTasksVendor = Task::where('vendor_id', $vendor->id)
+                        ->where('project_id', $projectId)
+                        ->where('status', 'Completed')
+                        ->count();
+                }
+
                 $performancePercentageVendor = $totalTasksVendor > 0 ? ($completedTasksVendor / $totalTasksVendor) * 100 : 0;
 
                 return (object) [
@@ -172,14 +199,27 @@ class HomeController extends Controller
         $projectManagers = User::where('role', 2)
             ->where('project_id', $projectId)
             ->get()
-            ->map(function ($pm) use ($projectId) {
-                $totalTasksPM = Task::where('manager_id', $pm->id)
-                    ->where('project_id', $projectId)
-                    ->count();
-                $completedTasksPM = Task::where('manager_id', $pm->id)
-                    ->where('project_id', $projectId)
-                    ->where('status', 'Completed')
-                    ->count();
+            ->map(function ($pm) use ($projectId, $isStreetLightProject) {
+                if ($isStreetLightProject) {
+                    // If it's a StreetLight project, use StreetlightTask
+                    $totalTasksPM = StreetlightTask::where('manager_id', $pm->id)
+                        ->where('project_id', $projectId)
+                        ->count();
+                    $completedTasksPM = StreetlightTask::where('manager_id', $pm->id)
+                        ->where('project_id', $projectId)
+                        ->where('status', 'Completed')
+                        ->count();
+                } else {
+                    // For non-StreetLight projects, use Task model
+                    $totalTasksPM = Task::where('manager_id', $pm->id)
+                        ->where('project_id', $projectId)
+                        ->count();
+                    $completedTasksPM = Task::where('manager_id', $pm->id)
+                        ->where('project_id', $projectId)
+                        ->where('status', 'Completed')
+                        ->count();
+                }
+
                 $performancePercentagePM = $totalTasksPM > 0 ? ($completedTasksPM / $totalTasksPM) * 100 : 0;
 
                 return (object) [
@@ -192,6 +232,8 @@ class HomeController extends Controller
                 ];
             })->sortByDesc('performancePercentage')
             ->values();
+
+
 
         // Dashboard statistics
         $statistics = [
