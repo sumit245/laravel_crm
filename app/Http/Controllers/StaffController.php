@@ -107,16 +107,35 @@ class StaffController extends Controller
      */
     public function show($id)
     {
+        // Fetch the staff details along with relationships
         $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
 
-        // Fetch tasks where this staff is assigned as an engineer, manager, or vendor
-        $tasks = Task::with('site')
-            ->where(function ($query) use ($staff) {
-                $query->where('engineer_id', $staff->id)
-                    ->orWhere('manager_id', $staff->id)
-                    ->orWhere('vendor_id', $staff->id);
-            })
-            ->get();
+        // Get the project_id of the staff
+        $projectId = $staff->project_id;
+
+        // Get the project and its type
+        $project = Project::findOrFail($projectId);
+
+        // Check if the project type is 1 (indicating a streetlight project)
+        if ($project->project_type == 1) {
+            // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
+            $tasks = StreetlightTask::with('site')
+                ->where(function ($query) use ($staff) {
+                    $query->where('engineer_id', $staff->id)
+                        ->orWhere('manager_id', $staff->id)
+                        ->orWhere('vendor_id', $staff->id);
+                })
+                ->get();
+        } else {
+            // Fetch regular Tasks
+            $tasks = Task::with('site')
+                ->where(function ($query) use ($staff) {
+                    $query->where('engineer_id', $staff->id)
+                        ->orWhere('manager_id', $staff->id)
+                        ->orWhere('vendor_id', $staff->id);
+                })
+                ->get();
+        }
 
         // Categorize tasks
         $assignedTasks = $tasks;
@@ -128,6 +147,7 @@ class StaffController extends Controller
         $rejectedTasks = $tasks->where('status', 'Rejected');
         $rejectedTasksCount = $rejectedTasks->count();
 
+        // Return the view with necessary data
         return view('staff.show', compact(
             'staff',
             'assignedTasks',

@@ -32,14 +32,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
     Route::resource('sites', SiteController::class);
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
-
-
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
-
     Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
     Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
-
     Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
