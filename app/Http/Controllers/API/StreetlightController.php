@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -224,11 +223,6 @@ class StreetlightController extends Controller
     // 2. Get tasks assigned to the logged-in Vendor
     public function getVendorTasks(Request $request)
     {
-        // $user = Auth::user();
-
-        // if ($user->role !== 3) { // Role 3 = Vendor
-        //     return response()->json(['message' => 'Unauthorized'], 403);
-        // }
 
         $tasks = StreetlightTask::where('vendor_id', $request->id)->with('site')->get();
         return response()->json($tasks);

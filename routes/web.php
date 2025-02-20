@@ -25,7 +25,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('staff', StaffController::class);
     Route::get('staff/{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
     Route::post('staff/{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
-    Route::get('/dashboard', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
     Route::resource('uservendors', VendorController::class);
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::resource('projects', ProjectsController::class);
@@ -44,6 +44,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
-    Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
-    Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
+    // Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
+    // Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
 });
