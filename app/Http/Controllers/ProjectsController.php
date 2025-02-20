@@ -155,19 +155,51 @@ class ProjectsController extends Controller
         ];
 
         if ($project->project_type == 1) {
-            // Streetlight installation
-            $data['sites'] = Streetlight::where('project_id', $project->id)->get();
-            $data['totalLights'] = Streetlight::totalPoles($project->id);
-            $data['surveyDoneCount'] = Streetlight::surveyDone($project->id);
-            $data['installationDoneCount'] = Streetlight::installationDone($project->id);
-            $data['targets'] = StreetlightTask::where('project_id', $project->id)->with('site', 'engineer')->get();
+            // Streetlight installation - Filtered by manager_id**
+            $data['sites'] = Streetlight::where('project_id', $project->id)
+                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+                ->get();
+
+            $data['totalLights'] = Streetlight::totalPoles($project->id)
+                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+                ->count();
+
+            $data['surveyDoneCount'] = Streetlight::surveyDone($project->id)
+                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+                ->count();
+
+            $data['installationDoneCount'] = Streetlight::installationDone($project->id)
+                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+                ->count();
+
+            $data['targets'] = StreetlightTask::where('project_id', $project->id)
+                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+                ->with('site', 'engineer')
+                ->get();
         } else {
-            // Rooftop installation
-            $data['sites'] = $project->sites;
-            $data['installationCount'] = Task::where('project_id', $project->id)->where('activity', 'Installation')->count();
-            $data['rmsCount'] = Task::where('project_id', $project->id)->where('activity', 'RMS')->count();
-            $data['inspectionCount'] = Task::where('project_id', $project->id)->where('activity', 'Inspection')->count();
-            $data['targets'] = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
+            // Rooftop installation - Filtered by manager_id**
+            $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+                ->get();
+
+            $data['installationCount'] = Task::where('project_id', $project->id)
+                ->where('activity', 'Installation')
+                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+                ->count();
+
+            $data['rmsCount'] = Task::where('project_id', $project->id)
+                ->where('activity', 'RMS')
+                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+                ->count();
+
+            $data['inspectionCount'] = Task::where('project_id', $project->id)
+                ->where('activity', 'Inspection')
+                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+                ->count();
+
+            $data['targets'] = Task::where('project_id', $project->id)
+                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+                ->with('site', 'engineer')
+                ->get();
         }
 
         return view('projects.show', $data);
