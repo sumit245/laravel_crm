@@ -36,10 +36,10 @@
             <!-- District Search -->
             <div class="form-group mb-3">
               <label for="districtSearch" class="form-label">Search District</label>
-              <select id="districtSearch" name="district_id" class="form-select">
+              <select id="districtSearch" name="district" class="form-select">
                 <option value="">Select District</option>
                 @foreach ($districts as $district)
-                  <option value="{{ $district }}">{{ $district }}</option>
+                  <option value="{{ $district->district }}">{{ $district->district }}</option>
                 @endforeach
               </select>
             </div>

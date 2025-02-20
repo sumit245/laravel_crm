@@ -44,6 +44,6 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
-    // Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
-    // Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
+    Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
+    Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
 });
