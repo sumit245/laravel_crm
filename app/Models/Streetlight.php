@@ -71,4 +71,9 @@ class Streetlight extends Model
     {
         return $this->hasMany(StreetlightTask::class, 'site_id');
     }
+
+    public function tasks()
+    {
+        return $this->hasMany(StreetlightTask::class, 'site_id');
+    }
 }
