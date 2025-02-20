@@ -157,20 +157,24 @@ class ProjectsController extends Controller
         if ($project->project_type == 1) {
             // Streetlight installation - Filtered by manager_id**
             $data['sites'] = Streetlight::where('project_id', $project->id)
-                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+                ->whereHas('tasks', fn($t) => $t->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)))
+                ->with('tasks')
                 ->get();
 
-            $data['totalLights'] = Streetlight::totalPoles($project->id)
-                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
-                ->count();
+            $data['totalLights'] = 0;
+            // Streetlight::totalPoles($project->id)
+            //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+            //     ->count();
 
-            $data['surveyDoneCount'] = Streetlight::surveyDone($project->id)
-                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
-                ->count();
+            $data['surveyDoneCount'] = 0;
+            // Streetlight::surveyDone($project->id)
+            //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+            //     ->count();
 
-            $data['installationDoneCount'] = Streetlight::installationDone($project->id)
-                ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
-                ->count();
+            $data['installationDoneCount'] = 0;
+            // Streetlight::installationDone($project->id)
+            //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
+            //     ->count();
 
             $data['targets'] = StreetlightTask::where('project_id', $project->id)
                 ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
