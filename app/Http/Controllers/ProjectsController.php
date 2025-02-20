@@ -92,50 +92,53 @@ class ProjectsController extends Controller
             'sites.stateRelation',
         ])->findOrFail($id);
 
-        // Get all users except admin (role = 0) and vendors (role = 3)
+        $user = auth()->user(); // Get the logged-in user
+        $isAdmin = $user->role == 0; // Admin check
+        $isProjectManager = $user->role == 2; // Project Manager check
+
+        // Get users except admin (role = 0) and vendors (role = 3)
         $users = User::whereNotIn('role', [0, 3])->get();
 
-        $engineers      = User::where('role', 1)->get();
+        // Get engineers and vendors for this project
+        $engineers = User::where('role', 1)->get();
         $vendors = User::where('role', 3)->get();
-        $state          = State::where('id', $project->project_in_state)->get();
-        $inventoryItems = Inventory::all();
+        $state = State::where('id', $project->project_in_state)->get();
+        $inventoryItems = Inventory::where('project_id', $project->id)->get();
 
-        // Get site engineers and project managers assigned to the project
+        // Get assigned engineers based on manager_id for Project Managers
         $assignedEngineers = User::whereIn('role', [1, 2])
             ->where('project_id', $project->id)
             ->whereIn('id', function ($query) use ($project) {
                 $query->select('user_id')->from('project_user');
-            })->get();
+            })
+            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)) // Filter by manager_id
+            ->get();
 
-        // Fetch all available engineers whose project_id matches current project
+        // Fetch available engineers whose project_id matches the current project
         $availableEngineers = User::whereIn('role', [1, 2, 4, 5])
             ->where('project_id', $project->id)
             ->whereNotIn('id', $assignedEngineers->pluck('id'))
+            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)) // Filter by manager_id
             ->get();
 
-        // Get vendors assigned to the project
+        // Get assigned vendors based on manager_id for Project Managers
         $assignedVendors = User::where('role', 3)
             ->where('project_id', $project->id)
             ->whereIn('id', function ($query) use ($project) {
                 $query->select('user_id')->from('project_user');
-            })->get();
+            })
+            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)) // Filter by manager_id
+            ->get();
 
-        // Fetch all available vendors whose project_id matches current project
+        // Fetch available vendors whose project_id matches the current project
         $availableVendors = User::where('role', 3)
             ->where('project_id', $project->id)
             ->whereNotIn('id', $assignedVendors->pluck('id'))
+            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)) // Filter by manager_id
             ->get();
 
-
-
-
         // If no site engineers or project managers are assigned
-        if ($assignedEngineers->isEmpty()) {
-            $assignedEngineersMessage = "No engineers assigned.";
-        } else {
-            $assignedEngineersMessage = null;
-        }
-
+        $assignedEngineersMessage = $assignedEngineers->isEmpty() ? "No engineers assigned." : null;
 
         $data = [
             'project'       => $project,
@@ -153,23 +156,23 @@ class ProjectsController extends Controller
 
         if ($project->project_type == 1) {
             // Streetlight installation
-            $data['sites']                  = Streetlight::where('project_id', $project->id)->get();
-            $data['totalLights']             = Streetlight::totalPoles($project->id);
-            $data['surveyDoneCount']         = Streetlight::surveyDone($project->id);
-            $data['installationDoneCount']   = Streetlight::installationDone($project->id);
+            $data['sites'] = Streetlight::where('project_id', $project->id)->get();
+            $data['totalLights'] = Streetlight::totalPoles($project->id);
+            $data['surveyDoneCount'] = Streetlight::surveyDone($project->id);
+            $data['installationDoneCount'] = Streetlight::installationDone($project->id);
             $data['targets'] = StreetlightTask::where('project_id', $project->id)->with('site', 'engineer')->get();
         } else {
             // Rooftop installation
-            $data['sites']               = $project->sites;
-            $data['installationCount']   = Task::where('project_id', $project->id)->where('activity', 'Installation')->count();
-            $data['rmsCount']            = Task::where('project_id', $project->id)->where('activity', 'RMS')->count();
-            $data['inspectionCount']     = Task::where('project_id', $project->id)->where('activity', 'Inspection')->count();
+            $data['sites'] = $project->sites;
+            $data['installationCount'] = Task::where('project_id', $project->id)->where('activity', 'Installation')->count();
+            $data['rmsCount'] = Task::where('project_id', $project->id)->where('activity', 'RMS')->count();
+            $data['inspectionCount'] = Task::where('project_id', $project->id)->where('activity', 'Inspection')->count();
             $data['targets'] = Task::where('project_id', $project->id)->with('site', 'engineer')->get();
-            Log::info($data);
         }
 
         return view('projects.show', $data);
     }
+
 
 
     /**
