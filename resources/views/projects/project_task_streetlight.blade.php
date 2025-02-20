@@ -39,7 +39,7 @@
               <select id="districtSearch" name="district_id" class="form-select">
                 <option value="">Select District</option>
                 @foreach ($districts as $district)
-                  <option value="{{ $district->id }}">{{ $district->name }}</option>
+                  <option value="{{ $district }}">{{ $district }}</option>
                 @endforeach
               </select>
             </div>
