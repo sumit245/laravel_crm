@@ -247,4 +247,21 @@ class StreetlightController extends Controller
 
         return response()->json(['message' => 'Task submitted successfully']);
     }
+    public function getBlocksByDistrict($district)
+    {
+        $blocks = Streetlight::where('district', $district)
+            ->distinct()
+            ->pluck('block');
+
+        return response()->json($blocks);
+    }
+
+    public function getPanchayatsByBlock($block)
+    {
+        $panchayats = Streetlight::where('block', $block)
+            ->distinct()
+            ->pluck('panchayat');
+
+        return response()->json($panchayats);
+    }
 }

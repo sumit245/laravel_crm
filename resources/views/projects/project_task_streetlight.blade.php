@@ -33,6 +33,25 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
+            <!-- District Search -->
+            <div class="form-group mb-3">
+              <label for="districtSearch" class="form-label">Search District</label>
+              <select id="districtSearch" name="district_id" class="form-select">
+                <option value="">Select District</option>
+                @foreach ($districts as $district)
+                  <option value="{{ $district->id }}">{{ $district->name }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <!-- Block Search (Dependent on District) -->
+            <div class="form-group mb-3">
+              <label for="blockSearch" class="form-label">Search Block</label>
+              <select id="blockSearch" name="block_id" class="form-select" disabled>
+                <option value="">Select Block</option>
+              </select>
+            </div>
+
             <div class="form-group mb-3">
               <label for="siteSearch" class="form-label">Search By Panchayat</label>
               <input type="text" id="siteSearch" placeholder="Search Site..." class="form-control">
@@ -139,6 +158,37 @@
 @push("scripts")
   <script>
     $(document).ready(function() {
+
+      // Fetch Blocks Based on Selected District
+      $('#districtSearch').change(function() {
+        let district = $(this).val();
+        $('#blockSearch').html('<option value="">Select Block</option>').prop('disabled', true);
+        $('#panchayatSearch').html('<option value="">Select Panchayat</option>').prop('disabled', true);
+
+        if (district) {
+          $.get(`/blocks-by-district/${district}`, function(blocks) {
+            blocks.forEach(block => {
+              $('#blockSearch').append(`<option value="${block}">${block}</option>`);
+            });
+            $('#blockSearch').prop('disabled', false);
+          });
+        }
+      });
+
+      // Fetch Panchayats Based on Selected Block
+      $('#blockSearch').change(function() {
+        let block = $(this).val();
+        $('#panchayatSearch').html('<option value="">Select Panchayat</option>').prop('disabled', true);
+
+        if (block) {
+          $.get(`/panchayats-by-block/${block}`, function(panchayats) {
+            panchayats.forEach(panchayat => {
+              $('#panchayatSearch').append(`<option value="${panchayat}">${panchayat}</option>`);
+            });
+            $('#panchayatSearch').prop('disabled', false);
+          });
+        }
+      });
       $('#siteSearch').on('keyup', function() {
         let query = $(this).val();
         if (query.length > 1) {
