@@ -93,6 +93,7 @@ class ProjectsController extends Controller
         ])->findOrFail($id);
 
         $user = auth()->user(); // Get the logged-in user
+
         $isAdmin = $user->role == 0; // Admin check
         $isProjectManager = $user->role == 2; // Project Manager check
 
@@ -139,6 +140,11 @@ class ProjectsController extends Controller
 
         // If no site engineers or project managers are assigned
         $assignedEngineersMessage = $assignedEngineers->isEmpty() ? "No engineers assigned." : null;
+        // Get distinct districts from Streetlights (direct column)
+        $streetlightDistricts = Streetlight::where('project_id', $id)
+            ->select('district')
+            ->distinct()
+            ->get();
 
         $data = [
             'project'       => $project,
@@ -180,6 +186,7 @@ class ProjectsController extends Controller
                 ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
                 ->with('site', 'engineer')
                 ->get();
+            $data['districts'] = $streetlightDistricts;
         } else {
             // Rooftop installation - Filtered by manager_id**
             $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
