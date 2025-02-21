@@ -191,7 +191,7 @@
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
                             @php
                               // Explode ward string and remove empty values
-                              $wards = array_filter(array_map("trim", explode(",", $task->ward)));
+                              $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
                             @endphp
                             @if (!empty($wards))
                               <div class="ward-container">
