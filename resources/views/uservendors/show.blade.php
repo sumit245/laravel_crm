@@ -61,9 +61,9 @@
                               $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
                             @endphp
                             @if (!empty($wards))
-                              <div class="ward-container">
+                              <div class="ward-list">
                                 @foreach ($wards as $ward)
-                                  <span class="ward-badge">Ward {{ $ward }}</span>
+                                  <span class="ward-tag">Ward {{ $ward }}</span>
                                 @endforeach
                               </div>
                             @endif
@@ -104,9 +104,9 @@
                                 $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
                               @endphp
                               @if (!empty($wards))
-                                <div class="ward-container">
+                                <div class="ward-list">
                                   @foreach ($wards as $ward)
-                                    <span class="ward-badge">Ward {{ $ward }}</span>
+                                    <span class="ward-tag">Ward {{ $ward }}</span>
                                   @endforeach
                                 </div>
                               @endif
@@ -147,9 +147,9 @@
                               $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
                             @endphp
                             @if (!empty($wards))
-                              <div class="ward-container">
+                              <div class="ward-list">
                                 @foreach ($wards as $ward)
-                                  <span class="ward-badge">Ward {{ $ward }}</span>
+                                  <span class="ward-tag">Ward {{ $ward }}</span>
                                 @endforeach
                               </div>
                             @endif
@@ -189,9 +189,9 @@
                               $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
                             @endphp
                             @if (!empty($wards))
-                              <div class="ward-container">
+                              <div class="ward-list">
                                 @foreach ($wards as $ward)
-                                  <span class="ward-badge">Ward {{ $ward }}</span>
+                                  <span class="ward-tag">Ward {{ $ward }}</span>
                                 @endforeach
                               </div>
                             @endif
