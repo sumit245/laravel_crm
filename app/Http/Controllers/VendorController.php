@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
+use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -103,10 +105,33 @@ class VendorController extends Controller
             ->with(['siteEngineer', 'projects']) // Load relationships if needed
             ->findOrFail($id);
 
-        // Fetch tasks assigned to the vendor
-        $tasks = Task::with('site')
-            ->where('vendor_id', $vendor->id)
-            ->get();
+        // Get the project_id of the staff
+        $projectId = $vendor->project_id;
+
+        // Get the project and its type
+        $project = Project::findOrFail($projectId);
+
+        // Check if the project type is 1 (indicating a streetlight project)
+        if ($project->project_type == 1) {
+            // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
+            $tasks = StreetlightTask::with('site')
+                ->where(function ($query) use ($vendor) {
+                    $query->where('vendor_id', $vendor->id);
+                })
+                ->get();
+        } else {
+            // Fetch regular Tasks
+            $tasks = Task::with('site')
+                ->where(function ($query) use ($vendor) {
+                    $query->where('vendor_id', $vendor->id);
+                })
+                ->get();
+        }
+
+        // // Fetch tasks assigned to the vendor
+        // $tasks = Task::with('site')
+        //     ->where('vendor_id', $vendor->id)
+        //     ->get();
 
         // Categorize tasks
         $assignedTasks = $tasks;
