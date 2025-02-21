@@ -70,15 +70,6 @@
               <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
               </select>
             </div> --}}
-            {{-- <div class="mb-3">
-              <label for="activity" class="form-label">Activity</label>
-              <select id="activity" name="activity" class="form-select" required>
-                <option value="Installation">Installation</option>
-                <option value="RMS">RMS</option>
-                <option value="Billing">Billing</option>
-                <option value="Add Team">Add Team</option>
-              </select>
-            </div> --}}
             <div class="form-group mb-3">
               <label for="selectEngineer" class="form-label">Select Site Engineer</label>
               <select id="selectEngineer" name="engineer_id" class="form-select" required>
