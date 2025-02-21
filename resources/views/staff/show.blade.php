@@ -1,8 +1,3 @@
-@php
-  // Explode ward string and remove empty values
-  $wards = array_filter(array_map("trim", explode(",", $task->ward)));
-@endphp
-
 @extends("layouts.main") {{-- or the name of your base layout --}}
 
 @section("content")
@@ -66,7 +61,10 @@
                             {{-- For Streetlight Projects --}}
                             <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-
+                            @php
+                              // Explode ward string and remove empty values
+                              $wards = array_filter(array_map("trim", explode(",", $task->ward)));
+                            @endphp
                             @if (!empty($wards))
                               <div class="ward-container">
                                 @foreach ($wards as $ward)
@@ -106,7 +104,10 @@
                               {{-- For Streetlight Projects --}}
                               <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                               <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-
+                              @php
+                                // Explode ward string and remove empty values
+                                $wards = array_filter(array_map("trim", explode(",", $task->ward)));
+                              @endphp
                               @if (!empty($wards))
                                 <div class="ward-container">
                                   @foreach ($wards as $ward)
@@ -146,7 +147,10 @@
                             {{-- For Streetlight Projects --}}
                             <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-
+                            @php
+                              // Explode ward string and remove empty values
+                              $wards = array_filter(array_map("trim", explode(",", $task->ward)));
+                            @endphp
                             @if (!empty($wards))
                               <div class="ward-container">
                                 @foreach ($wards as $ward)
@@ -185,7 +189,10 @@
                             {{-- For Streetlight Projects --}}
                             <small></small> <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-
+                            @php
+                              // Explode ward string and remove empty values
+                              $wards = array_filter(array_map("trim", explode(",", $task->ward)));
+                            @endphp
                             @if (!empty($wards))
                               <div class="ward-container">
                                 @foreach ($wards as $ward)
