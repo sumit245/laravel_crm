@@ -52,9 +52,16 @@
               </select>
             </div>
 
+            <!-- Panchayat Search (Dependent on Block) -->
             <div class="form-group mb-3">
-              <label for="siteSearch" class="form-label">Search By Panchayat</label>
-              <input type="text" id="siteSearch" placeholder="Search Site..." class="form-control">
+              <label for="panchayatSearch" class="form-label">Select Panchayat</label>
+              <select id="panchayatSearch" name="panchayats[]" class="form-select" multiple disabled>
+                <option value="">Select Panchayat</option>
+              </select>
+            </div>
+            {{-- <div class="form-group mb-3">
+              <label for="panchayatSearch" class="form-label">Search By Panchayat</label>
+              <input type="text" id="panchayatSearch" placeholder="Search Site..." class="form-control">
               <div id="siteList"></div>
 
               <!-- Selected Sites -->
@@ -62,7 +69,7 @@
               <!-- Hidden Select to Store Selected Sites -->
               <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
               </select>
-            </div>
+            </div> --}}
             {{-- <div class="mb-3">
               <label for="activity" class="form-label">Activity</label>
               <select id="activity" name="activity" class="form-select" required>

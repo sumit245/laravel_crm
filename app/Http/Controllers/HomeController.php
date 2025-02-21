@@ -53,15 +53,19 @@ class HomeController extends Controller
         // Fetch sites (Filtered for Project Manager)
         if ($isStreetLightProject) {
             // If it's a Streetlight project
-            $siteQuery = Streetlight::where('project_id', $projectId)
-                ->whereIn('id', function ($query) use ($user) {
-                    if ($user->role == 2) { // Only filter for Project Managers
-                        $query->select('site_id')->from('streetlight_tasks')
+            $siteQuery = Streetlight::where(
+                'project_id',
+                $projectId
+            )
+                ->when($user->role == 2, function ($query) use ($user) {
+                    $query->whereIn('id', function ($subQuery) use ($user) {
+                        $subQuery->select('site_id')->from('streetlight_tasks')
                             ->where('manager_id', $user->id);
-                    }
+                    });
                 });
 
             $siteCount = $siteQuery->count();
+
 
             $assignedSites = StreetlightTask::whereNotNull('site_id')
                 ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
@@ -92,14 +96,15 @@ class HomeController extends Controller
         } else {
             // If it's a Rooftop project
             $siteQuery = Site::where('project_id', $projectId)
-                ->whereIn('id', function ($query) use ($user) {
-                    if ($user->role == 2) { // Only filter for Project Managers
-                        $query->select('site_id')->from('tasks')
+                ->when($user->role == 2, function ($query) use ($user) {
+                    $query->whereIn('id', function ($subQuery) use ($user) {
+                        $subQuery->select('site_id')->from('tasks')
                             ->where('manager_id', $user->id);
-                    }
+                    });
                 });
 
             $siteCount = $siteQuery->count();
+
 
             $assignedSites = Task::whereNotNull('site_id')
                 ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
