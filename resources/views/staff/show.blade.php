@@ -59,9 +59,9 @@
                         @if ($task->site)
                           @if ($project->project_type == 1)
                             {{-- For Streetlight Projects --}}
-                            <h6><strong>Block:</strong> {{ $task->site->block ?? "N/A" }},
-                              <strong>Panchayat:</strong> {{ $task->site->panchayat ?? "N/A" }}
-                            </h6>
+                            <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
+                            <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
+
                             {{-- Ward List in Tag UI --}}
                             <div class="ward-list">
                               @foreach (explode(",", $task->site->ward) as $ward)
@@ -81,7 +81,7 @@
                       </li>
                     @endforeach
                   @else
-                    <p>No rejected tasks</p>
+                    <p>No tasks Assigned</p>
                   @endif
                 </ul>
               </div>
@@ -95,11 +95,28 @@
                     @foreach ($completedTasks as $task)
                       <li class="list-group-item">
                         <a href="{{ route("tasks.show", $task->id) }}" class="text-decoration-none text-dark">
-                          <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                          <small>{{ $task->site->location }},
-                            {{ $task->site->districtRelation->name ?? "N/A" }}</small><br>
-                          <small><strong>Start:</strong> {{ $task->start_date }}</small><br>
-                          <small><strong>End:</strong> {{ $task->end_date }}</small>
+                          @if ($task->site)
+                            @if ($project->project_type == 1)
+                              {{-- For Streetlight Projects --}}
+                              <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
+                              <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
+
+                              {{-- Ward List in Tag UI --}}
+                              <div class="ward-list">
+                                @foreach (explode(",", $task->site->ward) as $ward)
+                                  <span class="ward-tag">Ward {{ trim($ward) }}</span>
+                                @endforeach
+                              </div>
+                            @else
+                              {{-- For Rooftop Projects --}}
+                              <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                              <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
+                            @endif
+                          @endif
+                          <div class="d-flex w-100 justify-content-between">
+                            <strong>{{ $task->start_date }}</strong>
+                            <strong>{{ $task->end_date }}</strong>
+                          </div>
                         </a>
                       </li>
                     @endforeach
@@ -117,14 +134,32 @@
                   @if ($pendingTasksCount > 0)
                     @foreach ($pendingTasks as $task)
                       <li class="list-group-item">
-                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name ?? "N/A" }}</small>
-                        <small>{{ $task->start_date }}</small>
-                        <small>{{ $task->end_date }}</small>
+                        @if ($task->site)
+                          @if ($project->project_type == 1)
+                            {{-- For Streetlight Projects --}}
+                            <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
+                            <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
+
+                            {{-- Ward List in Tag UI --}}
+                            <div class="ward-list">
+                              @foreach (explode(",", $task->site->ward) as $ward)
+                                <span class="ward-tag">Ward {{ trim($ward) }}</span>
+                              @endforeach
+                            </div>
+                          @else
+                            {{-- For Rooftop Projects --}}
+                            <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                            <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
+                          @endif
+                        @endif
+                        <div class="d-flex w-100 justify-content-between">
+                          <strong>{{ $task->start_date }}</strong>
+                          <strong>{{ $task->end_date }}</strong>
+                        </div>
                       </li>
                     @endforeach
                   @else
-                    <p>No rejected tasks</p>
+                    <p>No Pending tasks</p>
                   @endif
                 </ul>
               </div>
@@ -137,10 +172,28 @@
                   @if ($rejectedTasks->count() > 0)
                     @foreach ($rejectedTasks as $task)
                       <li class="list-group-item">
-                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <small>{{ $task->site->location }},{{ $task->site->districtRelation->name }}</small>
-                        <small>{{ $task->start_date }}</small>
-                        <small>{{ $task->end_date }}</small>
+                        @if ($task->site)
+                          @if ($project->project_type == 1)
+                            {{-- For Streetlight Projects --}}
+                            <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
+                            <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
+
+                            {{-- Ward List in Tag UI --}}
+                            <div class="ward-list">
+                              @foreach (explode(",", $task->site->ward) as $ward)
+                                <span class="ward-tag">Ward {{ trim($ward) }}</span>
+                              @endforeach
+                            </div>
+                          @else
+                            {{-- For Rooftop Projects --}}
+                            <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                            <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
+                          @endif
+                        @endif
+                        <div class="d-flex w-100 justify-content-between">
+                          <strong>{{ $task->start_date }}</strong>
+                          <strong>{{ $task->end_date }}</strong>
+                        </div>
                       </li>
                     @endforeach
                   @else
@@ -263,9 +316,9 @@
     .ward-tag {
       background-color: #007bff;
       color: white;
-      padding: 5px 10px;
-      border-radius: 15px;
-      font-size: 0.85rem;
+      padding: 2px 4px;
+      border-radius: 4px;
+      font-size: 0.65rem;
       display: inline-block;
     }
   </style>
