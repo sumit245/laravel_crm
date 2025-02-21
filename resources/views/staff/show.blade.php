@@ -56,8 +56,24 @@
                   @if ($assignedTasks->count() > 0)
                     @foreach ($assignedTasks as $task)
                       <li class="list-group-item">
-                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <p>{{ $task->site->location }},{{ $task->site->districtRelation->name ?? "N/A" }}</p>
+                        @if ($task->site)
+                          @if ($project->project_type == 1)
+                            {{-- For Streetlight Projects --}}
+                            <h6><strong>Block:</strong> {{ $task->site->block ?? "N/A" }},
+                              <strong>Panchayat:</strong> {{ $task->site->panchayat ?? "N/A" }}
+                            </h6>
+                            {{-- Ward List in Tag UI --}}
+                            <div class="ward-list">
+                              @foreach (explode(",", $task->site->ward) as $ward)
+                                <span class="ward-tag">Ward {{ trim($ward) }}</span>
+                              @endforeach
+                            </div>
+                          @else
+                            {{-- For Rooftop Projects --}}
+                            <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
+                            <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
+                          @endif
+                        @endif
                         <div class="d-flex w-100 justify-content-between">
                           <strong>{{ $task->start_date }}</strong>
                           <strong>{{ $task->end_date }}</strong>
@@ -235,6 +251,22 @@
     .position-text {
       color: #6c757d;
       font-size: 0.9rem;
+    }
+
+    .ward-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      margin-top: 5px;
+    }
+
+    .ward-tag {
+      background-color: #007bff;
+      color: white;
+      padding: 5px 10px;
+      border-radius: 15px;
+      font-size: 0.85rem;
+      display: inline-block;
     }
   </style>
 @endpush

@@ -162,7 +162,7 @@ class ProjectsController extends Controller
 
         if ($project->project_type == 1) {
             // Streetlight installation - Filtered by manager_id**
-            $data['sites'] = Streetlight::where('project_id', $project->id);
+            $data['sites'] = Streetlight::where('project_id', $id)->get();
             // ->whereHas('tasks', fn($t) => $t->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)))
             // ->with('tasks')
             // ->get();
