@@ -151,6 +151,7 @@ class StaffController extends Controller
 
         // Return the view with necessary data
         return view('staff.show', compact(
+            'project',
             'staff',
             'assignedTasks',
             'completedTasks',
