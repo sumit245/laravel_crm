@@ -1,3 +1,8 @@
+@php
+  // Explode ward string and remove empty values
+  $wards = array_filter(array_map("trim", explode(",", $task->ward)));
+@endphp
+
 @extends("layouts.main") {{-- or the name of your base layout --}}
 
 @section("content")
@@ -62,12 +67,13 @@
                             <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
 
-                            {{-- Ward List in Tag UI --}}
-                            <div class="ward-list">
-                              @foreach (explode(",", $task->site->ward) as $ward)
-                                <span class="ward-tag">Ward {{ trim($ward) }}</span>
-                              @endforeach
-                            </div>
+                            @if (!empty($wards))
+                              <div class="ward-container">
+                                @foreach ($wards as $ward)
+                                  <span class="ward-badge">Ward {{ $ward }}</span>
+                                @endforeach
+                              </div>
+                            @endif
                           @else
                             {{-- For Rooftop Projects --}}
                             <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
@@ -101,12 +107,13 @@
                               <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                               <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
 
-                              {{-- Ward List in Tag UI --}}
-                              <div class="ward-list">
-                                @foreach (explode(",", $task->site->ward) as $ward)
-                                  <span class="ward-tag">Ward {{ trim($ward) }}</span>
-                                @endforeach
-                              </div>
+                              @if (!empty($wards))
+                                <div class="ward-container">
+                                  @foreach ($wards as $ward)
+                                    <span class="ward-badge">Ward {{ $ward }}</span>
+                                  @endforeach
+                                </div>
+                              @endif
                             @else
                               {{-- For Rooftop Projects --}}
                               <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
@@ -140,12 +147,13 @@
                             <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
 
-                            {{-- Ward List in Tag UI --}}
-                            <div class="ward-list">
-                              @foreach (explode(",", $task->site->ward) as $ward)
-                                <span class="ward-tag">Ward {{ trim($ward) }}</span>
-                              @endforeach
-                            </div>
+                            @if (!empty($wards))
+                              <div class="ward-container">
+                                @foreach ($wards as $ward)
+                                  <span class="ward-badge">Ward {{ $ward }}</span>
+                                @endforeach
+                              </div>
+                            @endif
                           @else
                             {{-- For Rooftop Projects --}}
                             <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
@@ -175,15 +183,16 @@
                         @if ($task->site)
                           @if ($project->project_type == 1)
                             {{-- For Streetlight Projects --}}
-                            <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
+                            <small></small> <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
                             <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
 
-                            {{-- Ward List in Tag UI --}}
-                            <div class="ward-list">
-                              @foreach (explode(",", $task->site->ward) as $ward)
-                                <span class="ward-tag">Ward {{ trim($ward) }}</span>
-                              @endforeach
-                            </div>
+                            @if (!empty($wards))
+                              <div class="ward-container">
+                                @foreach ($wards as $ward)
+                                  <span class="ward-badge">Ward {{ $ward }}</span>
+                                @endforeach
+                              </div>
+                            @endif
                           @else
                             {{-- For Rooftop Projects --}}
                             <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
