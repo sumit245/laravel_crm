@@ -12,6 +12,7 @@ class StreetlightTask extends Model
         'project_id',
         'site_id',
         'engineer_id',
+        'manager_id',
         'vendor_id',
         'activity',
         'status',

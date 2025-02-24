@@ -14,6 +14,7 @@ class Task extends Model
         'site_id',
         'vendor_id',
         'engineer_id',
+        'manager_id',
         'activity',
         'task_name',
         'status',
