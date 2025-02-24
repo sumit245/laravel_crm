@@ -187,7 +187,7 @@
           });
         }
       });
-      $('#siteSearch').on('keyup', function() {
+      $('#panchayatSearch').on('keyup', function() {
         let query = $(this).val();
         if (query.length > 1) {
           $.ajax({
