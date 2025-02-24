@@ -64,6 +64,7 @@ class TasksController extends Controller
         ]);
         $project = Project::findOrFail($request->project_id);
 
+
         if ($project->project_type == 1) {
             // Store in streetlight_tasks table
             foreach ($request->sites as $siteId) {
@@ -74,6 +75,7 @@ class TasksController extends Controller
                     'engineer_id' => $request->engineer_id,
                     'start_date'  => $request->start_date,
                     'end_date'    => $request->end_date,
+                    'manager_id' => auth()->id(), // Automatically assign the logged-in Project Manager
                 ]);
             }
         } else {
@@ -85,6 +87,7 @@ class TasksController extends Controller
                     'engineer_id' => $request->engineer_id,
                     'start_date'  => $request->start_date,
                     'end_date'    => $request->end_date,
+                    'manager_id' => auth()->id(), // Automatically assign the logged-in Project Manager
                 ]);
             }
         }
