@@ -2,7 +2,8 @@
   <div class="d-flex justify-content-between mb-4">
     <h5>Sites</h5>
 
-    <a class="text-decoration-none text-secondary" href="" download>
+    <a class="text-decoration-none text-secondary"
+      href="https://sugslloyd.s3.ap-south-1.amazonaws.com/formats/sites_format.xlsx" download>
       Download format
     </a>
 
