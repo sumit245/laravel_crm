@@ -27,7 +27,7 @@ Route::apiResource('staff', StaffController::class);
 Route::prefix('vendor')->group(function () {
     Route::get('/', [VendorController::class, 'index']); //View all vendors
     Route::post('/', [VendorController::class, 'create']); // Create vendor
-    Route::post('/upload-avatar', [VendorController::class, 'uploadAvatar']);
+    Route::post('/upload-avatar/{id}', [VendorController::class, 'uploadAvatar']);
     Route::get('{id}', [VendorController::class, 'show']); // View a specific vendor
     Route::get('{id}/edit', [VendorController::class, 'edit']); // Edit vendor (optional)
     Route::put('{id}', [VendorController::class, 'update']); // Update vendor
