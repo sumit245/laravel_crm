@@ -1,11 +1,19 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
-    <h5>Sites</h5>
-
-    <a class="text-decoration-none text-secondary"
-      href="https://sugslloyd.s3.ap-south-1.amazonaws.com/formats/sites_format.xlsx" download>
-      Download format
-    </a>
+    <div>
+      <h5>Sites</h5>
+      @if ($project->project_type == 0)
+        <a class="text-decoration-none text-primary"
+          href="https://sugslloyd.s3.ap-south-1.amazonaws.com/formats/sites_format.xlsx" download>
+          Download format
+        </a>
+      @else
+        <a class="text-decoration-none text-primary"
+          href="https://sugslloyd.s3.ap-south-1.amazonaws.com/formats/sample_panchayat_data.xlsx" download>
+          Download format
+        </a>
+      @endif
+    </div>
 
     <div class="d-flex">
       @if ($errors->any())
