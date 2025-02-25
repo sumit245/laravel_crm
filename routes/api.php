@@ -24,6 +24,9 @@ use Illuminate\Support\Facades\Route;
 
 Route::post('/login', [LoginController::class, 'login']);
 Route::apiResource('staff', StaffController::class);
+Route::prefix('staff')->group(function () {
+    Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
+});
 Route::prefix('vendor')->group(function () {
     Route::get('/', [VendorController::class, 'index']); //View all vendors
     Route::post('/', [VendorController::class, 'create']); // Create vendor
