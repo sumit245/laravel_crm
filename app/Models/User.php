@@ -39,7 +39,8 @@ class User extends Authenticatable
         'disableLogin',
         'lastOnline',
         'manager_id',
-        'site_engineer_id'
+        'site_engineer_id',
+        'image'
     ];
 
     // Relationship: Project Manager has many Site Engineers
