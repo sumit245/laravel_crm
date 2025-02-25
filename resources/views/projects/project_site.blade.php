@@ -1,9 +1,11 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
     <h5>Sites</h5>
-    <a class="text-decoration-none">
-      <small>Download format</small>
+
+    <a class="text-decoration-none text-secondary" href="" download>
+      Download format
     </a>
+
     <div class="d-flex">
       @if ($errors->any())
         <div class="alert alert-danger">
@@ -18,9 +20,10 @@
         @csrf
         <div class="input-group">
           <input type="file" name="file" class="form-control form-control-sm" required>
-          <button type="submit" class="btn btn-sm btn-primary" style="height: 32px !important;" data-toggle="tooltip"
+          <button type="submit" class="btn btn-sm btn-primary"
+            style="height: 32px !important; align-items:center;justify-content:center;" data-toggle="tooltip"
             title="Import Sites">
-            <i class="mdi mdi-upload"></i> Import
+            <i class="mdi mdi-upload"></i><span>Import</span>
           </button>
         </div>
       </form>
