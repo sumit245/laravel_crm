@@ -1,6 +1,9 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
     <h5>Sites</h5>
+    <a class="text-decoration-none">
+      <small>Download format</small>
+    </a>
     <div class="d-flex">
       @if ($errors->any())
         <div class="alert alert-danger">
@@ -15,7 +18,8 @@
         @csrf
         <div class="input-group">
           <input type="file" name="file" class="form-control form-control-sm" required>
-          <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Inventory">
+          <button type="submit" class="btn btn-sm btn-primary" style="height: 32px !important;" data-toggle="tooltip"
+            title="Import Sites">
             <i class="mdi mdi-upload"></i> Import
           </button>
         </div>
@@ -98,5 +102,4 @@
       @endforeach
     </x-slot:tbody>
   </x-data-table>
-
 </div>
