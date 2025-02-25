@@ -178,13 +178,13 @@ class VendorController extends Controller
         ]);
     }
 
-    public function uploadAvatar(Request $request)
+    public function uploadAvatar(Request $request, $id)
     {
         $request->validate([
             'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image type & size
         ]);
 
-        $user = auth()->user(); // Get the authenticated user
+        $user = User::find($id);
 
         if (!$user) {
             return response()->json(['message' => 'User not authenticated'], 401);
