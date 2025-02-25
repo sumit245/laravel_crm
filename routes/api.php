@@ -27,11 +27,13 @@ Route::apiResource('staff', StaffController::class);
 Route::prefix('vendor')->group(function () {
     Route::get('/', [VendorController::class, 'index']); //View all vendors
     Route::post('/', [VendorController::class, 'create']); // Create vendor
+    Route::post('/upload-avatar', [VendorController::class, 'uploadAvatar']);
     Route::get('{id}', [VendorController::class, 'show']); // View a specific vendor
     Route::get('{id}/edit', [VendorController::class, 'edit']); // Edit vendor (optional)
     Route::put('{id}', [VendorController::class, 'update']); // Update vendor
     Route::delete('{id}', [VendorController::class, 'destroy']); // Delete vendor
 });
+Route::get('/vendors/{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('site', SiteController::class);
@@ -43,7 +45,6 @@ Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendo
 Route::apiResource('streetlight', StreetlightController::class);
 
 Route::apiResource('inventories', InventoryController::class);
-Route::get('/vendors/{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 
 Route::post('fetch-states', [DropdownController::class, 'fetchState']);
 Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);

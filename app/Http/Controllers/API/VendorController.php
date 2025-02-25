@@ -5,6 +5,9 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class VendorController extends Controller
 {
@@ -173,5 +176,33 @@ class VendorController extends Controller
         return response()->json([
             'message' => 'Vendor deleted successfully',
         ]);
+    }
+
+    public function uploadAvatar(Request $request)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate image type & size
+        ]);
+
+        $user = auth()->user(); // Get the authenticated user
+
+        if (!$user) {
+            return response()->json(['message' => 'User not authenticated'], 401);
+        }
+
+        // Generate unique filename: username_YYYYMMDD_HHMMSS.jpg
+        $timestamp = Carbon::now()->format('Ymd_His');
+        $filename = "{$user->username}_{$timestamp}.jpg";
+
+        // Upload to S3 (path: users/avatar/{filename})
+        $path = $request->file('image')->storeAs('users/avatar', $filename, 's3');
+
+        // Save image path in the database
+        $user->update(['image' => Storage::disk('s3')->url($path)]);
+
+        return response()->json([
+            'message' => 'Profile picture uploaded successfully',
+            'image_url' => $user->image, // Return full image URL
+        ], 200);
     }
 }
