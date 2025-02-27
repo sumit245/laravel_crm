@@ -15,24 +15,18 @@ class Streetlight extends Model
         'block',
         'panchayat',
         'ward',
-        'pole',
-        'complete_pole_number',
-        'uname',
-        'SID',
         'district_id',
         'block_id',
         'panchayat_id',
         'ward_id',
         'pole_id',
-        'luminary_qr',
-        'battery_qr',
-        'panel_qr',
+        'number_of_poles',
+        'uname',
+        'SID',
         'file',
         'lat',
         'lng',
-        'beneficiary',
-        'remark',
-        'project_id'
+        'project_id',
     ];
     // Define the relationship
     public function project()
