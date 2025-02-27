@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         //
-        Schema::table('poles', function (Blueprint $table) {
+        Schema::table('streelight_poles', function (Blueprint $table) {
             $table->string('beneficiary')->nullable()->after('isSurveyDone');
             $table->string('remarks')->nullable()->after('beneficiary');
         });
