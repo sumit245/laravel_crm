@@ -28,6 +28,14 @@ class Streetlight extends Model
         'lng',
         'project_id',
     ];
+
+    // Relationship: A streetlight has multiple poles
+    public function poles()
+    {
+        return $this->hasMany(Pole::class);
+    }
+
+
     // Define the relationship
     public function project()
     {

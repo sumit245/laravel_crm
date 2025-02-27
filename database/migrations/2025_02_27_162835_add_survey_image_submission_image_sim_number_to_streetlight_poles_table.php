@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('streelight_poles', function (Blueprint $table) {
             //
-            $table->string('breda_sl_no')->nullable()->after('id')->index(); // Adding searchable index
+            $table->string('sim_number')->nullable()->after('luminary_qr');
+            $table->string('survey_image')->nullable()->after('lng');
+            $table->string('submission_image')->nullable()->after('survey_image');
         });
     }
 
@@ -22,7 +24,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('sites', function (Blueprint $table) {
+        Schema::table('streetlight_poles', function (Blueprint $table) {
             //
         });
     }

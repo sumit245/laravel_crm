@@ -23,6 +23,13 @@ class StreetlightTask extends Model
         'approved_by',
     ];
 
+    // Relationship: A task belongs to a pole
+    public function pole()
+    {
+        return $this->belongsTo(Pole::class);
+    }
+
+    // Relationship: A task belongs to a project
     public function project()
     {
         return $this->belongsTo(Project::class);
@@ -33,10 +40,13 @@ class StreetlightTask extends Model
         return $this->belongsTo(Streetlight::class, 'site_id');
     }
 
+    // Relationship: A task belongs to an engineer
     public function engineer()
     {
         return $this->belongsTo(User::class, 'engineer_id');
     }
+
+    // Relationship: A task belongs to a vendor
     public function vendor()
     {
         return $this->belongsTo(User::class, 'vendor_id');

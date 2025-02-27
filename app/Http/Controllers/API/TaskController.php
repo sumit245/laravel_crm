@@ -4,11 +4,14 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Site;
+use App\Models\Streetlight;
+use App\Models\Pole;
 use App\Models\StreetlightTask;
 use App\Models\Task;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
@@ -246,6 +249,98 @@ class TaskController extends Controller
         return response()->json([
             'message' => 'Task approved successfully',
             'task' => $task
-        ]);     
+        ]);
+    }
+
+    public function submitStreetlightTasks(Request $request)
+    {
+        // Step 1: Validate Request
+        $validator = Validator::make($request->all(), [
+            'task_id'        => 'required|exists:streetlight_tasks,id',
+            'complete_pole_number'         => 'required|integer',
+            'isSurveyDone'      => 'nullable|boolean',
+            'survey_image'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'isNetworkAvailable'  => 'nullable|boolean',
+            'beneficiary'         => 'nullable|string|max:255',
+            'remarks'             => 'nullable|string',
+            'isInstallationDone' => 'nullable|boolean',
+            'luminary_qr'         => 'nullable|string|max:255',
+            'sim_number'    => 'nullable|string|max:200',
+            'panel_qr'            => 'nullable|string|max:255',
+            'battery_qr'          => 'nullable|string|max:255',
+            'submission_image'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'lat'            => 'nullable|numeric',
+            'lng'           => 'nullable|numeric',
+        ]);
+        if ($validator->fails()) {
+            return response()->json(['error' => $validator->errors()], 422);
+        }
+
+        //Step 2: Fetch Task
+        $task = StreetlightTask::findOrFail($request->task_id);
+
+        // ✅ Step 4: Check if Pole Already Exists
+        $pole = Streetlight::where('task_id', $request->task_id)
+            ->where('ward', $request->ward)
+            ->where('complete_pole_number', $request->complete_pole_number)
+            ->first();
+
+        // If pole does not exist, create a new one
+        if (!$pole) {
+            $pole = Streetlight::create([
+                'task_id'              => $request->task_id,
+                'complete_pole_number' => $request->complete_pole_number,
+                'isSurveyDone'         => true,
+                'isInstallationDone'   => false,
+                'beneficiary'          => $request->beneficiary,
+                'remarks'              => $request->beneficiary,
+                'luminary_qr'          => null,
+                'panel_qr'             => null,
+                'battery_qr'           => null,
+                'lat'             => $request->lat,
+                'lng'            => $request->lng,
+            ]);
+
+            // Increment surveyed poles count in `streetlight_tasks`
+            $pole->increment('number_of_surveyed_poles');
+        }
+        // ✅ Step 5: Upload Images (If Any)
+        if ($request->hasFile('survey_image')) {
+            $surveyImagePath = $this->uploadToS3($request->file('survey_image'), "streetlights/survey/{$pole->id}");
+            $pole->update(['survey_image' => $surveyImagePath]);
+        }
+        if ($request->hasFile('submission_image')) {
+            $submissionImagePath = $this->uploadToS3($request->file('submission_image'), "streetlights/installation/{$pole->id}");
+            $pole->update(['submission_image' => $submissionImagePath]);
+        }
+        // ✅ Step 6: Update Survey Data
+        if ($request->isSurveyDone) {
+            $pole->update([
+                'isSurveyDone'     => true,
+                'beneficiary'      => $request->beneficiary,
+                'remarks'          => $request->remarks,
+                'isNetworkAvailable' => $request->isNetworkAvailable,
+            ]);
+        }
+        // ✅ Step 7: Update Installation Data
+        if ($request->isInstallationDone) {
+            $pole->update([
+                'isInstallationDone' => true,
+                'luminary_qr'       => $request->luminary_qr,
+                'sim_number'        => $request->sim_number,
+                'panel_qr'          => $request->panel_qr,
+                'battery_qr'        => $request->battery_qr,
+                'latitude'          => $request->latitude,
+                'longitude'         => $request->longitude,
+            ]);
+
+            // Increment installed poles count in `streetlight_tasks`
+            $task->increment('number_of_installed_poles');
+        }
+        return response()->json([
+            'message' => 'Pole details submitted successfully!',
+            'pole'    => $pole,
+            'task'    => $task,
+        ], 200);
     }
 }
