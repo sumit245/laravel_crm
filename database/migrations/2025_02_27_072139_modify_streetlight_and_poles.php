@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         //
-        Schema::table('streelight_poles', function (Blueprint $table) {
-            $table->string('beneficiary')->nullable()->after('isSurveyDone');
-            $table->string('remarks')->nullable()->after('beneficiary');
-        });
+        // Schema::table('streelight_poles', function (Blueprint $table) {
+        //     $table->string('beneficiary')->nullable()->after('isSurveyDone');
+        //     $table->string('remarks')->nullable()->after('beneficiary');
+        // });
 
         Schema::table('streetlights', function (Blueprint $table) {
             $table->dropColumn('beneficiary');
