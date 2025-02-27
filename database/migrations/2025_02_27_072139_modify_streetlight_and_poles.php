@@ -21,7 +21,7 @@ return new class extends Migration
             $table->dropColumn('beneficiary');
             $table->dropColumn('remarks');
             $table->renameColumn('pole', 'number_of_poles'); // ✅ Rename column
-            $table->integer('number_of_surveyed_poles')->default(0)->after('number_of_poles');
+            $table->integer('number_of_surveyed_poles')->default(0)->after('pole');
             $table->integer('number_of_installed_poles')->default(0)->after('number_of_surveyed_poles');
         });
     }
