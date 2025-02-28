@@ -257,9 +257,9 @@ class TaskController extends Controller
         // Step 1: Validate Request
         $validator = Validator::make($request->all(), [
             'task_id'        => 'required|exists:streetlight_tasks,id',
-            'complete_pole_number'         => 'required|integer',
+            'complete_pole_number'         => 'required|string|max:255',
             'isSurveyDone'      => 'nullable|boolean',
-            'survey_image'        => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'survey_image'        => 'nullable|array',
             'isNetworkAvailable'  => 'nullable|boolean',
             'beneficiary'         => 'nullable|string|max:255',
             'remarks'             => 'nullable|string',
@@ -268,7 +268,7 @@ class TaskController extends Controller
             'sim_number'    => 'nullable|string|max:200',
             'panel_qr'            => 'nullable|string|max:255',
             'battery_qr'          => 'nullable|string|max:255',
-            'submission_image'    => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'submission_image'    => 'nullable|array',
             'lat'            => 'nullable|numeric',
             'lng'           => 'nullable|numeric',
         ]);
