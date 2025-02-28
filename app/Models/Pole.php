@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Pole extends Model
 {
     use HasFactory;
+    protected $table = 'streelight_poles';
     protected $fillable = [
         'streetlight_id',
         'isSurveyDone',
