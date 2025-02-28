@@ -279,6 +279,8 @@ class TaskController extends Controller
         //Step 2: Fetch Task
         $task = StreetlightTask::findOrFail($request->task_id);
 
+        $streetlight = Streetlight::findOrFail($task->site_id);
+
         // ✅ Step 4: Check if Pole Already Exists
         $pole = Pole::where('task_id', $request->task_id)
             ->where('complete_pole_number', $request->complete_pole_number)
@@ -301,7 +303,7 @@ class TaskController extends Controller
             ]);
 
             // Increment surveyed poles count in `streetlight_tasks`
-            $pole->increment('number_of_surveyed_poles');
+            $streetlight->increment('number_of_surveyed_poles');
         }
         // ✅ Step 5: Upload Images (If Any)
         if ($request->hasFile('survey_image')) {
@@ -334,7 +336,7 @@ class TaskController extends Controller
             ]);
 
             // Increment installed poles count in `streetlight_tasks`
-            $task->increment('number_of_installed_poles');
+            $streetlight->increment('number_of_installed_poles');
         }
         return response()->json([
             'message' => 'Pole details submitted successfully!',
