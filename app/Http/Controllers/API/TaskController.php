@@ -281,7 +281,6 @@ class TaskController extends Controller
 
         // ✅ Step 4: Check if Pole Already Exists
         $pole = Pole::where('task_id', $request->task_id)
-            ->where('ward', $request->ward)
             ->where('complete_pole_number', $request->complete_pole_number)
             ->first();
 
