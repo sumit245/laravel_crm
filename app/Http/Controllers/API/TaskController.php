@@ -280,14 +280,14 @@ class TaskController extends Controller
         $task = StreetlightTask::findOrFail($request->task_id);
 
         // ✅ Step 4: Check if Pole Already Exists
-        $pole = Streetlight::where('task_id', $request->task_id)
+        $pole = Pole::where('task_id', $request->task_id)
             ->where('ward', $request->ward)
             ->where('complete_pole_number', $request->complete_pole_number)
             ->first();
 
         // If pole does not exist, create a new one
         if (!$pole) {
-            $pole = Streetlight::create([
+            $pole = Pole::create([
                 'task_id'              => $request->task_id,
                 'complete_pole_number' => $request->complete_pole_number,
                 'isSurveyDone'         => true,
