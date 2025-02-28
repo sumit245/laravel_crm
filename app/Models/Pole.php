@@ -10,7 +10,7 @@ class Pole extends Model
     use HasFactory;
     protected $table = 'streelight_poles';
     protected $fillable = [
-        'streetlight_id',
+        'task_id',
         'isSurveyDone',
         'isNetworkAvailable',
         'isInstallationDone',
@@ -18,6 +18,11 @@ class Pole extends Model
         'battery_qr',
         'panel_qr',
         'complete_pole_number',
+        'beneficiary',
+        'remarks',
+        'sim_number',
+        'submission_image',
+        'survey_image',
         'lat',
         'lng',
         'file'
