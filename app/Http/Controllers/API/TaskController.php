@@ -8,6 +8,7 @@ use App\Models\Streetlight;
 use App\Models\Pole;
 use App\Models\StreetlightTask;
 use App\Models\Task;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -412,5 +413,62 @@ class TaskController extends Controller
             'surveyed_poles'    => $surveyed_poles,
             'installed_poles' => $installed_poles
         ], 200);
+    }
+    // Fetch Surveyed Poles based on user role
+    public function getSurveyedPoles(Request $request)
+    {
+        if (!auth()->check()) {
+            return redirect()->route('login')->with('error', 'Please log in first.');
+        }
+
+        $user = auth()->user();
+        $query = Pole::where('isSurveyDone', 1);
+        if ($request->has('project_manager')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('manager_id', $request->project_manager);
+            });
+        }
+
+        if ($request->has('site_engineer')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('engineer_id', $request->site_engineer);
+            });
+        }
+
+        if ($request->has('vendor')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('vendor_id', $request->vendor);
+            });
+        }
+        $poles = $query->get();
+        $totalSurveyed = $query->count();
+        Log::info($poles);
+        return view('poles.surveyed', compact('poles', 'totalSurveyed'));
+    }
+
+    // Fetch Installed Poles based on user role
+    public function getInstalledPoles(Request $request)
+    {
+        $query = Pole::where('isInstallationDone', 1);
+
+        if ($request->has('project_manager')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('manager_id', $request->project_manager);
+            });
+        }
+
+        if ($request->has('site_engineer')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('engineer_id', $request->site_engineer);
+            });
+        }
+
+        if ($request->has('vendor')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('vendor_id', $request->vendor);
+            });
+        }
+
+        return response()->json($query->get());
     }
 }
