@@ -1,17 +1,33 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container">
-
-    <h1>Pole Details</h1>
-
-    <h2>General Information</h2>
-    <p><strong>Complete Pole Number:</strong> {{ $pole->complete_pole_number }}</p>
-    <p><strong>Beneficiary:</strong> {{ $pole->beneficiary }}</p>
-    <p><strong>Remarks:</strong> {{ $pole->remarks }}</p>
-    <p><strong>Latitude:</strong> {{ $pole->lat }}</p>
-    <p><strong>Longitude:</strong> {{ $pole->lng }}</p>
-
+  <div class="pd-20 pd-xl-25 container">
+    <div class="d-flex align-items-center justify-content-between mg-b-25">
+      <h6 class="mg-b-0">Pole Details</h6>
+      <div class="d-flex">
+        <a href="#" data-toggle="modal" class="btn btn-sm btn-white d-flex align-items-center"
+          onclick="()=>window.location.goBack();">
+          <span class="d-none d-sm-inline mg-l-5"> Go Back</span></a>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Pole id</label>
+        <p class="mg-b-0">{{ $pole->id }}</p>
+      </div>
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Complete Pole Number</label>
+        <p class="mg-b-0">{{ $pole->complete_pole_number }}</p>
+      </div>
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Beneficiary</label>
+        <p class="mg-b-0">{{ $pole->beneficiary }}</p>
+      </div>
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Location</label>
+        <p class="mg-b-0">{{ $pole->lat }}, {{ $pole->lng }}</p>
+      </div>
+    </div>
     <h2>Survey Information</h2>
     <p><strong>Survey Done:</strong> {{ $pole->isSurveyDone ? "Yes" : "No" }}</p>
     <p><strong>Network Available:</strong> {{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
@@ -37,8 +53,5 @@
     @else
       <p>No related tasks found.</p>
     @endif
-
-    <a href="" onclick="()=>window.location.goBack();">Back to Poles List</a>
-
   </div>
 @endsection
