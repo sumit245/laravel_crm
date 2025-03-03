@@ -36,6 +36,10 @@ class Pole extends Model
     // Relationship: A pole has many tasks
     public function tasks()
     {
-        return $this->hasMany(StreetlightTask::class, 'task_id');
+        return $this->hasMany(StreetlightTask::class, 'pole_id');
+    }
+    public function task()
+    {
+        return $this->belongsTo(StreetlightTask::class, 'pole_id');
     }
 }
