@@ -114,7 +114,7 @@
                         <p class="fw-bold mb-1 ms-1">{{ $vendor->name }}</p>
                         <div>
                           <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ $project->project_type == 1 ? "Panchayats Done" : "Sites Done" }}</p>
+                            <p>{{ session("project_type") == 1 ? "Panchayats Done" : "Sites Done" }}</p>
                             <p class="text-success">{{ $vendor->performance }}</p>
                           </div>
                           <div class="progress progress-md">
