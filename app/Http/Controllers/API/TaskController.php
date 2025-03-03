@@ -362,11 +362,11 @@ class TaskController extends Controller
     {
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
             $query->where('engineer_id', $engineer_id);
-        })->where('isSurveyDone', true)->get();
+        })->where('isSurveyDone', 1)->get();
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
             $query->where('engineer_id', $engineer_id);
-        })->where('isInstallationDone', true)->get();
+        })->where('isInstallationDone', 1)->get();
 
         return response()->json([
             'message' => 'Installed poles for Site Engineer',
