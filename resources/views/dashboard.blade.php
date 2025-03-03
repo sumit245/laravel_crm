@@ -127,7 +127,7 @@
         </div>
       </div>
     </div> --}}
-    @include("partials.performance")
+    @include("partials.performance", "project")
   </div>
 @endsection
 
