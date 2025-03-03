@@ -38,7 +38,7 @@
       <p>No related tasks found.</p>
     @endif
 
-    <a href="{{ route("poles.index") }}">Back to Poles List</a>
+    <a href="" onclick="()=>window.location.goBack();">Back to Poles List</a>
 
   </div>
 @endsection
