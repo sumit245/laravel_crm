@@ -423,6 +423,27 @@ class TaskController extends Controller
 
         $user = auth()->user();
         $query = Pole::where('isSurveyDone', 1);
+        // Apply filters based on request parameters
+        if ($request->has('search')) {
+            $query->where('complete_pole_number', 'like', '%' . $request->search . '%');
+        }
+        if ($request->has('district')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('district_id', $request->district);
+            });
+        }
+
+        if ($request->has('block')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('block_id', $request->block);
+            });
+        }
+        if ($request->has('panchayat')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('panchayat_id', $request->panchayat);
+            });
+        }
+
         if ($request->has('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
@@ -440,7 +461,7 @@ class TaskController extends Controller
                 $q->where('vendor_id', $request->vendor);
             });
         }
-        $poles = $query->get();
+        $poles = $query->paginate(25);
         $totalSurveyed = $query->count();
         Log::info($poles);
         return view('poles.surveyed', compact('poles', 'totalSurveyed'));
