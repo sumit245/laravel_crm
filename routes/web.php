@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
     // Route for Surveyed Poles
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');
     Route::get('/export-poles', [TaskController::class, 'exportPoles'])->name('poles.export');
-    Route::get('/poles/show', [TaskController::class, 'exportPoles'])->name('poles.show');
+    Route::get('/poles/show/{id}', [TaskController::class, 'viewPoleDetails'])->name('poles.show');
     // Route for Installed Poles
     Route::get('/installed-poles', [TaskController::class, 'getInstalledPoles'])->name('installed.poles');
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');

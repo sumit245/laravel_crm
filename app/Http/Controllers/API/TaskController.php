@@ -494,4 +494,13 @@ class TaskController extends Controller
 
         return response()->json($query->get());
     }
+
+    public function viewPoleDetails($id)
+    {
+        // Fetch the pole with the given ID along with its relationships
+        $pole = Pole::with(['streetlight', 'task', 'tasks'])->findOrFail($id);
+
+        // Return the view with the pole details
+        return view('poles.show', compact('pole'));
+    }
 }
