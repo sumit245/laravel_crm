@@ -71,63 +71,7 @@
         </div>
       @endforeach
     </div>
-    {{-- <div class="row mt-4">
-      <div class="col-sm-12">
-        <div class="card card-rounded">
-          <div class="card-body">
-            <h4 class="mb-3">Project Performance Overview</h4>
-            <div class="table-responsive">
-              <table class="table-hover table">
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th>Name</th>
-                    <th>Performance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @foreach ($projectManagers as $pm)
-                    <tr class="expandable-row" data-bs-toggle="collapse" data-bs-target="#pm-{{ $pm->id }}">
-                      <td>Project Manager</td>
-                      <td>{{ $pm->name }}</td>
-                      <td><span class="badge bg-primary">{{ $pm->performance }}</span></td>
-                    </tr>
-                    <tr class="collapse" id="pm-{{ $pm->id }}" data-bs-parent="tbody">
-                      <td colspan="3">
-                        <table class="table-hover table">
-                          @foreach ($pm->siteEngineers as $se)
-                            <tr class="expandable-row" data-bs-toggle="collapse"
-                              data-bs-target="#se-{{ $se->id }}">
-                              <td>Site Engineer</td>
-                              <td>{{ $se->name }}</td>
-                              <td><span class="badge bg-info">{{ $se->performance }}</span></td>
-                            </tr>
-                            <tr class="collapse" id="se-{{ $se->id }}" data-bs-parent="#pm-{{ $pm->id }}">
-                              <td colspan="3">
-                                <table class="table-hover table">
-                                  @foreach ($se->vendors as $vendor)
-                                    <tr>
-                                      <td>Vendor</td>
-                                      <td>{{ $vendor->name }}</td>
-                                      <td><span class="badge bg-success">{{ $vendor->performance }}</span></td>
-                                    </tr>
-                                  @endforeach
-                                </table>
-                              </td>
-                            </tr>
-                          @endforeach
-                        </table>
-                      </td>
-                    </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div> --}}
-    @include("partials.performance", ["project" => $project])
+    @include("partials.performance")
   </div>
 @endsection
 
