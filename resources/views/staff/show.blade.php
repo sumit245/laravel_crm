@@ -40,6 +40,16 @@
                   <p><strong>Manager: </strong> {{ $staff->projectManager->firstName }}
                     {{ $staff->projectManager->lastName }}</p>
                 @endif
+                @if (session("project_id") == 11)
+                  <div>
+                    <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
+                      class="text-primary text-decoration-none">Poles Surveyed:
+                      {{ $staff->surveyed_poles_count ?? 0 }}</a> <br />
+                    <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
+                      class="text-success text-decoration-none">Installed Poles:
+                      {{ $staff->installed_poles_count ?? 0 }}</a>
+                  </div>
+                @endif
               </div>
               <!-- Contact Details -->
               <div class="">
