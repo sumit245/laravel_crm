@@ -40,6 +40,6 @@ class Pole extends Model
     }
     public function task()
     {
-        return $this->belongsTo(StreetlightTask::class, 'pole_id');
+        return $this->belongsTo(StreetlightTask::class, 'task_id');
     }
 }

@@ -55,4 +55,9 @@ class StreetlightTask extends Model
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
+
+    public function poles()
+    {
+        return $this->hasMany(Pole::class, 'task_id');
+    }
 }
