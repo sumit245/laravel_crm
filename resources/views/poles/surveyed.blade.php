@@ -6,7 +6,7 @@
     <p>Total Surveyed Poles: <strong>{{ $totalSurveyed }}</strong></p>
 
     <!-- Search and Filter Form -->
-    <form method="GET" action="{{ route("poles.surveyed") }}" class="mb-3">
+    <form method="GET" action="{{ route("surveyed.poles") }}" class="mb-3">
       <div class="row">
         <div class="col-md-3">
           <input type="text" name="search" class="form-control" placeholder="Search by Pole Number"
@@ -46,7 +46,7 @@
       <div class="row mt-2">
         <div class="col-md-3">
           <button type="submit" class="btn btn-primary">Filter</button>
-          <a href="{{ route("poles.surveyed") }}" class="btn btn-secondary">Reset</a>
+          <a href="{{ route("surveyed.poles") }}" class="btn btn-secondary">Reset</a>
         </div>
         <div class="col-md-3">
           <a href="{{ route("poles.export") }}" class="btn btn-success">Export to Excel</a>
