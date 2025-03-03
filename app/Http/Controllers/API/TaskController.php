@@ -360,11 +360,11 @@ class TaskController extends Controller
 
     public function getInstalledPolesForSiteEngineer($engineer_id)
     {
-        $surveyed_poles = Pole::whereHas('tasks', function ($query) use ($engineer_id) {
+        $surveyed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
             $query->where('engineer_id', $engineer_id);
         })->where('isSurveyDone', true)->get();
 
-        $installed_poles = Pole::whereHas('tasks', function ($query) use ($engineer_id) {
+        $installed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
             $query->where('engineer_id', $engineer_id);
         })->where('isInstallationDone', true)->get();
 
@@ -379,11 +379,11 @@ class TaskController extends Controller
      */
     public function getInstalledPolesForVendor($vendor_id)
     {
-        $surveyed_poles = Pole::whereHas('tasks', function ($query) use ($vendor_id) {
+        $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
         })->where('isSurveyDone', true)->get();
 
-        $installed_poles = Pole::whereHas('tasks', function ($query) use ($vendor_id) {
+        $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
         })->where('isInstallationDone', true)->get();
 
@@ -399,11 +399,11 @@ class TaskController extends Controller
      */
     public function getInstalledPolesForProjectManager($manager_id)
     {
-        $surveyed_poles = Pole::whereHas('tasks', function ($query) use ($manager_id) {
+        $surveyed_poles = Pole::whereHas('task', function ($query) use ($manager_id) {
             $query->where('manager_id', $manager_id);
         })->where('isSurveyDone', true)->get();
 
-        $installed_poles = Pole::whereHas('tasks', function ($query) use ($manager_id) {
+        $installed_poles = Pole::whereHas('task', function ($query) use ($manager_id) {
             $query->where('manager_id', $manager_id);
         })->where('isInstallationDone', true)->get();
 
