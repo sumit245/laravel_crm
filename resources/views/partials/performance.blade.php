@@ -40,7 +40,10 @@
                               aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                           </div>
                         </div>
-                        <div>
+                        @php
+                            session('project_type')===1?
+                            @endphp
+                            <div>
                           <a href="{{ route("surveyed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
                             class="text-primary text-decoration-none">Poles Surveyed:
                             {{ $projectManager->surveyed_poles_count ?? 0 }}</a> <br />
@@ -48,6 +51,10 @@
                             class="text-success text-decoration-none">Installed Poles:
                             {{ $projectManager->surveyed_poles_count ?? 0 }}</a>
                         </div>
+                        @php
+                            :
+                        @endphp
+                        null
                       </div>
                     </div>
                   </a>
