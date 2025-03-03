@@ -40,21 +40,16 @@
                               aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                           </div>
                         </div>
-                        @php
-                            session('project_type')===1?
-                            @endphp
-                            <div>
-                          <a href="{{ route("surveyed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
-                            class="text-primary text-decoration-none">Poles Surveyed:
-                            {{ $projectManager->surveyed_poles_count ?? 0 }}</a> <br />
-                          <a href="{{ route("installed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
-                            class="text-success text-decoration-none">Installed Poles:
-                            {{ $projectManager->surveyed_poles_count ?? 0 }}</a>
-                        </div>
-                        @php
-                            :
-                        @endphp
-                        null
+                        @if (session("project_type") == 1)
+                          <div>
+                            <a href="{{ route("surveyed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
+                              class="text-primary text-decoration-none">Poles Surveyed:
+                              {{ $projectManager->surveyed_poles_count ?? 0 }}</a> <br />
+                            <a href="{{ route("installed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
+                              class="text-success text-decoration-none">Installed Poles:
+                              {{ $projectManager->surveyed_poles_count ?? 0 }}</a>
+                          </div>
+                        @endif
                       </div>
                     </div>
                   </a>
