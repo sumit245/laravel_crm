@@ -32,7 +32,7 @@
                         <p class="fw-bold mb-1 ms-1">{{ $projectManager->name }}</p>
                         <div>
                           <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session(project_type) == 1 ? "Panchayats Done" : "Sites Done" }}</p>
+                            <p>{{ session("project_type") == 1 ? "Panchayats Done" : "Sites Done" }}</p>
                             <p class="text-success">{{ $projectManager->performance }}</p>
                           </div>
                           <div class="progress progress-md">
@@ -77,7 +77,7 @@
                         <p class="fw-bold mb-1 ms-1">{{ $se->name }}</p>
                         <div>
                           <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session(project_type) == 1 ? "Panchayats Done" : "Sites Done" }}</p>
+                            <p>{{ session("project_type") == 1 ? "Panchayats Done" : "Sites Done" }}</p>
                             <p class="text-success">{{ $se->performance }}</p>
                           </div>
                           <div class="progress progress-md">
