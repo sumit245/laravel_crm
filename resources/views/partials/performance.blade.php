@@ -32,7 +32,7 @@
                         <p class="fw-bold mb-1 ms-1">{{ $projectManager->name }}</p>
                         <div>
                           <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session("project_type") == 1 ? "Panchayats Done" : "Sites Done" }}</p>
+                            <p>{{ session("project_id") == 11 ? "Panchayats Done" : "Sites Done" }}</p>
                             <p class="text-success">{{ $projectManager->performance }}</p>
                           </div>
                           <div class="progress progress-md">
@@ -40,7 +40,7 @@
                               aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
                           </div>
                         </div>
-                        @if (session("project_type") == 1)
+                        @if (session("project_id") == 11)
                           <div>
                             <a href="{{ route("surveyed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
                               class="text-primary text-decoration-none">Poles Surveyed:
@@ -79,7 +79,7 @@
                         <p class="fw-bold mb-1 ms-1">{{ $se->name }}</p>
                         <div>
                           <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session("project_type") == 1 ? "Panchayats Done" : "Sites Done" }}</p>
+                            <p>{{ session("project_id") == 11 ? "Panchayats Done" : "Sites Done" }}</p>
                             <p class="text-success">{{ $se->performance }}</p>
                           </div>
                           <div class="progress progress-md">
@@ -116,7 +116,7 @@
                         <p class="fw-bold mb-1 ms-1">{{ $vendor->name }}</p>
                         <div>
                           <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session("project_type") == 1 ? "Panchayats Done" : "Sites Done" }}</p>
+                            <p>{{ session("project_id") == 11 ? "Panchayats Done" : "Sites Done" }}</p>
                             <p class="text-success">{{ $vendor->performance }}</p>
                           </div>
                           <div class="progress progress-md">
