@@ -28,9 +28,26 @@
                   <a href="{{ route("staff.show", $projectManager->id) }}" class="text-decoration-none text-dark">
                     <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
                       <img class="img-sm rounded-10" src={{ $projectManager->image }} alt="profile">
-                      <div class="wrapper ms-3">
+                      <div class="wrapper ms-3" style="width:100%;">
                         <p class="fw-bold mb-1 ms-1">{{ $projectManager->name }}</p>
-                        <small class="text-muted mb-0">{{ $projectManager->performance }}</small>
+                        <div>
+                          <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
+                            <p>Panchayats Done</p>
+                            <p class="text-success">{{ $projectManager->performance }}</p>
+                          </div>
+                          <div class="progress progress-md">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%"
+                              aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
+                        <div>
+                          <a href="{{ route("surveyed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
+                            class="text-primary text-decoration-none">Poles Surveyed:
+                            {{ $projectManager->surveyed_poles_count ?? 0 }}</a> <br />
+                          <a href="{{ route("installed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
+                            class="text-success text-decoration-none">Installed Poles:
+                            {{ $projectManager->surveyed_poles_count ?? 0 }}</a>
+                        </div>
                       </div>
                     </div>
                   </a>
@@ -56,9 +73,18 @@
                   <a href="{{ route("staff.show", $se->id) }}" class="text-decoration-none text-dark">
                     <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
                       <img class="img-sm rounded-10" src={{ $se->image }} alt="profile">
-                      <div class="wrapper ms-3">
+                      <div class="wrapper ms-3" style="width:100%;">
                         <p class="fw-bold mb-1 ms-1">{{ $se->name }}</p>
-                        <small class="text-muted mb-0">{{ $se->performance }}</small>
+                        <div>
+                          <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
+                            <p>Panchayats Done</p>
+                            <p class="text-success">{{ $se->performance }}</p>
+                          </div>
+                          <div class="progress progress-md">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%"
+                              aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </a>
@@ -84,9 +110,18 @@
                   <a href="{{ route("uservendors.show", $vendor->id) }}" class="text-decoration-none text-dark">
                     <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
                       <img class="img-sm rounded-10" src={{ $vendor->image }} alt="profile">
-                      <div class="wrapper ms-3">
+                      <div class="wrapper ms-3" style="width:100%;">
                         <p class="fw-bold mb-1 ms-1">{{ $vendor->name }}</p>
-                        <small class="text-muted mb-0">{{ $vendor->performance }}</small>
+                        <div>
+                          <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
+                            <p>Panchayats Done</p>
+                            <p class="text-success">{{ $vendor->performance }}</p>
+                          </div>
+                          <div class="progress progress-md">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%"
+                              aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
+                          </div>
+                        </div>
                       </div>
                     </div>
                   </a>

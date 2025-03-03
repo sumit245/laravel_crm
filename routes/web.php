@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\StreetlightController;
+use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
@@ -43,6 +44,11 @@ Route::middleware(['auth'])->group(function () {
     // routes/web.php
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
+    // Route for Surveyed Poles
+    Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');
+
+    // Route for Installed Poles
+    Route::get('/installed-poles', [TaskController::class, 'getInstalledPoles'])->name('installed.poles');
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
     Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
     Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
