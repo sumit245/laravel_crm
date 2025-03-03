@@ -344,4 +344,73 @@ class TaskController extends Controller
             'task'    => $task,
         ], 200);
     }
+    public function getPoleDetails(Request $request)
+    {
+        $id = $request->pole_id;
+        $pole = Pole::findOrFail($id);
+        if (!$pole) {
+            return response()->json([
+                'message' => 'No poles associated with this id'
+            ], 404);
+        }
+        return response()->json([
+            'pole' => $pole
+        ], 200);
+    }
+
+    public function getInstalledPolesForSiteEngineer($engineer_id)
+    {
+        $surveyed_poles = Pole::whereHas('tasks', function ($query) use ($engineer_id) {
+            $query->where('engineer_id', $engineer_id);
+        })->where('isSurveyDone', true)->get();
+
+        $installed_poles = Pole::whereHas('tasks', function ($query) use ($engineer_id) {
+            $query->where('engineer_id', $engineer_id);
+        })->where('isInstallationDone', true)->get();
+
+        return response()->json([
+            'message' => 'Installed poles for Site Engineer',
+            'surveyed_poles'    => $surveyed_poles,
+            'installed_poles' => $installed_poles
+        ], 200);
+    }
+    /**
+     * Get all installed poles for a specific Vendor
+     */
+    public function getInstalledPolesForVendor($vendor_id)
+    {
+        $surveyed_poles = Pole::whereHas('tasks', function ($query) use ($vendor_id) {
+            $query->where('vendor_id', $vendor_id);
+        })->where('isSurveyDone', true)->get();
+
+        $installed_poles = Pole::whereHas('tasks', function ($query) use ($vendor_id) {
+            $query->where('vendor_id', $vendor_id);
+        })->where('isInstallationDone', true)->get();
+
+
+        return response()->json([
+            'message' => 'Installed poles for Vendor',
+            'surveyed_poles'    => $surveyed_poles,
+            'installed_poles' => $installed_poles
+        ], 200);
+    }
+    /**
+     * Get all installed poles for a specific Project Manager
+     */
+    public function getInstalledPolesForProjectManager($manager_id)
+    {
+        $surveyed_poles = Pole::whereHas('tasks', function ($query) use ($manager_id) {
+            $query->where('manager_id', $manager_id);
+        })->where('isSurveyDone', true)->get();
+
+        $installed_poles = Pole::whereHas('tasks', function ($query) use ($manager_id) {
+            $query->where('manager_id', $manager_id);
+        })->where('isInstallationDone', true)->get();
+
+        return response()->json([
+            'message' => 'Installed poles for Project Manager',
+            'surveyed_poles'    => $surveyed_poles,
+            'installed_poles' => $installed_poles
+        ], 200);
+    }
 }
