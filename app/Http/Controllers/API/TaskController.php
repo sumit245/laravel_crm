@@ -463,8 +463,10 @@ class TaskController extends Controller
         }
         $poles = $query->paginate(25);
         $totalSurveyed = $query->count();
-        Log::info($poles);
-        return view('poles.surveyed', compact('poles', 'totalSurveyed'));
+        $districts = [];
+        $blocks = [];
+        $panchayats = [];
+        return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districts', 'blocks', 'panchayats'));
     }
 
     // Fetch Installed Poles based on user role
