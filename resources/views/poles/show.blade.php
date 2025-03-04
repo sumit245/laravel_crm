@@ -12,7 +12,7 @@
     </div>
     <div class="row">
       <div class="col-6 col-sm">
-        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Pole id</label>
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Sl. No.</label>
         <p class="mg-b-0">{{ $pole->id }}</p>
       </div>
       <div class="col-6 col-sm">
@@ -28,30 +28,24 @@
         <p class="mg-b-0">{{ $pole->lat }}, {{ $pole->lng }}</p>
       </div>
     </div>
-    <h2>Survey Information</h2>
-    <p><strong>Survey Done:</strong> {{ $pole->isSurveyDone ? "Yes" : "No" }}</p>
-    <p><strong>Network Available:</strong> {{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
-    <p><strong>Installation Done:</strong> {{ $pole->isInstallationDone ? "Yes" : "No" }}</p>
-
-    <h2>Related Streetlight</h2>
-    @if ($pole->streetlight)
-      <p><strong>Streetlight ID:</strong> {{ $pole->streetlight->id }}</p>
-      <p><strong>Streetlight Number:</strong> {{ $pole->streetlight->number_of_poles }}</p>
-    @else
-      <p>No related streetlight found.</p>
-    @endif
-
-    <h2>Related Tasks</h2>
-    @if ($pole->tasks->isNotEmpty())
-      <ul>
-        @foreach ($pole->tasks as $task)
-          <li>
-            <strong>Task ID:</strong> {{ $task->id }} - <strong>Status:</strong> {{ $task->status }}
-          </li>
-        @endforeach
-      </ul>
-    @else
-      <p>No related tasks found.</p>
-    @endif
+    <hr />
+    <div class="row">
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Survey Status</label>
+        <p class="mg-b-0">{{ $pole->isSurveyDone ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installation Status</label>
+        <p class="mg-b-0">{{ $pole->isInstallationDone ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Network Status</label>
+        <p class="mg-b-0">{{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-6 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installer Name</label>
+        <p class="mg-b-0">{{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
+      </div>
+    </div>
   </div>
 @endsection
