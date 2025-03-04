@@ -412,8 +412,8 @@ class TaskController extends Controller
                     'lng' => $pole->lng,
                 ],
                 'remarks' => $pole->remarks,
-                'survey_image' => json_decode($pole->survey_image) ?? [], // Assuming it's a JSON string
-                'submission_image' => json_decode($pole->submission_image) ?? [], // Assuming it's a JSON string
+                'survey_image' => collect($pole->survey_image ?? [])->map(fn($image) => Storage::url($image))->toArray(),
+                'submission_image' => collect($pole->submission_image ?? [])->map(fn($image) => Storage::url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
             ];
@@ -442,8 +442,8 @@ class TaskController extends Controller
                     'lng' => $pole->lng,
                 ],
                 'remarks' => $pole->remarks,
-                'survey_image' => json_decode($pole->survey_image) ?? [], // Assuming it's a JSON string
-                'submission_image' => json_decode($pole->submission_image) ?? [], // Assuming it's a JSON string
+                'survey_image' => collect($pole->survey_image ?? [])->map(fn($image) => Storage::url($image))->toArray(),
+                'submission_image' => collect($pole->submission_image ?? [])->map(fn($image) => Storage::url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
             ];
