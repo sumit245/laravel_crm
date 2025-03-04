@@ -48,7 +48,9 @@
       </div>
     </div>
     <div class="row">
-      print_r($pole);
+      @php
+        print_r($pole);
+      @endphp
     </div>
   </div>
 @endsection
