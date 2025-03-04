@@ -573,7 +573,14 @@ class TaskController extends Controller
             }
         }
 
+        // Fetch related users (Installer, Project Manager, Site Engineer) from the latest task
+        $latestTask = $pole->tasks()->latest()->first(); // Get latest assigned task
+
+        $installer = $latestTask?->vendor;    // Installer
+        $projectManager = $latestTask?->manager; // Project Manager
+        $siteEngineer = $latestTask?->engineer;  // Site Engineer
+
         // Return the view with the pole details
-        return view('poles.show', compact('pole', 'surveyImages'));
+        return view('poles.show', compact('pole', 'surveyImages', 'installer', 'projectManager', 'siteEngineer'));
     }
 }

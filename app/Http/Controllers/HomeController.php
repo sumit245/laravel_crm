@@ -270,7 +270,7 @@ class HomeController extends Controller
             [
                 'title' => 'Sites',
                 'values' => [
-                    'Total' => $siteCount,
+                    $isStreetLightProject ? 'Total Panchayat' : 'Total Sites' => $siteCount,
                     'Pending' => $pendingSitesCount,
                     'Completed' => $completedSitesCount,
                     'Rejected' => $rejectedSitesCount

@@ -44,7 +44,7 @@
       </div>
       <div class="col-6 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installer Name</label>
-        <p class="mg-b-0">{{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
+        <p class="mg-b-0">{{ $installer->name }}</p>
       </div>
     </div>
     <div class="row">
