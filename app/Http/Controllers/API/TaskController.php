@@ -392,7 +392,8 @@ class TaskController extends Controller
     {
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
-        })->where('isSurveyDone', true)
+        })->where('isSurveyDone', 1)
+            ->where('isInstallationDone', 0)
             ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
             ->get();
         // Transform the data to match the desired output structure
