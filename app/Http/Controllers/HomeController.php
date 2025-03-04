@@ -275,8 +275,8 @@ class HomeController extends Controller
                     $isStreetLightProject ? 'Total Panchayat' : 'Total Sites' => $siteCount,
                     $isStreetLightProject ? 'Pending Panchayat' : 'Pending Sites' => $pendingSitesCount,
                     $isStreetLightProject ? 'Completed Panchayat' : 'Completed Sites' => $completedSitesCount,
-                    $isStreetLightProject ? 'Surveyed Panchayat' : 'Surveyed Sites' => $totalSurveyedPoles,
-                    $isStreetLightProject ? 'Installed Panchayat' : 'Installed Sites' => $totalInstalledPoles,
+                    $isStreetLightProject ? 'Surveyed Poles' : null => $isStreetLightProject ? $totalSurveyedPoles : null,
+                    $isStreetLightProject ? 'Installed Poles' : null => $isStreetLightProject ? $totalInstalledPoles : null,
                     'Rejected' => $rejectedSitesCount
                 ],
                 'link' => route('sites.index')
