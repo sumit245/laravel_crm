@@ -383,8 +383,35 @@ class TaskController extends Controller
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
         })->where('isSurveyDone', true)
-            // ->with(['task.streetlight', 'task.streetlight.streetlightTasks'])
+            ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
             ->get();
+        // Transform the data to match the desired output structure
+        $transformed_poles = $surveyed_poles->map(function ($pole) {
+            return [
+                'pole_id' => $pole->id,
+                'complete_pole_number' => $pole->complete_pole_number,
+                'ward' => $pole->task->site->ward ?? null,
+                'panchayat' => $pole->task->site->panchayat ?? null,
+                'block' => $pole->task->site->block ?? null,
+                'district' => $pole->task->site->district ?? null,
+                'state' => $pole->task->site->state ?? null,
+                'beneficiary' => $pole->beneficiary,
+                'installed_location' => [
+                    'lat' => $pole->lat,
+                    'lng' => $pole->lng,
+                ],
+                'remarks' => $pole->remarks,
+                'survey_image' => json_decode($pole->survey_image) ?? [], // Assuming it's a JSON string
+                'submission_image' => json_decode($pole->submission_image) ?? [], // Assuming it's a JSON string
+                'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
+                'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
+            ];
+        });
+
+        return response()->json([
+            'message' => 'Installed poles for Vendor',
+            'installed_poles' => $transformed_poles,
+        ], 200);
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
@@ -393,7 +420,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Installed poles for Vendor',
-            'surveyed_poles'    => $surveyed_poles,
+            'surveyed_poles'    => $transformed_poles,
             'installed_poles' => $installed_poles
         ], 200);
     }
