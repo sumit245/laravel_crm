@@ -419,14 +419,10 @@ class TaskController extends Controller
             ];
         });
 
-        return response()->json([
-            'message' => 'Installed poles for Vendor',
-            'installed_poles' => $transformed_poles,
-        ], 200);
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
-        })->where('isInstallationDone', true)
+        })->where('isInstallationDone', 1)
             ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
             ->get();
 
