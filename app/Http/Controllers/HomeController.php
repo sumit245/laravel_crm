@@ -271,8 +271,8 @@ class HomeController extends Controller
                 'title' => 'Sites',
                 'values' => [
                     $isStreetLightProject ? 'Total Panchayat' : 'Total Sites' => $siteCount,
-                    'Pending' => $pendingSitesCount,
-                    'Completed' => $completedSitesCount,
+                    $isStreetLightProject ? 'Pending Panchayat' : 'Pending Sites' => $pendingSitesCount,
+                    $isStreetLightProject ? 'Completed Panchayat' : 'Completed Sites' => $completedSitesCount,
                     'Rejected' => $rejectedSitesCount
                 ],
                 'link' => route('sites.index')
