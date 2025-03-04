@@ -528,6 +528,9 @@ class TaskController extends Controller
         }
         $poles = $query->paginate(25);
         $totalSurveyed = $query->count();
+        $districts = [];
+        $blocks = [];
+        $panchayats = [];
         return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districts', 'blocks', 'panchayats'));
     }
 
