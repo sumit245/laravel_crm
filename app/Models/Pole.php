@@ -27,6 +27,10 @@ class Pole extends Model
         'lng',
         'file'
     ];
+    protected $casts = [
+        'survey_image' => 'array',
+    ];
+
     // Relationship: A pole belongs to a streetlight
     public function streetlight()
     {

@@ -565,7 +565,15 @@ class TaskController extends Controller
         // Fetch the pole with the given ID along with its relationships
         $pole = Pole::with(['streetlight', 'task', 'tasks'])->findOrFail($id);
 
+        // Get full S3 URLs for survey images
+        $surveyImages = [];
+        if (!empty($pole->survey_image)) {
+            foreach ($pole->survey_image as $image) {
+                $surveyImages[] = Storage::disk('s3')->url($image);
+            }
+        }
+
         // Return the view with the pole details
-        return view('poles.show', compact('pole'));
+        return view('poles.show', compact('pole', 'surveyImages'));
     }
 }

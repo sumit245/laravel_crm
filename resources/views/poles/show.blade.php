@@ -48,9 +48,16 @@
       </div>
     </div>
     <div class="row">
-      @php
-        print_r($pole);
-      @endphp
+      @if (!empty($surveyImages))
+        <h3>Survey Images</h3>
+        <div class="image-gallery">
+          @foreach ($surveyImages as $image)
+            <img src="{{ $image }}" alt="Survey Image" style="width: 200px; height: auto; margin: 10px;">
+          @endforeach
+        </div>
+      @else
+        <p>No survey images available.</p>
+      @endif
     </div>
   </div>
 @endsection
