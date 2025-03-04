@@ -308,12 +308,18 @@ class TaskController extends Controller
         }
         // ✅ Step 5: Upload Images (If Any)
         if ($request->hasFile('survey_image')) {
-            $surveyImagePath = $this->uploadToS3($request->file('survey_image'), "streetlights/survey/{$pole->id}");
-            $pole->update(['survey_image' => $surveyImagePath]);
+            $uploadedSurveyImages = [];
+            foreach ($request->file('survey_image') as $image) {
+                $uploadedSurveyImages[] = $this->uploadToS3($image, "streetlights/survey/{$pole->id}");
+            }
+            $pole->update(['survey_image' => json_encode($uploadedSurveyImages)]);
         }
         if ($request->hasFile('submission_image')) {
-            $submissionImagePath = $this->uploadToS3($request->file('submission_image'), "streetlights/installation/{$pole->id}");
-            $pole->update(['submission_image' => $submissionImagePath]);
+            $uploadedSubmissionImages = [];
+            foreach ($request->file('submission_image') as $image) {
+                $uploadedSubmissionImages[] = $this->uploadToS3($image, "streetlights/installation/{$pole->id}");
+            }
+            $pole->update(['submission_image' => json_encode($uploadedSubmissionImages)]);
         }
         // ✅ Step 6: Update Survey Data
         if ($request->isSurveyDone) {
@@ -363,11 +369,15 @@ class TaskController extends Controller
     {
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
             $query->where('engineer_id', $engineer_id);
-        })->where('isSurveyDone', 1)->get();
+        })->where('isSurveyDone', 1)
+            ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
+            ->get();
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
             $query->where('engineer_id', $engineer_id);
-        })->where('isInstallationDone', 1)->get();
+        })->where('isInstallationDone', 1)
+            ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
+            ->get();
 
         return response()->json([
             'message' => 'Installed poles for Site Engineer',
@@ -415,13 +425,38 @@ class TaskController extends Controller
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
-        })->where('isInstallationDone', true)->get();
+        })->where('isInstallationDone', true)
+            ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
+            ->get();
+
+        // Transform the data to match the desired output structure
+        $transformed__installed_poles = $installed_poles->map(function ($pole) {
+            return [
+                'pole_id' => $pole->id,
+                'complete_pole_number' => $pole->complete_pole_number,
+                'ward' => $pole->task->site->ward ?? null,
+                'panchayat' => $pole->task->site->panchayat ?? null,
+                'block' => $pole->task->site->block ?? null,
+                'district' => $pole->task->site->district ?? null,
+                'state' => $pole->task->site->state ?? null,
+                'beneficiary' => $pole->beneficiary,
+                'installed_location' => [
+                    'lat' => $pole->lat,
+                    'lng' => $pole->lng,
+                ],
+                'remarks' => $pole->remarks,
+                'survey_image' => json_decode($pole->survey_image) ?? [], // Assuming it's a JSON string
+                'submission_image' => json_decode($pole->submission_image) ?? [], // Assuming it's a JSON string
+                'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
+                'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
+            ];
+        });
 
 
         return response()->json([
             'message' => 'Installed poles for Vendor',
             'surveyed_poles'    => $transformed_poles,
-            'installed_poles' => $installed_poles
+            'installed_poles' => $transformed__installed_poles
         ], 200);
     }
     /**
@@ -431,11 +466,15 @@ class TaskController extends Controller
     {
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($manager_id) {
             $query->where('manager_id', $manager_id);
-        })->where('isSurveyDone', true)->get();
+        })->where('isSurveyDone', true)
+            ->with(['task.site', 'task.engineer', 'task.vendor']) // Eager load relationships
+            ->get();
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($manager_id) {
             $query->where('manager_id', $manager_id);
-        })->where('isInstallationDone', true)->get();
+        })->where('isInstallationDone', true)
+            ->with(['task.site', 'task.engineer', 'task.vendor']) // Eager load relationships
+            ->get();
 
         return response()->json([
             'message' => 'Installed poles for Project Manager',
