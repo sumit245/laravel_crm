@@ -6,7 +6,7 @@
       <h6 class="mg-b-0">Pole Details</h6>
       <div class="d-flex">
         <a href="#" data-toggle="modal" class="btn btn-sm btn-white d-flex align-items-center"
-          onclick="()=>window.location.goBack();">
+          onclick="window.location.goBack();">
           <span class="d-none d-sm-inline mg-l-5"> Go Back</span></a>
       </div>
     </div>
@@ -46,6 +46,9 @@
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installer Name</label>
         <p class="mg-b-0">{{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
       </div>
+    </div>
+    <div class="row">
+      print_r($pole);
     </div>
   </div>
 @endsection

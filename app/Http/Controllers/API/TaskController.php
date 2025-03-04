@@ -528,9 +528,6 @@ class TaskController extends Controller
         }
         $poles = $query->paginate(25);
         $totalSurveyed = $query->count();
-        $districts = [];
-        $blocks = [];
-        $panchayats = [];
         return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districts', 'blocks', 'panchayats'));
     }
 
@@ -538,7 +535,6 @@ class TaskController extends Controller
     public function getInstalledPoles(Request $request)
     {
         $query = Pole::where('isInstallationDone', 1);
-
         if ($request->has('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
@@ -556,8 +552,9 @@ class TaskController extends Controller
                 $q->where('vendor_id', $request->vendor);
             });
         }
-
-        return response()->json($query->get());
+        $poles = $query->paginate(25);
+        $totalInstalled = $query->count();
+        return view('poles.installed', compact('poles', 'totalInstalled', 'districts', 'blocks', 'panchayats'));
     }
 
     public function viewPoleDetails($id)
