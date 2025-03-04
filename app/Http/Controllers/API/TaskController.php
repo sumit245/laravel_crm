@@ -383,7 +383,7 @@ class TaskController extends Controller
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
         })->where('isSurveyDone', true)
-            ->with(['task.streetlight', 'task.streetlight.streetlightTasks'])
+            // ->with(['task.streetlight', 'task.streetlight.streetlightTasks'])
             ->get();
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
