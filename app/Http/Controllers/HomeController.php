@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pole;
 use App\Models\Project; // Model for vendors
 use App\Models\Site;
 use App\Models\Streetlight;
@@ -221,9 +222,6 @@ class HomeController extends Controller
         })->sortByDesc('performancePercentage')->values();
 
 
-
-
-
         // Fetch project managers for the project
         $projectManagers = User::where('role', 2)
             ->where('project_id', $projectId)
@@ -264,8 +262,12 @@ class HomeController extends Controller
 
 
 
+        $totalSurveyedPoles = Pole::where('isSurveyDone', true)->count();
+        $totalInstalledPoles = Pole::where('isInstallationDone', true)->count();
+
 
         // Dashboard statistics
+
         $statistics = [
             [
                 'title' => 'Sites',
@@ -273,6 +275,8 @@ class HomeController extends Controller
                     $isStreetLightProject ? 'Total Panchayat' : 'Total Sites' => $siteCount,
                     $isStreetLightProject ? 'Pending Panchayat' : 'Pending Sites' => $pendingSitesCount,
                     $isStreetLightProject ? 'Completed Panchayat' : 'Completed Sites' => $completedSitesCount,
+                    $isStreetLightProject ? 'Surveyed Panchayat' : 'Surveyed Sites' => $totalSurveyedPoles,
+                    $isStreetLightProject ? 'Installed Panchayat' : 'Installed Sites' => $totalInstalledPoles,
                     'Rejected' => $rejectedSitesCount
                 ],
                 'link' => route('sites.index')
