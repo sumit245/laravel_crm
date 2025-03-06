@@ -20,7 +20,7 @@
           <p class="text-muted">No data available for {{ $role }}.</p>
         @else
           <div class="table-responsive">
-            <table class="table-select table">
+            <table class="select-table table">
               <thead>
                 <tr>
                   <th>Name</th>
@@ -51,8 +51,7 @@
                               🥇
                             @elseif ($index == 1)
                               🥈
-                            @else
-                              ($index == 2)
+                            @elseif ($index == 2)
                               🥉
                             @endif
                             {{ $user->name }}
