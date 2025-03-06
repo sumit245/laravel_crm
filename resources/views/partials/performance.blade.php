@@ -57,7 +57,7 @@
                             @endif
                             {{ $user->name }}
                           </h6>
-                          @if ($user->role == 3)
+                          @if ($user->role == "Vendor")
                             <p>{{ $user->name }}</p>
                           @endif
                         </div>
