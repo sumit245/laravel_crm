@@ -132,6 +132,7 @@ class HomeController extends Controller
                             $query->whereHas('site', function ($query) use ($selectedProjectId) {
                                 $query->where('project_id', $selectedProjectId);
                             })->where(function ($q) use ($user) {
+                                if ($user->role == 2) $q->where('manager_id', $user->id);
                                 if ($user->role == 1) $q->where('engineer_id', $user->id);
                                 if ($user->role == 3) $q->where('vendor_id', $user->id);
                             });
@@ -142,6 +143,7 @@ class HomeController extends Controller
                             $query->whereHas('site', function ($query) use ($selectedProjectId) {
                                 $query->where('project_id', $selectedProjectId);
                             })->where(function ($q) use ($user) {
+                                if ($user->role == 2) $q->where('manager_id', $user->id);
                                 if ($user->role == 1) $q->where('engineer_id', $user->id);
                                 if ($user->role == 3) $q->where('vendor_id', $user->id);
                             });
