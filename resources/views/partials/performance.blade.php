@@ -19,64 +19,66 @@
         @if ($users->isEmpty())
           <p class="text-muted">No data available for {{ $role }}.</p>
         @else
-          <table class="table-bordered table-responsive table">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Name</th>
-                <th>Total Tasks</th>
-                <th>Completed Tasks</th>
-                @if ($isStreetLightProject)
-                  <th>Surveyed Poles</th>
-                @else
-                  <th>Submitted sites</th>
-                @endif
-
-                @if ($isStreetLightProject)
-                  <th>Installed Poles</th>
-                @else
-                  <th>Approved sites</th>
-                @endif
-
-                <th>Performance (%)</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach ($users as $index => $user)
+          <div class="table-responsive">
+            <table class="table-select table">
+              <thead>
                 <tr>
-                  <td>
-                    @if ($index == 0)
-                      🥇
-                    @elseif ($index == 1)
-                      🥈
-                    @elseif ($index == 2)
-                      🥉
-                    @else
-                      {{ $index + 1 }}
-                    @endif
-                  </td>
-                  <td>
-                    <div>
-                      <img class="img-sm rounded-10" src={{ $user->image }} alt="profile">
-                      <p>{{ $user->name }}</p>
-                    </div>
-                  </td>
-                  <td>{{ $user->totalTasks }}</td>
-                  <td>{{ $user->completedTasks }}</td>
-                  <td>{{ $user->surveyedPoles ?? 0 }}</td>
-                  <td>{{ $user->installedPoles ?? 0 }}</td>
-                  <td>
-                    <div class="progress">
-                      <div class="progress-bar" role="progressbar" style="width: {{ round($user->performance, 2) }}%;"
-                        aria-valuenow="{{ round($user->performance, 2) }}" aria-valuemin="0" aria-valuemax="100">
-                        {{ round($user->performance, 2) }}%
-                      </div>
-                    </div>
-                  </td>
+                  <th>Name</th>
+                  <th>Total Tasks</th>
+                  <th>Completed Tasks</th>
+                  @if ($isStreetLightProject)
+                    <th>Surveyed Poles</th>
+                  @else
+                    <th>Submitted sites</th>
+                  @endif
+                  @if ($isStreetLightProject)
+                    <th>Installed Poles</th>
+                  @else
+                    <th>Approved sites</th>
+                  @endif
+                  <th>Performance (%)</th>
                 </tr>
-              @endforeach
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                @foreach ($users as $index => $user)
+                  <tr>
+                    <td>
+                      <div class="d-flex">
+                        <img class="img-sm rounded-10" src={{ $user->image }} alt="profile">
+                        <div>
+                          <h6>
+                            @if ($index == 0)
+                              🥇
+                            @elseif ($index == 1)
+                              🥈
+                            @else
+                              ($index == 2)
+                              🥉
+                            @endif
+                            {{ $user->name }}
+                          </h6>
+                          <p></p>
+                        </div>
+                      </div>
+                    </td>
+                    <td>{{ $user->totalTasks }}</td>
+                    <td>{{ $user->completedTasks }}</td>
+                    <td>{{ $user->surveyedPoles ?? 0 }}</td>
+                    <td>{{ $user->installedPoles ?? 0 }}</td>
+                    <td>
+                      <div class="progress">
+                        <div class="progress-bar" role="progressbar"
+                          style="width: {{ round($user->performance, 2) }}%;"
+                          aria-valuenow="{{ round($user->performance, 2) }}" aria-valuemin="0" aria-valuemax="100">
+                          {{ round($user->performance, 2) }}%
+                        </div>
+                      </div>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
         @endif
       </div>
     </div>

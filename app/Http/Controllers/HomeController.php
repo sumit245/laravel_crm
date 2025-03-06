@@ -67,12 +67,12 @@ class HomeController extends Controller
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
 
         // Apply filters on the selected task model
-        $query = $taskModel::query();
+        // $query = $taskModel::query();
 
         // Site Counts
         $totalSites = $siteModel::where('project_id', $selectedProjectId)->count();
         $completedSites = $siteModel::where('project_id', $selectedProjectId)->whereHas('tasks', function ($query) use ($dateRange) {
-            $query->where('status', 'Completed')->whereBetween('completed_at', $dateRange);
+            $query->where('status', 'Completed')->whereBetween('created_at', $dateRange);
         })->count();
         $pendingSites = $totalSites - $completedSites;
 
@@ -95,6 +95,7 @@ class HomeController extends Controller
                             if ($user->role == 3) $q->where('vendor_id', $user->id);
                             if ($user->role == 2) $q->where('manager_id', $user->id);
                         })
+                        ->whereBetween('created_at', $dateRange)
                         ->count();
 
                     if ($totalTasks == 0) {
@@ -108,11 +109,11 @@ class HomeController extends Controller
                             if ($user->role == 2) $q->where('manager_id', $user->id);
                         })
                         ->where('status', 'Completed')
-                        ->whereBetween('completed_at', $dateRange)
+                        ->whereBetween('created_at', $dateRange)
                         ->count();
 
                     $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
-
+                    Log::info($completedTasks);
                     return (object) [
                         'id' => $user->id,
                         'name' => $user->firstName . " " . $user->lastName,
@@ -384,7 +385,7 @@ class HomeController extends Controller
             case 'this_month':
                 return [now()->startOfMonth(), now()->endOfMonth()];
             default:
-                return [now()->subYears(10), now()]; // Default (All Time)
+                return [now()->startOfDay(), now()->endOfDay()]; // Default to today
         }
     }
 }
