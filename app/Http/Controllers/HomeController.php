@@ -114,8 +114,8 @@ class HomeController extends Controller
 
                     $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
                     // Add surveyed and installed poles counts
-                    $user->surveyedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isSurveyDone', true)->count() : null;
-                    $user->installedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isInstallationDone', true)->count() : null;
+                    // $user->surveyedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isSurveyDone', true)->count() : null;
+                    // $user->installedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isInstallationDone', true)->count() : null;
 
                     return (object) [
                         'id' => $user->id,
@@ -125,8 +125,8 @@ class HomeController extends Controller
                         'totalTasks' => $totalTasks,
                         'completedTasks' => $completedTasks,
                         'performance' => $performance,
-                        'surveyedPoles' => $user->surveyedPoles,
-                        'installedPoles' => $user->installedPoles,
+                        'surveyedPoles' => 0,
+                        'installedPoles' => 0,
                         'medal' => ($completedTasks > 0) ? null : 'none', // No medal if completedTasks is 0
                     ];
                 })
