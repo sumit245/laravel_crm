@@ -67,7 +67,7 @@ class HomeController extends Controller
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
 
         // Apply filters on the selected task model
-        // $query = $taskModel::query();
+        $query = $taskModel::query();
 
         // Site Counts
         $totalSites = $siteModel::where('project_id', $selectedProjectId)->count();
