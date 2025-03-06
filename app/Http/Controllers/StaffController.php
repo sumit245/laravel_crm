@@ -112,6 +112,7 @@ class StaffController extends Controller
     {
         // Fetch the staff details along with relationships
         $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
+        $userId = $staff->id;
 
         // Get the project_id of the staff
         $projectId = $staff->project_id;
@@ -132,24 +133,24 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $staff->id);
                 })
                 ->get();
-            // Get all task IDs assigned to the staff (as manager, engineer, or vendor)
-            $taskIds = StreetlightTask::where('project_id', session("project_id"))
-                ->where(function ($query) use ($staff) {
-                    $query->where('manager_id', $staff->id)
-                        ->orWhere('engineer_id', $staff->id)
-                        ->orWhere('vendor_id', $staff->id);
-                })
-                ->pluck('task_id'); // Extract only the task IDs
 
-            // Count surveyed poles related to these tasks
-            $surveyedPolesCount = Pole::whereIn('task_id', $taskIds)
-                ->where('isSurveyDone', 1)
-                ->count();
+            $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
+                $query->where('project_id', $projectId)
+                    ->where(function ($q) use ($userId) {
+                        $q->where('manager_id', $userId)
+                            ->orWhere('engineer_id', $userId)
+                            ->orWhere('vendor_id', $userId);
+                    });
+            })->where('isSurveyDone', 1)->count();
 
-            // Count installed poles related to these tasks
-            $installedPolesCount = Pole::whereIn('task_id', $taskIds)
-                ->where('isInstallationDone', 1)
-                ->count();
+            $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
+                $query->where('project_id', $projectId)
+                    ->where(function ($q) use ($userId) {
+                        $q->where('manager_id', $userId)
+                            ->orWhere('engineer_id', $userId)
+                            ->orWhere('vendor_id', $userId);
+                    });
+            })->where('isInstallationDone', 1)->count();
         } else {
             // Fetch regular Tasks
             $tasks = Task::with('site')
