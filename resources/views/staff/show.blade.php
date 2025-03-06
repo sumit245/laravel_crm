@@ -45,10 +45,10 @@
                   <div>
                     <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
                       class="text-primary text-decoration-none">Poles Surveyed:
-                      {{ $staff->surveyedPolesCount ?? 0 }}</a> <br />
+                      {{ $surveyedPolesCount ?? 0 }}</a> <br />
                     <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
                       class="text-success text-decoration-none">Installed Poles:
-                      {{ $staff->installedPolesCount ?? 0 }}</a>
+                      {{ $installedPolesCount ?? 0 }}</a>
                   </div>
                 @endif
               </div>
