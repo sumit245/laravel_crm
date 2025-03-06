@@ -126,9 +126,31 @@ class HomeController extends Controller
                 $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
 
                 // Add surveyed and installed poles counts
-                $user->surveyedPoles = 0;
+                if ($isStreetLightProject) {
+                    $user->surveyedPoles = Pole::where('isSurveyDone', true)
+                        ->whereHas('task', function ($query) use ($selectedProjectId, $user) {
+                            $query->whereHas('site', function ($query) use ($selectedProjectId) {
+                                $query->where('project_id', $selectedProjectId);
+                            })->where(function ($q) use ($user) {
+                                if ($user->role == 1) $q->where('engineer_id', $user->id);
+                                if ($user->role == 3) $q->where('vendor_id', $user->id);
+                            });
+                        })->count();
 
-                $user->installedPoles = 0;
+                    $user->installedPoles = Pole::where('isInstallationDone', true)
+                        ->whereHas('task', function ($query) use ($selectedProjectId, $user) {
+                            $query->whereHas('site', function ($query) use ($selectedProjectId) {
+                                $query->where('project_id', $selectedProjectId);
+                            })->where(function ($q) use ($user) {
+                                if ($user->role == 1) $q->where('engineer_id', $user->id);
+                                if ($user->role == 3) $q->where('vendor_id', $user->id);
+                            });
+                        })->count();
+                } else {
+                    $user->surveyedPoles = null;
+                    $user->installedPoles = null;
+                }
+
 
 
                 return (object) [
