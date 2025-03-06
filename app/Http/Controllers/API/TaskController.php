@@ -526,7 +526,7 @@ class TaskController extends Controller
                 $q->where('vendor_id', $request->vendor);
             });
         }
-        $poles = $query->get();
+        $poles = $query->paginate(10);
         Log::info('Poles:', ['poles' => $poles]);
         $totalSurveyed = $query->count();
         $districts = [];
