@@ -62,8 +62,16 @@
                     </td>
                     <td>{{ $user->totalTasks }}</td>
                     <td>{{ $user->completedTasks }}</td>
-                    <td>{{ $user->surveyedPoles ?? 0 }}</td>
-                    <td>{{ $user->installedPoles ?? 0 }}</td>
+                    @if ($isStreetLightProject)
+                      <td>{{ $user->surveyedPoles ?? 0 }}</td>
+                    @else
+                      <td>{{ $user->submittedSites ?? 0 }}</td>
+                    @endif
+                    @if ($isStreetLightProject)
+                      <td>{{ $user->installedPoles ?? 0 }}</td>
+                    @else
+                      <td>{{ $user->approvedSites ?? 0 }}</td>
+                    @endif
                     <td>
                       <div class="progress">
                         <div class="progress-bar" role="progressbar"

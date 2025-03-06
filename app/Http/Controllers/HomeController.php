@@ -67,7 +67,7 @@ class HomeController extends Controller
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
 
         // Apply filters on the selected task model
-        $query = $taskModel::query();
+        // $query = $taskModel::query();
 
         // Site Counts
         $totalSites = $siteModel::where('project_id', $selectedProjectId)->count();
@@ -88,7 +88,7 @@ class HomeController extends Controller
             $users = User::where('role', $role)
                 ->where('project_id', $selectedProjectId)
                 ->get()
-                ->map(function ($user) use ($taskModel, $selectedProjectId, $dateRange, $roleName) {
+                ->map(function ($user) use ($taskModel, $selectedProjectId, $dateRange, $roleName, $isStreetLightProject) {
                     $totalTasks = $taskModel::where('project_id', $selectedProjectId)
                         ->where(function ($q) use ($user) {
                             if ($user->role == 1) $q->where('engineer_id', $user->id);
@@ -113,6 +113,9 @@ class HomeController extends Controller
                         ->count();
 
                     $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
+                    // Add surveyed and installed poles counts
+                    $user->surveyedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isSurveyDone', true)->count() : null;
+                    $user->installedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isInstallationDone', true)->count() : null;
 
                     return (object) [
                         'id' => $user->id,
@@ -122,6 +125,8 @@ class HomeController extends Controller
                         'totalTasks' => $totalTasks,
                         'completedTasks' => $completedTasks,
                         'performance' => $performance,
+                        'surveyedPoles' => $user->surveyedPoles,
+                        'installedPoles' => $user->installedPoles,
                         'medal' => ($completedTasks > 0) ? null : 'none', // No medal if completedTasks is 0
                     ];
                 })
