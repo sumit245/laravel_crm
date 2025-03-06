@@ -2,7 +2,7 @@
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="fw-bold">Performance Overview</h3>
     {{-- <form method="GET" action="{{ route("dashboard") }}"> --}}
-    <select class="form-select w-auto" name="date_filter" id="dateFilter" onchange="filterTasks()">
+    <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
       <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
       <option value="week" {{ request("date_filter") == "today" ? "selected" : "" }}>This Week</option>
       <option value="month" {{ request("date_filter") == "today" ? "selected" : "" }}>This Month</option>
