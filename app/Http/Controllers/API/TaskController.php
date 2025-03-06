@@ -449,13 +449,13 @@ class TaskController extends Controller
             ];
         });
 
-
         return response()->json([
             'message' => 'Installed poles for Vendor',
             'surveyed_poles'    => $transformed_poles,
             'installed_poles' => $transformed__installed_poles
         ], 200);
     }
+
     /**
      * Get all installed poles for a specific Project Manager
      */

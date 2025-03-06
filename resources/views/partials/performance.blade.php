@@ -1,138 +1,94 @@
-@php
-  $awardIcons = ["🥇", "🥈", "🥉"]; // Gold, Silver, Bronze
-@endphp
-
 <div class="bg-light mt-4 p-4">
   <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="fw-bold">Performance Overview</h3>
-    <select class="form-select w-auto" id="dateFilter">
-      <option value="today">Today</option>
-      <option value="week">This Week</option>
-      <option value="month">This Month</option>
-      <option value="custom">Custom Range</option>
+    {{-- <form method="GET" action="{{ route("dashboard") }}"> --}}
+    <select class="form-select w-auto" name="date_filter" id="dateFilter" onchange="filterTasks()">
+      <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
+      <option value="week" {{ request("date_filter") == "today" ? "selected" : "" }}>This Week</option>
+      <option value="month" {{ request("date_filter") == "today" ? "selected" : "" }}>This Month</option>
     </select>
+    {{-- </form> --}}
   </div>
-  <div class="row">
-    <div class="col">
-      <div class="card card-rounded">
-        <div class="card-body">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h4 class="card-title card-title-dash">Top Project Managers</h4>
-                </div>
-              </div>
-              <div class="mt-3">
-                @foreach ($projectManagers as $projectManager)
-                  <a href="{{ route("staff.show", $projectManager->id) }}" class="text-decoration-none text-dark">
-                    <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
-                      <img class="img-sm rounded-10" src={{ $projectManager->image }} alt="profile">
-                      <div class="wrapper ms-3" style="width:100%;">
-                        <p class="fw-bold mb-1 ms-1">{{ $projectManager->name }}</p>
-                        <div>
-                          <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session("project_id") == 11 ? "Panchayats Done" : "Sites Done" }}</p>
-                            <p class="text-success">{{ $projectManager->performance }}</p>
-                          </div>
-                          <div class="progress progress-md">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%"
-                              aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                        @if (session("project_id") == 11)
-                          <div>
-                            <a href="{{ route("surveyed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
-                              class="text-primary text-decoration-none">Poles Surveyed:
-                              {{ $projectManager->surveyed_poles_count ?? 0 }}</a> <br />
-                            <a href="{{ route("installed.poles", ["project_manager" => $projectManager->id, "role" => 1]) }}"
-                              class="text-success text-decoration-none">Installed Poles:
-                              {{ $projectManager->surveyed_poles_count ?? 0 }}</a>
-                          </div>
-                        @endif
+
+  @foreach ($rolePerformances as $role => $users)
+    <div class="card mb-4">
+      <div class="card-header">
+        <h4>{{ $role }} Performance</h4>
+      </div>
+      <div class="card-body">
+        @if ($users->isEmpty())
+          <p class="text-muted">No data available for {{ $role }}.</p>
+        @else
+          <table class="table-bordered table-responsive table">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Name</th>
+                <th>Total Tasks</th>
+                <th>Completed Tasks</th>
+                @if ($isStreetLightProject)
+                  <th>Surveyed Poles</th>
+                @else
+                  <th>Submitted sites</th>
+                @endif
+
+                @if ($isStreetLightProject)
+                  <th>Installed Poles</th>
+                @else
+                  <th>Approved sites</th>
+                @endif
+
+                <th>Performance (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              @foreach ($users as $index => $user)
+                <tr>
+                  <td>
+                    @if ($index == 0)
+                      🥇
+                    @elseif ($index == 1)
+                      🥈
+                    @elseif ($index == 2)
+                      🥉
+                    @else
+                      {{ $index + 1 }}
+                    @endif
+                  </td>
+                  <td>
+                    <div>
+                      <img class="img-sm rounded-10" src={{ $user->image }} alt="profile">
+                      <p>{{ $user->name }}</p>
+                    </div>
+                  </td>
+                  <td>{{ $user->totalTasks }}</td>
+                  <td>{{ $user->completedTasks }}</td>
+                  <td>{{ $user->surveyedPoles ?? 0 }}</td>
+                  <td>{{ $user->installedPoles ?? 0 }}</td>
+                  <td>
+                    <div class="progress">
+                      <div class="progress-bar" role="progressbar" style="width: {{ round($user->performance, 2) }}%;"
+                        aria-valuenow="{{ round($user->performance, 2) }}" aria-valuemin="0" aria-valuemax="100">
+                        {{ round($user->performance, 2) }}%
                       </div>
                     </div>
-                  </a>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        </div>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        @endif
       </div>
     </div>
-    <div class="col">
-      <div class="card card-rounded">
-        <div class="card-body">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h4 class="card-title card-title-dash">Site Engineers</h4>
-                </div>
-              </div>
-              <div class="mt-3">
-                @foreach ($siteEngineers as $se)
-                  <a href="{{ route("staff.show", $se->id) }}" class="text-decoration-none text-dark">
-                    <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
-                      <img class="img-sm rounded-10" src={{ $se->image }} alt="profile">
-                      <div class="wrapper ms-3" style="width:100%;">
-                        <p class="fw-bold mb-1 ms-1">{{ $se->name }}</p>
-                        <div>
-                          <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session("project_id") == 11 ? "Panchayats Done" : "Sites Done" }}</p>
-                            <p class="text-success">{{ $se->performance }}</p>
-                          </div>
-                          <div class="progress progress-md">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%"
-                              aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="col">
-      <div class="card card-rounded">
-        <div class="card-body">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="d-flex justify-content-between align-items-center mb-3">
-                <div>
-                  <h4 class="card-title card-title-dash">Vendors</h4>
-                </div>
-              </div>
-              <div class="mt-3">
-                @foreach ($vendors as $vendor)
-                  <a href="{{ route("uservendors.show", $vendor->id) }}" class="text-decoration-none text-dark">
-                    <div class="wrapper d-flex align-items-center justify-content-start border-bottom py-2">
-                      <img class="img-sm rounded-10" src={{ $vendor->image }} alt="profile">
-                      <div class="wrapper ms-3" style="width:100%;">
-                        <p class="fw-bold mb-1 ms-1">{{ $vendor->name }}</p>
-                        <div>
-                          <div class="d-flex justify-content-between align-items-center max-width-progress-wrap mb-1">
-                            <p>{{ session("project_id") == 11 ? "Panchayats Done" : "Sites Done" }}</p>
-                            <p class="text-success">{{ $vendor->performance }}</p>
-                          </div>
-                          <div class="progress progress-md">
-                            <div class="progress-bar bg-success" role="progressbar" style="width: 85%"
-                              aria-valuenow="25" aria-valuemin="0" aria-valuemax="100"></div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </a>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+  @endforeach
 </div>
+<script>
+  function filterTasks() {
+    let selectedFilter = document.getElementById('taskFilter').value;
+    let url = new URL(window.location.href);
+
+    url.searchParams.set('date_filter', selectedFilter); // Update URL with selected filter
+
+    window.location.href = url.toString(); // Reload page with new filter
+  }
+</script>

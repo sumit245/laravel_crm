@@ -11,6 +11,7 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 // Model for projects
 // Model for sites
@@ -36,20 +37,99 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        $selectedProjectId = $request->query('project_id', session('project_id'));
+        // $filter = request()->get('filter', 'today'); // Default filter is today
+
+        if ($user->role != 0) {
+            $selectedProjectId = $user->project_id;
+        }
+
+        // Set the selected project ID in session
+        session(['project_id' => $selectedProjectId]);
+
+        $project = Project::findOrFail($selectedProjectId);
+        $isStreetLightProject = $project->project_type == 1;
+
+        // Date Filters
+        $dateFilter = $request->query('date_filter', 'today');
+        $dateRange = $this->getDateRange($dateFilter);
 
         // Admins & Project Managers can select any project, others are restricted
         $projectId = $user->role == 0 || $user->role == 2
             ? $request->query('project_id', session('project_id'))
             : $user->project_id;
 
-        // Get the project details
-        $project = Project::findOrFail($projectId);
-
-        // Check if the project_type is 1 (StreetLight-related project)
-        $isStreetLightProject = $project->project_type == 1;
-
         // Get only the project assigned to the logged-in user
         $projects = ($user->role == 0) ? Project::all() : Project::where('id', $projectId)->get();
+
+        // Fetch Tasks based on project type
+        $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
+        $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
+
+        // Apply filters on the selected task model
+        $query = $taskModel::query();
+
+        // Site Counts
+        $totalSites = $siteModel::where('project_id', $selectedProjectId)->count();
+        $completedSites = $siteModel::where('project_id', $selectedProjectId)->whereHas('tasks', function ($query) use ($dateRange) {
+            $query->where('status', 'Completed')->whereBetween('completed_at', $dateRange);
+        })->count();
+        $pendingSites = $totalSites - $completedSites;
+
+        // Pole Counts (For Streetlight Projects)
+        $totalSurveyedPoles = $isStreetLightProject ? Pole::where('isSurveyDone', true)->count() : null;
+        $totalInstalledPoles = $isStreetLightProject ? Pole::where('isInstallationDone', true)->count() : null;
+
+        // Fetch users (Engineers, Vendors, Managers) and calculate rankings
+        $roles = ['Project Manager' => 2, 'Site Engineer' => 1, 'Vendor' => 3];
+        $rolePerformances = [];
+
+        foreach ($roles as $roleName => $role) {
+            $users = User::where('role', $role)
+                ->where('project_id', $selectedProjectId)
+                ->get()
+                ->map(function ($user) use ($taskModel, $selectedProjectId, $dateRange, $roleName) {
+                    $totalTasks = $taskModel::where('project_id', $selectedProjectId)
+                        ->where(function ($q) use ($user) {
+                            if ($user->role == 1) $q->where('engineer_id', $user->id);
+                            if ($user->role == 3) $q->where('vendor_id', $user->id);
+                            if ($user->role == 2) $q->where('manager_id', $user->id);
+                        })
+                        ->count();
+
+                    if ($totalTasks == 0) {
+                        return null; // Skip users with no tasks
+                    }
+
+                    $completedTasks = $taskModel::where('project_id', $selectedProjectId)
+                        ->where(function ($q) use ($user) {
+                            if ($user->role == 1) $q->where('engineer_id', $user->id);
+                            if ($user->role == 3) $q->where('vendor_id', $user->id);
+                            if ($user->role == 2) $q->where('manager_id', $user->id);
+                        })
+                        ->where('status', 'Completed')
+                        ->whereBetween('completed_at', $dateRange)
+                        ->count();
+
+                    $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
+
+                    return (object) [
+                        'id' => $user->id,
+                        'name' => $user->firstName . " " . $user->lastName,
+                        'image' => $user->image,
+                        'role' => $roleName,
+                        'totalTasks' => $totalTasks,
+                        'completedTasks' => $completedTasks,
+                        'performance' => $performance,
+                        'medal' => ($completedTasks > 0) ? null : 'none', // No medal if completedTasks is 0
+                    ];
+                })
+                ->filter() // Remove null values (users with no tasks)
+                ->sortByDesc('completedTasks') // Sort by completed tasks in descending order
+                ->values();
+
+            $rolePerformances[$roleName] = $users;
+        }
 
         // Fetch sites (Filtered for Project Manager)
         if ($isStreetLightProject) {
@@ -222,6 +302,9 @@ class HomeController extends Controller
         })->sortByDesc('performancePercentage')->values();
 
 
+
+
+
         // Fetch project managers for the project
         $projectManagers = User::where('role', 2)
             ->where('project_id', $projectId)
@@ -260,23 +343,14 @@ class HomeController extends Controller
             })->sortByDesc('performancePercentage')
             ->values();
 
-
-
-        $totalSurveyedPoles = Pole::where('isSurveyDone', true)->count();
-        $totalInstalledPoles = Pole::where('isInstallationDone', true)->count();
-
-
         // Dashboard statistics
-
         $statistics = [
             [
                 'title' => 'Sites',
                 'values' => [
-                    $isStreetLightProject ? 'Total Panchayat' : 'Total Sites' => $siteCount,
-                    $isStreetLightProject ? 'Pending Panchayat' : 'Pending Sites' => $pendingSitesCount,
-                    $isStreetLightProject ? 'Completed Panchayat' : 'Completed Sites' => $completedSitesCount,
-                    $isStreetLightProject ? 'Surveyed Poles' : null => $isStreetLightProject ? $totalSurveyedPoles : null,
-                    $isStreetLightProject ? 'Installed Poles' : null => $isStreetLightProject ? $totalInstalledPoles : null,
+                    'Total' => $siteCount,
+                    'Pending' => $pendingSitesCount,
+                    'Completed' => $completedSitesCount,
                     'Rejected' => $rejectedSitesCount
                 ],
                 'link' => route('sites.index')
@@ -285,15 +359,32 @@ class HomeController extends Controller
             ['title' => 'Staffs', 'value' => $staffCount, 'link' => route('staff.index')],
         ];
 
-        // Performance data
-        $performanceData = [
-            'top_performers' => [
-                'title' => 'Top Performers',
-                'color' => 'green',
-                'data' => $projectManagers->sortByDesc('performancePercentage')->values(),
-            ]
-        ];
+        return view('dashboard', compact(
+            'rolePerformances',
+            'statistics',
+            'projects',
+            'totalSites',
+            'completedSites',
+            'pendingSites',
+            'totalSurveyedPoles',
+            'totalInstalledPoles',
+            'isStreetLightProject'
+        ));
+    }
 
-        return view('dashboard', compact('statistics', 'projects', 'projectManagers', 'performanceData', 'siteEngineers', 'vendors'));
+
+    // Helper Function for Date Range
+    private function getDateRange($filter)
+    {
+        switch ($filter) {
+            case 'today':
+                return [now()->startOfDay(), now()->endOfDay()];
+            case 'this_week':
+                return [now()->startOfWeek(), now()->endOfWeek()];
+            case 'this_month':
+                return [now()->startOfMonth(), now()->endOfMonth()];
+            default:
+                return [now()->subYears(10), now()]; // Default (All Time)
+        }
     }
 }

@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('streetlight_tasks', function (Blueprint $table) {
-            // Drop the wrong site_id reference
-            $table->foreignId('site_id')->nullable()->constrained('streetlights')->onDelete('cascade');
+        Schema::table('tasks', function (Blueprint $table) {
+            //
+            $table->timestamp('completed_at')->nullable();
+            $table->timestamp('rejected_at')->nullable();
         });
     }
 
@@ -22,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('tasks', function (Blueprint $table) {
+            //
+        });
     }
 };
