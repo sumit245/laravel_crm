@@ -6,6 +6,7 @@
       <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
       <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
       <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
+      <option value="this_month" {{ request("date_filter") == "all_time" ? "selected" : "" }}>All Time</option>
     </select>
     {{-- </form> --}}
   </div>

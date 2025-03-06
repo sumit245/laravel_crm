@@ -38,8 +38,8 @@ class HomeController extends Controller
     {
         $user = auth()->user();
         $selectedProjectId = $request->query('project_id', session('project_id'));
-        // $filter = request()->get('filter', 'today'); // Default filter is today
 
+        // If the user is not an admin, restrict to their assigned project
         if ($user->role != 0) {
             $selectedProjectId = $user->project_id;
         }
@@ -66,9 +66,6 @@ class HomeController extends Controller
         $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
 
-        // Apply filters on the selected task model
-        // $query = $taskModel::query();
-
         // Site Counts
         $totalSites = $siteModel::where('project_id', $selectedProjectId)->count();
         $completedSites = $siteModel::where('project_id', $selectedProjectId)->whereHas('tasks', function ($query) use ($dateRange) {
@@ -77,292 +74,114 @@ class HomeController extends Controller
         $pendingSites = $totalSites - $completedSites;
 
         // Pole Counts (For Streetlight Projects)
-        $totalSurveyedPoles = $isStreetLightProject ? Pole::where('isSurveyDone', true)->count() : null;
-        $totalInstalledPoles = $isStreetLightProject ? Pole::where('isInstallationDone', true)->count() : null;
-
+        $totalSurveyedPoles = $isStreetLightProject ? Pole::where('isSurveyDone', true)->whereHas('streetlight', function ($query) use ($selectedProjectId) {
+            $query->where('project_id', $selectedProjectId);
+        })->count() : null;
+        $totalInstalledPoles = $isStreetLightProject ? Pole::where('isInstallationDone', true)->whereHas('streetlight', function ($query) use ($selectedProjectId) {
+            $query->where('project_id', $selectedProjectId);
+        })->count() : null;
         // Fetch users (Engineers, Vendors, Managers) and calculate rankings
         $roles = ['Project Manager' => 2, 'Site Engineer' => 1, 'Vendor' => 3];
         $rolePerformances = [];
 
         foreach ($roles as $roleName => $role) {
-            $users = User::where('role', $role)
-                ->where('project_id', $selectedProjectId)
-                ->get()
-                ->map(function ($user) use ($taskModel, $selectedProjectId, $dateRange, $roleName, $isStreetLightProject) {
-                    $totalTasks = $taskModel::where('project_id', $selectedProjectId)
-                        ->where(function ($q) use ($user) {
-                            if ($user->role == 1) $q->where('engineer_id', $user->id);
-                            if ($user->role == 3) $q->where('vendor_id', $user->id);
-                            if ($user->role == 2) $q->where('manager_id', $user->id);
-                        })
-                        ->whereBetween('created_at', $dateRange)
-                        ->count();
+            // Adjust user query based on role
+            $usersQuery = User::where('role', $role);
+            if ($user->role == 2) { // If logged in user is a Project Manager
+                $usersQuery->where('manager_id', $user->id);
+            } elseif ($user->role != 0) { // If not admin, restrict to their project
+                $usersQuery->where('project_id', $selectedProjectId);
+            }
 
-                    if ($totalTasks == 0) {
-                        return null; // Skip users with no tasks
-                    }
+            $users = $usersQuery->get()->map(function ($user) use ($taskModel, $selectedProjectId, $dateRange, $roleName, $isStreetLightProject) {
+                $totalTasks = $taskModel::where('project_id', $selectedProjectId)
+                    ->where(function ($q) use ($user) {
+                        if ($user->role == 1) $q->where('engineer_id', $user->id);
+                        if ($user->role == 3) $q->where('vendor_id', $user->id);
+                        if ($user->role == 2) $q->where('manager_id', $user->id);
+                    })
+                    ->whereBetween('created_at', $dateRange)
+                    ->count();
 
-                    $completedTasks = $taskModel::where('project_id', $selectedProjectId)
-                        ->where(function ($q) use ($user) {
-                            if ($user->role == 1) $q->where('engineer_id', $user->id);
-                            if ($user->role == 3) $q->where('vendor_id', $user->id);
-                            if ($user->role == 2) $q->where('manager_id', $user->id);
-                        })
-                        ->where('status', 'Completed')
-                        ->whereBetween('created_at', $dateRange)
-                        ->count();
+                if ($totalTasks == 0) {
+                    return null; // Skip users with no tasks
+                }
 
-                    $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
-                    // Add surveyed and installed poles counts
-                    // $user->surveyedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isSurveyDone', true)->count() : null;
-                    // $user->installedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isInstallationDone', true)->count() : null;
+                $completedTasks = $taskModel::where('project_id', $selectedProjectId)
+                    ->where(function ($q) use ($user) {
+                        if ($user->role == 1) $q->where('engineer_id', $user->id);
+                        if ($user->role == 3) $q->where('vendor_id', $user->id);
+                        if ($user->role == 2) $q->where('manager_id', $user->id);
+                    })
+                    ->where('status', 'Completed')
+                    ->whereBetween('created_at', $dateRange)
+                    ->count();
 
-                    return (object) [
-                        'id' => $user->id,
-                        'name' => $user->firstName . " " . $user->lastName,
-                        'image' => $user->image,
-                        'role' => $roleName,
-                        'totalTasks' => $totalTasks,
-                        'completedTasks' => $completedTasks,
-                        'performance' => $performance,
-                        'surveyedPoles' => 0,
-                        'installedPoles' => 0,
-                        'medal' => ($completedTasks > 0) ? null : 'none', // No medal if completedTasks is 0
-                    ];
-                })
+                $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
+
+                // Add surveyed and installed poles counts
+                $user->surveyedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isSurveyDone', true)->whereHas('streetlight', function ($query) use ($selectedProjectId) {
+                    $query->where('project_id', $selectedProjectId);
+                })->count() : null;
+
+                $user->installedPoles = $isStreetLightProject ? Pole::where('engineer_id', $user->id)->where('isInstallationDone', true)->whereHas('streetlight', function ($query) use ($selectedProjectId) {
+                    $query->where('project_id', $selectedProjectId);
+                })->count() : null;
+
+                return (object) [
+                    'id' => $user->id,
+                    'name' => $user->firstName . " " . $user->lastName,
+                    'image' => $user->image,
+                    'role' => $roleName,
+                    'totalTasks' => $totalTasks,
+                    'completedTasks' => $completedTasks,
+                    'performance' => $performance,
+                    'surveyedPoles' => $user->surveyedPoles,
+                    'installedPoles' => $user->installedPoles,
+                    'medal' => ($completedTasks > 0) ? null : 'none', // No medal if completedTasks is 0
+                ];
+            })
                 ->filter() // Remove null values (users with no tasks)
                 ->sortByDesc('completedTasks') // Sort by completed tasks in descending order
                 ->values();
 
             $rolePerformances[$roleName] = $users;
         }
-
-        // Fetch sites (Filtered for Project Manager)
-        if ($isStreetLightProject) {
-            // If it's a Streetlight project
-            $siteQuery = Streetlight::where(
-                'project_id',
-                $projectId
-            )
-                ->when($user->role == 2, function ($query) use ($user) {
-                    $query->whereIn('id', function ($subQuery) use ($user) {
-                        $subQuery->select('site_id')->from('streetlight_tasks')
-                            ->where('manager_id', $user->id);
-                    });
-                });
-
-            $siteCount = $siteQuery->count();
-
-
-            $assignedSites = StreetlightTask::whereNotNull('site_id')
-                ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
-                ->when($user->role == 2, fn($q) => $q->where('manager_id', $user->id))
-                ->distinct('site_id')
-                ->count();
-
-            $completedSitesCount = Streetlight::whereHas('streetLightTasks', function ($query) use ($user) {
-                $query->where('status', 'Completed');
-                if ($user->role == 2) {
-                    $query->where('manager_id', $user->id);
-                }
-            })->where('project_id', $projectId)->count();
-
-            $pendingSitesCount = Streetlight::whereHas('streetLightTasks', function ($query) use ($user) {
-                $query->whereIn('status', ['Pending', 'In Progress']);
-                if ($user->role == 2) {
-                    $query->where('manager_id', $user->id);
-                }
-            })->where('project_id', $projectId)->count();
-
-            $rejectedSitesCount = Streetlight::whereHas('streetLightTasks', function ($query) use ($user) {
-                $query->where('status', 'Rejected');
-                if ($user->role == 2) {
-                    $query->where('manager_id', $user->id);
-                }
-            })->where('project_id', $projectId)->count();
-        } else {
-            // If it's a Rooftop project
-            $siteQuery = Site::where('project_id', $projectId)
-                ->when($user->role == 2, function ($query) use ($user) {
-                    $query->whereIn('id', function ($subQuery) use ($user) {
-                        $subQuery->select('site_id')->from('tasks')
-                            ->where('manager_id', $user->id);
-                    });
-                });
-
-            $siteCount = $siteQuery->count();
-
-
-            $assignedSites = Task::whereNotNull('site_id')
-                ->whereHas('site', fn($q) => $q->where('project_id', $projectId))
-                ->when($user->role == 2, fn($q) => $q->where('manager_id', $user->id))
-                ->distinct('site_id')
-                ->count();
-
-            $completedSitesCount = Site::whereHas('tasks', function ($query) use ($user) {
-                $query->where('status', 'Completed');
-                if ($user->role == 2) {
-                    $query->where('manager_id', $user->id);
-                }
-            })->where('project_id', $projectId)->count();
-
-            $pendingSitesCount = Site::whereHas('tasks', function ($query) use ($user) {
-                $query->whereIn('status', ['Pending', 'In Progress']);
-                if ($user->role == 2) {
-                    $query->where('manager_id', $user->id);
-                }
-            })->where('project_id', $projectId)->count();
-
-            $rejectedSitesCount = Site::whereHas('tasks', function ($query) use ($user) {
-                $query->where('status', 'Rejected');
-                if ($user->role == 2) {
-                    $query->where('manager_id', $user->id);
-                }
-            })->where('project_id', $projectId)->count();
-        }
-
-        // Staff and vendor count for the project
-        $staffCount = User::whereIn('role', [1, 2])
-            ->where('project_id', $projectId)
-            ->whereIn('id', function ($query) use ($projectId) {
-                $query->select('user_id')->from('project_user');
-            })
-            ->count();
         $vendorCount = User::where('role', 3)
-            ->where('project_id', $projectId)
-            ->whereIn('id', function ($query) use ($projectId) {
-                $query->select('user_id')->from('project_user');
+            ->where('project_id', $selectedProjectId)
+            ->when($user->role == 0, function ($query) {
+                // Admin can see all vendors
+                return $query;
+            }, function ($query) use ($user) {
+                // Project Manager sees only their vendors
+                return $query->where('manager_id', $user->id);
             })
             ->count();
-
-        // Fetch site engineers for the project (only those assigned to tasks managed by this project manager)
-        $siteEngineersQuery = User::where('role', 1)
-            ->where('project_id', $projectId)
-            ->whereIn('id', function ($query) use ($projectId, $user, $isStreetLightProject) {
-                $query->select('engineer_id')
-                    ->from($isStreetLightProject ? 'streetlight_tasks' : 'tasks')
-                    ->where('project_id', $projectId);
-
-                if ($user->role == 2) { // If Project Manager
-                    $query->where('manager_id', $user->id);
-                }
-            });
-
-        $siteEngineers = $siteEngineersQuery->get()->map(function ($se) use ($projectId, $isStreetLightProject) {
-            $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
-
-            $totalTasksSE = $taskModel::where('engineer_id', $se->id)
-                ->where('project_id', $projectId)
-                ->count();
-            $completedTasksSE = $taskModel::where('engineer_id', $se->id)
-                ->where('project_id', $projectId)
-                ->where('status', 'Completed')
-                ->count();
-
-            $performancePercentageSE = $totalTasksSE > 0 ? ($completedTasksSE / $totalTasksSE) * 100 : 0;
-
-            return (object) [
-                'id' => $se->id,
-                'name' => $se->firstName . " " . $se->lastName,
-                'image' => $se->image,
-                'role' => "Site Engineer",
-                'performance' => "$completedTasksSE/$totalTasksSE",
-                'performancePercentage' => $performancePercentageSE,
-            ];
-        })->sortByDesc('performancePercentage')->values();
-
-        // Fetch vendors for the project (only those assigned to tasks managed by this project manager)
-        $vendorsQuery = User::where('role', 3)
-            ->where('project_id', $projectId)
-            ->whereIn('id', function ($query) use ($projectId, $user, $isStreetLightProject) {
-                $query->select('vendor_id')
-                    ->from($isStreetLightProject ? 'streetlight_tasks' : 'tasks')
-                    ->where('project_id', $projectId);
-
-                if ($user->role == 2) { // If Project Manager
-                    $query->where('manager_id', $user->id);
-                }
-            });
-
-        $vendors = $vendorsQuery->get()->map(function ($vendor) use ($projectId, $isStreetLightProject) {
-            $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
-
-            $totalTasksVendor = $taskModel::where('vendor_id', $vendor->id)
-                ->where('project_id', $projectId)
-                ->count();
-            $completedTasksVendor = $taskModel::where('vendor_id', $vendor->id)
-                ->where('project_id', $projectId)
-                ->where('status', 'Completed')
-                ->count();
-
-            $performancePercentageVendor = $totalTasksVendor > 0 ? ($completedTasksVendor / $totalTasksVendor) * 100 : 0;
-
-            return (object) [
-                'id' => $vendor->id,
-                'name' => $vendor->name,
-                'image' => $vendor->image,
-                'role' => "Vendor",
-                'performance' => "$completedTasksVendor/$totalTasksVendor",
-                'performancePercentage' => $performancePercentageVendor,
-            ];
-        })->sortByDesc('performancePercentage')->values();
-
-        // Fetch project managers for the project
-        $projectManagers = User::where('role', 2)
-            ->where('project_id', $projectId)
-            ->get()
-            ->map(function ($pm) use ($projectId, $isStreetLightProject) {
-                if ($isStreetLightProject) {
-                    // If it's a StreetLight project, use StreetlightTask
-                    $totalTasksPM = StreetlightTask::where('manager_id', $pm->id)
-                        ->where('project_id', $projectId)
-                        ->count();
-                    $completedTasksPM = StreetlightTask::where('manager_id', $pm->id)
-                        ->where('project_id', $projectId)
-                        ->where('status', 'Completed')
-                        ->count();
-                } else {
-                    // For non-StreetLight projects, use Task model
-                    $totalTasksPM = Task::where('manager_id', $pm->id)
-                        ->where('project_id', $projectId)
-                        ->count();
-                    $completedTasksPM = Task::where('manager_id', $pm->id)
-                        ->where('project_id', $projectId)
-                        ->where('status', 'Completed')
-                        ->count();
-                }
-
-                $performancePercentagePM = $totalTasksPM > 0 ? ($completedTasksPM / $totalTasksPM) * 100 : 0;
-
-                return (object) [
-                    'id' => $pm->id,
-                    'name' => $pm->firstName . " " . $pm->lastName,
-                    'image' => $pm->image,
-                    'role' => "Project Manager",
-                    'performance' => "$completedTasksPM/$totalTasksPM",
-                    'performancePercentage' => $performancePercentagePM,
-                ];
-            })->sortByDesc('performancePercentage')
-            ->values();
-
+        $staffCount = User::where('role', 1)
+            ->where('project_id', $selectedProjectId)
+            ->when($user->role == 0, function ($query) {
+                // Admin can see all vendors
+                return $query;
+            }, function ($query) use ($user) {
+                // Project Manager sees only their vendors
+                return $query->where('manager_id', $user->id);
+            })
+            ->count();
         // Dashboard statistics
         $statistics = [
             [
                 'title' => 'Sites',
                 'values' => [
-                    'Total' => $siteCount,
-                    'Pending' => $pendingSitesCount,
-                    'Completed' => $completedSitesCount,
-                    'Rejected' => $rejectedSitesCount
+                    'Total' => $totalSites,
+                    'Pending' => $pendingSites,
+                    'Completed' => $completedSites,
+                    'Rejected' => 0
                 ],
                 'link' => route('sites.index')
             ],
             ['title' => 'Vendors', 'value' => $vendorCount, 'link' => route('uservendors.index')],
             ['title' => 'Staffs', 'value' => $staffCount, 'link' => route('staff.index')],
         ];
-        Log::info('Selected Project ID: ' . $selectedProjectId);
-        Log::info('Total Sites: ' . $totalSites);
-        Log::info('Completed Sites: ' . $completedSites);
         return view('dashboard', compact(
             'rolePerformances',
             'statistics',
@@ -388,7 +207,8 @@ class HomeController extends Controller
             case 'this_month':
                 return [now()->startOfMonth(), now()->endOfMonth()];
             default:
-                return [now()->startOfDay(), now()->endOfDay()]; // Default to today
+                // Return all time data
+                return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
         }
     }
 }
