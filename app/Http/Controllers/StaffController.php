@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pole;
 use App\Models\Task;
 use App\Models\StreetlightTask;
 use App\Models\Project;
@@ -118,8 +119,11 @@ class StaffController extends Controller
         // Get the project and its type
         $project = Project::findOrFail($projectId);
 
+        $surveyedPolesCount = 0;
+        $installedPolesCount = 0;
+        $isStreetlightProject = ($project->project_type == 1) ? true : false;
         // Check if the project type is 1 (indicating a streetlight project)
-        if ($project->project_type == 1) {
+        if ($isStreetlightProject) {
             // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
             $tasks = StreetlightTask::with('site')
                 ->where(function ($query) use ($staff) {
@@ -128,6 +132,24 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $staff->id);
                 })
                 ->get();
+            // Get all task IDs assigned to the staff (as manager, engineer, or vendor)
+            $taskIds = StreetlightTask::where('project_id', session("project_id"))
+                ->where(function ($query) use ($staff) {
+                    $query->where('manager_id', $staff->id)
+                        ->orWhere('engineer_id', $staff->id)
+                        ->orWhere('vendor_id', $staff->id);
+                })
+                ->pluck('task_id'); // Extract only the task IDs
+
+            // Count surveyed poles related to these tasks
+            $surveyedPolesCount = Pole::whereIn('task_id', $taskIds)
+                ->where('isSurveyDone', 1)
+                ->count();
+
+            // Count installed poles related to these tasks
+            $installedPolesCount = Pole::whereIn('task_id', $taskIds)
+                ->where('isInstallationDone', 1)
+                ->count();
         } else {
             // Fetch regular Tasks
             $tasks = Task::with('site')
@@ -157,6 +179,9 @@ class StaffController extends Controller
             'completedTasks',
             'pendingTasks',
             'rejectedTasks',
+            'surveyedPolesCount',
+            'isStreetlightProject',
+            'installedPolesCount',
             'assignedTasksCount',
             'completedTasksCount',
             'pendingTasksCount',
