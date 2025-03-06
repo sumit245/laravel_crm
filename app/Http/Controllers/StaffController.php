@@ -9,7 +9,7 @@ use App\Models\Project;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Log;
 
 class StaffController extends Controller
 {
@@ -134,14 +134,14 @@ class StaffController extends Controller
                 })
                 ->get();
 
-            $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
-                $query->where('project_id', $projectId)
-                    ->where(function ($q) use ($userId) {
-                        $q->where('manager_id', $userId)
-                            ->orWhere('engineer_id', $userId)
-                            ->orWhere('vendor_id', $userId);
-                    });
+            $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($userId) {
+                $query->where(function ($q) use ($userId) {
+                    $q->where('manager_id', $userId)
+                        ->orWhere('engineer_id', $userId)
+                        ->orWhere('vendor_id', $userId);
+                });
             })->where('isSurveyDone', 1)->count();
+            Log::info($surveyedPolesCount);
 
             $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
                 $query->where('project_id', $projectId)
