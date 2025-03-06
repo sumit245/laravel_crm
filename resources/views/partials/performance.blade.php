@@ -4,8 +4,8 @@
     {{-- <form method="GET" action="{{ route("dashboard") }}"> --}}
     <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
       <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
-      <option value="week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
-      <option value="month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
+      <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
+      <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
     </select>
     {{-- </form> --}}
   </div>
