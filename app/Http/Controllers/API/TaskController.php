@@ -527,6 +527,7 @@ class TaskController extends Controller
             });
         }
         $poles = $query->paginate(25);
+        Log::info('Poles:', ['poles' => $poles]);
         $totalSurveyed = $query->count();
         $districts = [];
         $blocks = [];
