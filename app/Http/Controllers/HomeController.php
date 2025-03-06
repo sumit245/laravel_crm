@@ -158,6 +158,7 @@ class HomeController extends Controller
                 return (object) [
                     'id' => $user->id,
                     'name' => $user->firstName . " " . $user->lastName,
+                    'vendor_name' => $user->name ?? "",
                     'image' => $user->image,
                     'role' => $roleName,
                     'totalTasks' => $totalTasks,
