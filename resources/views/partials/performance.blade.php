@@ -42,7 +42,7 @@
               </thead>
               <tbody>
                 @foreach ($users as $index => $user)
-                  <tr>
+                  <tr onclick="window.location='{{ route("staff.show", $user->id) }}'" style="cursor: pointer;">
                     <td>
                       <div class="d-flex">
                         <img class="img-sm rounded-10" src={{ $user->image }} alt="profile">
