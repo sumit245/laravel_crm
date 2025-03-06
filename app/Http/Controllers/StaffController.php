@@ -133,7 +133,6 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $staff->id);
                 })
                 ->get();
-
             $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($userId) {
                 $query->where(function ($q) use ($userId) {
                     $q->where('manager_id', $userId)
@@ -143,13 +142,12 @@ class StaffController extends Controller
             })->where('isSurveyDone', 1)->count();
             Log::info($surveyedPolesCount);
 
-            $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
-                $query->where('project_id', $projectId)
-                    ->where(function ($q) use ($userId) {
-                        $q->where('manager_id', $userId)
-                            ->orWhere('engineer_id', $userId)
-                            ->orWhere('vendor_id', $userId);
-                    });
+            $installedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
+                $query->where(function ($q) use ($userId) {
+                    $q->where('manager_id', $userId)
+                        ->orWhere('engineer_id', $userId)
+                        ->orWhere('vendor_id', $userId);
+                });
             })->where('isInstallationDone', 1)->count();
         } else {
             // Fetch regular Tasks
