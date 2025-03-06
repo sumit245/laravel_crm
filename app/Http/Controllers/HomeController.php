@@ -113,7 +113,7 @@ class HomeController extends Controller
                         ->count();
 
                     $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
-                    Log::info($completedTasks);
+
                     return (object) [
                         'id' => $user->id,
                         'name' => $user->firstName . " " . $user->lastName,
@@ -302,10 +302,6 @@ class HomeController extends Controller
             ];
         })->sortByDesc('performancePercentage')->values();
 
-
-
-
-
         // Fetch project managers for the project
         $projectManagers = User::where('role', 2)
             ->where('project_id', $projectId)
@@ -359,7 +355,9 @@ class HomeController extends Controller
             ['title' => 'Vendors', 'value' => $vendorCount, 'link' => route('uservendors.index')],
             ['title' => 'Staffs', 'value' => $staffCount, 'link' => route('staff.index')],
         ];
-
+        Log::info('Selected Project ID: ' . $selectedProjectId);
+        Log::info('Total Sites: ' . $totalSites);
+        Log::info('Completed Sites: ' . $completedSites);
         return view('dashboard', compact(
             'rolePerformances',
             'statistics',
