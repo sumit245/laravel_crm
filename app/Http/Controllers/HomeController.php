@@ -74,12 +74,18 @@ class HomeController extends Controller
         $pendingSites = $totalSites - $completedSites;
 
         // Pole Counts (For Streetlight Projects)
-        $totalSurveyedPoles = $isStreetLightProject ? Pole::where('isSurveyDone', true)->whereHas('streetlight', function ($query) use ($selectedProjectId) {
-            $query->where('project_id', $selectedProjectId);
-        })->count() : null;
-        $totalInstalledPoles = $isStreetLightProject ? Pole::where('isInstallationDone', true)->whereHas('streetlight', function ($query) use ($selectedProjectId) {
-            $query->where('project_id', $selectedProjectId);
-        })->count() : null;
+        $totalSurveyedPoles = $isStreetLightProject ? Pole::where('isSurveyDone', true)
+            ->whereHas('task', function ($query) use ($selectedProjectId) {
+                $query->whereHas('site', function ($query) use ($selectedProjectId) {
+                    $query->where('project_id', $selectedProjectId);
+                });
+            })->count() : null;
+        $totalInstalledPoles = $isStreetLightProject ? Pole::where('isInstallationDone', true)
+            ->whereHas('task', function ($query) use ($selectedProjectId) {
+                $query->whereHas('site', function ($query) use ($selectedProjectId) {
+                    $query->where('project_id', $selectedProjectId);
+                });
+            })->count() : null;
         // Fetch users (Engineers, Vendors, Managers) and calculate rankings
         $roles = ['Project Manager' => 2, 'Site Engineer' => 1, 'Vendor' => 3];
         $rolePerformances = [];
