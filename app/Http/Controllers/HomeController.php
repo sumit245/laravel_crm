@@ -126,53 +126,10 @@ class HomeController extends Controller
                 $performance = ($completedTasks > 0) ? ($completedTasks / $totalTasks) * 100 : 0;
 
                 // Add surveyed and installed poles counts
-                if ($isStreetLightProject) {
-                    if ($user->role == 1) { // Site Engineer
-                        $user->surveyedPoles = Pole::where('isSurveyDone', true)
-                            ->whereHas('task', function ($query) use ($user) {
-                                $query->where('engineer_id', $user->id);
-                            })
-                            ->whereHas('streetlight', function ($query) use ($selectedProjectId) {
-                                $query->where('project_id', $selectedProjectId);
-                            })
-                            ->count();
+                $user->surveyedPoles = 0;
 
-                        $user->installedPoles = Pole::where('isInstallationDone', true)
-                            ->whereHas('task', function ($query) use ($user) {
-                                $query->where('engineer_id', $user->id);
-                            })
-                            ->whereHas('streetlight', function ($query) use ($selectedProjectId) {
-                                $query->where('project_id', $selectedProjectId);
-                            })
-                            ->count();
-                    } elseif ($user->role == 3) { // Vendor
-                        $user->surveyedPoles = Pole::where('isSurveyDone', true)
-                            ->whereHas('task', function ($query) use ($user) {
-                                $query->where('vendor_id', $user->id);
-                            })
-                            ->whereHas('streetlight', function ($query) use ($selectedProjectId) {
-                                $query->where('project_id', $selectedProjectId);
-                            })
-                            ->count();
+                $user->installedPoles = 0;
 
-                        $user->installedPoles = Pole::where('isInstallationDone', true)
-                            ->whereHas('task', function ($query) use ($user) {
-                                $query->where('vendor_id', $user->id);
-                            })
-                            ->whereHas('streetlight', function ($query) use ($selectedProjectId) {
-                                $query->where('project_id', $selectedProjectId);
-                            })
-                            ->count();
-                    } elseif ($user->role == 2) { // Project Manager
-                        // You can implement logic for project managers if needed
-                        $user->surveyedPoles = 0; // Set to 0 or implement logic for project managers
-                        $user->installedPoles = 0; // Set to 0 or implement logic for project managers
-                    }
-                } else {
-                    // For rooftop projects, you can implement similar logic if needed
-                    $user->surveyedPoles = 0; // Set to 0 or implement logic for rooftop
-                    $user->installedPoles = 0; // Set to 0 or implement logic for rooftop
-                }
 
                 return (object) [
                     'id' => $user->id,
