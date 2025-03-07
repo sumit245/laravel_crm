@@ -259,12 +259,12 @@ class TaskController extends Controller
         $validator = Validator::make($request->all(), [
             'task_id'        => 'required|exists:streetlight_tasks,id',
             'complete_pole_number'         => 'required|string|max:255',
-            'isSurveyDone'      => 'nullable|boolean',
+            'isSurveyDone'      => 'nullable|string|in:true,false',
             'survey_image'        => 'nullable|array',
-            'isNetworkAvailable'  => 'nullable|boolean',
+            'isNetworkAvailable'  => 'nullable|string|in:true,false',
             'beneficiary'         => 'nullable|string|max:255',
             'remarks'             => 'nullable|string',
-            'isInstallationDone' => 'nullable|boolean',
+            'isInstallationDone' => 'nullable|string|in:true,false',
             'luminary_qr'         => 'nullable|string|max:255',
             'sim_number'    => 'nullable|string|max:200',
             'panel_qr'            => 'nullable|string|max:255',
@@ -274,8 +274,8 @@ class TaskController extends Controller
             'lng'           => 'nullable|numeric',
         ]);
         if ($validator->fails()) {
-          return response()->json(['error' => $validator->errors()], 422);
-       }
+            return response()->json(['error' => $validator->errors()], 422);
+        }
 
         //Step 2: Fetch Task
         $task = StreetlightTask::findOrFail($request->task_id);
