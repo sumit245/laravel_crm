@@ -327,7 +327,7 @@ class TaskController extends Controller
                 'isSurveyDone'     => true,
                 'beneficiary'      => $request->beneficiary,
                 'remarks'          => $request->remarks,
-                'isNetworkAvailable' => $request->isNetworkAvailable,
+                'isNetworkAvailable' => filter_var($request->isNetworkAvailable, FILTER_VALIDATE_BOOLEAN),
             ]);
         }
         // ✅ Step 7: Update Installation Data
