@@ -78,9 +78,9 @@
                     <td>
                       <div class="progress">
                         <div class="progress-bar" role="progressbar"
-                          style="width: {{ round($user->performance, 2) }}%;"
-                          aria-valuenow="{{ round($user->performance, 2) }}" aria-valuemin="0" aria-valuemax="100">
-                          {{ round($user->performance, 2) }}%
+                          style="width: {{ round($user->performance, 0) }}%;"
+                          aria-valuenow="{{ round($user->performance, 0) }}" aria-valuemin="0" aria-valuemax="100">
+                          {{ round($user->performance, 0) }}%
                         </div>
                       </div>
                     </td>

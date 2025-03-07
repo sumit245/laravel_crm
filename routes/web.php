@@ -24,6 +24,7 @@ Route::get('/', function () {
 
 Route::middleware(['auth'])->group(function () {
     Route::resource('staff', StaffController::class);
+    Route::get('staff/update-profile/{id}', [StaffController::class, 'updateProfile'])->name('staff.profile');
     Route::get('staff/{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
     Route::post('staff/{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
