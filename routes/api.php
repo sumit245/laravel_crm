@@ -33,7 +33,7 @@ Route::apiResource('site', SiteController::class);
 
 Route::apiResource('task', TaskController::class);
 Route::post('/tasks/{id}/approve', [TaskController::class, 'approveTask']);
-Route::put('streetlight/tasks/update', [TaskController::class, 'submitStreetlightTasks']);
+Route::post('streetlight/tasks/update', [TaskController::class, 'submitStreetlightTasks']);
 Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEngineerTasks']);
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
 Route::apiResource('streetlight', StreetlightController::class);
