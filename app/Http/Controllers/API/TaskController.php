@@ -351,6 +351,7 @@ class TaskController extends Controller
             'task'    => $task,
         ], 200);
     }
+
     public function getPoleDetails(Request $request)
     {
         $id = $request->pole_id;
