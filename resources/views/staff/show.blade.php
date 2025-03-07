@@ -50,7 +50,7 @@
                       <a href="{{ route("installed.poles", ["site_engineer" => $staff->id, "role" => 1]) }}"
                         class="text-success text-decoration-none">Installed Poles:
                         {{ $installedPolesCount ?? 0 }}</a>
-                    @elseif($staff->role == 2)
+                    @elseif($staff->role == 3)
                       <a href="{{ route("surveyed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
                         class="text-primary text-decoration-none">Poles Surveyed:
                         {{ $surveyedPolesCount }}</a> <br />
