@@ -273,9 +273,9 @@ class TaskController extends Controller
             'lat'            => 'nullable|numeric',
             'lng'           => 'nullable|numeric',
         ]);
-      //  if ($validator->fails()) {
-        //    return response()->json(['error' => $validator->errors()], 422);
-     //   }
+        if ($validator->fails()) {
+          return response()->json(['error' => $validator->errors()], 422);
+       }
 
         //Step 2: Fetch Task
         $task = StreetlightTask::findOrFail($request->task_id);
