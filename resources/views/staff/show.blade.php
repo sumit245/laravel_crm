@@ -43,13 +43,28 @@
                 @endif
                 @if ($isStreetlightProject)
                   <div>
-                    <span>{{ $staff->role }}</span>
-                    <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
-                      class="text-primary text-decoration-none">Poles Surveyed:
-                      {{ $surveyedPolesCount }}</a> <br />
-                    <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
-                      class="text-success text-decoration-none">Installed Poles:
-                      {{ $installedPolesCount ?? 0 }}</a>
+                    @if ($staff->role == 1)
+                      <a href="{{ route("surveyed.poles", ["site_engineer" => $staff->id, "role" => 1]) }}"
+                        class="text-primary text-decoration-none">Poles Surveyed:
+                        {{ $surveyedPolesCount }}</a> <br />
+                      <a href="{{ route("installed.poles", ["site_engineer" => $staff->id, "role" => 1]) }}"
+                        class="text-success text-decoration-none">Installed Poles:
+                        {{ $installedPolesCount ?? 0 }}</a>
+                    @elseif($stafff->role == 2)
+                      <a href="{{ route("surveyed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
+                        class="text-primary text-decoration-none">Poles Surveyed:
+                        {{ $surveyedPolesCount }}</a> <br />
+                      <a href="{{ route("installed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
+                        class="text-success text-decoration-none">Installed Poles:
+                        {{ $installedPolesCount ?? 0 }}</a>
+                    @else
+                      <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
+                        class="text-primary text-decoration-none">Poles Surveyed:
+                        {{ $surveyedPolesCount }}</a> <br />
+                      <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
+                        class="text-success text-decoration-none">Installed Poles:
+                        {{ $installedPolesCount ?? 0 }}</a>
+                    @endif
                   </div>
                 @endif
               </div>
