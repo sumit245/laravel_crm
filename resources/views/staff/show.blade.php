@@ -43,6 +43,7 @@
                 @endif
                 @if ($isStreetlightProject)
                   <div>
+                    <span>{{ $staff->role }}</span>
                     <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
                       class="text-primary text-decoration-none">Poles Surveyed:
                       {{ $surveyedPolesCount }}</a> <br />
