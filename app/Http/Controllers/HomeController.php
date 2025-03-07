@@ -80,6 +80,8 @@ class HomeController extends Controller
                     $query->where('project_id', $selectedProjectId);
                 });
             })->count() : null;
+
+        // Installed Poles
         $totalInstalledPoles = $isStreetLightProject ? Pole::where('isInstallationDone', true)
             ->whereHas('task', function ($query) use ($selectedProjectId) {
                 $query->whereHas('site', function ($query) use ($selectedProjectId) {
@@ -140,7 +142,9 @@ class HomeController extends Controller
                                     $q->where('vendor_id', $user->id);
                                 }
                             });
-                        })->count();
+                        })
+                        ->whereBetween('created_at', $dateRange)
+                        ->count();
 
                     $user->installedPoles = Pole::where('isInstallationDone', true)
                         ->whereHas('task', function ($query) use ($selectedProjectId, $user) {
@@ -155,7 +159,9 @@ class HomeController extends Controller
                                     $q->where('vendor_id', $user->id);
                                 }
                             });
-                        })->count();
+                        })
+                        ->whereBetween('created_at', $dateRange)
+                        ->count();
                 } else {
                     $user->surveyedPoles = null;
                     $user->installedPoles = null;

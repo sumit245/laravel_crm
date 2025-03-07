@@ -226,6 +226,12 @@ class StaffController extends Controller
         return redirect()->route('staff.show', compact('staff'))->with('success', 'Staff updated successfully.');
     }
 
+    public function updateProfile($id)
+    {
+        $user = User::findOrFail($id);
+        return view('staff.profile', compact('user'));
+    }
+
     public function changePassword($id)
     {
         $staff = User::findOrFail($id);
