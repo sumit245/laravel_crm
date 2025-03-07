@@ -143,7 +143,7 @@ class HomeController extends Controller
                                 }
                             });
                         })
-                        ->whereBetween('created_at', $dateRange)
+                        ->whereBetween('updated_at', $dateRange)
                         ->count();
 
                     $user->installedPoles = Pole::where('isInstallationDone', true)
@@ -160,7 +160,7 @@ class HomeController extends Controller
                                 }
                             });
                         })
-                        ->whereBetween('created_at', $dateRange)
+                        ->whereBetween('updated_at', $dateRange)
                         ->count();
                 } else {
                     $user->surveyedPoles = null;
