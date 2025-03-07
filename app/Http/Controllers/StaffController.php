@@ -9,7 +9,9 @@ use App\Models\Project;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class StaffController extends Controller
 {
@@ -230,6 +232,29 @@ class StaffController extends Controller
     {
         $user = User::findOrFail($id);
         return view('staff.profile', compact('user'));
+    }
+
+    // Update Profile Picture
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        ]);
+
+        $user = Auth::user(); // Get logged-in user
+
+        // Delete old profile picture if exists
+        if ($user->image) {
+            Storage::disk('s3')->delete($user->image);
+        }
+
+        // Upload new image// Upload new image to S3
+        $imagePath = $request->file('profile_picture')->store('profile_pictures', 's3');
+
+        // Generate a public URL for accessing the image
+        $imageUrl = Storage::disk('s3')->url($imagePath);
+
+        return redirect()->back()->with('success', 'Profile picture updated successfully!');
     }
 
     public function changePassword($id)
