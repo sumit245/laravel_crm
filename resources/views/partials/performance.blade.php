@@ -26,7 +26,9 @@
                 <tr>
                   <th>Name</th>
                   <th>Total Tasks</th>
-                  <th>Completed Tasks</th>
+                  @if (!$isStreetLightProject)
+                    <th>Completed Tasks</th>
+                  @endif
                   @if ($isStreetLightProject)
                     <th>Surveyed Poles</th>
                   @else
@@ -64,7 +66,9 @@
                       </div>
                     </td>
                     <td>{{ $user->totalTasks }}</td>
-                    <td>{{ $user->completedTasks }}</td>
+                    @if (!$isStreetLightProject)
+                      <td>{{ $user->completedTasks }}</td>
+                    @endif
                     @if ($isStreetLightProject)
                       <td>{{ $user->surveyedPoles ?? 0 }}</td>
                     @else
