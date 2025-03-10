@@ -68,7 +68,7 @@ class HomeController extends Controller
         $userCounts = $this->getUserCounts($user, $selectedProjectId);
 
         // Prepare statistics array
-        $statistics = $this->prepareStatistics($siteStats, $userCounts);
+        $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
 
         return view('dashboard', array_merge(
             compact('rolePerformances', 'statistics', 'isStreetLightProject'),
@@ -257,46 +257,49 @@ class HomeController extends Controller
         ];
     }
 
-    private function prepareStatistics($siteStats, $userCounts)
+    private function prepareStatistics($siteStats, $userCounts, $isStreetLightProject)
     {
+        if ($isStreetLightProject) {
+            return [
+                [
+                    'title' => 'Total Panchayats',
+                    'value' => $siteStats['totalSites']
+                ],
+                [
+                    'title' => 'Total Poles',
+                    'value' => $siteStats['totalPoles']
+                ],
+                [
+                    'title' => 'Surveyed Poles',
+                    'value' => $siteStats['surveyedPoles']
+                ],
+                [
+                    'title' => 'Installed Poles',
+                    'value' => $siteStats['installedPoles']
+                ]
+            ];
+        }
+
         return [
             [
                 'title' => 'Total Sites',
-                'value' => $siteStats['totalSites'],
-                'icon' => 'mdi-map-marker'
+                'value' => $siteStats['totalSites']
             ],
             [
                 'title' => 'Completed Sites',
-                'value' => $siteStats['completedTasks'],
-                'icon' => 'mdi-check-circle'
+                'value' => $siteStats['completedTasks']
             ],
             [
                 'title' => 'Pending Sites',
-                'value' => $siteStats['pendingTasks'],
-                'icon' => 'mdi-clock-outline'
+                'value' => $siteStats['pendingTasks']
             ],
             [
                 'title' => 'In Progress',
-                'value' => $siteStats['inProgressTasks'],
-                'icon' => 'mdi-progress-clock'
-            ],
-            [
-                'title' => 'Project Managers',
-                'value' => $userCounts['projectManagers'],
-                'icon' => 'mdi-account-tie'
-            ],
-            [
-                'title' => 'Site Engineers',
-                'value' => $userCounts['siteEngineers'],
-                'icon' => 'mdi-account-hard-hat'
-            ],
-            [
-                'title' => 'Vendors',
-                'value' => $userCounts['vendors'],
-                'icon' => 'mdi-account-group'
+                'value' => $siteStats['inProgressTasks']
             ]
         ];
     }
+
 
 
     private function getAvailableProjects(User $user)
