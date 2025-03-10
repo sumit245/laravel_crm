@@ -48,18 +48,16 @@
     </div>
     <div class="row mt-4">
       @foreach ($statistics as $statistic)
-        <div class="col-md-4">
-          <div class="card card-rounded">
+        <div class="col-md-3">
+          <div class="card card-rounded" style="background-color: {{ $statistic["color"] }}">
             <div class="card-body text-center">
               <h4>{{ $statistic["title"] }}</h4>
               @if (isset($statistic["values"]))
                 <div class="row parent-card">
                   @foreach ($statistic["values"] as $key => $value)
                     <div class="col-sm-6 stats-card">
-                      {{-- <div class=""> --}}
                       <h5 class="stats-title">{{ $key }}</h5>
                       <h2 class="stats-total">{{ $value }}</h2>
-                      {{-- </div> --}}
                     </div>
                   @endforeach
                 </div>
