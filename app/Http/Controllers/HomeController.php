@@ -71,7 +71,7 @@ class HomeController extends Controller
         $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
 
         return view('dashboard', array_merge(
-            compact('rolePerformances', 'statistics', 'isStreetLightProject'),
+            compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
             $siteStats,
             $poleStats,
             ['projects' => $this->getAvailableProjects($user)]
