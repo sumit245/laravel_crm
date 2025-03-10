@@ -279,7 +279,6 @@ class TaskController extends Controller
 
         //Step 2: Fetch Task
         $task = StreetlightTask::findOrFail($request->task_id);
-
         $streetlight = Streetlight::findOrFail($task->site_id);
 
         // ✅ Step 4: Check if Pole Already Exists
@@ -322,24 +321,25 @@ class TaskController extends Controller
             $pole->update(['submission_image' => json_encode($uploadedSubmissionImages)]);
         }
         // ✅ Step 6: Update Survey Data
-        if ($request->isSurveyDone) {
+        if ($request->isSurveyDone && !$pole->isSurveyDone) {
             $pole->update([
                 'isSurveyDone'     => true,
                 'beneficiary'      => $request->beneficiary,
                 'remarks'          => $request->remarks,
                 'isNetworkAvailable' => filter_var($request->isNetworkAvailable, FILTER_VALIDATE_BOOLEAN),
             ]);
+            $streetlight->increment('number_of_surveyed_poles');
         }
         // ✅ Step 7: Update Installation Data
-        if ($request->isInstallationDone) {
+        if ($request->isInstallationDone && !$pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
                 'luminary_qr'       => $request->luminary_qr,
                 'sim_number'        => $request->sim_number,
                 'panel_qr'          => $request->panel_qr,
                 'battery_qr'        => $request->battery_qr,
-                'latitude'          => $request->latitude,
-                'longitude'         => $request->longitude,
+                'lat'          => $request->latitude,
+                'lng'         => $request->longitude,
             ]);
 
             // Increment installed poles count in `streetlight_tasks`
@@ -528,7 +528,6 @@ class TaskController extends Controller
             });
         }
         $poles = $query->paginate(10);
-        Log::info('Poles:', ['poles' => $poles]);
         $totalSurveyed = $query->count();
         $districts = [];
         $blocks = [];
