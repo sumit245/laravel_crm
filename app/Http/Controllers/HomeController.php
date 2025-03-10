@@ -259,19 +259,23 @@ class HomeController extends Controller
             return [
                 [
                     'title' => 'Total Panchayats',
-                    'value' => $siteStats['totalSites']
+                    'value' => $siteStats['totalSites'],
+                    'color' => '#cc943e'
                 ],
                 [
                     'title' => 'Total Poles',
-                    'value' => $siteStats['totalPoles']
+                    'value' => $siteStats['totalPoles'],
+                    'color' => '#fcbda1'
                 ],
                 [
                     'title' => 'Surveyed Poles',
-                    'value' => $siteStats['surveyedPoles']
+                    'value' => $siteStats['surveyedPoles'],
+                    'color' => '#51b1e1'
                 ],
                 [
                     'title' => 'Installed Poles',
-                    'value' => $siteStats['installedPoles']
+                    'value' => $siteStats['installedPoles'],
+                    'color' => '#4da761'
                 ]
             ];
         }
@@ -279,19 +283,23 @@ class HomeController extends Controller
         return [
             [
                 'title' => 'Total Sites',
-                'value' => $siteStats['totalSites']
+                'value' => $siteStats['totalSites'],
+                'color' => '#cc943e'
             ],
             [
                 'title' => 'Completed Sites',
-                'value' => $siteStats['completedTasks']
+                'value' => $siteStats['completedTasks'],
+                'color' => '#4da761'
             ],
             [
                 'title' => 'Pending Sites',
-                'value' => $siteStats['pendingTasks']
+                'value' => $siteStats['pendingTasks'],
+                'color' => '#51b1e1'
             ],
             [
-                'title' => 'In Progress',
-                'value' => $siteStats['inProgressTasks']
+                'title' => 'Rejected',
+                'value' => $siteStats['inProgressTasks'],
+                'color' => '#fcbda1'
             ]
         ];
     }
