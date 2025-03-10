@@ -115,17 +115,38 @@ class HomeController extends Controller
     private function calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject)
     {
         if ($isStreetLightProject) {
-            $totalPoles = Streetlight::where('project_id', $projectId)
-                ->sum('total_poles');
+            // Get total poles for all panchayats assigned to this user in date range
+            $totalPoles = Streetlight::whereHas('streetlightTasks', function ($q) use ($user, $dateRange) {
+                $q->where($this->getRoleColumn($user->role), $user->id)
+                    ->whereBetween('created_at', $dateRange);
+            })->sum('total_poles');
 
-            $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user) {
+            // Get surveyed and installed poles by this user in date range
+            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id);
-            })->where('isInstallationDone', true)
-                ->whereBetween('updated_at', $dateRange)
-                ->count();
+                    ->where($this->getRoleColumn($user->role), $user->id)
+                    ->whereBetween('created_at', $dateRange);
+            })->where('isSurveyDone', true)->count();
 
-            $performance = $totalPoles > 0 ? ($installedPoles / $totalPoles) * 100 : 0;
+            $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
+                $q->where('project_id', $projectId)
+                    ->where($this->getRoleColumn($user->role), $user->id)
+                    ->whereBetween('created_at', $dateRange);
+            })->where('isInstallationDone', true)->count();
+
+            $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
+            return (object)[
+                'id' => $user->id,
+                'name' => $user->firstName . " " . $user->lastName,
+                'vendor_name' => $user->name ?? "",
+                'image' => $user->image,
+                'role' => $roleName,
+                'totalTasks' => $totalPoles,
+                'surveyedPoles' => $surveyedPoles,
+                'installedPoles' => $installedPoles,
+                'performance' => $performance,
+                'medal' => $surveyedPoles > 0 ? null : 'none'
+            ];
         } else {
             $tasksQuery = $taskModel::where('project_id', $projectId)
                 ->where($this->getRoleColumn($user->role), $user->id)
@@ -144,10 +165,10 @@ class HomeController extends Controller
             'vendor_name' => $user->name ?? "",
             'image' => $user->image,
             'role' => $roleName,
-            'totalTasks' => $isStreetLightProject ? $totalPoles : $totalTasks,
-            'completedTasks' => $isStreetLightProject ? $installedPoles : $completedTasks,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
             'performance' => $performance,
-            'medal' => ($isStreetLightProject ? $installedPoles : $completedTasks) > 0 ? null : 'none'
+            'medal' => $completedTasks > 0 ? null : 'none'
         ];
     }
 
@@ -242,7 +263,7 @@ class HomeController extends Controller
 
     private function getUserPoleStatistics($user, $projectId, $dateRange)
     {
-        $poles = Pole::whereHas('task', function ($q) use ($projectId, $user) {
+        $poles = Pole::whereHas('task.site', function ($q) use ($projectId, $user) {
             $q->where('project_id', $projectId)
                 ->where($this->getRoleColumn($user->role), $user->id);
         })->whereBetween('updated_at', $dateRange);
@@ -309,6 +330,7 @@ class HomeController extends Controller
     private function getAvailableProjects(User $user)
     {
         return Project::when($user->role !== 0, function ($query) use ($user) {
+            // For non-admin users, get projects through project_user pivot table
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
