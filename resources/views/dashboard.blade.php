@@ -47,77 +47,30 @@
       </div>
     </div>
     <div class="row mt-4">
-      @if ($project->project_type == 1)
-        {{-- Streetlight Project Stats --}}
-        <div class="col-md-3">
+      @foreach ($statistics as $statistic)
+        <div class="col-md-4">
           <div class="card card-rounded">
             <div class="card-body text-center">
-              <h4>Total Panchayats</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["totalSites"] }}</p>
+              <h4>{{ $statistic["title"] }}</h4>
+              @if (isset($statistic["values"]))
+                <div class="row parent-card">
+                  @foreach ($statistic["values"] as $key => $value)
+                    <div class="col-sm-6 stats-card">
+                      {{-- <div class=""> --}}
+                      <h5 class="stats-title">{{ $key }}</h5>
+                      <h2 class="stats-total">{{ $value }}</h2>
+                      {{-- </div> --}}
+                    </div>
+                  @endforeach
+                </div>
+              @else
+                <p class="fs-4 fw-bold">{{ $statistic["value"] }}</p>
+              @endif
             </div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>Total Poles</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["totalPoles"] }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>Surveyed Poles</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["surveyedPoles"] }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>Installed Poles</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["installedPoles"] }}</p>
-            </div>
-          </div>
-        </div>
-      @else
-        {{-- Rooftop Project Stats --}}
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>Total Sites</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["totalSites"] }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>Completed Sites</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["completedTasks"] }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>Pending Sites</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["pendingTasks"] }}</p>
-            </div>
-          </div>
-        </div>
-        <div class="col-md-3">
-          <div class="card card-rounded">
-            <div class="card-body text-center">
-              <h4>In Progress</h4>
-              <p class="fs-4 fw-bold">{{ $statistics["inProgressTasks"] }}</p>
-            </div>
-          </div>
-        </div>
-      @endif
+      @endforeach
     </div>
-
     @include("partials.performance")
   </div>
 @endsection
