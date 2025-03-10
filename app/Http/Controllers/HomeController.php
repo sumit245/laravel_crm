@@ -48,7 +48,7 @@ class HomeController extends Controller
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
 
         // Get site statistics
-        $siteStats = $this->getSiteStatistics($siteModel, $taskModel, $selectedProjectId, $dateRange);
+        $siteStats = $this->getSiteStatistics($siteModel, $taskModel, $selectedProjectId, $dateRange, $isStreetLightProject);
 
         // Get pole statistics for streetlight projects
         $poleStats = $isStreetLightProject ?
@@ -113,31 +113,41 @@ class HomeController extends Controller
 
     private function calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject)
     {
-        $tasksQuery = $taskModel::where('project_id', $projectId)
-            ->where($this->getRoleColumn($user->role), $user->id)
-            ->whereBetween('updated_at', $dateRange);
+        if ($isStreetLightProject) {
+            $totalPoles = Streetlight::where('project_id', $projectId)
+                ->sum('total_poles');
 
-        $totalTasks = $tasksQuery->count();
-        if ($totalTasks == 0) return null;
+            $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user) {
+                $q->where('project_id', $projectId)
+                    ->where($this->getRoleColumn($user->role), $user->id);
+            })->where('isInstallationDone', true)
+                ->whereBetween('updated_at', $dateRange)
+                ->count();
 
-        $completedTasks = $tasksQuery->where('status', 'Completed')->count();
-        $performance = ($completedTasks / $totalTasks) * 100;
+            $performance = $totalPoles > 0 ? ($installedPoles / $totalPoles) * 100 : 0;
+        } else {
+            $tasksQuery = $taskModel::where('project_id', $projectId)
+                ->where($this->getRoleColumn($user->role), $user->id)
+                ->whereBetween('updated_at', $dateRange);
 
-        $poleStats = $isStreetLightProject ?
-            $this->getUserPoleStatistics($user, $projectId, $dateRange) :
-            ['surveyedPoles' => null, 'installedPoles' => null];
+            $totalTasks = $tasksQuery->count();
+            if ($totalTasks == 0) return null;
 
-        return (object)array_merge([
+            $completedTasks = $tasksQuery->where('status', 'Completed')->count();
+            $performance = ($completedTasks / $totalTasks) * 100;
+        }
+
+        return (object)[
             'id' => $user->id,
             'name' => $user->firstName . " " . $user->lastName,
             'vendor_name' => $user->name ?? "",
             'image' => $user->image,
             'role' => $roleName,
-            'totalTasks' => $totalTasks,
-            'completedTasks' => $completedTasks,
+            'totalTasks' => $isStreetLightProject ? $totalPoles : $totalTasks,
+            'completedTasks' => $isStreetLightProject ? $installedPoles : $completedTasks,
             'performance' => $performance,
-            'medal' => $completedTasks > 0 ? null : 'none'
-        ], $poleStats);
+            'medal' => ($isStreetLightProject ? $installedPoles : $completedTasks) > 0 ? null : 'none'
+        ];
     }
 
     private function getRoleColumn($role)
@@ -169,30 +179,30 @@ class HomeController extends Controller
         })->first()->id;
     }
 
-    private function getSiteStatistics($siteModel, $taskModel, $projectId, $dateRange)
+    private function getSiteStatistics($siteModel, $taskModel, $projectId, $dateRange, $isStreetLightProject)
     {
-        $totalSites = $siteModel::where('project_id', $projectId)->count();
+        if ($isStreetLightProject) {
+            $streetlightStats = Streetlight::where('project_id', $projectId)
+                ->selectRaw('COUNT(DISTINCT panchayat) as total_sites, SUM(total_poles) as total_poles')
+                ->first();
 
-        $completedTasks = $taskModel::where('project_id', $projectId)
-            ->where('status', 'Completed')
-            ->whereBetween('updated_at', $dateRange)
-            ->count();
+            return [
+                'totalSites' => $streetlightStats->total_sites,
+                'totalPoles' => $streetlightStats->total_poles,
+                'surveyedPoles' => $this->getPoleStatistics($projectId)['totalSurveyedPoles'],
+                'installedPoles' => $this->getPoleStatistics($projectId)['totalInstalledPoles']
+            ];
+        }
 
-        $pendingTasks = $taskModel::where('project_id', $projectId)
-            ->where('status', 'Pending')
-            ->whereBetween('updated_at', $dateRange)
-            ->count();
-
-        $inProgressTasks = $taskModel::where('project_id', $projectId)
-            ->where('status', 'In Progress')
-            ->whereBetween('updated_at', $dateRange)
-            ->count();
-
+        // For rooftop projects - lifetime statistics
         return [
-            'totalSites' => $totalSites,
-            'completedTasks' => $completedTasks,
-            'pendingTasks' => $pendingTasks,
-            'inProgressTasks' => $inProgressTasks
+            'totalSites' => $siteModel::where('project_id', $projectId)->count(),
+            'completedTasks' => $taskModel::where('project_id', $projectId)
+                ->where('status', 'Completed')->count(),
+            'pendingTasks' => $taskModel::where('project_id', $projectId)
+                ->where('status', 'Pending')->count(),
+            'inProgressTasks' => $taskModel::where('project_id', $projectId)
+                ->where('status', 'In Progress')->count()
         ];
     }
 
