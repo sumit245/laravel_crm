@@ -68,8 +68,9 @@ class HomeController extends Controller
         $userCounts = $this->getUserCounts($user, $selectedProjectId);
 
         // Prepare statistics array
+        Log::info($siteStats);
         $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
-
+        Log::info($statistics);
         return view('dashboard', array_merge(
             compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
             $siteStats,
@@ -227,37 +228,32 @@ class HomeController extends Controller
 
     private function getPoleStatistics($projectId)
     {
+        $totalSurvey = Pole::whereHas('task.site', function ($q) use ($projectId) {
+            $q->where('project_id', $projectId);
+        })->where('isSurveyDone', true)->count();
+        Log::info("I am counting" . $totalSurvey);
         return [
-            'totalSurveyedPoles' => Pole::whereHas('task', function ($q) use ($projectId) {
+            'totalSurveyedPoles' => $totalSurvey,
+            'totalInstalledPoles' => Pole::whereHas('task.site', function ($q) use ($projectId) {
                 $q->where('project_id', $projectId);
-            })->where('isSurveyDone', true)->count(),
-
-            'totalInstalledPoles' => Pole::whereHas('task', function ($q) use ($projectId) {
-                $q->where('project_id', $projectId);
-            })->where('isInstallationDone', true)->count()
+            })->where('isInstallationDone', 1)->count()
         ];
     }
 
     private function getUserPoleStatistics($user, $projectId, $dateRange)
     {
-        return [
-            'surveyedPoles' => Pole::whereHas('task', function ($q) use ($projectId, $user) {
-                $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id);
-            })->where('isSurveyDone', true)
-                ->whereBetween('updated_at', $dateRange)
-                ->count(),
+        $poles = Pole::whereHas('task', function ($q) use ($projectId, $user) {
+            $q->where('project_id', $projectId)
+                ->where($this->getRoleColumn($user->role), $user->id);
+        })->whereBetween('updated_at', $dateRange);
 
-            'installedPoles' => Pole::whereHas('task', function ($q) use ($projectId, $user) {
-                $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id);
-            })->where('isInstallationDone', true)
-                ->whereBetween('updated_at', $dateRange)
-                ->count()
+        return [
+            'surveyedPoles' => (clone $poles)->where('isSurveyDone', true)->count(),
+            'installedPoles' => (clone $poles)->where('isInstallationDone', true)->count()
         ];
     }
 
-    private function prepareStatistics($siteStats, $userCounts, $isStreetLightProject)
+    private function prepareStatistics($siteStats, $userCounts, $isStreetLightProject = false)
     {
         if ($isStreetLightProject) {
             return [
