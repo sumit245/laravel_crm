@@ -83,7 +83,7 @@ class StreetlightController extends Controller
             $task->update($request->except('image'));
 
             $uploadedFiles = [];
-            Log::info('Request received:', $request->all());
+
 
             if ($request->hasFile('image')) {
                 $images = $request->file('image'); // Input format for multiple files in JSON
@@ -95,7 +95,6 @@ class StreetlightController extends Controller
                             // Upload each image to S3
                             $uploadedFiles[] = $this->uploadToS3($file, 'tasks/' . $task->id);
                         } else {
-                            Log::warning('Invalid image format:', $file);
                             return response()->json(['error' => 'Invalid image format.'], 400);
                         }
                     }
@@ -238,7 +237,6 @@ class StreetlightController extends Controller
         $panchayats = Streetlight::where('block', $block)
             ->distinct()
             ->pluck('panchayat');
-
         return response()->json($panchayats);
     }
 }
