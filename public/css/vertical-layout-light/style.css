@@ -14217,11 +14217,13 @@ fieldset:disabled .swal2-modal .swal2-buttonswrapper .swal2-styled,
 }
 
 .nav {
+  position: fixed;
   display: flex;
   flex-wrap: wrap;
   padding-left: 0;
   margin-bottom: 0;
   list-style: none;
+  max-width: 220px;
 }
 
 .nav-link {
@@ -35062,7 +35064,7 @@ div.tagsinput span.tag a {
 
 /* Remove extra margin from the table */
 #staffTable {
-  margin: 0 auto;
+  margin: 8px auto;
   /* Center the table */
   table-layout: fixed;
   /* Ensure fixed column widths */
@@ -35093,5 +35095,7 @@ div.tagsinput span.tag a {
   font-size: 0.6rem !important;
   /* Reduce font size */
 }
+
+
 
 /*# sourceMappingURL=../maps/vertical-layout-light/style.css.map */

@@ -81,14 +81,14 @@ class ServeCommand extends Command
     public function handle()
     {
         $environmentFile = $this->option('env')
-            ? base_path('.env') . '.' . $this->option('env')
-            : base_path('.env');
+                            ? base_path('.env').'.'.$this->option('env')
+                            : base_path('.env');
 
         $hasEnvironment = file_exists($environmentFile);
 
         $environmentLastModified = $hasEnvironment
-            ? filemtime($environmentFile)
-            : now()->addDays(30)->getTimestamp();
+                            ? filemtime($environmentFile)
+                            : now()->addDays(30)->getTimestamp();
 
         $process = $this->startProcess($hasEnvironment);
 
@@ -97,11 +97,9 @@ class ServeCommand extends Command
                 clearstatcache(false, $environmentFile);
             }
 
-            if (
-                ! $this->option('no-reload') &&
+            if (! $this->option('no-reload') &&
                 $hasEnvironment &&
-                filemtime($environmentFile) > $environmentLastModified
-            ) {
+                filemtime($environmentFile) > $environmentLastModified) {
                 $environmentLastModified = filemtime($environmentFile);
 
                 $this->newLine();
@@ -145,7 +143,7 @@ class ServeCommand extends Command
             return in_array($key, static::$passthroughVariables) ? [$key => $value] : [$key => false];
         })->all());
 
-        $this->trap(fn() => [SIGTERM, SIGINT, SIGHUP, SIGUSR1, SIGUSR2, SIGQUIT], function ($signal) use ($process) {
+        $this->trap(fn () => [SIGTERM, SIGINT, SIGHUP, SIGUSR1, SIGUSR2, SIGQUIT], function ($signal) use ($process) {
             if ($process->isRunning()) {
                 $process->stop(10, $signal);
             }
@@ -167,12 +165,12 @@ class ServeCommand extends Command
     {
         $server = file_exists(base_path('server.php'))
             ? base_path('server.php')
-            : __DIR__ . '/../resources/server.php';
+            : __DIR__.'/../resources/server.php';
 
         return [
             (new PhpExecutableFinder)->find(false),
             '-S',
-            $this->host() . ':' . $this->port(),
+            $this->host().':'.$this->port(),
             $server,
         ];
     }
@@ -237,7 +235,7 @@ class ServeCommand extends Command
     protected function canTryAnotherPort()
     {
         return is_null($this->input->getOption('port')) &&
-            ($this->input->getOption('tries') > $this->portOffset);
+               ($this->input->getOption('tries') > $this->portOffset);
     }
 
     /**
@@ -247,7 +245,7 @@ class ServeCommand extends Command
      */
     protected function handleProcessOutput()
     {
-        return fn($type, $buffer) => str($buffer)->explode("\n")->each(function ($line) {
+        return fn ($type, $buffer) => str($buffer)->explode("\n")->each(function ($line) {
             if (str($line)->contains('Development Server (http')) {
                 if ($this->serverRunningHasBeenDisplayed) {
                     return;
@@ -295,7 +293,7 @@ class ServeCommand extends Command
 
                 $dots = max(terminal()->width() - mb_strlen($formattedStartedAt) - mb_strlen($file) - mb_strlen($runTime) - 9, 0);
 
-                $this->output->write(' ' . str_repeat('<fg=gray>.</>', $dots));
+                $this->output->write(' '.str_repeat('<fg=gray>.</>', $dots));
                 $this->output->writeln(" <fg=gray>~ {$runTime}s</>");
             } elseif (str($line)->contains(['Closed without sending a request', 'Failed to poll event'])) {
                 // ...
