@@ -125,131 +125,159 @@
           </div>
 
           <div class="col-3 grid-margin stretch-card">
-            <div class="list-header header-darkGreen">Completed Sites
-              <span class="btn-sm btn-rounded btn-light">{{ $completedTasksCount }}</span>
-            </div>
-            <ul class="list-container">
-              @if ($completedTasks->count() > 0)
-                @foreach ($completedTasks as $task)
-                  <li class="list-group-item">
-                    <a href="{{ route("tasks.show", $task->id) }}" class="text-decoration-none text-dark">
-                      @if ($task->site)
-                        @if ($project->project_type == 1)
-                          {{-- For Streetlight Projects --}}
-                          <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
-                          <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-                          @php
-                            // Explode ward string and remove empty values
-                            $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
-                          @endphp
-                          @if (!empty($wards))
-                            <div class="ward-list">
-                              @foreach ($wards as $ward)
-                                <span class="ward-tag">Ward {{ $ward }}</span>
-                              @endforeach
-                            </div>
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title">Completed Sites
+                  <div class="badge badge-pill badge-outline-success">{{ $completedTasksCount }}</div>
+                </h4>
+                <div class="list-wrapper list-wrapper-sm">
+                  <ul class="d-flex flex-column-reverse todo-list todo-list-custom">
+                    @if ($completedTasks->count() > 0)
+                      @foreach ($completedTasks as $task)
+                        <li>
+                          @if ($task->site)
+                            @if ($project->project_type == 1)
+                              {{-- For Streetlight Projects --}}
+                              @php
+                                // Explode ward string and remove empty values
+                                $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
+                              @endphp
+                              @if (!empty($wards))
+                                <div class="ward-list">
+                                  @foreach ($wards as $ward)
+                                    <span class="ward-tag">Ward {{ $ward }}</span>
+                                  @endforeach
+                                </div>
+                              @endif
+                            @else
+                              {{-- For Rooftop Projects --}}
+                              <div class="ms-3">
+                                <p>{{ $task->site->site_name ?? "N/A" }}</p>
+                                <small class="text-muted mb-0"><i
+                                    class="ti-location-pin me-1"></i>{{ $task->site->location }},
+                                  {{ $task->site->districtRelation->name ?? "N/A" }}</small>
+                                <small>{{ $task->start_date }}</small>
+                                <small>{{ $task->end_date }}</small>
+                              </div>
+                            @endif
                           @endif
-                        @else
-                          {{-- For Rooftop Projects --}}
-                          <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                          <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
-                        @endif
-                      @endif
-                      <div class="d-flex w-100 justify-content-between">
-                        <strong>{{ $task->start_date }}</strong>
-                        <strong>{{ $task->end_date }}</strong>
-                      </div>
-                    </a>
-                  </li>
-                @endforeach
-              @else
-                <p>No completed tasks</p>
-              @endif
-            </ul>
+                          {{-- <div class="form-check form-check-flat">
+                            <label class="form-check-label">
+                              <input class="checkbox" type="checkbox">
+                              Meeting with Alisa
+                              <i class="input-helper"></i></label>
+                          </div> --}}
+                          <i class="remove ti-close"></i>
+                        </li>
+                      @endforeach
+                    @endif
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="col-3 grid-margin stretch-card">
-            <div class="list-header header-blue">Pending Sites
-              <span class="btn-sm btn-rounded btn-light">{{ $pendingTasksCount }}</span>
-            </div>
-            <ul class="list-container">
-              @if ($pendingTasksCount > 0)
-                @foreach ($pendingTasks as $task)
-                  <li class="list-group-item">
-                    @if ($task->site)
-                      @if ($project->project_type == 1)
-                        {{-- For Streetlight Projects --}}
-                        <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
-                        <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-                        @php
-                          // Explode ward string and remove empty values
-                          $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
-                        @endphp
-                        @if (!empty($wards))
-                          <div class="ward-list">
-                            @foreach ($wards as $ward)
-                              <span class="ward-tag">Ward {{ $ward }}</span>
-                            @endforeach
-                          </div>
-                        @endif
-                      @else
-                        {{-- For Rooftop Projects --}}
-                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
-                      @endif
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title">Pending Sites
+                  <div class="badge badge-pill badge-outline-success">{{ $pendingTasksCount }}</div>
+                </h4>
+                <div class="list-wrapper list-wrapper-sm">
+                  <ul class="d-flex flex-column-reverse todo-list todo-list-custom">
+                    @if ($pendingTasksCount > 0)
+                      @foreach ($pendingTasks as $task)
+                        <li>
+                          @if ($task->site)
+                            @if ($project->project_type == 1)
+                              {{-- For Streetlight Projects --}}
+                              @php
+                                // Explode ward string and remove empty values
+                                $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
+                              @endphp
+                              @if (!empty($wards))
+                                <div class="ward-list">
+                                  @foreach ($wards as $ward)
+                                    <span class="ward-tag">Ward {{ $ward }}</span>
+                                  @endforeach
+                                </div>
+                              @endif
+                            @else
+                              {{-- For Rooftop Projects --}}
+                              <div class="ms-3">
+                                <p>{{ $task->site->site_name ?? "N/A" }}</p>
+                                <small class="text-muted mb-0"><i
+                                    class="ti-location-pin me-1"></i>{{ $task->site->location }},
+                                  {{ $task->site->districtRelation->name ?? "N/A" }}</small>
+                                <small>{{ $task->start_date }}</small>
+                                <small>{{ $task->end_date }}</small>
+                              </div>
+                            @endif
+                          @endif
+                          {{-- <div class="form-check form-check-flat">
+                            <label class="form-check-label">
+                              <input class="checkbox" type="checkbox">
+                              Meeting with Alisa
+                              <i class="input-helper"></i></label>
+                          </div> --}}
+                          <i class="remove ti-close"></i>
+                        </li>
+                      @endforeach
                     @endif
-                    <div class="d-flex w-100 justify-content-between">
-                      <strong>{{ $task->start_date }}</strong>
-                      <strong>{{ $task->end_date }}</strong>
-                    </div>
-                  </li>
-                @endforeach
-              @else
-                <p>No Pending tasks</p>
-              @endif
-            </ul>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="col-3 grid-margin stretch-card">
-            <div class="list-header header-red">Rejected Sites
-              <span class="btn-sm btn-rounded btn-light">{{ $rejectedTasksCount }}</span>
-            </div>
-            <ul class="list-container">
-              @if ($rejectedTasks->count() > 0)
-                @foreach ($rejectedTasks as $task)
-                  <li class="list-group-item">
-                    @if ($task->site)
-                      @if ($project->project_type == 1)
-                        {{-- For Streetlight Projects --}}
-                        <small></small> <strong>Block: <span>{{ $task->site->block ?? "N/A" }}</span></strong>
-                        <strong>Panchayat: <span>{{ $task->site->panchayat ?? "N/A" }}</span></strong>
-                        @php
-                          // Explode ward string and remove empty values
-                          $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
-                        @endphp
-                        @if (!empty($wards))
-                          <div class="ward-list">
-                            @foreach ($wards as $ward)
-                              <span class="ward-tag">Ward {{ $ward }}</span>
-                            @endforeach
-                          </div>
-                        @endif
-                      @else
-                        {{-- For Rooftop Projects --}}
-                        <h6>{{ $task->site->site_name ?? "N/A" }}</h6>
-                        <p>{{ $task->site->location }}, {{ $task->site->districtRelation->name ?? "N/A" }}</p>
-                      @endif
+            <div class="card">
+              <div class="card-body">
+                <h4 class="card-title">Rejected Sites
+                  <div class="badge badge-pill badge-outline-success">{{ $rejectedTasksCount }}</div>
+                </h4>
+                <div class="list-wrapper list-wrapper-sm">
+                  <ul class="d-flex flex-column-reverse todo-list todo-list-custom">
+                    @if ($rejectedTasksCount > 0)
+                      @foreach ($rejectedTasks as $task)
+                        <li>
+                          @if ($task->site)
+                            @if ($project->project_type == 1)
+                              {{-- For Streetlight Projects --}}
+                              @php
+                                // Explode ward string and remove empty values
+                                $wards = array_filter(array_map("trim", explode(",", $task->site->ward)));
+                              @endphp
+                              @if (!empty($wards))
+                                <div class="ward-list">
+                                  @foreach ($wards as $ward)
+                                    <span class="ward-tag">Ward {{ $ward }}</span>
+                                  @endforeach
+                                </div>
+                              @endif
+                            @else
+                              {{-- For Rooftop Projects --}}
+                              <div class="ms-3">
+                                <p>{{ $task->site->site_name ?? "N/A" }}</p>
+                                <small class="text-muted mb-0"><i
+                                    class="ti-location-pin me-1"></i>{{ $task->site->location }},
+                                  {{ $task->site->districtRelation->name ?? "N/A" }}</small>
+                                <small>{{ $task->start_date }}</small>
+                                <small>{{ $task->end_date }}</small>
+                              </div>
+                            @endif
+                          @endif
+                          {{-- <div class="form-check form-check-flat">
+                            <label class="form-check-label">
+                              <input class="checkbox" type="checkbox">
+                              Meeting with Alisa
+                              <i class="input-helper"></i></label>
+                          </div> --}}
+                          <i class="remove ti-close"></i>
+                        </li>
+                      @endforeach
                     @endif
-                    <div class="d-flex w-100 justify-content-between">
-                      <strong>{{ $task->start_date }}</strong>
-                      <strong>{{ $task->end_date }}</strong>
-                    </div>
-                  </li>
-                @endforeach
-              @else
-                <p>No rejected tasks</p>
-              @endif
-            </ul>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
