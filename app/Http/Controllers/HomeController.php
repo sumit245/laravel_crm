@@ -13,10 +13,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
-// Model for projects
-// Model for sites
-// (Optional) Model for revenue if stored in DB
-
 class HomeController extends Controller
 {
     /**
@@ -347,6 +343,8 @@ class HomeController extends Controller
                 return [now()->startOfWeek(), now()->endOfWeek()];
             case 'this_month':
                 return [now()->startOfMonth(), now()->endOfMonth()];
+            case 'custom':
+                return [request()->start_date, request()->end_date];
             default:
                 // Return all time data
                 return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
