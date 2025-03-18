@@ -7,7 +7,29 @@
       <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
       <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
       <option value="all_time" {{ request("date_filter") == "all_time" ? "selected" : "" }}>All Time</option>
+      <option value="custom" {{ request("date_filter") == "custom_time" ? "selected" : "" }}>Click here!</option>
     </select>
+    <!--  -->
+    
+    <div class="avgrund-popin custom" style="width: 380px; height: 350px; margin-left: -200px; margin-top: -185px;">
+      <!-- Custom Date Modal -->
+    <div id="custom-date-modal" class="modal">
+        <div class="modal-content">
+            <!-- <span class="close">&times;</span> -->
+            <h2>Select Date Range</h2>
+            <label>Start Date:</label>
+            <input type="date" id="start-date">
+            <label>End Date:</label>
+            <input type="date" id="end-date">
+            <button id="apply-dates">Apply</button>
+        </div>
+    </div>
+    </div>
+
+
+
+    <!--  -->
+    </div></div>
     {{-- </form> --}}
   </div>
 
@@ -107,4 +129,44 @@
 
     window.location.href = url.toString(); // Reload page with new filter
   }
+  
+  // Custom date logic
+  document.addEventListener("DOMContentLoaded", function () {
+    const timeSelect = document.getElementById("time-select");
+    const modal = document.getElementById("custom-date-modal");
+    const closeModal = document.querySelector(".close");
+    const applyBtn = document.getElementById("apply-dates");
+
+    // Show modal when "Custom Time" is selected
+    timeSelect.addEventListener("change", function () {
+        if (timeSelect.value === "custom") {
+            modal.style.display = "flex"; // Show modal
+        }
+    });
+
+
+    // Apply button logic
+    applyBtn.addEventListener("click", function () {
+        const startDate = document.getElementById("start-date").value;
+        const endDate = document.getElementById("end-date").value;
+
+        if (startDate && endDate) {
+            alert(`Selected Date Range: ${startDate} to ${endDate}`);
+            modal.style.display = "none"; // Close modal
+        } else {
+            alert("Please select both start and end dates.");
+        }
+    });
+
+    // Close modal when clicking outside it
+    window.addEventListener("click", function (event) {
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    });
+});
+
+
+
+
 </script>
