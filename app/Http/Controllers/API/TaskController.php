@@ -413,7 +413,7 @@ class TaskController extends Controller
                 'remarks' => $pole->remarks,
                 'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
                 'submission_image' => collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
+                'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
             ];
         });
