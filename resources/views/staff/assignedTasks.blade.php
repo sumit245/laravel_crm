@@ -39,7 +39,7 @@
           <td>{{ $task->site->total_poles ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
-            <a href="{{ route("poles.show", $task->pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+            <a href="{{ route("poles.show", $task->poles->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
               title="View Details">
               <i class="mdi mdi-eye"></i>
             </a>
