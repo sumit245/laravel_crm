@@ -64,9 +64,7 @@ class HomeController extends Controller
         $userCounts = $this->getUserCounts($user, $selectedProjectId);
 
         // Prepare statistics array
-        Log::info($siteStats);
         $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
-        Log::info($statistics);
         return view('dashboard', array_merge(
             compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
             $siteStats,
@@ -82,7 +80,6 @@ class HomeController extends Controller
 
         foreach ($roles as $roleName => $roleId) {
             $usersQuery = User::where('role', $roleId);
-
             // Apply role-based filters
             if ($user->role == 2) { // Project Manager
                 if ($roleId == 2) {
@@ -131,6 +128,7 @@ class HomeController extends Controller
             })->where('isInstallationDone', true)->count();
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
+
             return (object)[
                 'id' => $user->id,
                 'name' => $user->firstName . " " . $user->lastName,
@@ -320,7 +318,6 @@ class HomeController extends Controller
             ]
         ];
     }
-
 
 
     private function getAvailableProjects(User $user)

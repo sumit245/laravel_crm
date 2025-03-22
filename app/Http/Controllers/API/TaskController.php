@@ -60,11 +60,9 @@ class TaskController extends Controller
      */
     public function show(Request $request, $id)
     {
-        Log::info("Requested Task ID: " . $id);
-        Log::info("Project Type: " . $request->query('project_type'));
+
         // Get the project_type from the query parameter
         $projectType = $request->query('project_type');
-        Log::info($projectType);
         // Conditionally fetch data based on project_type
         if ($projectType == 1) {
             // Fetch data from StreetlightTask model
@@ -588,5 +586,10 @@ class TaskController extends Controller
 
         // Return the view with the pole details
         return view('poles.show', compact('pole', 'surveyImages', 'installer', 'projectManager', 'siteEngineer'));
+    }
+
+    public function exportPoles(Request $request)
+    {
+        echo "export poles";
     }
 }

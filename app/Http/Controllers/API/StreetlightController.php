@@ -198,14 +198,12 @@ class StreetlightController extends Controller
     public function getEngineerTasks(Request $request)
     {
         $tasks = StreetlightTask::where('engineer_id', $request->id)->with('site')->get();
-        Log::info($tasks);
         return response()->json($tasks);
     }
 
     // 2. Get tasks assigned to the logged-in Vendor
     public function getVendorTasks(Request $request)
     {
-
         $tasks = StreetlightTask::where('vendor_id', $request->id)->with('site')->get();
         return response()->json($tasks);
     }

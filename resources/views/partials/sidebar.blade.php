@@ -19,6 +19,12 @@
           <span class="menu-title">Staffs Management</span>
         </a>
       </li>
+      <li class="nav-item">
+        <a class="nav-link" href="{{ route("hiring.index") }}">
+          <i class="menu-icon mdi mdi-account-plus-outline"></i>
+          <span class="menu-title">New Hirings</span>
+        </a>
+      </li>
     @endif
     <li class="nav-item">
       <a class="nav-link" href="{{ route("uservendors.index") }}">
