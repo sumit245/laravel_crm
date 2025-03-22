@@ -395,6 +395,7 @@ class TaskController extends Controller
             ->where('isInstallationDone', 0)
             ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
             ->get();
+        Log::info($surveyed_poles);
         // Transform the data to match the desired output structure
         $transformed_poles = $surveyed_poles->map(function ($pole) {
             return [
