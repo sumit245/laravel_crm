@@ -29,7 +29,7 @@
                 "N/A" }}
           </td>
           <td>
-            {{ collect([$task->engineer->firstName, $task->engineer->lastName])->filter()->implode(", ") ?:
+            {{ collect([$task->engineer->firstName, $task->engineer->lastName])->filter()->implode(" ") ?:
                 "N/A" }}
           </td>
           <td>{{ $task->site->vendor ?? "N/A" }}</td>
@@ -50,7 +50,6 @@
     </tbody>
   </table>
 </div>
-
 </div>
 
 @push("scripts")
