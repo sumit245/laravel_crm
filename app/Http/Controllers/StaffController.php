@@ -143,7 +143,7 @@ class StaffController extends Controller
         // Categorize tasks
         $assignedTasks = $tasks;
         $assignedTasksCount = $tasks->count();
-
+        Log::info($assignedTasks);
         $completedTasks = $tasks->where('status', 'Completed');
         $completedTasksCount = $completedTasks->count();
         $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
