@@ -81,10 +81,5 @@
         @endforeach
       </tbody>
     </table>
-
-    <!-- Pagination -->
-    <div class="mt-3">
-      {{ $poles->links() }}
-    </div>
   </div>
 @endsection
