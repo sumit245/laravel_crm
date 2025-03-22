@@ -28,14 +28,17 @@
             {{ collect([$task->site->panchayat, $task->site->block, $task->site->district])->filter()->implode(", ") ?:
                 "N/A" }}
           </td>
-          <td>{{ $task->site->site_engineer ?? "N/A" }}</td>
+          <td>
+            {{ collect([$task->engineer->firstName, $task->engineer->lastName])->filter()->implode(" ") ?:
+                "N/A" }}
+          </td>
           <td>{{ $task->site->vendor ?? "N/A" }}</td>
           <td>{{ $task->site->ward ?? "N/A" }}</td>
           <td>{{ $task->site->total_poles ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
-            <a href="{{ route("poles.show", $task->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
-              title="View Details">
+            <a href="{{ route("poles.show", $task->task->pole_id ?? 1) }}" class="btn btn-icon btn-info"
+              data-toggle="tooltip" title="View Details">
               <i class="mdi mdi-eye"></i>
             </a>
 
@@ -47,7 +50,6 @@
     </tbody>
   </table>
 </div>
-
 </div>
 
 @push("scripts")
