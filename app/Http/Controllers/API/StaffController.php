@@ -34,36 +34,7 @@ class StaffController extends Controller
         ]);
     }
 
-    public function create(Request $request)
-    {
-        //   try {
-        //    // Create new vendor
-        //    $user = User::create([
-        //     'name'      => $request->name,
-        //     'email'     => $request->email,
-        //     'password'  => bcrypt($request->password), // Encrypt password
-        //     'username'     => $request->username,
-        //     'firstName' => $request->firstName,
-        //     'lastName'  => $request->lastName,
-        //     'image'     => $request->image,
-        //     'status'    => 'active', // Default status
-        //     'address'      => $request->address,
-        //     'contactNo' => $request->contactNo,
-        //     'role'      => 3, // Vendor role
-        //     'disableLogin' => 0, // Default
-        //    ]);
-
-        //    return response()->json([
-        //     'message' => 'Vendor created successfully',
-        //     'user'    => $user,
-        //    ], 201);
-        //   } catch (\Exception $e) {
-        //    return response()->json([
-        //     "message" => "There is an error creating Vendor",
-        //     "error"   => $e->getMessage(),
-        //    ]);
-        //   }
-    }
+    public function create(Request $request) {}
 
     /**
      * View a specific vendor.

@@ -1,20 +1,14 @@
 <div class="home-tab">
-  <div class="d-flex align-items-center flex-row">
+  {{-- <div class="d-flex align-items-center justify-content-between"> --}}
     <ul class="nav nav-tabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#overview" role="tab"
-          aria-controls="overview" aria-selected="true">Assigned Panchayats</a>
-      </li>
-      <li class="nav-item" role="presentation">
-        <a class="nav-link" id="profile-tab" data-bs-toggle="tab" href="#audiences" role="tab"
-          aria-controls="audiences" aria-selected="false">Surveyed Poles</a>
-      </li>
-      <li class="nav-item" role="presentation">
-        <a class="nav-link" id="contact-tab" data-bs-toggle="tab" href="#demographics" role="tab"
-          aria-controls="demographics" aria-selected="false">Installed Poles</a>
-      </li>
+      <li class="nav-item" role="presentation"><a class="nav-link active" id="home-tab" data-bs-toggle="tab" href="#overview"
+          role="tab" aria-controls="overview" aria-selected="true">Panchayats</a></li>
+      <li class="nav-item" role="presentation"><a class="nav-link" id="profile-tab" data-bs-toggle="tab"
+          href="#audiences" role="tab" aria-controls="audiences" aria-selected="false">Surveyed Poles</a></li>
+      <li class="nav-item" role="presentation"><a class="nav-link" id="profile-tab" data-bs-toggle="tab"
+          href="#audiences" role="tab" aria-controls="audiences" aria-selected="false">Installed Poles</a></li>
     </ul>
-  </div>
+  {{-- </div> --}}
   <div class="tab-content tab-content-basic">
     <div class="tab-pane fade show active" id="overview" role="tabpanel" aria-labelledby="home-tab">
       {{-- TODO: Modify the table for datatable functions as search, sort, filter, pagination, export assigned panchayats --}}
