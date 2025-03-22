@@ -122,8 +122,6 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $userId);
                 });
             })->where('isSurveyDone', 1)->count();
-            Log::info($surveyedPolesCount);
-
             $installedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
                 $query->where(function ($q) use ($userId) {
                     $q->where('manager_id', $userId)
@@ -145,6 +143,7 @@ class StaffController extends Controller
         // Categorize tasks
         $assignedTasks = $tasks;
         $assignedTasksCount = $tasks->count();
+
         $completedTasks = $tasks->where('status', 'Completed');
         $completedTasksCount = $completedTasks->count();
         $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
