@@ -43,7 +43,7 @@ class StreetlightTask extends Model
     // Relationship: A task belongs to an engineer
     public function engineer()
     {
-        return $this->belongsTo(StreetlightTask::class, 'engineer_id');
+        return $this->belongsTo(User::class, 'engineer_id', 'id');
     }
 
     // Relationship: A task belongs to a vendor
