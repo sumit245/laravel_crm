@@ -71,12 +71,17 @@
           </div>
         </div>
         <hr />
-        @if ($project->project_type == 1)
-          {{-- For Streetlight Projects --}}
-          @include("staff.assignedTasks")
-        @else
-          @include("staff.assignedRooftops")
-        @endif
+        <div class="row">
+          <div class="col-12">
+            @if ($project->project_type == 1)
+              {{-- For Streetlight Projects --}}
+
+              @include("staff.assignedTasks")
+            @else
+              @include("staff.assignedRooftops")
+            @endif
+          </div>
+        </div>
       </div>
     </div>
   </div>

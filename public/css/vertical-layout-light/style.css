@@ -35096,6 +35096,19 @@ div.tagsinput span.tag a {
     /* Reduce font size */
 }
 
+/* Fixing navbar in assignedtasks */
+.fixed-navbar {
+  position: absolute; /* Keeps it fixed in place */
+   /* Positions it at the top of the page */
+   /* Aligns it to the left */
+  margin-top: -10px;
+  margin-left: 250px;
+  max-width: 100%; /* Makes it full width */
+  background-color: white; /* Optional: Background color */
+  z-index: 1000; /* Ensures it stays above other elements */
+  padding: 10px 0; /* Adds padding for spacing */
+  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); Adds shadow for visibility */
+}
 
 
 /*# sourceMappingURL=../maps/vertical-layout-light/style.css.map */
