@@ -33,7 +33,9 @@
                 "N/A" }}
           </td>
           <td>{{ $task->site->vendor ?? "N/A" }}</td>
-          <td>{{ $task->site->ward ?? "N/A" }}</td>
+          <td>
+            {{ $task->site->ward ? count(explode(",", $task->site->ward)) : "N/A" }}
+          </td>
           <td>{{ $task->site->total_poles ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
