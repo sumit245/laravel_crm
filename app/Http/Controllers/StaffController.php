@@ -108,7 +108,7 @@ class StaffController extends Controller
         // Check if the project type is 1 (indicating a streetlight project)
         if ($isStreetlightProject) {
             // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
-            $tasks = StreetlightTask::with(['site', 'pole'])
+            $tasks = StreetlightTask::with(['site', 'poles'])
                 ->where(function ($query) use ($staff) {
                     $query->where('engineer_id', $staff->id)
                         ->orWhere('manager_id', $staff->id)
