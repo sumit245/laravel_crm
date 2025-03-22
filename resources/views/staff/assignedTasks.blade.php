@@ -34,7 +34,8 @@
           <td>{{ $task->site->total_poles ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
-            <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+            <a href="{{ route("poles.show", $task->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+              title="View Details">
               <i class="mdi mdi-eye"></i>
             </a>
 
