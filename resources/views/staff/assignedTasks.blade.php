@@ -44,7 +44,7 @@
         @foreach ($assignedTasks as $task )
           <tr>
             <td>{{ $task->id }}</td>
-            <td>{{ print_r($assignedTasks) ?? "N/A" }}</td>
+            <td>{{ $task->sites->panchayat ?? "N/A" }}</td>
             <td>{{ $task->site->Block ?? "N/A"}}</td>
             <td>{{ $task->site->District ?? "N/A" }}</td>
             <td>{{ $task->site->Engineer ?? "N/A"}}</td>
