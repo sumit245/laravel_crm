@@ -7,8 +7,9 @@ use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
-class ExcelExport implements FromCollection, WithHeadings, ShouldAutoSize
+class ExcelSheetExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
     protected $data;
     protected $headings;
@@ -30,29 +31,45 @@ class ExcelExport implements FromCollection, WithHeadings, ShouldAutoSize
     }
 }
 
+class MultiSheetExport implements WithMultipleSheets
+{
+    protected $sheets;
+
+    public function __construct(array $sheets)
+    {
+        $this->sheets = $sheets;
+    }
+
+    public function sheets(): array
+    {
+        $sheetArray = [];
+        foreach ($this->sheets as $sheetName => $data) {
+            if (!empty($data)) {
+                $headings = array_keys((array) $data[0]);
+                $sheetArray[] = new ExcelSheetExport($data, $headings);
+            } else {
+                $sheetArray[] = new ExcelSheetExport([], []);
+            }
+        }
+        return $sheetArray;
+    }
+}
+
 class ExcelHelper
 {
     /**
-     * Export data to an Excel file and return the download response.
+     * Export multiple datasets to an Excel file with multiple sheets.
      *
-     * @param array $data Array of objects or associative arrays.
+     * @param array $sheets Associative array of 'Sheet Name' => 'Data Array'
      * @param string $filename The name of the Excel file.
      * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
      */
-    public static function exportToExcel(array $data, string $filename = 'export.xlsx')
+    public static function exportMultipleSheets(array $sheets, string $filename = 'export.xlsx')
     {
-        if (empty($data)) {
+        if (empty($sheets)) {
             return response()->json(['message' => 'No data available to export'], 400);
         }
 
-        // Extract headers from keys of the first element
-        $headings = array_keys((array) $data[0]);
-
-        // Convert objects to arrays
-        $formattedData = array_map(function ($item) {
-            return (array) $item;
-        }, $data);
-
-        return Excel::download(new ExcelExport($formattedData, $headings), $filename);
+        return Excel::download(new MultiSheetExport($sheets), $filename);
     }
 }
