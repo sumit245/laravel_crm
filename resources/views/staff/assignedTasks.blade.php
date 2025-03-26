@@ -44,13 +44,13 @@
         @foreach ($assignedTasks as $task )
           <tr>
             <td>{{ $task->id }}</td>
-            <td>{{ $task->site->panchayat ?? "N/A" }}</td>
+            <td>{{ print_r($assignedTasks) ?? "N/A" }}</td>
             <td>{{ $task->site->Block ?? "N/A"}}</td>
             <td>{{ $task->site->District ?? "N/A" }}</td>
             <td>{{ $task->site->Engineer ?? "N/A"}}</td>
             <td>{{ $task->site->Installer ?? "N/A" }}</td>
             <td>{{ $task->site->Wards ?? "N/A" }}</td>
-            <td>{{ $task->site->Wards ?? "N/A" }}</td>
+            <td>{{ $task->site->number_of_poles ?? "N/A" }}</td>
             <td>
               <!-- View Button -->
               <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip"

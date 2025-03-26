@@ -25190,7 +25190,7 @@ code {
 }
 
 .card.card-rounded {
-    border-radius: 15px;
+    border-radius: 10px;
     box-shadow: none;
     border: none;
 }
