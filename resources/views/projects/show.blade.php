@@ -1,7 +1,7 @@
 @extends("layouts.main") {{-- or the name of your base layout --}}
 
 @section("content")
-  <div class="content-wrapper">
+  <div class="content-wrapper p-2">
     <div class="card p-2">
       <div class="card-body">
         <div class="row my-2">
@@ -52,7 +52,7 @@
             <p class="mg-b-0">{{ $project->description }}</p>
           </div>
         </div>
-        <hr class="my-4" />
+        <hr class="my-0" />
         <!-- Tabs -->
         <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
