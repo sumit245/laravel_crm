@@ -20,6 +20,7 @@ Route::middleware(['auth'])->group(function () {
     // Home router
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
     // Staff router
     Route::resource('staff', StaffController::class);
     Route::prefix('staff')->group(function () {

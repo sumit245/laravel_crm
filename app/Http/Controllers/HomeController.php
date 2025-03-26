@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelHelper;
 use App\Models\Pole;
 use App\Models\Project; // Model for vendors
 use App\Models\Site;
@@ -51,6 +52,7 @@ class HomeController extends Controller
             $this->getPoleStatistics($selectedProjectId) :
             ['totalSurveyedPoles' => null, 'totalInstalledPoles' => null];
 
+        Log::info($user->role);
         // Calculate role performances
         $rolePerformances = $this->calculateRolePerformances(
             $user,
@@ -246,7 +248,6 @@ class HomeController extends Controller
         $totalSurvey = Pole::whereHas('task.site', function ($q) use ($projectId) {
             $q->where('project_id', $projectId);
         })->where('isSurveyDone', true)->count();
-        Log::info("I am counting" . $totalSurvey);
         return [
             'totalSurveyedPoles' => $totalSurvey,
             'totalInstalledPoles' => Pole::whereHas('task.site', function ($q) use ($projectId) {
@@ -346,5 +347,14 @@ class HomeController extends Controller
                 // Return all time data
                 return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
         }
+    }
+
+    public function exportToExcel()
+    {
+        $data = [
+            (object) ['Name' => 'John Doe', 'Email' => 'john@example.com', 'Age' => 30],
+            (object) ['Name' => 'Jane Smith', 'Email' => 'jane@example.com', 'Age' => 28],
+        ];
+        return ExcelHelper::exportToExcel($data, 'tasks.xlsx');
     }
 }
