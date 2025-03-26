@@ -117,8 +117,8 @@
                           style="width: {{ round($user->performance, 0) }}%;"
                           aria-valuenow="{{ round($user->performance, 0) }}" aria-valuemin="0" aria-valuemax="100">
                         </div>
-                        <span class="text-dark">{{ round($user->performance, 0) }}%</span>
                       </div>
+                      <span class="text-dark">{{ round($user->performance, 0) }}%</span>
                     </td>
                   </tr>
                 @endforeach
