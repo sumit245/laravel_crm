@@ -116,8 +116,8 @@
                         <div class="progress-bar" role="progressbar"
                           style="width: {{ round($user->performance, 0) }}%;"
                           aria-valuenow="{{ round($user->performance, 0) }}" aria-valuemin="0" aria-valuemax="100">
-                          {{ round($user->performance, 0) }}%
                         </div>
+                        <span class="text-dark">{{ round($user->performance, 0) }}%</span>
                       </div>
                     </td>
                   </tr>
