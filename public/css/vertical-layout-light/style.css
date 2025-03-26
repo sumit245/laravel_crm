@@ -25190,7 +25190,7 @@ code {
 }
 
 .card.card-rounded {
-    border-radius: 15px;
+    border-radius: 10px;
     box-shadow: none;
     border: none;
 }
@@ -35108,6 +35108,18 @@ div.tagsinput span.tag a {
   z-index: 1000; /* Ensures it stays above other elements */
   padding: 10px 0; /* Adds padding for spacing */
   /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); Adds shadow for visibility */
+}
+/* Fixing navbar of projectoverview shows.view */
+.fixed-navbar-project{
+    position: absolute; /* Keeps it fixed in place */
+   /* Positions it at the top of the page */
+   /* Aligns it to the left */
+  margin-top: 6px;
+  margin-left: 150px;
+  max-width: 100%; 
+  background-color: white; 
+  z-index: 1000; 
+  padding: 10px 0;
 }
 
 
