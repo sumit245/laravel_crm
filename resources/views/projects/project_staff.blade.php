@@ -7,7 +7,7 @@
       5 => "Coordinator",
   ];
 @endphp
-<div class="row">
+<div class="row mt-5">
   <div class="col-md-4">
     <h5>Assigned Staff</h5>
     <ul>

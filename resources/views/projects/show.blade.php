@@ -89,7 +89,7 @@
 
         <div class="tab-content" id="myTabContent">
           <!-- Sites Tab -->
-          <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
+          <div class="tab-pane fade show active mt-4" id="sites" role="tabpanel" aria-labelledby="sites-tab">
             @include("projects.project_site", [
                 "sites" => $project->project_type == 1 ? $sites : $project->sites,
             ])
@@ -103,14 +103,14 @@
           </div>
 
           <!-- Vendors Tab -->
-          <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+          <div class="tab-pane fade mt-4" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
             @include("projects.project_vendors", [
                 "vendors" => $vendors,
             ])
           </div>
 
           <!-- Inventory Tab -->
-          <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+          <div class="tab-pane fade mt-4" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
             @include("projects.project_inventory", [
                 "stores" => $project->stores,
                 "users" => $users,
@@ -118,7 +118,7 @@
           </div>
 
           <!-- Tasks Tab -->
-          <div class="tab-pane fade" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
+          <div class="tab-pane fade mt-4" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
             @include("projects.project_task", [
                 "tasks" => $project->tasks,
             ])
