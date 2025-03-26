@@ -35114,8 +35114,8 @@ div.tagsinput span.tag a {
     position: absolute; /* Keeps it fixed in place */
    /* Positions it at the top of the page */
    /* Aligns it to the left */
-  margin-top: -25px;
-  margin-left: 15px;
+  margin-top: -70px;
+  margin-left: 8px;
   max-width: 100%; 
   background-color: transparent; 
   z-index: 1000; 
