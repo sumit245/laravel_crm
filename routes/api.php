@@ -47,6 +47,7 @@ Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
 Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);
 Route::get('/installed-poles/vendor/{vendor_id}', [TaskController::class, 'getInstalledPolesForVendor']);
 Route::get('/installed-poles/project-manager/{manager_id}', [TaskController::class, 'getInstalledPolesForProjectManager']);
+Route::get('/export-poles/vendor/{id}', [TaskController::class, 'exportPoles'])->name('poles.export');
 
 Route::post('fetch-states', [DropdownController::class, 'fetchState']);
 Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
