@@ -9,7 +9,7 @@
         <i class="mdi mdi-plus-circle"></i>
       </a>
     </div>
-    <table id="projectsTable" class="table-striped table-bordered table-sm table">
+    <table id="projectsTable" class="table-striped table-bordered table-sm tab le">
       <thead>
         <tr>
           <th>#</th>
@@ -18,7 +18,7 @@
           <th>Start Date</th>
           <th>Order Value</th>
           <th>Actions</th>
-        </tr>
+        </tr> 
       </thead>
       <tbody>
         @foreach ($projects as $member)
