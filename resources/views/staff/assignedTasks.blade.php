@@ -49,7 +49,7 @@
             <td>{{ $task->site->District ?? "N/A" }}</td>
             <td>{{ $task->site->Engineer ?? "N/A"}}</td>
             <td>{{ $task->site->Installer ?? "N/A" }}</td>
-            <td>{{ $task->site->Wards ?? "N/A" }}</td>
+            <td>{{ $task->site->wards ?? "N/A" }}</td>
             <td>{{ $task->site->number_of_poles ?? "N/A" }}</td>
             <td>
               <!-- View Button -->

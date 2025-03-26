@@ -35114,13 +35114,14 @@ div.tagsinput span.tag a {
     position: absolute; /* Keeps it fixed in place */
    /* Positions it at the top of the page */
    /* Aligns it to the left */
-  margin-top: 6px;
-  margin-left: 150px;
+  margin-top: -25px;
+  margin-left: 15px;
   max-width: 100%; 
-  background-color: white; 
+  background-color: transparent; 
   z-index: 1000; 
   padding: 10px 0;
 }
 
+/* Medium screens (Tablets, smaller laptops) */
 
 /*# sourceMappingURL=../maps/vertical-layout-light/style.css.map */

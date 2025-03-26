@@ -9,7 +9,7 @@
         <i class="mdi mdi-plus-circle"></i>
       </a>
     </div>
-    <table id="projectsTable" class="table-striped table-bordered table-sm tab le">
+    <table id="projectsTable" class="table-striped table-bordered table-sm tab le mt-5">
       <thead>
         <tr>
           <th>#</th>
