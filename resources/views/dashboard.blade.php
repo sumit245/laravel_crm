@@ -1,7 +1,7 @@
 @extends("layouts.main") <!-- Extend main.blade.php -->
 
 @section("content")
-  <div class="content-wrapper">
+  <div class="content-wrapper p-2">
     <div class="row">
       <div class="col-sm-12">
         <div class="home-tab">
