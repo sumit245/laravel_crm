@@ -57,9 +57,9 @@
               <thead>
                 <tr>
                   <th>Name</th>
-                  <th>Total Tasks</th>
+                  <th>Total Targets</th>
                   @if (!$isStreetLightProject)
-                    <th>Completed Tasks</th>
+                    <th>Completed Targets</th>
                   @endif
                   @if ($isStreetLightProject)
                     <th>Surveyed Poles</th>
