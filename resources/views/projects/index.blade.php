@@ -4,12 +4,12 @@
   <div class="container p-2">
     <div class="d-flex justify-content-between mb-3">
       <!-- Search box is added automatically by DataTables -->
-      <div></div> <!-- Empty div to align with search box -->
+      {{-- <div></div> <!-- Empty div to align with search box -->   --}}
       <a href="{{ route("projects.create") }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Project">
         <i class="mdi mdi-plus-circle"></i>
       </a>
     </div>
-    <table id="projectsTable" class="table-striped table-bordered table-sm table">
+    <table id="projectsTable" class="table-striped table-bordered table-sm tab le">
       <thead>
         <tr>
           <th>#</th>

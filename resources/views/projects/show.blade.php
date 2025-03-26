@@ -54,7 +54,7 @@
         </div>
         <hr class="my-4" />
         <!-- Tabs -->
-        <ul class="nav nav-tabs" id="myTab" role="tablist">
+        <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites" type="button"
               role="tab" aria-controls="sites" aria-selected="true">

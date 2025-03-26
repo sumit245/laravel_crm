@@ -24,23 +24,16 @@
       @foreach ($assignedTasks as $task)
         <tr>
           <td>{{ $task->id }}</td>
-          <td>
-            {{ collect([$task->site->panchayat, $task->site->block, $task->site->district])->filter()->implode(", ") ?:
-                "N/A" }}
-          </td>
-          <td>
-            {{ collect([$task->engineer->firstName, $task->engineer->lastName])->filter()->implode(" ") ?:
-                "N/A" }}
-          </td>
-          <td>{{ $task->site->vendor ?? "N/A" }}</td>
-          <td>
-            {{ $task->site->ward ? count(explode(",", $task->site->ward)) : "N/A" }}
-          </td>
-          <td>{{ $task->site->total_poles ?? "N/A" }}</td>
+          <td>{{ print_r($assignedTasks) ?? "N/A" }}</td>
+          <td>{{ $task->site->Block ?? "N/A" }}</td>
+          <td>{{ $task->site->District ?? "N/A" }}</td>
+          <td>{{ $task->site->Engineer ?? "N/A" }}</td>
+          <td>{{ $task->site->Installer ?? "N/A" }}</td>
+          <td>{{ $task->site->Wards ?? "N/A" }}</td>
+          <td>{{ $task->site->number_of_poles ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
-            <a href="{{ route("poles.show", $task->poles->first()->id ?? "N/A") }}" class="btn btn-icon btn-info"
-              data-toggle="tooltip" title="View Details">
+            <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
               <i class="mdi mdi-eye"></i>
             </a>
 
@@ -51,7 +44,6 @@
       @endforeach
     </tbody>
   </table>
-</div>
 </div>
 
 @push("scripts")
