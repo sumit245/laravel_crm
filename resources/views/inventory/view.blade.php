@@ -8,6 +8,7 @@
       <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
       <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
     </div>
+
     @if ($inventory->isEmpty())
       <p>No inventory available for this store.</p>
     @else
@@ -15,24 +16,56 @@
         <thead>
           <tr>
             <th>#</th>
-            <th>Category</th>
-            <th>Sub Category</th>
-            <th>Item Name</th>
-            <th>Quantity</th>
-            <th>Unit Price</th>
-            <th>Total Value</th>
+            @if ($projectType == 1)
+              <th>Item Code</th>
+              <th>Item Name</th>
+              <th>Manufacturer</th>
+              <th>Make</th>
+              <th>Model</th>
+              <th>Serial Number</th>
+              <th>HSN Code</th>
+              <th>Unit</th>
+              <th>Rate</th>
+              <th>Quantity</th>
+              <th>Total Value</th>
+              <th>Description</th>
+              <th>Received Date</th>
+            @else
+              <th>Category</th>
+              <th>Sub Category</th>
+              <th>Item Name</th>
+              <th>Quantity</th>
+              <th>Unit Price</th>
+              <th>Total Value</th>
+            @endif
           </tr>
         </thead>
         <tbody>
           @foreach ($inventory as $item)
             <tr>
               <td>{{ $loop->iteration }}</td>
-              <td>{{ $item->category }}</td>
-              <td>{{ $item->sub_category }}</td>
-              <td style="max-width:200px;word-wrap: break-word;white-space: normal;">{{ $item->productName }}</td>
-              <td>{{ $item->initialQuantity }}</td>
-              <td>{{ $item->rate }}</td>
-              <td>{{ $item->total }}</td>
+              @if ($projectType == 1)
+                <td>{{ $item->item_code }}</td>
+                <td>{{ $item->item }}</td>
+                <td>{{ $item->manufacturer }}</td>
+                <td>{{ $item->make }}</td>
+                <td>{{ $item->model }}</td>
+                <td>{{ $item->serial_number }}</td>
+                <td>{{ $item->hsn }}</td>
+                <td>{{ $item->unit }}</td>
+                <td>{{ $item->rate }}</td>
+                <td>{{ $item->quantity }}</td>
+                <td>{{ $item->total_value }}</td>
+                <td>{{ $item->description }}</td>
+                <td>{{ $item->received_date }}</td>
+              @else
+                <td>{{ $item->category }}</td>
+                <td>{{ $item->sub_category }}</td>
+                <td style="max-width:200px;word-wrap: break-word;white-space: normal;">{{ $item->productName }}</td>
+                <td>{{ $item->initialQuantity }}</td>
+                <td>{{ $item->rate }}</td>
+                <td>{{ $item->total }}</td>
+              @endif
             </tr>
           @endforeach
         </tbody>
@@ -53,7 +86,13 @@
 
     function exportToCSV() {
       const rows = [
-        ['Item Name', 'Quantity', 'Unit Price', 'Total Value']
+        @if ($projectType == 1)
+          ['Item Code', 'Item Name', 'Manufacturer', 'Make', 'Model', 'Serial Number', 'HSN Code', 'Unit', 'Rate',
+            'Quantity', 'Total Value', 'Description', 'Received Date'
+          ]
+        @else
+          ['Category', 'Sub Category', 'Item Name', 'Quantity', 'Unit Price', 'Total Value']
+        @endif
       ];
       document.querySelectorAll('table tbody tr').forEach(row => {
         const rowData = [];

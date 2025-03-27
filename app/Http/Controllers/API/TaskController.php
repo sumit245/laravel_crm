@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Helpers\ExcelHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Site;
 use App\Models\Streetlight;
@@ -60,11 +61,9 @@ class TaskController extends Controller
      */
     public function show(Request $request, $id)
     {
-        Log::info("Requested Task ID: " . $id);
-        Log::info("Project Type: " . $request->query('project_type'));
+
         // Get the project_type from the query parameter
         $projectType = $request->query('project_type');
-        Log::info($projectType);
         // Conditionally fetch data based on project_type
         if ($projectType == 1) {
             // Fetch data from StreetlightTask model
@@ -386,6 +385,7 @@ class TaskController extends Controller
             'installed_poles' => $installed_poles
         ], 200);
     }
+
     /**
      * Get all installed poles for a specific Vendor
      */
@@ -397,6 +397,7 @@ class TaskController extends Controller
             ->where('isInstallationDone', 0)
             ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
             ->get();
+        Log::info($surveyed_poles);
         // Transform the data to match the desired output structure
         $transformed_poles = $surveyed_poles->map(function ($pole) {
             return [
@@ -415,8 +416,10 @@ class TaskController extends Controller
                 'remarks' => $pole->remarks,
                 'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
                 'submission_image' => collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
+                'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
+                'assigned_date' => $pole->created_at,
+                'submission_date' => $pole->updated_at
             ];
         });
 
@@ -588,5 +591,77 @@ class TaskController extends Controller
 
         // Return the view with the pole details
         return view('poles.show', compact('pole', 'surveyImages', 'installer', 'projectManager', 'siteEngineer'));
+    }
+
+    public function exportPoles($vendor_id)
+    {
+        $vendor = User::find($vendor_id);
+        $vendorName = $vendor ? $vendor->name : 'Unknown';
+
+        // Fetch surveyed poles
+        $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
+            $query->where('vendor_id', $vendor_id);
+        })->where('isSurveyDone', 1)
+            ->where('isInstallationDone', 0)
+            ->with(['task.site', 'task.engineer', 'task.manager'])
+            ->get();
+
+        $surveyed_data = $surveyed_poles->map(function ($pole) {
+            return [
+                'Pole ID' => $pole->id,
+                'Complete Pole Number' => $pole->complete_pole_number,
+                'Ward' => $pole->task->site->ward ?? null,
+                'Panchayat' => $pole->task->site->panchayat ?? null,
+                'Block' => $pole->task->site->block ?? null,
+                'District' => $pole->task->site->district ?? null,
+                'State' => $pole->task->site->state ?? null,
+                'Beneficiary' => $pole->beneficiary,
+                'Latitude' => $pole->lat,
+                'Longitude' => $pole->lng,
+                'Remarks' => $pole->remarks,
+                'Survey Image URLs' => implode(", ", collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Submission Image URLs' => implode(", ", collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Site Engineer' => $pole->task->engineer->first_name ?? null,
+                'Project Manager' => $pole->task->manager->name ?? null,
+                'Assigned Date' => $pole->created_at,
+                'Submission Date' => $pole->updated_at,
+            ];
+        });
+
+        // Fetch installed poles
+        $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
+            $query->where('vendor_id', $vendor_id);
+        })->where('isInstallationDone', 1)
+            ->with(['task.site', 'task.engineer', 'task.manager'])
+            ->get();
+
+        $installed_data = $installed_poles->map(function ($pole) {
+            return [
+                'Pole ID' => $pole->id,
+                'Complete Pole Number' => $pole->complete_pole_number,
+                'Ward' => $pole->task->site->ward ?? null,
+                'Panchayat' => $pole->task->site->panchayat ?? null,
+                'Block' => $pole->task->site->block ?? null,
+                'District' => $pole->task->site->district ?? null,
+                'State' => $pole->task->site->state ?? null,
+                'Beneficiary' => $pole->beneficiary,
+                'Latitude' => $pole->lat,
+                'Longitude' => $pole->lng,
+                'Remarks' => $pole->remarks,
+                'Survey Image URLs' => implode(", ", collect($pole->survey_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Submission Image URLs' => implode(", ", collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Site Engineer' => $pole->task->engineer->name ?? null,
+                'Project Manager' => $pole->task->manager->name ?? null,
+            ];
+        });
+
+        // Use ExcelHelper
+        $fileName = "survey_status_{$vendorName}.xlsx";
+        $sheets = [
+            'Surveyed Poles' => $surveyed_data->toArray(),
+            'Installed Poles' => $installed_data->toArray(),
+        ];
+
+        return ExcelHelper::exportMultipleSheets($sheets, $fileName);
     }
 }
