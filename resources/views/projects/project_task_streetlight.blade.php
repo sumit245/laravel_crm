@@ -122,12 +122,12 @@
       <tbody>
         @foreach ($targets as $light)
           <tr>
-            <td>{{ $light->site->panchayat }}</td>
+            <td>{{ $light->site->panchayat ?? "N/A" }}</td>
             <td>{{ $light->engineer->firstName ?? "N/A" }}</td>
             <td>{{ $light->vendor->name ?? "N/A" }}</td>
             <td>{{ $light->created_at }}</td>
-            <td>{{ $light->end_date }}</td>
-            <td>{{ $light->site->ward }}</td>
+            <td>{{ $light->end_date ?? "N/A" }}</td>
+            <td>{{ $light->site->ward ?? "N/A" }}</td>
             <td>
               @if ($light->isInstallationDone)
                 <span class="badge bg-success">Installed</span>

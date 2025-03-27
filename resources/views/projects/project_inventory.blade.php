@@ -90,7 +90,7 @@
                   onclick="toggleAddInventory({{ $store->id }})">
                   Add Inventory
                 </button>
-                <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_name" => $store->store_name]) }}"
+                <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_id" => $store->id]) }}"
                   class="btn btn-primary m-2" style="max-height: 2.8rem;">
                   View Inventory
                 </a>
@@ -116,16 +116,34 @@
                   </ul>
                 </div>
               @endif
-              <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
-                method="POST" enctype="multipart/form-data">
-                @csrf
-                <div class="input-group">
-                  <input type="file" name="file" class="form-control form-control-sm" required>
-                  <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Inventory">
-                    <i class="mdi mdi-upload"></i> Import
-                  </button>
-                </div>
-              </form>
+              @if ($project->project_type == 1)
+                <span>Importing inventory for streetlight</span>
+                <form
+                  action="{{ route("inventory.import-streetlight", ["projectId" => $project->id, "storeId" => $store->id]) }}"
+                  method="POST" enctype="multipart/form-data">
+                  @csrf
+                  <div class="input-group">
+                    <input type="file" name="file" class="form-control form-control-sm" required>
+                    <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
+                      title="Import Inventory">
+                      <i class="mdi mdi-upload"></i> Import
+                    </button>
+                  </div>
+                </form>
+              @else
+                <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
+                  method="POST" enctype="multipart/form-data">
+                  @csrf
+                  <div class="input-group">
+                    <input type="file" name="file" class="form-control form-control-sm" required>
+                    <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
+                      title="Import Inventory">
+                      <i class="mdi mdi-upload"></i> Import
+                    </button>
+                  </div>
+                </form>
+              @endif
+
             </div>
           </div>
         @endforeach
@@ -245,7 +263,7 @@
 
   function addInventory(storeId) {
     // Redirect to the inventory import route with the store ID
-    window.location.href = `/inventory/import?store_id=${storeId}`;
+    window.location.href = `/inventory/import-streetlight?store_id=${storeId}`;
   }
 
   function dispatchInventory(storeId) {
