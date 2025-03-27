@@ -49,6 +49,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
+    Route::post('/inventory/import-streetlight', [InventoryController::class, 'importStreetlight'])->name('inventory.import-streetlight');
     Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
 
