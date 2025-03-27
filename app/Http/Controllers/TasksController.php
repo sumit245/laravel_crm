@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Helpers\ExcelHelper;
 use App\Models\Project;
 use App\Models\Task;
 use App\Models\User;
@@ -149,5 +150,14 @@ class TasksController extends Controller
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
+    }
+
+    public function exportToExcel()
+    {
+        $data = [
+            (object) ['Name' => 'John Doe', 'Email' => 'john@example.com', 'Age' => 30],
+            (object) ['Name' => 'Jane Smith', 'Email' => 'jane@example.com', 'Age' => 28],
+        ];
+        return ExcelHelper::exportToExcel($data, 'tasks.xlsx');
     }
 }

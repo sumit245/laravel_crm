@@ -4,7 +4,7 @@
   <div class="container p-2">
     <div class="d-flex justify-content-between mb-3">
       <!-- Search box is added automatically by DataTables -->
-      <div></div> <!-- Empty div to align with search box -->
+      {{-- <div></div> <!-- Empty div to align with search box -->   --}}
       <a href="{{ route("projects.create") }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Project">
         <i class="mdi mdi-plus-circle"></i>
       </a>
@@ -18,7 +18,7 @@
           <th>Start Date</th>
           <th>Order Value</th>
           <th>Actions</th>
-        </tr> 
+        </tr>
       </thead>
       <tbody>
         @foreach ($projects as $member)

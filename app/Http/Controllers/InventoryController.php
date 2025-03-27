@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use Exception;
 use App\Imports\InventoryImport;
+use App\Imports\InventroyStreetLight;
 use App\Models\Inventory;
+use App\Models\InventroyStreetLightModel;
+use App\Models\Project;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -37,6 +40,24 @@ class InventoryController extends Controller
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
+
+    public function importStreetlight(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+        $projectId = $request->projectId;
+        $storeId   = $request->storeId;
+        Log::info($storeId);
+        try {
+            Excel::import(new InventroyStreetLight($projectId, $storeId), $request->file('file'));
+            return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
+        } catch (\Exception $e) {
+            //    return alert('Error importing inventory: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => $e->getMessage()]);
+        }
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -150,14 +171,25 @@ class InventoryController extends Controller
 
         try {
             $projectId = $request->project_id;
-            $storeName = $request->store_name;
-            $inventory = Inventory::whereHas('store', function ($query) use ($storeName) {
-                $query->where('store_name', $storeName);
-            })
-                ->where('project_id', $projectId)
+            $storeId = $request->store_id;
+            $storeName = "";
+
+            // Fetch the project to determine the type
+            $project = Project::findOrFail($projectId);
+            $projectType = $project->project_type;
+
+            // Determine the model to query based on project type
+            // Determine the model to query based on project type
+            $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
+
+            Log::info($inventoryModel);
+            // Query inventory based on store_name and store_id
+            $inventory = $inventoryModel::where('project_id', $projectId)
+                ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
 
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName'));
+            Log::info("Inventory fetched: " . json_encode($inventory));
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'projectType'));
         } catch (Exception $e) {
             Log::info($e->getMessage());
         }

@@ -17,15 +17,18 @@ Route::apiResource('staff', StaffController::class);
 Route::prefix('staff')->group(function () {
     Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
 });
+
 Route::prefix('vendor')->group(function () {
     Route::get('/', [VendorController::class, 'index']); //View all vendors
     Route::post('/', [VendorController::class, 'create']); // Create vendor
-    Route::post('/upload-avatar/{id}', [VendorController::class, 'uploadAvatar']);
+    // Route::post('/upload-avatar/{id}', [VendorController::class, 'uploadAvatar']);
     Route::get('{id}', [VendorController::class, 'show']); // View a specific vendor
     Route::get('{id}/edit', [VendorController::class, 'edit']); // Edit vendor (optional)
     Route::put('{id}', [VendorController::class, 'update']); // Update vendor
     Route::delete('{id}', [VendorController::class, 'destroy']); // Delete vendor
+    Route::get('{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 });
+
 Route::get('/vendors/{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 
 Route::apiResource('projects', ProjectController::class);
@@ -40,9 +43,11 @@ Route::apiResource('streetlight', StreetlightController::class);
 
 Route::apiResource('inventories', InventoryController::class);
 Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
+
 Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);
 Route::get('/installed-poles/vendor/{vendor_id}', [TaskController::class, 'getInstalledPolesForVendor']);
 Route::get('/installed-poles/project-manager/{manager_id}', [TaskController::class, 'getInstalledPolesForProjectManager']);
+Route::get('/export-poles/vendor/{id}', [TaskController::class, 'exportPoles'])->name('poles.export');
 
 Route::post('fetch-states', [DropdownController::class, 'fetchState']);
 Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);

@@ -37,7 +37,7 @@
                 <a href="#" class="btn btn-outline-dark">
                   <i class="icon-printer"></i> Print
                 </a>
-                <a href="#" class="btn btn-primary me-0 text-white">
+                <a href="{{ route("export.excel") }}" class="btn btn-primary me-0 text-white">
                   <i class="icon-download"></i> Export
                 </a>
               </div>

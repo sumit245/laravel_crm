@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Storage;
 class StaffController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Returns a list of all staff members.
      */
     public function index()
     {
@@ -50,26 +50,6 @@ class StaffController extends Controller
         return view('staff.create', compact('teamLeads'));
     }
 
-    /**
-     * Generate a unique username based on the user's name.
-     *
-     * @param string $name
-     * @return string
-     */
-    private function __generateUniqueUsername($name)
-    {
-        $baseUsername = strtolower(preg_replace('/\s+/', '', $name)); // Remove spaces and make lowercase
-        $randomSuffix = mt_rand(1000, 9999); // Generate a random 4-digit number
-        $username     = $baseUsername . $randomSuffix;
-
-        // Ensure the username is unique
-        while (User::where('username', $username)->exists()) {
-            $randomSuffix = mt_rand(1000, 9999); // Generate a new random suffix if it exists
-            $username     = $baseUsername . $randomSuffix;
-        }
-
-        return $username;
-    }
 
     /**
      * Store a newly created resource in storage.
@@ -128,7 +108,7 @@ class StaffController extends Controller
         // Check if the project type is 1 (indicating a streetlight project)
         if ($isStreetlightProject) {
             // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
-            $tasks = StreetlightTask::with('site')
+            $tasks = StreetlightTask::with(['site', 'poles'])
                 ->where(function ($query) use ($staff) {
                     $query->where('engineer_id', $staff->id)
                         ->orWhere('manager_id', $staff->id)
@@ -142,8 +122,6 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $userId);
                 });
             })->where('isSurveyDone', 1)->count();
-            Log::info($surveyedPolesCount);
-
             $installedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
                 $query->where(function ($q) use ($userId) {
                     $q->where('manager_id', $userId)
@@ -165,6 +143,7 @@ class StaffController extends Controller
         // Categorize tasks
         $assignedTasks = $tasks;
         $assignedTasksCount = $tasks->count();
+        Log::info($assignedTasks);
         $completedTasks = $tasks->where('status', 'Completed');
         $completedTasksCount = $completedTasks->count();
         $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
@@ -228,6 +207,22 @@ class StaffController extends Controller
         return redirect()->route('staff.show', compact('staff'))->with('success', 'Staff updated successfully.');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy(User $staff)
+    {
+        //
+        try {
+            $staff->delete();
+            return response()->json(['success' => true, 'message' => 'Staff deleted successfully.']);
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
+        }
+    }
+
+
+
     public function updateProfile($id)
     {
         $user = User::findOrFail($id);
@@ -275,17 +270,25 @@ class StaffController extends Controller
 
         return redirect()->route('staff.index')->with('success', 'Password updated successfully.');
     }
+
     /**
-     * Remove the specified resource from storage.
+     * Generate a unique username based on the user's name.
+     *
+     * @param string $name
+     * @return string
      */
-    public function destroy(User $staff)
+    private function __generateUniqueUsername($name)
     {
-        //
-        try {
-            $staff->delete();
-            return response()->json(['success' => true, 'message' => 'Staff deleted successfully.']);
-        } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
+        $baseUsername = strtolower(preg_replace('/\s+/', '', $name)); // Remove spaces and make lowercase
+        $randomSuffix = mt_rand(1000, 9999); // Generate a random 4-digit number
+        $username     = $baseUsername . $randomSuffix;
+
+        // Ensure the username is unique
+        while (User::where('username', $username)->exists()) {
+            $randomSuffix = mt_rand(1000, 9999); // Generate a new random suffix if it exists
+            $username     = $baseUsername . $randomSuffix;
         }
+
+        return $username;
     }
 }
