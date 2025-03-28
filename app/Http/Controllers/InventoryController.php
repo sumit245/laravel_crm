@@ -190,7 +190,7 @@ class InventoryController extends Controller
 
             Log::info("Inventory fetched: " . json_encode($inventory));
             return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'projectType'));
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             Log::info($e->getMessage());
         }
     }

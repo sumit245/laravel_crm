@@ -52,6 +52,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/inventory/import-streetlight', [InventoryController::class, 'importStreetlight'])->name('inventory.import-streetlight');
     Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
+    Route::get('/inventory/edit/{id}', [InventoryController::class, 'edit'])->name('inventory.edit');
 
 
     // Task router

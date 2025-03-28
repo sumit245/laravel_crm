@@ -52,8 +52,12 @@
             <p class="mg-b-0">{{ $project->description }}</p>
           </div>
         </div>
-        <hr class="my-0" />
-        <!-- Tabs -->
+        <!-- Project Details end -->
+        <!-- <hr class="my-0" /> -->
+        <!-- Tabs list begin -->
+        <div class="row">
+          <div class="col-12">
+        
         <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
           <li class="nav-item" role="presentation">
             <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites" type="button"
@@ -86,10 +90,15 @@
             </button>
           </li>
         </ul>
-
+        </div>
+        </div>
+        
+          <hr class="my-0"/>
+        
+        
         <div class="tab-content" id="myTabContent">
           <!-- Sites Tab -->
-          <div class="tab-pane fade show active mt-4" id="sites" role="tabpanel" aria-labelledby="sites-tab">
+          <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
             @include("projects.project_site", [
                 "sites" => $project->project_type == 1 ? $sites : $project->sites,
             ])

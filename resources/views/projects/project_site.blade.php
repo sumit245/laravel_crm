@@ -1,5 +1,5 @@
 <div>
-  <div class="d-flex justify-content-between mb-4">
+  <div class="d-flex justify-content-between mb-0 mt-5">
     <div>
       <h5>Sites</h5>
       @if ($project->project_type == 0)
