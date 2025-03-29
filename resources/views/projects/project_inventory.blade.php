@@ -150,9 +150,11 @@
       </ul>
     @endif
   </div>
+
+  <!-- Dispatch Inventory Modal -->
   <div id="dispatchModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="dispatchModalLabel"
     aria-hidden="true">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-xl" role="document">
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="dispatchModalLabel">Dispatch Inventory</h5>
@@ -162,26 +164,26 @@
         </div>
         <form id="dispatchForm" action="{{ route("inventory.dispatch") }}" method="POST">
           @csrf
+          <input type="hidden" id="dispatchStoreId" name="store_id">
           <div class="modal-body">
-            <input type="hidden" id="dispatchStoreId" name="store_id">
             <!-- Vendor Selection -->
             <div class="form-group">
               <label for="vendorName">Vendor Name:</label>
               <select class="form-select" id="storeIncharge" name="storeIncharge" required>
                 <option value="">Select Vendor</option>
-                @foreach ($users as $user)
-                  <option value="{{ $user->id }}">{{ $user->firstName }} {{ $user->lastName }}</option>
+                @foreach ($assignedVendors as $user)
+                  <option value="{{ $user->id }}">{{ $user->name }}</option>
                 @endforeach
               </select>
             </div>
-
-            <div class="row">
-              <div class="col-sm-6">
-                <button type="button" class="btn btn-danger btn-sm remove-item-btn mt-4">Remove Item</button>
-              </div>
-              <div class="col-sm-6">
-                <button type="button" class="btn btn-success btn-sm mt-4" id="addMoreItems">Add More Items</button>
-              </div>
+            <div class="d-flex justify-content-end align-items-center">
+              <button type="button" class="btn btn-danger btn-sm remove-item-btn m-1">
+                <i class="mdi mdi-delete"></i> Remove
+              </button>
+              <button type="button" class="btn btn-success btn-sm m-1" id="addMoreItems">
+                <i class="mdi mdi-plus"></i>
+                Add More Items
+              </button>
             </div>
             <!-- Dynamic Items Section -->
             <div id="itemsContainer">
@@ -192,8 +194,8 @@
                     <select class="form-select item-select" name="items[]" required>
                       <option value="">Select Item</option>
                       @foreach ($inventoryItems as $item)
-                        <option value="{{ $item->id }}" data-stock="{{ $item->initialQuantity }}">
-                          {{ $item->productName }}
+                        <option value="{{ $item->id }}" data-stock="{{ $item->quantity }}">
+                          {{ $item->item_code }} {{ $item->item }}
                         </option>
                       @endforeach
                     </select>
@@ -205,36 +207,32 @@
                       required>
                   </div>
                 </div>
+                <div class="row">
+                  <div class="col-sm-4">
+                    <!-- QR Code Scanning -->
+                    <div class="form-group">
+                      <label for="qr_scanner" class="form-label">Scan Item QR Code:</label>
+                      <input type="text" id="qr_scanner" class="form-control" autofocus />
+                      <small class="text-muted">Keep scanning QR codes...</small>
+                      <div id="qr_error" class="text-danger mt-2"></div>
+                    </div>
+                  </div>
+                  <div class="col-sm-8">
+                    <!-- Scanned QR Codes List -->
+                    <ul id="scanned_qrs" class="list-group mb-3"></ul>
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label for="site">Site:</label>
-              <select class="form-select item-site" name="sites[]" required>
-                <option value="">Select Site</option>
-                @foreach ($sites as $site)
-                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
-                @endforeach
-              </select>
-            </div>
-
-            <!-- Add More Items Button -->
-
-            <!-- Dispatch Date -->
-            <div class="form-group mt-4">
-              <label for="dispatchDate">Dispatch Date:</label>
-              <input type="date" class="form-control" id="dispatchDate" name="dispatch_date" required>
-            </div>
-          </div>
-
-          <!-- Modal Footer -->
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Approve</button>
           </div>
         </form>
-
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <button type="button" class="btn btn-primary">Dispatch</button>
+        </div>
       </div>
+
     </div>
   </div>
 
@@ -261,16 +259,7 @@
     form.style.display = form.style.display === 'none' ? 'block' : 'none';
   }
 
-  function addInventory(storeId) {
-    // Redirect to the inventory import route with the store ID
-    window.location.href = `/inventory/import-streetlight?store_id=${storeId}`;
-  }
-
-  function dispatchInventory(storeId) {
-    // Redirect to the dispatch inventory route with the store ID
-    window.location.href = `/inventory/dispatch?store_id=${storeId}`;
-  }
-
+  //   Delete Entire Store
   function deleteStore(storeId) {
     if (confirm('Are you sure you want to delete this store?')) {
       // Send a DELETE request to the server to delete the store
@@ -295,38 +284,29 @@
     }
   }
 
+  // Show the modal to dispatch inventory
   function openDispatchModal(storeId) {
-    // Set store ID in the hidden field
-    document.getElementById('dispatchStoreId').value = storeId;
-
-    // Fetch and populate items in the dropdown
-    fetch(`/store/${storeId}/inventory`)
-      .then(response => response.json())
-      .then(data => {
-        const itemsSelect = document.getElementById('items');
-        itemsSelect.innerHTML = ''; // Clear previous options
-        data.forEach(item => {
-          const option = document.createElement('option');
-          option.value = item.id;
-          option.textContent = `${item.name} (${item.quantity})`;
-          itemsSelect.appendChild(option);
-        });
-      })
-      .catch(error => console.error('Error fetching inventory:', error));
-
-    // Show the modal
+    document.getElementById("dispatchStoreId").value = storeId;
     $('#dispatchModal').modal('show');
   }
 
+  // close the dispatch inventory modal
+  function closeDispatchModal() {
+    document.getElementById("dispatchModal").classList.add("hidden");
+  }
+
+  // Redirect to a page showing store inventory with export/print options
   function viewStoreInventory(storeId) {
-    // Redirect to a page showing store inventory with export/print options
     window.location.href = `/store/${storeId}/inventory/view`;
   }
-</script>
-<script>
+
   document.addEventListener('DOMContentLoaded', function() {
     const itemsContainer = document.getElementById('itemsContainer');
     const addMoreItemsButton = document.getElementById('addMoreItems');
+    let availableQuantity = 0;
+    let scannedQRs = [];
+
+
 
     // Add New Item Row
     addMoreItemsButton.addEventListener('click', function() {
@@ -356,5 +336,163 @@
         }
       }
     });
+
+    function fetchItemDetails(select) {
+      let selectedOption = select.options[select.selectedIndex];
+      let itemData = selectedOption.getAttribute("data-details");
+
+      if (itemData) {
+        let item = JSON.parse(itemData);
+        let parentDiv = select.closest('.dispatch-item');
+        parentDiv.querySelector('.item-name').textContent = item.item_name;
+        parentDiv.querySelector('.item-category').textContent = item.category;
+        parentDiv.querySelector('.item-stock').textContent = item.stock;
+        parentDiv.querySelector('.item-price').textContent = item.price;
+        parentDiv.querySelector('.item-details').classList.remove('hidden');
+      }
+    }
+
+    function addDispatchItem() {
+      let dispatchContainer = document.getElementById("dispatchItems");
+      let itemTemplate = dispatchContainer.querySelector(".dispatch-item").cloneNode(true);
+
+      // Reset dropdown and quantity field
+      itemTemplate.querySelector(".item-code").selectedIndex = 0;
+      itemTemplate.querySelector(".item-quantity").value = "";
+      itemTemplate.querySelector(".item-details").classList.add("hidden");
+
+      dispatchContainer.appendChild(itemTemplate);
+    }
+
+    function removeItem(button) {
+      let dispatchContainer = document.getElementById("dispatchItems");
+      if (dispatchContainer.children.length > 1) {
+        button.closest('.dispatch-item').remove();
+      }
+    }
+    document.getElementById("dispatchSubmit").addEventListener("click", function() {
+      let storeId = document.getElementById("dispatchStoreId").value;
+      let vendorId = document.getElementById("vendorName").value;
+      let items = [];
+
+      document.querySelectorAll(".dispatch-item").forEach(itemDiv => {
+        let itemCode = itemDiv.querySelector(".item-code").value;
+        let quantity = itemDiv.querySelector(".item-quantity").value;
+
+        if (itemCode && quantity > 0) {
+          items.push({
+            item_code: itemCode,
+            quantity: quantity
+          });
+        }
+      });
+
+      if (!storeId || !vendorId || items.length === 0) {
+        Swal.fire("Error", "Please fill all fields correctly!", "error");
+        return;
+      }
+
+      // Call API to dispatch items
+      fetch("/api/dispatch-inventory", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
+          },
+          body: JSON.stringify({
+            store_id: storeId,
+            vendor_id: vendorId,
+            items: items
+          })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            Swal.fire("Success", "Items dispatched successfully!", "success");
+            closeDispatchModal();
+          } else {
+            Swal.fire("Error", data.message, "error");
+          }
+        })
+        .catch(error => {
+          Swal.fire("Error", "Something went wrong!", "error");
+        });
+    });
+
+    // On item selection, update quantity field
+    document.getElementById("item_id").addEventListener("change", function() {
+      availableQuantity = parseInt(this.selectedOptions[0].getAttribute("data-quantity")) || 0;
+      document.getElementById("quantity").value = availableQuantity;
+      scannedQRs = [];
+      updateScannedQRs();
+      document.getElementById("dispatchBtn").disabled = true;
+    });
+
+    // Handle QR scanning
+    document.getElementById("qr_scanner").addEventListener("keyup", function(event) {
+      if (event.key === "Enter" && this.value.trim() !== "") {
+        let scannedCode = this.value.trim();
+        this.value = ""; // Clear input for next scan
+
+        if (scannedQRs.includes(scannedCode)) {
+          showError("QR code already scanned!");
+          return;
+        }
+
+        if (scannedQRs.length >= availableQuantity) {
+          showError("Cannot scan more than the available quantity!");
+          return;
+        }
+
+        // Check if QR exists in database via AJAX
+        fetch("{{ route("inventory.checkQR") }}", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRF-TOKEN": "{{ csrf_token() }}"
+            },
+            body: JSON.stringify({
+              qr_code: scannedCode
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.exists) {
+              scannedQRs.push(scannedCode);
+              updateScannedQRs();
+              clearError();
+            } else {
+              showError("Invalid QR code! Item not found in inventory.");
+            }
+          })
+          .catch(() => showError("Error checking QR code!"));
+      }
+    });
+
+    // Update scanned QR list
+    function updateScannedQRs() {
+      let list = document.getElementById("scanned_qrs");
+      list.innerHTML = "";
+      scannedQRs.forEach(qr => {
+        let li = document.createElement("li");
+        li.className = "list-group-item";
+        li.textContent = qr;
+        list.appendChild(li);
+      });
+
+      // Enable dispatch button if all scans are valid
+      document.getElementById("dispatchBtn").disabled = (scannedQRs.length === 0 || scannedQRs.length !==
+        availableQuantity);
+    }
+
+    // Show error message
+    function showError(message) {
+      document.getElementById("qr_error").textContent = message;
+    }
+
+    // Clear error message
+    function clearError() {
+      document.getElementById("qr_error").textContent = "";
+    }
   });
 </script>
