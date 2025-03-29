@@ -35098,28 +35098,35 @@ div.tagsinput span.tag a {
 
 /* Fixing navbar in assignedtasks */
 .fixed-navbar {
-  position: absolute; /* Keeps it fixed in place */
-   /* Positions it at the top of the page */
-   /* Aligns it to the left */
-  margin-top: 0.02vh;
-  margin-left: 250px;
-  max-width: 100%; /* Makes it full width */
-  background-color: white; /* Optional: Background color */
-  z-index: 1000; /* Ensures it stays above other elements */
-  padding: 10px 0; /* Adds padding for spacing */
-  /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); Adds shadow for visibility */
+    position: absolute;
+    /* Keeps it fixed in place */
+    /* Positions it at the top of the page */
+    /* Aligns it to the left */
+    margin-top: -10px;
+    margin-left: 250px;
+    max-width: 100%;
+    /* Makes it full width */
+    background-color: white;
+    /* Optional: Background color */
+    z-index: 1000;
+    /* Ensures it stays above other elements */
+    padding: 10px 0;
+    /* Adds padding for spacing */
+    /* box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); Adds shadow for visibility */
 }
+
 /* Fixing navbar of projectoverview shows.view */
-.fixed-navbar-project{
-  position: relative; /* Keeps it fixed in place */
-   /* Positions it at the top of the page */
-   /* Aligns it to the left */
-  margin-top: 4vh;
-  margin-left: 8px;
-  max-width: 100%; 
-  background-color: transparent; 
-  z-index: 1000; 
-  padding: 10px 0;
+.fixed-navbar-project {
+    position: relative;
+    /* Keeps it fixed in place */
+    /* Positions it at the top of the page */
+    /* Aligns it to the left */
+    margin-top: 1vh;
+    margin-left: 8px;
+    max-width: 100%;
+    background-color: transparent;
+    z-index: 1000;
+    padding: 10px 0;
 }
 
 /* Medium screens (Tablets, smaller laptops) */
