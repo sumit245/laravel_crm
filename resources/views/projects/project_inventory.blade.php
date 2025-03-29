@@ -122,7 +122,7 @@
                   action="{{ route("inventory.import-streetlight", ["projectId" => $project->id, "storeId" => $store->id]) }}"
                   method="POST" enctype="multipart/form-data">
                   @csrf
-                  <div class="input-group">
+                  <div class="input-group" id="import-form">
                     <input type="file" style="height:40px !important" name="file" class="form-control form-control-sm" required>
                     <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
                       title="Import Inventory">
@@ -357,15 +357,7 @@
 </div>
 <script>
 
-$(document).ready(function () {
-    $("#addInventoryBtn").click(function () {
-        $("#inventoryForm").slideToggle(); // Show/hide form with animation
-    });
 
-    $("#closeForm").click(function () {
-        $("#inventoryForm").slideUp(); // Hide form when clicking close
-    });
-});
 
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -385,9 +377,25 @@ $(document).ready(function () {
   });
 
   function toggleAddInventory(storeId) {
-    const form = document.getElementById(`addInventoryForm-${storeId}`);
-    form.style.display = form.style.display === 'none' ? 'block' : 'none';
+  var form = document.getElementById("addInventoryForm-" + storeId);
+
+  if (!form) return; // Ensure the form exists
+
+  if (form.style.display === "none" || form.style.display === "") {
+    form.style.display = "block";
+
+    // Ensure the form is visible before scrolling
+    setTimeout(() => {
+      const formTop = form.getBoundingClientRect().top + window.scrollY;
+      window.scrollTo({ top: formTop-110, behavior: "smooth" });
+    }, 100);
+  } else {
+    form.style.display = "none";
   }
+}
+
+
+
 
   function addInventory(storeId) {
     // Redirect to the inventory import route with the store ID
