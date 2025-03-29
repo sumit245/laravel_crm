@@ -28,15 +28,15 @@
       <form action="{{ route("sites.import", $project->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="input-group">
-          <input type="file" name="file" class="form-control form-control-sm" required>
+          <input type="file" name="file" style="height: 40px !important;" class="form-control form-control-sm" required>
           <button type="submit" class="btn btn-sm btn-primary"
-            style="height: 32px !important; align-items:center;justify-content:center;" data-toggle="tooltip"
+            style="height: 40px !important; align-items:center;justify-content:center;" data-toggle="tooltip"
             title="Import Sites">
             <i class="mdi mdi-upload"></i><span>Import</span>
           </button>
         </div>
       </form>
-      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1">Add Site</a>
+      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1 mb-4" style="height: 40px !important;">Add Site</a>
     </div>
   </div>
   <x-data-table id="sitesTable" :pageLength="50">
