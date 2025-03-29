@@ -11,6 +11,7 @@ use App\Models\InventroyStreetLightModel;
 use App\Models\Project;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -183,6 +184,7 @@ class InventoryController extends Controller
             // Determine the model to query based on project type
             // Determine the model to query based on project type
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
+
 
             // Query inventory based on store_name and store_id
             $inventory = $inventoryModel::where('project_id', $projectId)
