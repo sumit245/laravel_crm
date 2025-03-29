@@ -55,7 +55,7 @@
         <hr class="my-0" />
         <!-- Project Details end -->
         <!-- Tabs list begin -->
-        <div class="row">
+        <div class="row my-2">
           <div class="col-12">
             <div class="tab-content mt-1" id="myTabContent">
               <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
