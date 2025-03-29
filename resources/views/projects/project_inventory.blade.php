@@ -1,23 +1,23 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
-    <div class="d-flex mx-2  mt-4">
+    <div class="d-flex mx-2 mt-4">
       <div class="card bg-info mx-2">
 
         <div class="card-body">
-          <h5 class="card-title">0</h5>
+          <h5 class="card-title">{{ $initialStockValue }}</h5>
           <p class="card-text">Initial Stock Value</p>
         </div>
       </div>
       <div class="card bg-success mx-2">
 
         <div class="card-body">
-          <h5 class="card-title">0</h5>
+          <h5 class="card-title">{{ number_format($inStoreStockValue, 2) }}</h5>
           <p class="card-text">In Store Stock Value</p>
         </div>
       </div>
       <div class="card bg-warning mx-2">
         <div class="card-body">
-          <h5 class="card-title">0</h5>
+          <h5 class="card-title">{{ $dispatchedStockValue }}</h5>
           <p class="card-text">Dispatched Stock Value</p>
         </div>
       </div>
@@ -28,7 +28,7 @@
   </div>
 
   <!-- Store Creation Form (Initially Hidden) -->
-  <div id="storeFormContainer" class="card mb-4 p-3  mt-4" style="display: none;">
+  <div id="storeFormContainer" class="card mb-4 mt-4 p-3" style="display: none;">
     <h6>Create Store</h6>
     @if ($errors->any())
       <div class="alert alert-danger">

@@ -21,6 +21,12 @@
         <span class="menu-title">Projects Overview</span>
       </a>
     </li>
+    <li class="nav-item">
+      <a class="nav-link" href="https://ssl.slldm.com/Views/index.php" target="_parent">
+        <i class="menu-icon mdi mdi-chart-pie"></i>
+        <span class="menu-title">RMS Portal</span>
+      </a>
+    </li>
     <li class="nav-item nav-category">Users</li>
     @if (auth()->user()->role == 0)
       <li class="nav-item">
