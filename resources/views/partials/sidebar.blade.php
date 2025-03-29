@@ -2,8 +2,8 @@
   $selectedProjectId = session("project_id");
 @endphp
 
-<nav class="sidebar sidebar-offcanvas" id="sidebar">
-  <ul class="nav overflow-auto">
+<nav class="sidebar sidebar-offcanvas" id="sidebar" >
+  <ul class="nav overflow-auto" style="max-height: 80%;">
     <li class="nav-item nav-category">Project</li>
     <li class="nav-item">
       <a class="nav-link" href="{{ route("projects.index") }}">
