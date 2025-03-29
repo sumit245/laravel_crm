@@ -55,74 +55,77 @@
         <hr class="my-0" />
         <!-- Project Details end -->
         <!-- Tabs list begin -->
-            <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
-              <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites" type="button"
-                  role="tab" aria-controls="sites" aria-selected="true">
-                  Sites
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
-                  role="tab" aria-controls="staff">
-                  Staff Management
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="vendors-tab" data-bs-toggle="tab" data-bs-target="#vendors" type="button"
-                  role="tab" aria-controls="vendors" aria-selected="true">
-                  Vendor Management
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory"
-                  type="button" role="tab" aria-controls="inventory" aria-selected="false">
-                  Inventory
-                </button>
-              </li>
-              <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button"
-                  role="tab" aria-controls="tasks" aria-selected="false">
-                  Target
-                </button>
-              </li>
-            </ul>
+        <div class="row">
+          <div class="col-12">
+            <div class="tab-content" id="myTabContent">
+              <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
+                    type="button" role="tab" aria-controls="sites" aria-selected="true">
+                    Sites
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
+                    role="tab" aria-controls="staff">
+                    Staff Management
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="vendors-tab" data-bs-toggle="tab" data-bs-target="#vendors" type="button"
+                    role="tab" aria-controls="vendors" aria-selected="true">
+                    Vendor Management
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory"
+                    type="button" role="tab" aria-controls="inventory" aria-selected="false">
+                    Inventory
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks" type="button"
+                    role="tab" aria-controls="tasks" aria-selected="false">
+                    Target
+                  </button>
+                </li>
+              </ul>
+              <!-- Sites Tab -->
+              <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
+                @include("projects.project_site", [
+                    "sites" => $project->project_type == 1 ? $sites : $project->sites,
+                ])
+              </div>
 
-        <div class="tab-content" id="myTabContent">
-          <!-- Sites Tab -->
-          <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
-            @include("projects.project_site", [
-                "sites" => $project->project_type == 1 ? $sites : $project->sites,
-            ])
-          </div>
+              <!-- Staffs Tab -->
+              <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
+                @include("projects.project_staff", [
+                    "engineers" => $engineers,
+                ])
+              </div>
 
-          <!-- Staffs Tab -->
-          <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
-            @include("projects.project_staff", [
-                "engineers" => $engineers,
-            ])
-          </div>
+              <!-- Vendors Tab -->
+              <div class="tab-pane fade mt-4" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+                @include("projects.project_vendors", [
+                    "vendors" => $vendors,
+                ])
+              </div>
 
-          <!-- Vendors Tab -->
-          <div class="tab-pane fade mt-4" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
-            @include("projects.project_vendors", [
-                "vendors" => $vendors,
-            ])
-          </div>
+              <!-- Inventory Tab -->
+              <div class="tab-pane fade mt-4" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+                @include("projects.project_inventory", [
+                    "stores" => $project->stores,
+                    "users" => $users,
+                ])
+              </div>
 
-          <!-- Inventory Tab -->
-          <div class="tab-pane fade mt-4" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
-            @include("projects.project_inventory", [
-                "stores" => $project->stores,
-                "users" => $users,
-            ])
-          </div>
-
-          <!-- Tasks Tab -->
-          <div class="tab-pane fade mt-4" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
-            @include("projects.project_task", [
-                "tasks" => $project->tasks,
-            ])
+              <!-- Tasks Tab -->
+              <div class="tab-pane fade mt-4" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
+                @include("projects.project_task", [
+                    "tasks" => $project->tasks,
+                ])
+              </div>
+            </div>
           </div>
         </div>
       </div>
