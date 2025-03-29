@@ -55,8 +55,6 @@
         <hr class="my-0" />
         <!-- Project Details end -->
         <!-- Tabs list begin -->
-        <div class="row">
-          <div class="col-12">
             <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
               <li class="nav-item" role="presentation">
                 <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites" type="button"
@@ -89,8 +87,6 @@
                 </button>
               </li>
             </ul>
-          </div>
-        </div>
 
         <div class="tab-content" id="myTabContent">
           <!-- Sites Tab -->
