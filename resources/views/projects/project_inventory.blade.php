@@ -86,20 +86,20 @@
                 Incharge: {{ $store->storeIncharge }}
               </div>
               <div class="d-flex mt-2">
-                <button class="btn btn-success m-2" style="max-height: 2.8rem;"
+                <button class="btn btn-success m-2" style="max-height: 3.4rem;"
                   onclick="toggleAddInventory({{ $store->id }})">
                   Add Inventory
                 </button>
                 <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_id" => $store->id]) }}"
-                  class="btn btn-primary m-2" style="max-height: 2.8rem;">
+                  class="btn btn-primary m-2" style="max-height: 3.4rem;">
                   View Inventory
                 </a>
 
-                <button class="btn btn-warning m-2" style="max-height: 2.8rem;"
+                <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
                   onclick="openDispatchModal({{ $store->id }})">
                   Dispatch Inventory
                 </button>
-                <button class="btn btn-danger m-2" style="max-height: 2.8rem;"
+                <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
                   onclick="deleteStore({{ $store->id }})">
                   Delete Store
                 </button>
@@ -117,19 +117,140 @@
                 </div>
               @endif
               @if ($project->project_type == 1)
-                <span>Importing inventory for streetlight</span>
-                <form
+                <span><Strong>Add inventory for streetlight</Strong></span>
+                <form style="width:25%; float:right;"
                   action="{{ route("inventory.import-streetlight", ["projectId" => $project->id, "storeId" => $store->id]) }}"
                   method="POST" enctype="multipart/form-data">
                   @csrf
                   <div class="input-group">
-                    <input type="file" name="file" class="form-control form-control-sm" required>
+                    <input type="file" style="height:40px !important" name="file" class="form-control form-control-sm" required>
                     <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
                       title="Import Inventory">
                       <i class="mdi mdi-upload"></i> Import
                     </button>
                   </div>
                 </form>
+                <!-- Form for add inventory -->
+                <form action="#" method="POST" class="mt-5">
+      @csrf
+      @method("PUT")
+      <div class="form-group">
+        <div class="row">
+          <div class="col-6">
+        <label for="dropdown"><strong>Item Name</strong></label>
+      <select id="dropdown" name="dropdown" class="form-control">
+        <option value="">-- Select a item name --</option>
+        <option value="item1">Item 1</option>
+        <option value="item2">Item 2</option>
+        <option value="item3">Item 3</option>
+        <option value="item4">Item 4</option>
+      </select>
+          </div>
+        
+          <div class="col-6">
+          <label for="name"><strong>Item Code</strong></label>
+            <input type="text" id="name" name="name" class="form-control" value=""
+            required>
+          </div>
+              
+      </div>
+      </div>
+      <div class="form-group">
+        <div class="row">
+          <div class="col-6">
+          <label for="email">Manufacturer</label>
+            <input type="email" id="email" name="email" class="form-control" value=""
+              required>
+          </div>
+          <div class="col-6">
+          <label for="firstName">Model</label>
+        <input type="text" id="firstName" name="firstName" class="form-control"
+          value="" required>
+          </div>
+        </div>
+      </div>
+      <!-- Form group 3 -->
+      <div class="form-group">
+        <div class="row">
+          <div class="col-6">
+          <label for="email">Serial Number</label>
+            <input type="email" id="email" name="email" class="form-control" value=""
+              required>
+          </div>
+          <div class="col-6">
+          <label for="firstName">Make</label>
+        <input type="text" id="firstName" name="firstName" class="form-control"
+          value="" required>
+          </div>
+        </div>
+      </div>
+      <!-- Form group 4 -->
+      <div class="form-group">
+        <div class="row">
+          <div class="col-6">
+          <label for="email">Rate</label>
+            <input type="email" id="email" name="email" class="form-control" value=""
+              required>
+          </div>
+          <div class="col-6">
+          <label for="firstName">Quantity</label>
+        <input type="text" id="firstName" name="firstName" class="form-control"
+          value="" required>
+          </div>
+        </div>
+      </div>
+      <!-- Form group 5 -->
+      <div class="form-group">
+        <div class="row">
+          <div class="col-6">
+          <label for="email">Total Value</label>
+            <input type="email" id="email" name="email" class="form-control" value=""
+              required>
+          </div>
+          <div class="col-6">
+          <label for="firstName">HSN Code</label>
+        <input type="text" id="firstName" name="firstName" class="form-control"
+          value="" required>
+          </div>
+        </div>
+      </div>
+      <!-- Form group 6 -->
+      <div class="form-group">
+        <div class="row">
+          <div class="col-6">
+          <label for="email">Description</label>
+            <input type="email" id="email" name="email" class="form-control" value=""
+              required>
+          </div>
+          <div class="col-6">
+          <label for="firstName">Unit</label>
+        <input type="text" id="firstName" name="firstName" class="form-control"
+          value="" required>
+          </div>
+        </div>
+      </div>
+      <!-- Form group 7 -->
+      <div class="form-group">
+        <div class="row">
+          <div class="col-12">
+          <label for="email">Received Date</label>
+            <input type="date" id="email" name="email" class="form-control" value=""
+              required>
+          </div>
+        </div>
+      </div>
+         
+        
+      
+
+      
+
+      <div class="form-group">
+        <button type="submit" class="btn btn-primary">Update Staff</button>
+        <a href="{{ route("staff.index") }}" class="btn btn-secondary">Cancel</a>
+      </div>
+    </form>
+                 <!-- end form -->
               @else
                 <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
                   method="POST" enctype="multipart/form-data">
