@@ -11,7 +11,7 @@
       <div class="card bg-success mx-2">
 
         <div class="card-body">
-          <h5 class="card-title">{{ $inStoreStockValue }}</h5>
+          <h5 class="card-title">{{ number_format($inStoreStockValue, 2) }}</h5>
           <p class="card-text">In Store Stock Value</p>
         </div>
       </div>
