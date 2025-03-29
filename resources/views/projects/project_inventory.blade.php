@@ -86,20 +86,20 @@
                 Incharge: {{ $store->storeIncharge }}
               </div>
               <div class="d-flex mt-2">
-                <button class="btn btn-success m-2" style="max-height: 2.8rem;"
+                <button class="btn btn-success m-2" style="max-height: 3.4rem;"
                   onclick="toggleAddInventory({{ $store->id }})">
                   Add Inventory
                 </button>
                 <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_id" => $store->id]) }}"
-                  class="btn btn-primary m-2" style="max-height: 2.8rem;">
+                  class="btn btn-primary m-2" style="max-height: 3.4rem;">
                   View Inventory
                 </a>
 
-                <button class="btn btn-warning m-2" style="max-height: 2.8rem;"
+                <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
                   onclick="openDispatchModal({{ $store->id }})">
                   Dispatch Inventory
                 </button>
-                <button class="btn btn-danger m-2" style="max-height: 2.8rem;"
+                <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
                   onclick="deleteStore({{ $store->id }})">
                   Delete Store
                 </button>
@@ -117,13 +117,13 @@
                 </div>
               @endif
               @if ($project->project_type == 1)
-                <span>Importing inventory for streetlight</span>
-                <form
+                <span><Strong>Add inventory for streetlight</Strong></span>
+                <form style="width:25%; float:right;"
                   action="{{ route("inventory.import-streetlight", ["projectId" => $project->id, "storeId" => $store->id]) }}"
                   method="POST" enctype="multipart/form-data">
                   @csrf
                   <div class="input-group">
-                    <input type="file" name="file" class="form-control form-control-sm" required>
+                    <input type="file" style="height:40px !important" name="file" class="form-control form-control-sm" required>
                     <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
                       title="Import Inventory">
                       <i class="mdi mdi-upload"></i> Import
