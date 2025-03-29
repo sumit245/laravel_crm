@@ -1,5 +1,5 @@
 <div class="row">
-  <div class="col-md-4">
+  <div class="col-md-4 mt-4">
     <h5>Assigned Vendor</h5>
     <ul>
       @foreach ($assignedVendors as $engineer)
@@ -7,7 +7,7 @@
       @endforeach
     </ul>
   </div>
-  <div class="col-md-8">
+  <div class="col-md-8 mt-4">
     <h5>Assign Vendor</h5>
     <form method="POST" action="{{ route("projects.assignStaff", $project->id) }}">
       @csrf
