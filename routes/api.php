@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\InventoryController;
+use App\Http\Controllers\InventoryController as InventoryControllers;
 use App\Http\Controllers\API\LoginController;
 use App\Http\Controllers\API\ProjectController;
 use App\Http\Controllers\API\SiteController;
@@ -42,8 +43,15 @@ Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendo
 Route::apiResource('streetlight', StreetlightController::class);
 
 Route::apiResource('inventories', InventoryController::class);
-Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
+Route::post('/inventory/dispatch', [InventoryControllers::class, 'dispatchInventory']);
+Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
+Route::get('/test-route/{vendorId}', function ($vendorId) {
+    return response()->json(["message" => "Route is working!", "vendor_id" => $vendorId]);
+});
 
+
+
+Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
 Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);
 Route::get('/installed-poles/vendor/{vendor_id}', [TaskController::class, 'getInstalledPolesForVendor']);
 Route::get('/installed-poles/project-manager/{manager_id}', [TaskController::class, 'getInstalledPolesForProjectManager']);

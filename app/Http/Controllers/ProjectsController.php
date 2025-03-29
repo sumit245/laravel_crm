@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Inventory;
+use App\Models\InventoryDispatch;
+use App\Models\InventroyStreetLightModel;
 use App\Models\Project;
 use App\Models\State;
 use App\Models\Streetlight;
@@ -10,6 +12,7 @@ use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ProjectsController extends Controller
@@ -86,12 +89,7 @@ class ProjectsController extends Controller
      */
     public function show(string $id)
     {
-        $project = Project::with([
-            'stores',
-            'sites.districtRelation',
-            'sites.stateRelation',
-        ])->findOrFail($id);
-
+        $project = Project::with(['stores', 'sites.districtRelation', 'sites.stateRelation'])->findOrFail($id);
         $user = auth()->user(); // Get the logged-in user
 
         $isAdmin = $user->role == 0; // Admin check
@@ -100,11 +98,24 @@ class ProjectsController extends Controller
         // Get users except admin (role = 0) and vendors (role = 3)
         $users = User::whereNotIn('role', [0, 3])->get();
 
+        // Fetch inventory items based on project type
+        $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
+        $inventoryItems = $inventoryModel::where('project_id', $project->id)->get();
+
+        // Calculate Stock Values
+        $initialStockValue = $inventoryModel::where('project_id', $project->id)->sum(DB::raw('rate * quantity'));
+        $dispatchedStockValue = InventoryDispatch::join('inventory_streetlight', 'inventory_dispatch.inventory_id', '=', 'inventory_streetlight.id')
+            ->where('inventory_streetlight.project_id', $project->id)
+            ->sum(DB::raw('inventory_dispatch.quantity * inventory_streetlight.rate'));
+
+        $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
+
+
         // Get engineers and vendors for this project
         $engineers = User::where('role', 1)->get();
         $vendors = User::where('role', 3)->get();
         $state = State::where('id', $project->project_in_state)->get();
-        $inventoryItems = Inventory::where('project_id', $project->id)->get();
+        // $inventoryItems = Inventory::where('project_id', $project->id)->get();
 
         // Get assigned engineers based on manager_id for Project Managers
         $assignedEngineers = User::whereIn('role', [1, 2])
@@ -152,20 +163,25 @@ class ProjectsController extends Controller
             'inventoryItems' => $inventoryItems,
             'users'         => $users,
             'engineers'     => $engineers,
+            'vendors' => $vendors,
             'assignedEngineers' => $assignedEngineers,
             'availableEngineers' => $availableEngineers,
             'assignedEngineersMessage' => $assignedEngineersMessage,
             'assignedVendors'  => $assignedVendors,
             'availableVendors' => $availableVendors,
-            'vendors' => $vendors
+            'initialStockValue' => $initialStockValue,
+            'inStoreStockValue' => $inStoreStockValue,
+            'dispatchedStockValue' => $dispatchedStockValue
         ];
 
         if ($project->project_type == 1) {
             // Streetlight installation - Filtered by manager_id**
             $data['sites'] = Streetlight::where('project_id', $id)->get();
-            // ->whereHas('tasks', fn($t) => $t->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id)))
-            // ->with('tasks')
-            // ->get();
+            $data['districts'] = Streetlight::where('project_id', $id)->select('district')->distinct()->get();
+            $data['targets'] = StreetlightTask::where('project_id', $project->id)
+                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+                ->with('site', 'engineer')
+                ->get();
 
             $data['totalLights'] = 0;
             // Streetlight::totalPoles($project->id)
@@ -181,12 +197,6 @@ class ProjectsController extends Controller
             // Streetlight::installationDone($project->id)
             //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
             //     ->count();
-
-            $data['targets'] = StreetlightTask::where('project_id', $project->id)
-                ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
-                ->with('site', 'engineer')
-                ->get();
-            $data['districts'] = $streetlightDistricts;
         } else {
             // Rooftop installation - Filtered by manager_id**
             $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
