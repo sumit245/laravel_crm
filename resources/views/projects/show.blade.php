@@ -57,7 +57,7 @@
         <!-- Tabs list begin -->
         <div class="row">
           <div class="col-12">
-            <div class="tab-content" id="myTabContent">
+            <div class="tab-content mt-1" id="myTabContent">
               <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
                   <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
