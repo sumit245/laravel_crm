@@ -11,6 +11,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
+use App\Models\InventroyStreetLightModel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -50,6 +52,10 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
     Route::post('/inventory/import-streetlight', [InventoryController::class, 'importStreetlight'])->name('inventory.import-streetlight');
+    Route::post('/inventory/checkQR', function (Request $request) {
+        $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)->exists();
+        return response()->json(['exists' => $exists]);
+    })->name('inventory.checkQR');
     Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'edit'])->name('inventory.edit');
