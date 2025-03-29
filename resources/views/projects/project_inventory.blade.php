@@ -86,7 +86,7 @@
                 Incharge: {{ $store->storeIncharge }}
               </div>
               <div class="d-flex mt-2">
-                <button class="btn btn-success m-2" style="max-height: 3.4rem;"
+                <button class="btn btn-success m-2" style="max-height: 3.4rem;" id="addInventoryBtn"
                   onclick="toggleAddInventory({{ $store->id }})">
                   Add Inventory
                 </button>
@@ -134,7 +134,7 @@
                 <form action="#" method="POST" class="mt-5">
       @csrf
       @method("PUT")
-      <div class="form-group">
+      <div class="form-group" id="inventoryForm">
         <div class="row">
           <div class="col-6">
         <label for="dropdown"><strong>Item Name</strong></label>
@@ -146,10 +146,9 @@
         <option value="item4">Item 4</option>
       </select>
           </div>
-        
           <div class="col-6">
-          <label for="name"><strong>Item Code</strong></label>
-            <input type="text" id="name" name="name" class="form-control" value=""
+          <label for="code"><strong>Item Code</strong></label>
+            <input type="text" id="code" name="code" class="form-control" value=""
             required>
           </div>
               
@@ -158,13 +157,13 @@
       <div class="form-group">
         <div class="row">
           <div class="col-6">
-          <label for="email">Manufacturer</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
+          <label for="manufacturer"><strong>Manufacturer</strong></label>
+            <input type="text" id="manufacturer" name="manufacturer" class="form-control" value=""
               required>
           </div>
           <div class="col-6">
-          <label for="firstName">Model</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
+          <label for="heading"><strong>Model</strong></label>
+        <input type="text" id="model" name="model" class="form-control"
           value="" required>
           </div>
         </div>
@@ -173,13 +172,13 @@
       <div class="form-group">
         <div class="row">
           <div class="col-6">
-          <label for="email">Serial Number</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
+          <label for="serialNumber"><strong>Serial Number</strong></label>
+            <input type="number" id="serialnumber" name="serialnumber" class="form-control" value=""
               required>
           </div>
           <div class="col-6">
-          <label for="firstName">Make</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
+          <label for="make"><strong>Make</strong></label>
+        <input type="text" id="make" name="make" class="form-control"
           value="" required>
           </div>
         </div>
@@ -188,13 +187,13 @@
       <div class="form-group">
         <div class="row">
           <div class="col-6">
-          <label for="email">Rate</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
+          <label for="rate"><strong>Rate</strong></label>
+            <input type="number" id="rate" name="rate" class="form-control" value=""
               required>
           </div>
           <div class="col-6">
-          <label for="firstName">Quantity</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
+          <label for="quantity"><strong>Quantity</strong></label>
+        <input type="number" id="number" name="number" class="form-control"
           value="" required>
           </div>
         </div>
@@ -203,13 +202,13 @@
       <div class="form-group">
         <div class="row">
           <div class="col-6">
-          <label for="email">Total Value</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
+          <label for="totalvalue"><strong>Total Value</strong></label>
+            <input type="number" id="totalvalue" name="totalvalue" class="form-control" value=""
               required>
           </div>
           <div class="col-6">
-          <label for="firstName">HSN Code</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
+          <label for="hsncode"><strong>HSN Code</strong></label>
+        <input type="text" id="hsncode" name="hsncode" class="form-control"
           value="" required>
           </div>
         </div>
@@ -218,13 +217,13 @@
       <div class="form-group">
         <div class="row">
           <div class="col-6">
-          <label for="email">Description</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
+          <label for="description"><strong>Description</strong></label>
+            <input type="text" id="description" name="description" class="form-control" value=""
               required>
           </div>
           <div class="col-6">
-          <label for="firstName">Unit</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
+          <label for="unit"><strong>Unit</strong></label>
+        <input type="number" id="unit" name="unit" class="form-control"
           value="" required>
           </div>
         </div>
@@ -232,24 +231,20 @@
       <!-- Form group 7 -->
       <div class="form-group">
         <div class="row">
-          <div class="col-12">
-          <label for="email">Received Date</label>
-            <input type="date" id="email" name="email" class="form-control" value=""
+          <div class="col-6">
+          <label for="receiveddate"><strong>Received Date</strong></label>
+            <input type="date" id="receiveddate" name="receiveddate" class="form-control" value=""
               required>
           </div>
         </div>
       </div>
-         
-        
-      
 
-      
-
-      <div class="form-group">
-        <button type="submit" class="btn btn-primary">Update Staff</button>
+      <div class="form-group" style="float:right">
         <a href="{{ route("staff.index") }}" class="btn btn-secondary">Cancel</a>
-      </div>
-    </form>
+        <button type="submit" class="btn btn-primary">Save</button>
+        <button type="submit" class="btn btn-primary">Add More</button>
+        </div>
+      </form>
                  <!-- end form -->
               @else
                 <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
@@ -361,6 +356,18 @@
 
 </div>
 <script>
+
+$(document).ready(function () {
+    $("#addInventoryBtn").click(function () {
+        $("#inventoryForm").slideToggle(); // Show/hide form with animation
+    });
+
+    $("#closeForm").click(function () {
+        $("#inventoryForm").slideUp(); // Hide form when clicking close
+    });
+});
+
+
   document.addEventListener("DOMContentLoaded", function() {
     const addStoreButton = document.getElementById("addStoreButton");
     const cancelStoreButton = document.getElementById("cancelStoreButton");
