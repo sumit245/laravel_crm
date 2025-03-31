@@ -105,14 +105,14 @@
               </div>
 
               <!-- Vendors Tab -->
-              <div class="tab-pane fade mt-4" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+              <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
                 @include("projects.project_vendors", [
                     "vendors" => $vendors,
                 ])
               </div>
 
               <!-- Inventory Tab -->
-              <div class="tab-pane fade mt-4" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+              <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
                 @include("projects.project_inventory", [
                     "stores" => $project->stores,
                     "users" => $users,
@@ -120,7 +120,7 @@
               </div>
 
               <!-- Tasks Tab -->
-              <div class="tab-pane fade mt-4" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
+              <div class="tab-pane fade" id="tasks" role="tabpanel" aria-labelledby="tasks-tab">
                 @include("projects.project_task", [
                     "tasks" => $project->tasks,
                 ])

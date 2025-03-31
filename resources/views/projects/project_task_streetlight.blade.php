@@ -1,5 +1,5 @@
 <div>
-  <div class="d-flex justify-content-between mb-0 mt-5">
+  <div class="d-flex justify-content-between mb-0">
     <div class="d-flex mx-2">
     <div class="card bg-warning mx-2" style="min-width: 33%;">
         <div class="card-body">
@@ -111,7 +111,7 @@
   </div>
 
   <!-- Table to display targets -->
-  <div class="table-responsive mt-4">
+  <div class="table-responsive">
     <table class="table-striped table">
       <thead>
         <tr>
