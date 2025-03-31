@@ -35116,18 +35116,48 @@ div.tagsinput span.tag a {
 }
 
 /* Fixing navbar of projectoverview shows.view */
-.fixed-navbar-project {
+.fixed-navbar-project-assignedTasks {
     position: relative;
     /* Keeps it fixed in place */
     /* Positions it at the top of the page */
     /* Aligns it to the left */
-    margin-top: 1vh;
-    margin-left: 8px;
+    
+    margin-left: 4px;
     max-width: 100%;
     background-color: transparent;
     z-index: 1000;
     padding: 10px 0;
 }
+.fixed-navbar-project {
+    position: relative;
+    /* Keeps it fixed in place */
+    /* Positions it at the top of the page */
+    /* Aligns it to the left */
+    top: -5vh;
+    margin-left: 2px;
+    max-width: 100%;
+    background-color: transparent;
+    z-index: 1000;
+    padding: 10px 0;
+}
+
+#assignedTasksTable{
+    top:-40px;
+}
+
+/* Assigned tasks table */
+
+.tab-content-assignedTasks {
+    border: 1px solid #dee2e6;
+    border-top: 0;
+    /* padding: 2rem 1rem; */
+    text-align: justify;
+}
+
+
+
+
+
 
 /* Medium screens (Tablets, smaller laptops) */
 

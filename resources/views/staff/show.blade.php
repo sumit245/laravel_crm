@@ -5,7 +5,7 @@
     <div class="card">
       <div class="card-body">
         <!-- Edit & Delete Buttons -->
-        <div class="d-flex justify-content-between align-items-center mt-4">
+        <div class="d-flex justify-content-between align-items-center mt-3">
           <h4 class="card-title">Personal Details</h4>
           <!-- Edit Button -->
           <a href="{{ route("staff.edit", $staff->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
@@ -73,15 +73,42 @@
         <hr />
         <div class="row">
           <div class="col-12">
-            @if ($project->project_type == 1)
-              {{-- For Streetlight Projects --}}
+          <div class="tab-content-assignedTasks mt-3" id="myTabContent">
+              <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
+                    type="button" role="tab" aria-controls="sites" aria-selected="true">
+                    Assigned Tasks
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
+                    role="tab" aria-controls="staff">
+                    Surveyed Poles
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="vendors-tab" data-bs-toggle="tab" data-bs-target="#vendors" type="button"
+                    role="tab" aria-controls="vendors" aria-selected="true">
+                    Installed Poles
+                  </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                  <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory"
+                    type="button" role="tab" aria-controls="inventory" aria-selected="false">
+                    Rejected Tasks
+                  </button>
+                </li>
+              </ul>
 
-              @include("staff.assignedTasks")
-            @else
-              @include("staff.assignedRooftops")
-            @endif
+              @if ($project->project_type == 1)
+              {{-- For Streetlight Projects --}}
+                 @include("staff.assignedTasks")
+              @else
+                @include("staff.assignedRooftops")
+              @endif
           </div>
-        </div>
+        </div>        
       </div>
     </div>
   </div>
@@ -108,8 +135,7 @@
     .row {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 20px;
+      margin-top: 5px;
     }
 
     .col {
