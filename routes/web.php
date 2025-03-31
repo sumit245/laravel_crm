@@ -61,7 +61,7 @@ Route::middleware(['auth'])->group(function () {
         $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)->exists();
         return response()->json(['exists' => $exists]);
     })->name('inventory.checkQR');
-    Route::get('/inventory/dispatch-web', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatch');
+    Route::get('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'edit'])->name('inventory.edit');
 
