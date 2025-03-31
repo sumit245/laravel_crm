@@ -123,7 +123,8 @@
                   method="POST" enctype="multipart/form-data">
                   @csrf
                   <div class="input-group" id="import-form">
-                    <input type="file" style="height:40px !important" name="file" class="form-control form-control-sm" required>
+                    <input type="file" style="height:40px !important" name="file"
+                      class="form-control form-control-sm" required>
                     <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
                       title="Import Inventory">
                       <i class="mdi mdi-upload"></i> Import
@@ -132,120 +133,120 @@
                 </form>
                 <!-- Form for add inventory -->
                 <form action="#" method="POST" class="mt-5">
-      @csrf
-      @method("PUT")
-      <div class="form-group" id="inventoryForm">
-        <div class="row">
-          <div class="col-6">
-        <label for="dropdown"><strong>Item Name</strong></label>
-      <select id="dropdown" name="dropdown" class="form-control">
-        <option value="">-- Select a item name --</option>
-        <option value="item1">Item 1</option>
-        <option value="item2">Item 2</option>
-        <option value="item3">Item 3</option>
-        <option value="item4">Item 4</option>
-      </select>
-          </div>
-          <div class="col-6">
-          <label for="code"><strong>Item Code</strong></label>
-            <input type="text" id="code" name="code" class="form-control" value=""
-            required>
-          </div>
-              
-      </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="manufacturer"><strong>Manufacturer</strong></label>
-            <input type="text" id="manufacturer" name="manufacturer" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="heading"><strong>Model</strong></label>
-        <input type="text" id="model" name="model" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 3 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="serialNumber"><strong>Serial Number</strong></label>
-            <input type="number" id="serialnumber" name="serialnumber" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="make"><strong>Make</strong></label>
-        <input type="text" id="make" name="make" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 4 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="rate"><strong>Rate</strong></label>
-            <input type="number" id="rate" name="rate" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="quantity"><strong>Quantity</strong></label>
-        <input type="number" id="number" name="number" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 5 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="totalvalue"><strong>Total Value</strong></label>
-            <input type="number" id="totalvalue" name="totalvalue" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="hsncode"><strong>HSN Code</strong></label>
-        <input type="text" id="hsncode" name="hsncode" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 6 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="description"><strong>Description</strong></label>
-            <input type="text" id="description" name="description" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="unit"><strong>Unit</strong></label>
-        <input type="number" id="unit" name="unit" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 7 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="receiveddate"><strong>Received Date</strong></label>
-            <input type="date" id="receiveddate" name="receiveddate" class="form-control" value=""
-              required>
-          </div>
-        </div>
-      </div>
+                  @csrf
+                  @method("PUT")
+                  <div class="form-group" id="inventoryForm">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="dropdown"><strong>Item Name</strong></label>
+                        <select id="dropdown" name="dropdown" class="form-control">
+                          <option value="">-- Select a item name --</option>
+                          <option value="item1">Item 1</option>
+                          <option value="item2">Item 2</option>
+                          <option value="item3">Item 3</option>
+                          <option value="item4">Item 4</option>
+                        </select>
+                      </div>
+                      <div class="col-6">
+                        <label for="code"><strong>Item Code</strong></label>
+                        <input type="text" id="code" name="code" class="form-control" value=""
+                          required>
+                      </div>
 
-      <div class="form-group" style="float:right">
-        <a href="{{ route("staff.index") }}" class="btn btn-secondary">Cancel</a>
-        <button type="submit" class="btn btn-primary">Save</button>
-        <button type="submit" class="btn btn-primary">Add More</button>
-        </div>
-      </form>
-                 <!-- end form -->
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="manufacturer"><strong>Manufacturer</strong></label>
+                        <input type="text" id="manufacturer" name="manufacturer" class="form-control"
+                          value="" required>
+                      </div>
+                      <div class="col-6">
+                        <label for="heading"><strong>Model</strong></label>
+                        <input type="text" id="model" name="model" class="form-control" value=""
+                          required>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Form group 3 -->
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="serialNumber"><strong>Serial Number</strong></label>
+                        <input type="number" id="serialnumber" name="serialnumber" class="form-control"
+                          value="" required>
+                      </div>
+                      <div class="col-6">
+                        <label for="make"><strong>Make</strong></label>
+                        <input type="text" id="make" name="make" class="form-control" value=""
+                          required>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Form group 4 -->
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="rate"><strong>Rate</strong></label>
+                        <input type="number" id="rate" name="rate" class="form-control" value=""
+                          required>
+                      </div>
+                      <div class="col-6">
+                        <label for="quantity"><strong>Quantity</strong></label>
+                        <input type="number" id="number" name="number" class="form-control" value=""
+                          required>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Form group 5 -->
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="totalvalue"><strong>Total Value</strong></label>
+                        <input type="number" id="totalvalue" name="totalvalue" class="form-control" value=""
+                          required>
+                      </div>
+                      <div class="col-6">
+                        <label for="hsncode"><strong>HSN Code</strong></label>
+                        <input type="text" id="hsncode" name="hsncode" class="form-control" value=""
+                          required>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Form group 6 -->
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="description"><strong>Description</strong></label>
+                        <input type="text" id="description" name="description" class="form-control"
+                          value="" required>
+                      </div>
+                      <div class="col-6">
+                        <label for="unit"><strong>Unit</strong></label>
+                        <input type="number" id="unit" name="unit" class="form-control" value=""
+                          required>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Form group 7 -->
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="receiveddate"><strong>Received Date</strong></label>
+                        <input type="date" id="receiveddate" name="receiveddate" class="form-control"
+                          value="" required>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="float:right">
+                    <a href="{{ route("staff.index") }}" class="btn btn-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                    <button type="submit" class="btn btn-primary">Add More</button>
+                  </div>
+                </form>
+                <!-- end form -->
               @else
                 <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
                   method="POST" enctype="multipart/form-data">
@@ -278,7 +279,7 @@
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
-        <form id="dispatchForm" action="{{ route("inventory.dispatch") }}" method="POST">
+        <form id="dispatchForm" action="{{ route("inventory.dispatchweb") }}" method="POST">
           @csrf
           <input type="hidden" id="dispatchStoreId" name="store_id">
           <div class="modal-body">
@@ -354,10 +355,6 @@
 
 </div>
 <script>
-
-
-
-
   document.addEventListener("DOMContentLoaded", function() {
     const addStoreButton = document.getElementById("addStoreButton");
     const cancelStoreButton = document.getElementById("cancelStoreButton");
@@ -375,22 +372,25 @@
   });
 
   function toggleAddInventory(storeId) {
-  var form = document.getElementById("addInventoryForm-" + storeId);
+    var form = document.getElementById("addInventoryForm-" + storeId);
 
-  if (!form) return; // Ensure the form exists
+    if (!form) return; // Ensure the form exists
 
-  if (form.style.display === "none" || form.style.display === "") {
-    form.style.display = "block";
+    if (form.style.display === "none" || form.style.display === "") {
+      form.style.display = "block";
 
-    // Ensure the form is visible before scrolling
-    setTimeout(() => {
-      const formTop = form.getBoundingClientRect().top + window.scrollY;
-      window.scrollTo({ top: formTop-110, behavior: "smooth" });
-    }, 100);
-  } else {
-    form.style.display = "none";
+      // Ensure the form is visible before scrolling
+      setTimeout(() => {
+        const formTop = form.getBoundingClientRect().top + window.scrollY;
+        window.scrollTo({
+          top: formTop - 110,
+          behavior: "smooth"
+        });
+      }, 100);
+    } else {
+      form.style.display = "none";
+    }
   }
-}
 
 
 

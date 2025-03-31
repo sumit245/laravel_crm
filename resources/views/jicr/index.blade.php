@@ -4,6 +4,7 @@
 
   <div class="container mt-5">
     <div class="row">
+
       <div class="col-sm-3">
         <div class="form-group">
           <label for="districtSelect" class="form-label">District</label>
@@ -69,6 +70,7 @@
       });
 
       $('#districtSelect').on('change', function() {
+        console.log('District change event fired');
         var district = $(this).val();
         console.log(`Selected District is ${district}`)
         $('#blockSelect').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
@@ -85,6 +87,10 @@
                 $('#blockSelect').append('<option value="' + block.block + '">' + block.block +
                   '</option>');
               });
+            },
+            error: function(xhr, status, error) {
+              console.error("AJAX Error:", status, error);
+              console.log("Response:", xhr.responseText);
             }
           });
         }
@@ -92,10 +98,11 @@
 
       $('#blockSelect').on('change', function() {
         var block = $(this).val();
+        var district = $('#districtSelect').val(); // This line is missing
         $('#panchayatSelect').prop('disabled', false).empty().append(
           '<option value="">Select a Panchayat</option>');
 
-        if (district) {
+        if (block) { // You're checking 'district' instead of 'block'
           $.ajax({
             url: '/jicr/panchayats/' + block,
             type: 'GET',
@@ -110,6 +117,7 @@
           });
         }
       });
+
     });
   </script>
 @endsection
