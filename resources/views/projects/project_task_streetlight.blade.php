@@ -1,16 +1,22 @@
 <div>
   <div class="d-flex justify-content-between mb-0 mt-5">
     <div class="d-flex mx-2">
+    <div class="card bg-warning mx-2" style="min-width: 33%;">
+        <div class="card-body">
+          <h5 class="card-title">{{ $totalLights }}</h5>
+          <p class="card-text">Surveyed Poles</p>
+        </div>
+      </div>
       <div class="card bg-success mx-2" style="min-width: 33%;">
         <div class="card-body">
           <h5 class="card-title">{{ $totalLights }}</h5>
-          <p class="card-text">Total Lights</p>
+          <p class="card-text">Total Poles</p>
         </div>
       </div>
       <div class="card bg-info mx-2" style="min-width: 33%;">
         <div class="card-body">
           <h5 class="card-title">{{ $installationDoneCount }}</h5>
-          <p class="card-text">Installed Light</p>
+          <p class="card-text">Installed Poles</p>
         </div>
       </div>
     </div>
