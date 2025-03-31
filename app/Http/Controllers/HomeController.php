@@ -93,24 +93,38 @@ class HomeController extends Controller
                     $usersQuery->where('manager_id', $user->id)
                         ->where('project_id', $projectId);
                 }
-            } elseif ($user->role == 0) { // Admin or Super Admin
-                // Non-admin users see only their project
-                $usersQuery->where('project_id', $projectId);
-
-                // For Site Engineers and Vendors, filter by manager_id
-                // if ($roleId != 2) { // Exclude Project Managers
-                //     $usersQuery->where('manager_id', $user->id);
-                // }
-            } elseif ($user->role != 0) { // Non-admin users
+            } else {
                 // Non-admin users see only their project
                 $usersQuery->where('project_id', $projectId);
             }
 
             $users = $usersQuery->get()->map(function ($user) use ($taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject) {
                 return $this->calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject);
-            })->filter()->sortByDesc('completedTasks')->values();
+            })->filter();
+
+            // Custom sorting logic based on the conditions provided
+            if ($isStreetLightProject) {
+                $users = $users->sortByDesc(function ($user) {
+                    // Check if surveyedPoles is not 0
+                    if ($user->surveyedPoles > 0) {
+                        return $user->surveyedPoles;
+                    }
+                    // Check if installedPoles is not 0
+                    elseif ($user->installedPoles > 0) {
+                        return $user->installedPoles;
+                    }
+                    // Fallback to totalTasks
+                    return $user->totalTasks;
+                });
+            } else {
+                // Default sorting for non-streetlight projects
+                $users = $users->sortByDesc('completedTasks');
+            }
+
+            $users = $users->values(); // Re-index the collection after sorting
 
             $rolePerformances[$roleName] = $users;
+            Log::info($users);
         }
 
         return $rolePerformances;
