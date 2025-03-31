@@ -407,27 +407,37 @@
 
   function deleteStore(storeId) {
     if (confirm('Are you sure you want to delete this store?')) {
-      // Send a DELETE request to the server to delete the store
-      fetch(`/store/${storeId}`, {
+      fetch('{{ url("store") }}/' + storeId, {
           method: 'DELETE',
           headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
           }
         })
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+          return response.json();
+        })
         .then(data => {
           if (data.success) {
+            // Show success message
+            alert('Store deleted successfully');
+            // Reload the page to reflect changes
             location.reload();
           } else {
-            alert('Failed to delete store.');
+            alert(data.message || 'Failed to delete store');
           }
         })
         .catch(error => {
           console.error('Error:', error);
-          alert('Failed to delete store.');
+          alert('An error occurred while deleting the store');
         });
     }
   }
+
 
   // Show the modal to dispatch inventory
   function openDispatchModal(storeId) {
