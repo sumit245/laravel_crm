@@ -52,7 +52,6 @@ class HomeController extends Controller
             $this->getPoleStatistics($selectedProjectId) :
             ['totalSurveyedPoles' => null, 'totalInstalledPoles' => null];
 
-        Log::info($user->role);
         // Calculate role performances
         $rolePerformances = $this->calculateRolePerformances(
             $user,
@@ -379,6 +378,6 @@ class HomeController extends Controller
             (object) ['Name' => 'John Doe', 'Email' => 'john@example.com', 'Age' => 30],
             (object) ['Name' => 'Jane Smith', 'Email' => 'jane@example.com', 'Age' => 28],
         ];
-        return ExcelHelper::exportToExcel($data, 'tasks.xlsx');
+        return ExcelHelper::exportMultipleSheets($data, 'users.xlsx');
     }
 }

@@ -1,18 +1,8 @@
 @php
   $selectedProjectId = session("project_id");
 @endphp
-<style>
-  .sidebar .nav {
-    overflow: hidden; 
-  }
 
-  .sidebar:hover .nav {
-    overflow: auto; 
-  }
-
-  
-</style>
-<nav class="sidebar sidebar-offcanvas" id="sidebar" >
+<nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav" style="max-height: 80%;">
     <li class="nav-item nav-category">Project</li>
     <li class="nav-item">
@@ -27,6 +17,14 @@
         <span class="menu-title">RMS Portal</span>
       </a>
     </li>
+    {{-- @if ($selectedProjectId == 11) --}}
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
+        <i class="menu-icon mdi mdi-chart-pie"></i>
+        <span class="menu-title">Generate JICR</span>
+      </a>
+    </li>
+    {{-- @endif --}}
     <li class="nav-item nav-category">Users</li>
     @if (auth()->user()->role == 0)
       <li class="nav-item">
@@ -86,3 +84,13 @@
     <!-- <li class="nav-item nav-category">Help</li> -->
   </ul>
 </nav>
+
+<style>
+  .sidebar .nav {
+    overflow: hidden;
+  }
+
+  .sidebar:hover .nav {
+    overflow: auto;
+  }
+</style>
