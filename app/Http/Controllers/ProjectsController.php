@@ -103,12 +103,18 @@ class ProjectsController extends Controller
         $inventoryItems = $inventoryModel::where('project_id', $project->id)->get();
 
         // Calculate Stock Values
-        $initialStockValue = $inventoryModel::where('project_id', $project->id)->sum(DB::raw('rate * quantity'));
-        $dispatchedStockValue = InventoryDispatch::join('inventory_streetlight', 'inventory_dispatch.inventory_id', '=', 'inventory_streetlight.id')
-            ->where('inventory_streetlight.project_id', $project->id)
-            ->sum(DB::raw('inventory_dispatch.quantity * inventory_streetlight.rate'));
+            $initialStockValue=0;
+            $dispatchedStockValue=0;
+            $inStoreStockValue=0;
+            if($project->project_type==1){
+                $initialStockValue = $inventoryModel::where('project_id', $project->id)->sum(DB::raw('rate * quantity'));
+                $dispatchedStockValue = InventoryDispatch::join('inventory_streetlight', 'inventory_dispatch.inventory_id', '=', 'inventory_streetlight.id')
+                ->where('inventory_streetlight.project_id', $project->id)
+                ->sum(DB::raw('inventory_dispatch.quantity * inventory_streetlight.rate'));
 
-        $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
+                $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
+            }
+        
 
 
         // Get engineers and vendors for this project

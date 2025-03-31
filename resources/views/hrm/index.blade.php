@@ -1,7 +1,7 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container">
+  <div class="container mt-4">
     <div class="d-flex justify-content-between mb-4">
       <h2>New Hiring</h2>
       <div class="d-flex">
@@ -16,7 +16,7 @@
     <form action="{{ route("import.candidates") }}" method="POST" enctype="multipart/form-data">
       @csrf
       <div class="input-group mb-3">
-        <input type="file" name="file" class="form-control form-control-sm" required>
+        <input type="file" name="file" class="form-control form-control-sm" required style="height:2.4rem !important">
         <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Candidates">
           <i class="mdi mdi-upload"></i> Import Candidates
         </button>
