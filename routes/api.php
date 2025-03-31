@@ -43,11 +43,12 @@ Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendo
 Route::apiResource('streetlight', StreetlightController::class);
 
 Route::apiResource('inventories', InventoryController::class);
-Route::post('/inventory/dispatch/vendor', [InventoryControllers::class, 'dispatchInventory']);
+Route::post('inventory/dispatch/vendor', [InventoryControllers::class, 'dispatchInventory']);
 Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
-Route::get('/test-route/{vendorId}', function ($vendorId) {
-    return response()->json(["message" => "Route is working!", "vendor_id" => $vendorId]);
-});
+// Route::get();
+// Route::get('/test-route/{vendorId}', function ($vendorId) {
+//     return response()->json(["message" => "Route is working!", "vendor_id" => $vendorId]);
+// });
 
 
 
