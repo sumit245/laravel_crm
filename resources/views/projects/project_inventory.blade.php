@@ -123,134 +123,15 @@
                   method="POST" enctype="multipart/form-data">
                   @csrf
                   <div class="input-group">
-                    <input type="file" style="height:40px !important" name="file" class="form-control form-control-sm" required>
+                    <input type="file" style="height:40px !important" name="file"
+                      class="form-control form-control-sm" required>
                     <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
                       title="Import Inventory">
                       <i class="mdi mdi-upload"></i> Import
                     </button>
                   </div>
                 </form>
-                <!-- Form for add inventory -->
-                <form action="#" method="POST" class="mt-5">
-      @csrf
-      @method("PUT")
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-        <label for="dropdown"><strong>Item Name</strong></label>
-      <select id="dropdown" name="dropdown" class="form-control">
-        <option value="">-- Select a item name --</option>
-        <option value="item1">Item 1</option>
-        <option value="item2">Item 2</option>
-        <option value="item3">Item 3</option>
-        <option value="item4">Item 4</option>
-      </select>
-          </div>
-        
-          <div class="col-6">
-          <label for="name"><strong>Item Code</strong></label>
-            <input type="text" id="name" name="name" class="form-control" value=""
-            required>
-          </div>
-              
-      </div>
-      </div>
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="email">Manufacturer</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="firstName">Model</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 3 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="email">Serial Number</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="firstName">Make</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 4 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="email">Rate</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="firstName">Quantity</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 5 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="email">Total Value</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="firstName">HSN Code</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 6 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-6">
-          <label for="email">Description</label>
-            <input type="email" id="email" name="email" class="form-control" value=""
-              required>
-          </div>
-          <div class="col-6">
-          <label for="firstName">Unit</label>
-        <input type="text" id="firstName" name="firstName" class="form-control"
-          value="" required>
-          </div>
-        </div>
-      </div>
-      <!-- Form group 7 -->
-      <div class="form-group">
-        <div class="row">
-          <div class="col-12">
-          <label for="email">Received Date</label>
-            <input type="date" id="email" name="email" class="form-control" value=""
-              required>
-          </div>
-        </div>
-      </div>
-         
-        
-      
-
-      
-
-      <div class="form-group">
-        <button type="submit" class="btn btn-primary">Update Staff</button>
-        <a href="{{ route("staff.index") }}" class="btn btn-secondary">Cancel</a>
-      </div>
-    </form>
-                 <!-- end form -->
+                <!-- end form -->
               @else
                 <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
                   method="POST" enctype="multipart/form-data">
@@ -553,17 +434,21 @@
     document.getElementById("qr_scanner").addEventListener("keyup", function(event) {
       if (event.key === "Enter" && this.value.trim() !== "") {
         let scannedCode = this.value.trim();
+        console.log("Scanned Code:", scannedCode); // Log the scanned code
         this.value = ""; // Clear input for next scan
 
         if (scannedQRs.includes(scannedCode)) {
           showError("QR code already scanned!");
+          console.log("QR code already scanned:", scannedCode); // Log this case
           return;
         }
 
         if (scannedQRs.length >= availableQuantity) {
           showError("Cannot scan more than the available quantity!");
+          console.log("Exceeded available quantity:", availableQuantity); // Log this case
           return;
         }
+
 
         // Check if QR exists in database via AJAX
         fetch("{{ route("inventory.checkQR") }}", {
