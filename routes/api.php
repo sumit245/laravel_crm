@@ -43,7 +43,7 @@ Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendo
 Route::apiResource('streetlight', StreetlightController::class);
 
 Route::apiResource('inventories', InventoryController::class);
-Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory'])->middleware('api'); // This ensures it uses API middleware stack;
+Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
 Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
 // Route::get('get-consumed-inventory/vendor/{vendor_id}', [InventoryController::class, 'viewConsumedInventory']);
 // Route::get('/test-route/{vendorId}', function ($vendorId) {
