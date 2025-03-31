@@ -169,6 +169,7 @@ class InventoryController extends Controller
         }
     }
 
+    // View Inventory from store
     public function viewInventory(Request $request)
     {
 
