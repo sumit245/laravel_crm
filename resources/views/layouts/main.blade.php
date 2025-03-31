@@ -47,7 +47,7 @@
     <script src="{{ asset("vendors/chart.js/Chart.min.js") }}"></script>
     <script src="{{ asset("vendors/bootstrap-datepicker/bootstrap-datepicker.min.js") }}"></script>
     <script src="{{ asset("vendors/progressbar.js/progressbar.min.js") }}"></script>
-    <script src="{{ asset("vendors/select2/select2.min.js") }}"></script>
+    {{-- <script src="{{ asset("vendors/select2/select2.min.js") }}"></script> --}}
     <script src="{{ asset("js/off-canvas.js") }}"></script>
     <script src="{{ asset("js/hoverable-collapse.js") }}"></script>
     <script src="{{ asset("js/template.js") }}"></script>
@@ -69,6 +69,7 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
     <script src="https://cdn.datatables.net/select/1.6.3/js/dataTables.select.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
     @stack("scripts") <!-- For page-specific scripts -->
 
   </body>
