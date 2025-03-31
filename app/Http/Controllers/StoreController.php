@@ -54,7 +54,7 @@ class StoreController extends Controller
             // TODO: Also remove role 1
             Log::info($project);
             // Redirect back to the project detail page with updated data
-            return redirect()->back()->with('success', 'Failed to create store. Please try again.');
+            return redirect()->back()->with('success', 'Store Created Successfully');
         } catch (\Exception $e) {
             Log::error($e->getMessage());
             return redirect()->back()->with('error', 'Failed to create store. Please try again.');
