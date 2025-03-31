@@ -82,17 +82,26 @@ class HomeController extends Controller
 
         foreach ($roles as $roleName => $roleId) {
             $usersQuery = User::where('role', $roleId);
+
             // Apply role-based filters
             if ($user->role == 2) { // Project Manager
                 if ($roleId == 2) {
-                    // Show all project managers
+                    // Show all project managers for the selected project
                     $usersQuery->where('project_id', $projectId);
                 } else {
-                    // Show only related engineers and vendors
+                    // Show only related engineers and vendors for the selected project
                     $usersQuery->where('manager_id', $user->id)
                         ->where('project_id', $projectId);
                 }
-            } elseif ($user->role != 0) {
+            } elseif ($user->role == 0) { // Admin or Super Admin
+                // Non-admin users see only their project
+                $usersQuery->where('project_id', $projectId);
+
+                // For Site Engineers and Vendors, filter by manager_id
+                // if ($roleId != 2) { // Exclude Project Managers
+                //     $usersQuery->where('manager_id', $user->id);
+                // }
+            } elseif ($user->role != 0) { // Non-admin users
                 // Non-admin users see only their project
                 $usersQuery->where('project_id', $projectId);
             }
