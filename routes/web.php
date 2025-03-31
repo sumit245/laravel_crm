@@ -11,6 +11,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\JICRController;
 use App\Models\InventroyStreetLightModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -22,6 +23,10 @@ Route::middleware(['auth'])->group(function () {
     // Home router
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
+    Route::get('/jicr', [JICRController::class, 'index'])->name('jicr.index');
+    Route::get('/jicr/blocks/{district}', [JICRController::class, 'getBlocks'])->name('jicr.blocks');
+    Route::get('/jicr/panchayats/{block}', [JICRController::class, 'getPanchayats'])->name('jicr.panchayats');
+    Route::get('/jicr/generate', [JICRController::class, 'generatePDF'])->name('jicr.generate');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
     // Staff router
     Route::resource('staff', StaffController::class);
@@ -56,7 +61,7 @@ Route::middleware(['auth'])->group(function () {
         $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)->exists();
         return response()->json(['exists' => $exists]);
     })->name('inventory.checkQR');
-    // Route::get('/inventory/dispatch', [InventoryController::class, 'dispatch'])->name('inventory.dispatch');
+    Route::get('/inventory/dispatch-web', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatch');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'edit'])->name('inventory.edit');
 
