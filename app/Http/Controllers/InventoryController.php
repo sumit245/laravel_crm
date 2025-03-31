@@ -246,10 +246,15 @@ class InventoryController extends Controller
                 $dispatchedItems[] = $dispatch;
             }
 
-            return response()->json([
-                'message' => 'Items dispatched successfully',
-                'data' => $dispatchedItems
-            ], 201);
+            if ($request->expectsJson() || $request->is('api/*')) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Inventory dispatched successfully',
+                    'data' => $dispatchedItems
+                ], 201);
+            }
+            // For web requests, return a redirect or view
+            return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
