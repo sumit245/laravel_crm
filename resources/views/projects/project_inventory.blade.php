@@ -1,6 +1,6 @@
 <div>
   <div class="d-flex justify-content-between mb-4">
-    <div class="d-flex mx-2 mt-4">
+    <div class="d-flex mx-2">
       <div class="card bg-info mx-2">
 
         <div class="card-body">
