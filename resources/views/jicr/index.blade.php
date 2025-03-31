@@ -35,8 +35,8 @@
       <div class="mt-3">
         <a href="{{ route("jicr.generate") }}" id="submitButton" class="btn btn-primary">Create JICR</a>
       </div>
+      @include("jicr.show")
     </div>
-
   </div>
 @endsection
 
