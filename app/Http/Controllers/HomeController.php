@@ -104,18 +104,19 @@ class HomeController extends Controller
 
             // Custom sorting logic based on the conditions provided
             if ($isStreetLightProject) {
-                $users = $users->sortByDesc(function ($user) {
-                    // Check if surveyedPoles is not 0
-                    if ($user->surveyedPoles > 0) {
-                        return $user->surveyedPoles;
-                    }
-                    // Check if installedPoles is not 0
-                    elseif ($user->installedPoles > 0) {
-                        return $user->installedPoles;
-                    }
-                    // Fallback to totalTasks
-                    return $user->totalTasks;
-                });
+                $users = $users->sortByDesc('surveyedPoles');
+                // function ($user) {
+                //     // Check if surveyedPoles is not 0
+                //     if ($user->installedPoles > 0) {
+                //         return $user->installedPoles;
+                //     }
+                //     // Check if installedPoles is not 0
+                //     elseif ($user->surveyedPoles > 0) {
+                //         return $user->surveyedPoles;
+                //     }
+                //     // Fallback to totalTasks
+                //     return $user->totalTasks;
+                // }
             } else {
                 // Default sorting for non-streetlight projects
                 $users = $users->sortByDesc('completedTasks');
