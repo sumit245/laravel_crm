@@ -1,58 +1,48 @@
 @extends("layouts.main")
 
 @section("content")
-
-  <div class="container mt-5">
-    <div class="row">
-
-      <div class="col-sm-3">
-        <div class="form-group">
-          <label for="districtSelect" class="form-label">District</label>
-          <select id="districtSelect" class="form-select" style="width: 100%;">
-            <option value="">Select a District</option>
-            @foreach ($districts as $district)
-              <option value="{{ $district->district }}">{{ $district->district }}</option>
-            @endforeach
-          </select>
+  <div class="content-wrapper p-2">
+    <div class="card p-2">
+      <div class="row">
+        <div class="col-sm-3">
+          <div class="form-group">
+            <label for="districtSelect" class="form-label">District</label>
+            <select id="districtSelect" class="form-select" style="width: 100%;">
+              <option value="">Select a District</option>
+              @foreach ($districts as $district)
+                <option value="{{ $district->district }}">{{ $district->district }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="form-group">
+            <label for="blockSelect" class="form-label">Block</label>
+            <select id="blockSelect" class="form-select" style="width: 100%;" disabled>
+              <option value="">Select a Block</option>
+            </select>
+          </div>
+        </div>
+        <div class="col-sm-3">
+          <div class="form-group">
+            <label for="panchayatSelect" class="form-label">Panchayat</label>
+            <select id="panchayatSelect" class="form-select" style="width: 100%;" disabled>
+              <option value="">Select a Panchayat</option>
+            </select>
+          </div>
         </div>
       </div>
-      <div class="col-sm-3">
-        <div class="form-group">
-          <label for="blockSelect" class="form-label">Block</label>
-          <select id="blockSelect" class="form-select" style="width: 100%;" disabled>
-            <option value="">Select a Block</option>
-          </select>
-        </div>
-      </div>
-      <div class="col-sm-3">
-        <div class="form-group">
-          <label for="panchayatSelect" class="form-label">Panchayat</label>
-          <select id="panchayatSelect" class="form-select" style="width: 100%;" disabled>
-            <option value="">Select a Panchayat</option>
-          </select>
-        </div>
+      <div class="mt-3">
+        <a href="{{ route("jicr.generate") }}" id="submitButton" class="btn btn-primary">Create JICR</a>
       </div>
     </div>
-    <div class="mt-3">
-      <a href="{{ route("jicr.generate") }}" id="submitButton" class="btn btn-primary">Create JICR</a>
-    </div>
+
   </div>
-
-@section("css")
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
-  <style>
-    /* Add any page-specific CSS here */
-    .select2-container {
-      width: 100% !important;
-      /* Ensure the dropdown takes full width */
-    }
-  </style>
 @endsection
 
-@section("js")
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+@push("scripts")
   <script>
+    console.log('Script section loaded');
     $(document).ready(function() {
       $('#districtSelect').select2({
         placeholder: "Select a District",
@@ -68,7 +58,7 @@
         placeholder: "Select a Panchayat",
         allowClear: true
       });
-
+      console.log('Select2 initialized');
       $('#districtSelect').on('change', function() {
         console.log('District change event fired');
         var district = $(this).val();
@@ -120,5 +110,4 @@
 
     });
   </script>
-@endsection
-@endsection
+@endpush
