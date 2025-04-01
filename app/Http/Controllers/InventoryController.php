@@ -265,7 +265,7 @@ class InventoryController extends Controller
                 'store_id' => 'required|exists:stores,id',
                 'store_incharge_id' => 'required|exists:users,id',
                 'items' => 'required|array',
-                'items.*.inventory_id' => 'required|integer',
+                'items.*.id' => 'required|integer',
                 'items.*.quantity' => 'required|integer|min:1',
             ]);
 
@@ -274,14 +274,14 @@ class InventoryController extends Controller
             $dispatchedItems = [];
 
             foreach ($request->items as $item) {
-                $inventory = $inventoryModel::where('id', $item['inventory_id'])
+                $inventory = $inventoryModel::where('id', $item['id'])
                     ->where('project_id', $request->project_id)
                     ->where('store_id', $request->store_id) // Ensure it belongs to correct store
                     ->first();
 
                 if (!$inventory) {
                     return response()->json([
-                        'message' => "Inventory ID {$item['inventory_id']} not found for this project"
+                        'message' => "Inventory ID {$item['id']} not found for this project"
                     ], 404);
                 }
                 if ($inventory->quantity < $item['quantity']) {
@@ -293,7 +293,7 @@ class InventoryController extends Controller
                 $dispatch = InventoryDispatch::create([
                     'vendor_id' => $request->vendor_id,
                     'project_id' => $request->project_id,
-                    'inventory_id' => $item['inventory_id'],
+                    'inventory_id' => $item['id'],
                     'quantity' => $item['quantity'],
                     'dispatch_date' => Carbon::now(),
                     'store_id' => $request->store_id,
@@ -303,22 +303,9 @@ class InventoryController extends Controller
                 $inventory->decrement('quantity', $item['quantity']);
                 $dispatchedItems[] = $dispatch;
             }
-
-            // if ($request->expectsJson() || $request->is('api/*')) {
-            //     return response()->json([
-            //         'success' => true,
-            //         'message' => 'Inventory dispatched successfully',
-            //         'data' => $dispatchedItems
-            //     ], 201);
-            // }
-            // For web requests, return a redirect or view
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
-            Log::error($e->getMessage());
-            return response()->json([
-                'message' => 'Something went wrong!',
-                'error' => $e->getMessage()
-            ], 500);
+            return redirect()->back()->with('error', 'Inventory dispatched Failed');
         }
     }
 
