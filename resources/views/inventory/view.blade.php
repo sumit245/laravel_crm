@@ -14,14 +14,17 @@
       <!-- <th>Manufacturer</th> -->
       <th>Make</th>
       <th>Model</th>
-      <!-- <th>Serial Number</th> -->
+      <th>Serial Number</th>
       <th>HSN Code</th>
       <th>Unit</th>
-      <th>Rate</th>
-      <th>Quantity</th>
+      <th>Store name</th>
+      <!-- <th>Rate</th> -->
+      <!-- <th>Quantity</th> -->
       <!-- <th>Total Value</th> -->
       <!-- <th>Description</th> -->
-      <th>Received Date</th> @else <th>Category</th>
+      <!-- <th>Received Date</th>  -->
+      @else 
+      <th>Category</th>
       <th>Sub Category</th>
       <th>Item Name</th>
       <th>Quantity</th>
@@ -35,14 +38,15 @@
       <!-- <td>{{ $item->manufacturer }}</td> -->
       <td>{{ $item->make }}</td>
       <td>{{ $item->model }}</td>
-      <!-- <td>{{ $item->serial_number }}</td> -->
+      <td>{{ $item->serial_number }}</td>
       <td>{{ $item->hsn }}</td>
       <td>{{ $item->unit }}</td>
-      <td>{{ $item->rate }}</td>
-      <td>{{ $item->quantity }}</td>
+      <td>{{ $item->firstName }}</td>
+      <!-- <td>{{ $item->rate }}</td> -->
+      <!-- <td>{{ $item->quantity }}</td> -->
       <!-- <td>{{ $item->total_value }}</td> -->
       <!-- <td>{{ $item->description }}</td> -->
-      <td>{{ $item->received_date }}</td>
+      <!-- <td>{{ $item->received_date }}</td> -->
       <!-- Modal begins -->
       <!-- Modal begins -->
       <div class="modal fade" id="modal{{ $item->id }}" aria-hidden="true" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
@@ -137,7 +141,7 @@
         <a href="#modal{{ $item->id }}" class="btn btn-info btn-icon eye-button" data-id="{{ $item->id }}" data-itemcode="{{ $item->item_code }}" data-itemname="{{ $item->item }}" data-manufacturer="{{ $item->manufacturer }}" data-make="{{ $item->make }}" data-model="{{ $item->model }}" data-serial="{{ $item->serial_number }}" data-hsn="{{ $item->hsn }}" data-unit="{{ $item->unit }}" data-rate="{{ $item->rate }}" data-quantity="{{ $item->quantity }}" data-totalvalue="{{ $item->total_value }}" data-description="{{ $item->description }}" data-receiveddate="{{ $item->received_date }}" data-bs-toggle="modal" data-bs-target="#modal{{ $item->id }}" data-toggle="tooltip" title="View Details">
           <i class="mdi mdi-eye"></i>
         </a>
-        <a href="{{ route("inventory.edit", $item->id) }}" class="btn btn-warning btn-icon" data-toggle="tooltip" title="Edit Site">
+        <a href="{{ route("inventory.editInventory", $item->id) }}" class="btn btn-warning btn-icon" data-toggle="tooltip" title="Edit Site">
           <i class="mdi mdi-pencil"></i>
         </a>
         <button class="btn btn-danger btn-icon delete-site" data-id="{{ $item->id }}" data-name="{{ $item->id }}">

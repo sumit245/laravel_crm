@@ -63,8 +63,11 @@ Route::middleware(['auth'])->group(function () {
     })->name('inventory.checkQR');
     Route::get('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
-    Route::get('/inventory/edit/{id}', [InventoryController::class, 'edit'])->name('inventory.edit');
-
+    // Inventory Edit
+    
+    Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
+    Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
+    
 
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
