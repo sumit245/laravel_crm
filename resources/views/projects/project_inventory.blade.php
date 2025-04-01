@@ -506,7 +506,7 @@
       if (e.target.classList.contains('item-quantity')) {
         const select = e.target.closest('.item-row').querySelector('.item-select');
         if (select.selectedIndex > 0) {
-          const stock = select.selectedOptions[0].getAttribute('data-stock');
+          //   const stock = select.selectedOptions[0].getAttribute('data-stock');
           if (parseInt(e.target.value) > parseInt(stock)) {
             alert('Quantity cannot exceed stock.');
             e.target.value = stock;
