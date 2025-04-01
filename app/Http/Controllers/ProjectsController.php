@@ -190,13 +190,9 @@ class ProjectsController extends Controller
                 ->get();
 
             // Replace these lines in the show method
-            $data['totalPoles'] = Streetlight::where('project_id', $project->id)->sum('number_of_poles');
-            $data['totalSurveyedPoles'] = Streetlight::where('project_id', $project->id)
-                ->where('isSurveyDone', true)
-                ->sum('number_of_poles');
-            $data['totalInstalledPoles'] = Streetlight::where('project_id', $project->id)
-                ->where('isInstallationDone', true)
-                ->sum('number_of_poles');
+            $data['totalPoles'] = Streetlight::where('project_id', $project->id)->sum('total_poles');
+            $data['totalSurveyedPoles'] = Streetlight::where('project_id', $project->id)->sum('number_of_surveyed_poles');
+            $data['totalInstalledPoles'] = Streetlight::where('project_id', $project->id)->sum('number_of_installed_poles');
         } else {
             // Rooftop installation - Filtered by manager_id**
             $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
