@@ -83,7 +83,7 @@
               <div class="d-block mt-2">
                 <strong>{{ $store->store_name }}</strong><br>
                 Address: {{ $store->address }}<br>
-                Incharge: {{ $store->storeIncharge }}
+                Incharge: {{ $store->store_incharge_id }}
               </div>
               <div class="d-flex mt-2">
                 <button class="btn btn-success m-2" style="max-height: 3.4rem;" id="addInventoryBtn"

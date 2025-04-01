@@ -9,6 +9,8 @@ use App\Models\Inventory;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
 use App\Models\Project;
+use App\Models\Stores;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -124,51 +126,51 @@ class InventoryController extends Controller
     }
 
     // Edit Inventory method
-    
+
     /**
- * Show the form for editing the specified resource.
- */
-public function editInventory($id)
-{
-    // Fetch the inventory item by ID
-    $inventoryItem = Inventory::findOrFail($id);
-
-    // Return the editInventory view and pass the item data
-    return view('inventory.editInventory', compact('inventoryItem'));
-}
-
-/**
- * Update the specified resource in storage.
- */
-public function updateInventory(Request $request, $id)
-{
-    // Validate the incoming data
-    $validated = $request->validate([
-        'productName'     => 'required|string|max:255',
-        'brand'           => 'nullable|string',
-        'description'     => 'nullable|string',
-        'initialQuantity' => 'required|string',
-        'quantityStock'   => 'nullable|string',
-        'unit'            => 'required|string|max:25',
-        'receivedDate'    => 'nullable|date',
-    ]);
-
-    try {
-        // Find the inventory item
+     * Show the form for editing the specified resource.
+     */
+    public function editInventory($id)
+    {
+        // Fetch the inventory item by ID
         $inventoryItem = Inventory::findOrFail($id);
 
-        // Update the inventory item
-        $inventoryItem->update($validated);
-
-        return redirect()->route('inventory.index')
-            ->with('success', 'Inventory updated successfully.');
-    } catch (\Exception $e) {
-        // Catch database or other errors
-        return redirect()->back()
-            ->withErrors(['error' => $e->getMessage()])
-            ->withInput();
+        // Return the editInventory view and pass the item data
+        return view('inventory.editInventory', compact('inventoryItem'));
     }
-}
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function updateInventory(Request $request, $id)
+    {
+        // Validate the incoming data
+        $validated = $request->validate([
+            'productName'     => 'required|string|max:255',
+            'brand'           => 'nullable|string',
+            'description'     => 'nullable|string',
+            'initialQuantity' => 'required|string',
+            'quantityStock'   => 'nullable|string',
+            'unit'            => 'required|string|max:25',
+            'receivedDate'    => 'nullable|date',
+        ]);
+
+        try {
+            // Find the inventory item
+            $inventoryItem = Inventory::findOrFail($id);
+
+            // Update the inventory item
+            $inventoryItem->update($validated);
+
+            return redirect()->route('inventory.index')
+                ->with('success', 'Inventory updated successfully.');
+        } catch (\Exception $e) {
+            // Catch database or other errors
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()])
+                ->withInput();
+        }
+    }
 
 
 
@@ -225,6 +227,13 @@ public function updateInventory(Request $request, $id)
         try {
             $projectId = $request->project_id;
             $storeId = $request->store_id;
+            $store = Stores::findOrFail($storeId);
+            $storeName = $store->store_name;
+            $storeIncharge = User::findOrFail($store->store_incharge_id);
+            $inchargeName = $storeIncharge->firstName . ' ' . $storeIncharge->lastName;
+
+            // Fetch the project to determine the type
+            $project = Project::findOrFail($projectId);
             $storeName = "";
 
             // Fetch the project to determine the type
@@ -240,7 +249,7 @@ public function updateInventory(Request $request, $id)
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'projectType'));
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
         }
