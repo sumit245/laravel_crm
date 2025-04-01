@@ -103,18 +103,18 @@ class ProjectsController extends Controller
         $inventoryItems = $inventoryModel::where('project_id', $project->id)->get();
 
         // Calculate Stock Values
-            $initialStockValue=0;
-            $dispatchedStockValue=0;
-            $inStoreStockValue=0;
-            if($project->project_type==1){
-                $initialStockValue = $inventoryModel::where('project_id', $project->id)->sum(DB::raw('rate * quantity'));
-                $dispatchedStockValue = InventoryDispatch::join('inventory_streetlight', 'inventory_dispatch.inventory_id', '=', 'inventory_streetlight.id')
+        $initialStockValue = 0;
+        $dispatchedStockValue = 0;
+        $inStoreStockValue = 0;
+        if ($project->project_type == 1) {
+            $initialStockValue = $inventoryModel::where('project_id', $project->id)->sum(DB::raw('rate * quantity'));
+            $dispatchedStockValue = InventoryDispatch::join('inventory_streetlight', 'inventory_dispatch.inventory_id', '=', 'inventory_streetlight.id')
                 ->where('inventory_streetlight.project_id', $project->id)
                 ->sum(DB::raw('inventory_dispatch.quantity * inventory_streetlight.rate'));
 
-                $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
-            }
-        
+            $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
+        }
+
 
 
         // Get engineers and vendors for this project
@@ -189,20 +189,14 @@ class ProjectsController extends Controller
                 ->with('site', 'engineer')
                 ->get();
 
-            $data['totalLights'] = 0;
-            // Streetlight::totalPoles($project->id)
-            //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
-            //     ->count();
-
-            $data['surveyDoneCount'] = 0;
-            // Streetlight::surveyDone($project->id)
-            //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
-            //     ->count();
-
-            $data['installationDoneCount'] = 0;
-            // Streetlight::installationDone($project->id)
-            //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
-            //     ->count();
+            // Replace these lines in the show method
+            $data['totalPoles'] = Streetlight::where('project_id', $project->id)->sum('number_of_poles');
+            $data['totalSurveyedPoles'] = Streetlight::where('project_id', $project->id)
+                ->where('isSurveyDone', true)
+                ->sum('number_of_poles');
+            $data['totalInstalledPoles'] = Streetlight::where('project_id', $project->id)
+                ->where('isInstallationDone', true)
+                ->sum('number_of_poles');
         } else {
             // Rooftop installation - Filtered by manager_id**
             $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
