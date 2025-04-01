@@ -189,7 +189,11 @@ class ProjectsController extends Controller
                 ->with('site', 'engineer')
                 ->get();
 
-            $data['totalLights'] = 0;
+            $data['totalLights'] = Streetlight::where('project_id', $id)
+            ->get()
+            ->sum(function ($streetlight) {
+                return substr_count($streetlight->ward, ',') + 1; // Count wards (assuming they are comma-separated) 
+            }) * 10; // Each ward has 10 poles
             // Streetlight::totalPoles($project->id)
             //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
             //     ->count();
