@@ -123,6 +123,55 @@ class InventoryController extends Controller
         return view('inventory.edit', compact('item'));
     }
 
+    // Edit Inventory method
+    
+    /**
+ * Show the form for editing the specified resource.
+ */
+public function editInventory($id)
+{
+    // Fetch the inventory item by ID
+    $inventoryItem = Inventory::findOrFail($id);
+
+    // Return the editInventory view and pass the item data
+    return view('inventory.editInventory', compact('inventoryItem'));
+}
+
+/**
+ * Update the specified resource in storage.
+ */
+public function updateInventory(Request $request, $id)
+{
+    // Validate the incoming data
+    $validated = $request->validate([
+        'productName'     => 'required|string|max:255',
+        'brand'           => 'nullable|string',
+        'description'     => 'nullable|string',
+        'initialQuantity' => 'required|string',
+        'quantityStock'   => 'nullable|string',
+        'unit'            => 'required|string|max:25',
+        'receivedDate'    => 'nullable|date',
+    ]);
+
+    try {
+        // Find the inventory item
+        $inventoryItem = Inventory::findOrFail($id);
+
+        // Update the inventory item
+        $inventoryItem->update($validated);
+
+        return redirect()->route('inventory.index')
+            ->with('success', 'Inventory updated successfully.');
+    } catch (\Exception $e) {
+        // Catch database or other errors
+        return redirect()->back()
+            ->withErrors(['error' => $e->getMessage()])
+            ->withInput();
+    }
+}
+
+
+
     /**
      * Update the specified resource in storage.
      */
