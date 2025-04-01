@@ -297,7 +297,7 @@ class TaskController extends Controller
                 'isInstallationDone'   => false,
                 'beneficiary'          => $request->beneficiary,
                 'beneficiary_contact'  => $request->beneficiary_contact,
-                'remarks'              => $request->beneficiary,
+                'remarks'              => $request->remarks,
                 'luminary_qr'          => null,
                 'panel_qr'             => null,
                 'battery_qr'           => null,
