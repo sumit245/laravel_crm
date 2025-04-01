@@ -198,12 +198,14 @@ class ProjectsController extends Controller
             //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
             //     ->count();
 
-            $data['surveyDoneCount'] = 0;
+            $data['surveyDoneCount'] = Streetlight::where('project_id', $id)
+            ->sum('number_of_surveyed_poles'); // Sum up the surveyed poles;
             // Streetlight::surveyDone($project->id)
             //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
             //     ->count();
 
-            $data['installationDoneCount'] = 0;
+            $data['installationDoneCount'] = Streetlight::where('project_id', $id)
+            ->sum('number_of_installed_poles'); // Sum up the surveyed poles;
             // Streetlight::installationDone($project->id)
             //     ->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
             //     ->count();
