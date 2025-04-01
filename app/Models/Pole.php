@@ -20,6 +20,8 @@ class Pole extends Model
         'complete_pole_number',
         'beneficiary',
         'remarks',
+        'ward_name',
+        'beneficiary_contact',
         'sim_number',
         'submission_image',
         'survey_image',

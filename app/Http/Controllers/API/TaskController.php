@@ -258,6 +258,7 @@ class TaskController extends Controller
         $validator = Validator::make($request->all(), [
             'task_id'        => 'required|exists:streetlight_tasks,id',
             'complete_pole_number'         => 'required|string|max:255',
+            'ward_name' => 'nullable|string|max:255',
             'isSurveyDone'      => 'nullable|string|in:true,false',
             'survey_image'        => 'nullable|array',
             'isNetworkAvailable'  => 'nullable|string|in:true,false',
@@ -290,6 +291,7 @@ class TaskController extends Controller
             $pole = Pole::create([
                 'task_id'              => $request->task_id,
                 'complete_pole_number' => $request->complete_pole_number,
+                'ward_name'            => $request->ward_name,
                 'isSurveyDone'         => true,
                 'isInstallationDone'   => false,
                 'beneficiary'          => $request->beneficiary,
