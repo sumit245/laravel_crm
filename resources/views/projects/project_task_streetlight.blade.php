@@ -3,7 +3,7 @@
     <div class="d-flex mx-2">
     <div class="card bg-warning mx-2" style="min-width: 33%;">
         <div class="card-body">
-          <h5 class="card-title">{{ $totalLights }}</h5>
+          <h5 class="card-title">{{ $surveyDoneCount }}</h5>
           <p class="card-text">Surveyed Poles</p>
         </div>
       </div>
