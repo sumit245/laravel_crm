@@ -1,4 +1,20 @@
 <div>
+  @if (session("success") || session("error"))
+    <div id="flash-message" style="display: none;">
+      @if (session("success"))
+        <div class="alert alert-success">
+          {{ session("success") }}
+        </div>
+      @endif
+
+      @if (session("error"))
+        <div class="alert alert-danger">
+          {{ session("error") }}
+        </div>
+      @endif
+    </div>
+  @endif
+
   <div class="d-flex justify-content-between mb-4">
     <div class="d-flex mx-2">
       <div class="card bg-info mx-2">
@@ -282,11 +298,13 @@
         <form id="dispatchForm" action="{{ route("inventory.dispatchweb") }}" method="POST">
           @csrf
           <input type="hidden" id="dispatchStoreId" name="store_id">
+          <input type="hidden" name="project_id" value="{{ $project->id }}">
+          <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id }}">
           <div class="modal-body">
             <!-- Vendor Selection -->
             <div class="form-group">
               <label for="vendorName">Vendor Name:</label>
-              <select class="form-select" id="storeIncharge" name="storeIncharge" required>
+              <select class="form-select" id="vendorName" name="vendor_id" required>
                 <option value="">Select Vendor</option>
                 @foreach ($assignedVendors as $user)
                   <option value="{{ $user->id }}">{{ $user->name }}</option>
@@ -343,11 +361,12 @@
             </div>
 
           </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button type="submit" class="btn btn-primary">Dispatch</button>
+          </div>
         </form>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          <button type="submit" class="btn btn-primary">Dispatch</button>
-        </div>
+
       </div>
 
     </div>
@@ -475,19 +494,23 @@
     // Remove Item Row
     itemsContainer.addEventListener('click', function(e) {
       if (e.target.classList.contains('remove-item-btn')) {
-        e.target.closest('.item-row').remove();
+        const rows = document.querySelectorAll('.item-row');
+        if (rows.length > 1) {
+          e.target.closest('.item-row').remove();
+        }
       }
     });
 
     // Validate Quantity Against Stock
     itemsContainer.addEventListener('input', function(e) {
       if (e.target.classList.contains('item-quantity')) {
-        const stock = e.target.closest('.item-row').querySelector('.item-select').selectedOptions[0]
-          .getAttribute('data-stock');
-        console.log(stock)
-        if (parseInt(e.target.value) > parseInt(stock)) {
-          alert('Quantity cannot exceed stock.');
-          e.target.value = stock;
+        const select = e.target.closest('.item-row').querySelector('.item-select');
+        if (select.selectedIndex > 0) {
+          const stock = select.selectedOptions[0].getAttribute('data-stock');
+          if (parseInt(e.target.value) > parseInt(stock)) {
+            alert('Quantity cannot exceed stock.');
+            e.target.value = stock;
+          }
         }
       }
     });
@@ -525,6 +548,7 @@
         button.closest('.dispatch-item').remove();
       }
     }
+
     document.getElementById("dispatchSubmit").addEventListener("click", function() {
       let storeId = document.getElementById("dispatchStoreId").value;
       let vendorId = document.getElementById("vendorName").value;
@@ -583,75 +607,92 @@
       document.getElementById("dispatchBtn").disabled = true;
     });
 
-    // Handle QR scanning
-    document.getElementById("qr_scanner").addEventListener("keyup", function(event) {
-      if (event.key === "Enter" && this.value.trim() !== "") {
-        let scannedCode = this.value.trim();
-        console.log("Scanned Code:", scannedCode); // Log the scanned code
-        this.value = ""; // Clear input for next scan
+    // Handle Qr Scanning
+    const qrScanner = document.getElementById('qr_scanner');
+    if (qrScanner) {
+      qrScanner.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter' && this.value.trim() !== '') {
+          let scannedCode = this.value.trim();
+          console.log('Scanned Code:', scannedCode);
+          this.value = ''; // Clear input for next scan
 
-        if (scannedQRs.includes(scannedCode)) {
-          showError("QR code already scanned!");
-          console.log("QR code already scanned:", scannedCode); // Log this case
-          return;
-        }
+          if (scannedQRs.includes(scannedCode)) {
+            showError('QR code already scanned!');
+            return;
+          }
 
-        if (scannedQRs.length >= availableQuantity) {
-          showError("Cannot scan more than the available quantity!");
-          console.log("Exceeded available quantity:", availableQuantity); // Log this case
-          return;
-        }
-
-
-        // Check if QR exists in database via AJAX
-        fetch("{{ route("inventory.checkQR") }}", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-TOKEN": "{{ csrf_token() }}"
-            },
-            body: JSON.stringify({
-              qr_code: scannedCode
+          // Check if QR exists in database via AJAX
+          fetch('{{ route("inventory.checkQR") }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              },
+              body: JSON.stringify({
+                qr_code: scannedCode
+              })
             })
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.exists) {
-              scannedQRs.push(scannedCode);
-              updateScannedQRs();
-              clearError();
-            } else {
-              showError("Invalid QR code! Item not found in inventory.");
-            }
-          })
-          .catch(() => showError("Error checking QR code!"));
-      }
-    });
+            .then(response => response.json())
+            .then(data => {
+              if (data.exists) {
+                scannedQRs.push(scannedCode);
+                updateScannedQRs();
+                clearError();
+              } else {
+                showError('Invalid QR code! Item not found in inventory.');
+              }
+            })
+            .catch(() => showError('Error checking QR code!'));
+        }
+      });
+    }
 
     // Update scanned QR list
     function updateScannedQRs() {
-      let list = document.getElementById("scanned_qrs");
-      list.innerHTML = "";
-      scannedQRs.forEach(qr => {
-        let li = document.createElement("li");
-        li.className = "list-group-item";
-        li.textContent = qr;
-        list.appendChild(li);
-      });
-
-      // Enable dispatch button if all scans are valid
-      document.getElementById("dispatchBtn").disabled = (scannedQRs.length === 0 || scannedQRs.length !==
-        availableQuantity);
+      let list = document.getElementById('scanned_qrs');
+      if (list) {
+        list.innerHTML = '';
+        scannedQRs.forEach(qr => {
+          let li = document.createElement('li');
+          li.className = 'list-group-item';
+          li.textContent = qr;
+          list.appendChild(li);
+        });
+      }
     }
+
 
     // Show error message
     function showError(message) {
-      document.getElementById("qr_error").textContent = message;
+      const errorElement = document.getElementById('qr_error');
+      if (errorElement) {
+        errorElement.textContent = message;
+      }
     }
 
     // Clear error message
     function clearError() {
-      document.getElementById("qr_error").textContent = "";
+      const errorElement = document.getElementById('qr_error');
+      if (errorElement) {
+        errorElement.textContent = '';
+      }
     }
+    @if (session("success"))
+      Swal.fire({
+        title: 'Success!',
+        text: "{{ session("success") }}",
+        icon: 'success',
+        confirmButtonText: 'OK'
+      });
+    @endif
+
+    @if (session("error"))
+      Swal.fire({
+        title: 'Error!',
+        text: "{{ session("error") }}",
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    @endif
   });
 </script>
