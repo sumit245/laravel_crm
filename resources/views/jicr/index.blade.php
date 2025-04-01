@@ -19,11 +19,7 @@
     </div>
 
   <!-- Testing select 2 -->
-  <select class="js-example-basic-single" name="state">
-  <option value="AL">Alabama</option>
-    
-  <option value="WY">Wyoming</option>
-</select>
+  
   <!-- Ending testing -->
 
     <div class="col-sm-3">
@@ -89,10 +85,7 @@
   <script>
     console.log('Script section loaded');
     // Testing script
-      // In your Javascript (external .js resource or <script> tag)
-$(document).ready(function() {
-    $('.js-example-basic-single').select2();
-});
+      
     // Test script ends
     $(document).ready(function() {
       $('#districtSelect').select2({
