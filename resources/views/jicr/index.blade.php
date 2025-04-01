@@ -1,5 +1,7 @@
 @extends("layouts.main")
 
+
+
 @section("content")
   <div class="content-wrapper p-2">
     <div class="card p-2">
@@ -7,7 +9,7 @@
     <div class="col-sm-3">
         <div class="mb-3">
             <label for="districtSelect" class="form-label">District</label>
-            <select id="districtSelect" class="form-select" style="width: 100%;">
+            <select id="districtSelect" class="form-select fix-select2" style="width: 100%;">
                 <option value="">Select a District</option>
                 @foreach ($districts as $district)
                     <option value="{{ $district->district }}">{{ $district->district }}</option>
@@ -15,6 +17,14 @@
             </select>
         </div>
     </div>
+
+  <!-- Testing select 2 -->
+  <select class="js-example-basic-single" name="state">
+  <option value="AL">Alabama</option>
+    
+  <option value="WY">Wyoming</option>
+</select>
+  <!-- Ending testing -->
 
     <div class="col-sm-3">
         <div class="mb-3">
@@ -43,25 +53,63 @@
   </div>
 @endsection
 
+@push("styles")
+<style>
+/* Prevent shifting caused by Select2 */
+.fix-select2-container {
+    width: 100% !important;
+}
+
+.fix-select2-container .select2-selection--single {
+    height: auto !important;  
+    padding: 6px 10px !important; 
+    border: 1px solid #ced4da;  /* Bootstrap default */
+    border-radius: 4px;
+}
+
+/* Ensures Select2 aligns properly */
+.fix-select2-container .select2-selection__rendered {
+    line-height: normal !important;
+    padding-left: 10px !important;
+}
+
+/* Prevents select box from pushing down */
+.fix-select2 {
+    width: 100% !important;
+}
+
+/* Fix Select2 dropdown alignment */
+.select2-dropdown {
+    width: 100% !important;
+}
+</style>
+@pushends
+
 @push("scripts")
   <script>
     console.log('Script section loaded');
+    // Testing script
+      // In your Javascript (external .js resource or <script> tag)
+$(document).ready(function() {
+    $('.js-example-basic-single').select2();
+});
+    // Test script ends
     $(document).ready(function() {
-      // $('#districtSelect').select2({
-      //    placeholder: "Select a District",
-      //   allowClear: true,
-        
-      // });
+      $('#districtSelect').select2({
+        placeholder: "Select a District",
+        allowClear: true,
+        width:100%
+      }).next('.select2-container').addClass('fix-select2-container');
 
-      // $('#blockSelect').select2({
-      //   placeholder: "Select a Block",
-      //   allowClear: true
-      // });
+      $('#blockSelect').select2({
+        placeholder: "Select a Block",
+        allowClear: true
+      });
 
-      // $('#panchayatSelect').select2({
-      //   placeholder: "Select a Panchayat",
-      //   allowClear: true
-      // });
+      $('#panchayatSelect').select2({
+        placeholder: "Select a Panchayat",
+        allowClear: true
+      });
       console.log('Select2 initialized');
       $('#districtSelect').on('change', function() {
         console.log('District change event fired');
