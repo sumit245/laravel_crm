@@ -11,12 +11,17 @@ class InventoryDispatch extends Model
     protected $table = 'inventory_dispatch';
     protected $fillable = [
         'vendor_id',
+        'item_code',
+        'item',
+        'total_quantity',
+        'rate',
+        'make',
+        'model',
+        'serial_number',
         'project_id',
-        'store_id',
         'dispatch_date',
+        'store_id',
         'store_incharge_id',
-        'inventory_id',
-        'quantity',
     ];
 
     public function inventory()
