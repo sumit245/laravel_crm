@@ -1,14 +1,19 @@
 <div class="pdf-container">
-  <h1 class="font-weight-bold mb-4 text-center">JOINT INSPECTION-CUM-COMMISSIONING REPORT (JICR)</h1>
+  <h4 class="font-weight-bold mb-4 text-center">JOINT INSPECTION-CUM-COMMISSIONING REPORT (JICR)</h4>
   <p class="mb-4">
     It is hereby certified that following Solar Street Light System installed & commissioned with Remote Monitoring
     System (RMS) on the identified existing electric pole under ‘Mukhyamantri Gramin Solar Street Light Yojana’ in
     Bihar State” with following details has been installed and commissioned at site:
   </p>
   <ul class="list-unstyled mb-4">
-    <li>Name of District/ Block/ Panchayat....................................</li>
-    <li>Name of Executing Agency....................................</li>
-    <li>Work order no. and date............................</li>
+    <li>Name of District/ Block/ Panchayat <span
+        style="text-decoration: underline; color:blue;">{{ $district->district }}/
+        {{ $block ?? " " }}/{{ $panchayat ?? "" }}</span>
+    </li>
+    <li>Name of Executing Agency <span style="text-decoration: underline;color:blue;"> Sugs Lloyd Limited</span></li>
+    <li>Work order no. and date <span style="text-decoration: underline;color:blue;"> {{ $project->work_order_number }}
+        {{ $project->agreement_date }}</style>
+    </li>
   </ul>
   <table class="table-bordered mb-4 table">
     <thead>
