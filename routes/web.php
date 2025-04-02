@@ -61,13 +61,13 @@ Route::middleware(['auth'])->group(function () {
         $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)->exists();
         return response()->json(['exists' => $exists]);
     })->name('inventory.checkQR');
-    Route::get('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
+    Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     // Inventory Edit
-    
+
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
-    
+
 
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);

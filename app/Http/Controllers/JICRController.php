@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Project;
 use App\Models\Streetlight;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Log;
 
 class JICRController extends Controller
 {
@@ -12,7 +14,8 @@ class JICRController extends Controller
     public function index()
     {
         $districts = Streetlight::select('district')->distinct()->get();
-        return view('jicr.index', compact('districts'));
+        $project = Project::where('id', 11)->first(); // Changed from 11 to 1 and using first() to get a single project
+        return view('jicr.index', compact('districts', 'project'));
     }
     public function getBlocks($district)
     {
@@ -29,19 +32,46 @@ class JICRController extends Controller
 
     public function generatePDF(Request $request)
     {
+        // Validate the request
+        $validated = $request->validate([
+            'district' => 'required|string',
+            'block' => 'required|string',
+            'panchayat' => 'required|string',
+            'from_date' => 'required|date',
+            'to_date' => 'required|date|after_or_equal:from_date',
+        ]);
+        // Get the project details
+        $project = Project::where('id', 11)->first();
+
+        // Get streetlights based on the selected criteria
+        $streetlights = Streetlight::where('district', $request->district)
+            ->where('block', $request->block)
+            ->where('panchayat', $request->panchayat)
+            ->whereBetween('created_at', [$request->from_date, $request->to_date])
+            ->get();
+
+        // Prepare data for the view
         $data = [
-            'title' => 'Invoice',
-            'date' => date('m/d/Y'),
-            'customer' => 'John Doe',
-            'items' => [
-                ['description' => 'Item 1', 'quantity' => 2, 'price' => 10],
-                ['description' => 'Item 2', 'quantity' => 1, 'price' => 20],
-            ],
-            'subtotal' => 50,
-            'tax' => 5,
-            'total' => 55,
+            'district' => $request->district,
+            'block' => $request->block,
+            'panchayat' => $request->panchayat,
+            'from_date' => $request->from_date,
+            'to_date' => $request->to_date,
+            'project' => $project,
+            'streetlights' => $streetlights,
+            'showReport' => true
         ];
-        $pdf = Pdf::loadView('jicr.index', $data);
-        return $pdf->download('invoice.pdf');
+        Log::info('PDF generation started' . $data);
+        // If it's a download request, generate PDF
+        if ($request->has('download') && $request->download == 'pdf') {
+            $pdf = Pdf::loadView('jicr.show', $data);
+            return $pdf->download('jicr_report.pdf');
+        }
+
+        // Otherwise show the report in the browser
+        $districts = Streetlight::select('district')->distinct()->get();
+        $data['districts'] = $districts;
+
+        return view('jicr.index', $data);
     }
 }
