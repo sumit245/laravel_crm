@@ -336,66 +336,65 @@ class InventoryController extends Controller
     }
 
     // Get dispatched inventory for a vendor
-   public function viewVendorInventory($vendorId)
-{
-    Log::info("Fetching inventory for vendor_id: {$vendorId}");
+    public function viewVendorInventory($vendorId)
+    {
+        Log::info("Fetching inventory for vendor_id: {$vendorId}");
 
-    try {
-        // Get all dispatched inventory for this vendor
-        $inventory = InventoryDispatch::where('vendor_id', $vendorId)
-            ->with(['project', 'store', 'storeIncharge'])
-            ->get();
+        try {
+            // Get all dispatched inventory for this vendor
+            $inventory = InventoryDispatch::where('vendor_id', $vendorId)
+                ->with(['project', 'store', 'storeIncharge'])
+                ->get();
 
-        if ($inventory->isEmpty()) {
-            Log::warning("No inventory found for vendor_id: {$vendorId}");
-            return response()->json([
-                'message' => 'No inventory found for this vendor.',
-                'vendor_id' => $vendorId
-            ], 404);
-        }
+            if ($inventory->isEmpty()) {
+                Log::warning("No inventory found for vendor_id: {$vendorId}");
+                return response()->json([
+                    'message' => 'No inventory found for this vendor.',
+                    'vendor_id' => $vendorId
+                ], 404);
+            }
 
-        // Calculate total inventory value directly from total_value column
-        $totalInventoryValue = $inventory->sum('total_value');
+            // Calculate total inventory value directly from total_value column
+            $totalInventoryValue = $inventory->sum('total_value');
 
-        // Group inventory by item_code for consolidated view
-        $groupedInventory = $inventory->groupBy('item_code')->map(function($items) {
-            $firstItem = $items->first();
-            
-            return [
-                'item_code' => $firstItem->item_code,
-                'item' => $firstItem->item,
-                'manufacturer' => $firstItem->make,
-                'make' => $firstItem->make,
-                'model' => $firstItem->model,
-                'rate' => (float)$firstItem->rate,
-                'total_quantity' => $items->sum('total_quantity'),
-                'total_value' => $items->sum('total_value'),
-                'dispatch_date' => $firstItem->dispatch_date->format('Y-m-d'),
-                'serial_numbers' => $items->pluck('serial_numbers')->flatten()->filter()->values()->all(),
-                'store_name' => optional($firstItem->store)->store_name,
-                'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' . 
-                                   optional($firstItem->storeIncharge)->lastName
+            // Group inventory by item_code for consolidated view
+            $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
+                $firstItem = $items->first();
+
+                return [
+                    'item_code' => $firstItem->item_code,
+                    'item' => $firstItem->item,
+                    'manufacturer' => $firstItem->make,
+                    'make' => $firstItem->make,
+                    'model' => $firstItem->model,
+                    'rate' => (float)$firstItem->rate,
+                    'total_quantity' => $items->sum('total_quantity'),
+                    'total_value' => $items->sum('total_value'),
+                    'dispatch_date' => $firstItem->dispatch_date->format('Y-m-d'),
+                    'serial_numbers' => $items->pluck('serial_numbers')->flatten()->filter()->values()->all(),
+                    'store_name' => optional($firstItem->store)->store_name,
+                    'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' .
+                        optional($firstItem->storeIncharge)->lastName
+                ];
+            })->values();
+
+            // Restructure response
+            $response = [
+                'vendor_id' => $vendorId,
+                'project_id' => optional($inventory->first()->project)->id,
+                'project_name' => optional($inventory->first()->project)->project_name,
+                'total_inventory_value' => number_format($totalInventoryValue, 2, '.', ''),
+                'inventory_count' => $groupedInventory->count(),
+                'inventory' => $groupedInventory
             ];
-        })->values();
 
-        // Restructure response
-        $response = [
-            'vendor_id' => $vendorId,
-            'project_id' => optional($inventory->first()->project)->id,
-            'project_name' => optional($inventory->first()->project)->project_name,
-            'total_inventory_value' => number_format($totalInventoryValue, 2, '.', ''),
-            'inventory_count' => $groupedInventory->count(),
-            'inventory' => $groupedInventory
-        ];
-
-        return response()->json($response);
-    } catch (Exception $e) {
-        Log::error($e->getMessage());
-        return response()->json([
-            'message' => 'Something went wrong!',
-            'error' => $e->getMessage()
-        ], 500);
+            return response()->json($response);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Something went wrong!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
-}
-
 }
