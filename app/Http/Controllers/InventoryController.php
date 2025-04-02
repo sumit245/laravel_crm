@@ -264,44 +264,65 @@ class InventoryController extends Controller
                 'project_id' => 'required|exists:projects,id',
                 'store_id' => 'required|exists:stores,id',
                 'store_incharge_id' => 'required|exists:users,id',
-                'items' => 'required|array',
-                // 'items.*.id' => 'required|integer',  -- previously used
-                'items.*.inventory_id' => 'required|integer',
-                'items.*.quantity' => 'required|integer|min:1',
+                'item_code' => 'required|string',
+                'item' => 'required|string',
+                'rate' => 'required|numeric',
+                'make' => 'nullable|string',
+                'model' => 'nullable|string',
+                'total_quantity' => 'required|integer|min:1',
+                'total_value' => 'required|numeric',
+                'serial_numbers' => 'required|array',
+                'serial_numbers.*' => 'required|string'
             ]);
 
             $project = Project::findOrFail($request->project_id);
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
             $dispatchedItems = [];
 
-            foreach ($request->items as $item) {
-                $inventory = $inventoryModel::where('id', $item['inventory_id'])
+            // Find inventory items matching the item code
+            $inventoryItems = $inventoryModel::where('item_code', $request->item_code)
+                ->where('project_id', $request->project_id)
+                ->where('store_id', $request->store_id)
+                ->get();
+
+            // Check if we have enough inventory
+            $availableQuantity = $inventoryItems->sum('quantity');
+            if ($availableQuantity < $request->total_quantity) {
+                return redirect()->back()->with('error', "Not enough stock for {$request->item}. Available: {$availableQuantity}");
+            }
+            // For each serial number, find the specific inventory item and dispatch it
+            $dispatchedItems = [];
+            foreach ($request->serial_numbers as $serialNumber) {
+                // Find the specific inventory item with this serial number
+                $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
                     ->where('project_id', $request->project_id)
-                    ->where('store_id', $request->store_id) // Ensure it belongs to correct store
+                    ->where('store_id', $request->store_id)
                     ->first();
 
-                if (!$inventory) {
-                    return response()->json([
-                        'message' => "Inventory ID {$item['inventory_id']} not found for this project"
-                    ], 404);
+                if (!$inventoryItem) {
+                    return redirect()->back()->with('error', "Item with serial number {$serialNumber} not found");
                 }
-                if ($inventory->quantity < $item['quantity']) {
-                    return response()->json([
-                        'message' => "Not enough stock for item {$inventory->item}",
-                    ], 400);
-                }
-                // Store dispatch details
+
+                // Create dispatch record
                 $dispatch = InventoryDispatch::create([
                     'vendor_id' => $request->vendor_id,
                     'project_id' => $request->project_id,
-                    'inventory_id' => $item['inventory_id'],
-                    'quantity' => $item['quantity'],
-                    'dispatch_date' => Carbon::now(),
                     'store_id' => $request->store_id,
                     'store_incharge_id' => $request->store_incharge_id,
+                    'item_code' => $request->item_code,
+                    'item' => $request->item,
+                    'rate' => $request->rate,
+                    'make' => $request->make,
+                    'model' => $request->model,
+                    'total_quantity' => $request->total_quantity,
+                    'total_value' => $request->total_value,
+                    'serial_numbers' => $request->serial_numbers,
+                    'dispatch_date' => Carbon::now(),
+
                 ]);
-                // Reduce stock from correct table
-                $inventory->decrement('quantity', $item['quantity']);
+
+                // Reduce stock from inventory
+                $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
             }
 
@@ -310,6 +331,7 @@ class InventoryController extends Controller
 
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
+            Log::error($e->getMessage());
             return redirect()->back()->with('error', 'Inventory dispatched Failed');
         }
     }
