@@ -127,9 +127,8 @@ class ProjectsController extends Controller
         $inStoreStockValue = 0;
         if ($project->project_type == 1) {
             $initialStockValue = $inventoryModel::where('project_id', $project->id)->sum(DB::raw('rate * quantity'));
-            $dispatchedStockValue = InventoryDispatch::join('inventory_streetlight', 'inventory_dispatch.item_code', '=', 'inventory_streetlight.item_code')
-                ->where('inventory_streetlight.project_id', $project->id)
-                ->sum(DB::raw('inventory_dispatch.total_quantity * inventory_streetlight.rate'));
+            $dispatchedStockValue = InventoryDispatch::where('project_id', $project->id)
+                ->sum('total_value');
 
             $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
         }

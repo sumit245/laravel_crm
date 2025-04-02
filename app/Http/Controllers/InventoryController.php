@@ -316,7 +316,7 @@ class InventoryController extends Controller
                     'model' => $request->model,
                     'total_quantity' => $request->total_quantity,
                     'total_value' => $request->total_value,
-                    'serial_numbers' => $request->serial_numbers,
+                    'serial_numbers' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
 
                 ]);
@@ -328,7 +328,6 @@ class InventoryController extends Controller
 
             // Log dispatched items
             Log::info('Dispatched Items:', $dispatchedItems);
-
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
             Log::error($e->getMessage());
