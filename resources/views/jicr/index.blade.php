@@ -84,15 +84,14 @@
 @push("scripts")
   <script>
     console.log('Script section loaded');
-    // Testing script
-      
-    // Test script ends
+   
     $(document).ready(function() {
       $('#districtSelect').select2({
         placeholder: "Select a District",
         allowClear: true,
-        width:100%
-      }).next('.select2-container').addClass('fix-select2-container');
+        width: "100%",
+        minimumResultsForSearch: 
+    }).next('.select2-container').addClass('fix-select2-container');
 
       $('#blockSelect').select2({
         placeholder: "Select a Block",

@@ -6,21 +6,23 @@
     <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
   </div>
 </div>
-<!-- Commneted columns need to be added in the table --> @if ($inventory->isEmpty()) <p>No inventory available for this store.</p> @else <table id="viewInventoryTable" :pageLength="50" class="table-striped table-bordered table-sm table m-2">
+<!-- Commneted columns need to be added in the table --> @if ($inventory->isEmpty()) <p>No inventory available for this store.</p> 
+ @else 
+ <table id="viewInventoryTable" :pageLength="50" class="table-striped table-bordered table-sm table m-2">
   <thead>
     <tr>
-      <th>#</th> @if ($projectType == 1) <th>Item Code</th>
+      <th>#</th> @if ($projectType == 1) 
+      <!-- <th>Item Code</th> -->
       <th>Item Name</th>
       <!-- <th>Manufacturer</th> -->
       <th>Make</th>
-      <th>Model</th>
-      <th>Serial Number</th>
+      <!-- <th>Model</th> -->
+      <!-- <th>Serial Number</th> -->
       <th>HSN Code</th>
       <th>Unit</th>
-      <th>Store name</th>
       <!-- <th>Rate</th> -->
-      <!-- <th>Quantity</th> -->
-      <!-- <th>Total Value</th> -->
+      <th>Quantity</th>
+      <th>Total Value</th>
       <!-- <th>Description</th> -->
       <!-- <th>Received Date</th>  -->
       @else 
@@ -33,18 +35,18 @@
     </tr>
   </thead>
   <tbody> @foreach ($inventory as $item) <tr>
-      <td>{{ $loop->iteration }}</td> @if ($projectType == 1) <td>{{ $item->item_code }}</td>
+      <td>{{ $loop->iteration }}</td> @if ($projectType == 1) 
+      <!-- <td>{{ $item->item_code }}</td> -->
       <td>{{ $item->item }}</td>
       <!-- <td>{{ $item->manufacturer }}</td> -->
       <td>{{ $item->make }}</td>
-      <td>{{ $item->model }}</td>
-      <td>{{ $item->serial_number }}</td>
+      <!-- <td>{{ $item->model }}</td> -->
+      <!-- <td>{{ $item->serial_number }}</td> -->
       <td>{{ $item->hsn }}</td>
       <td>{{ $item->unit }}</td>
-      <td>{{ $item->firstName }}</td>
       <!-- <td>{{ $item->rate }}</td> -->
-      <!-- <td>{{ $item->quantity }}</td> -->
-      <!-- <td>{{ $item->total_value }}</td> -->
+      <td>{{ $item->quantity }}</td>
+      <td>{{ $item->total_value }}</td>
       <!-- <td>{{ $item->description }}</td> -->
       <!-- <td>{{ $item->received_date }}</td> -->
       <!-- Modal begins -->
