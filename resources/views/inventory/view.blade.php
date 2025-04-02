@@ -5,11 +5,13 @@
       <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-success">
           <div class="card-header">
-            <h3 class="card-title">Battery</h3>
-            <i class="mdi mdi-battery-high"></i>
+            <div class="d-flex justify-content-between">
+              <h3 class="card-title">Battery</h3>
+              <i class="mdi mdi-battery"></i>
+            </div>
           </div>
           <div class="card-body">
-            <span>Total Quantity: </span><span>12</span>
+            <p>Total Quantity: <span>12</span></p>
             <p>Total Value</p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
@@ -18,9 +20,11 @@
       </div>
       <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-warning">
-          <div class="d-flex justify-content-between">
-            <h3 class="card-title">Luminary</h3>
-            <i class="mdi mdi mdi-led-on"></i>
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h3 class="card-title">Luminary</h3>
+              <i class="mdi mdi mdi-led-on"></i>
+            </div>
           </div>
           <div class="card-body">
             <p>Total Quantity</p>
@@ -33,8 +37,10 @@
       <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-primary">
           <div class="card-header">
+            <div class="d-flex justify-content-between">
             <h3 class="card-title">Structure</h3>
             <i class="mdi mdi-sign-pole"></i>
+            </div>
           </div>
           <div class="card-body">
             <p>Total Quantity</p><span></span>
@@ -47,8 +53,10 @@
       <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-info">
           <div class="card-header">
+            <div class="d-flex justify-content-between">
             <h3 class="card-title">Module</h3>
             <i class="mdi mdi-solar-panel"></i>
+            </div>
           </div>
           <div class="card-body">
             <p>Total Quantity</p>
