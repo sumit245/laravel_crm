@@ -413,6 +413,7 @@ class TaskController extends Controller
                 'district' => $pole->task->site->district ?? null,
                 'state' => $pole->task->site->state ?? null,
                 'beneficiary' => $pole->beneficiary,
+                'beneficiary_contact' => $pole->beneficiary_contact,
                 "isSurveyed"=>true,
                 "isInstalled"=>false,
                 'installed_location' => [
