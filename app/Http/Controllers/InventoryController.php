@@ -376,9 +376,9 @@ class InventoryController extends Controller
                         'serial_number' => optional($item->inventoryStreetLight)->serial_number,
                         'hsn' => optional($item->inventoryStreetLight)->hsn,
                         'unit' => optional($item->inventoryStreetLight)->unit,
-                        'rate' => (float)$item->inventoryStreetLight->rate,
+                        'rate' => (float)$item->inventoryStreetLight->rate??0,
                         'quantity' => (int)$item->quantity ?? 0,  // Ensures it’s never null
-                        'total_value' => (float) $item->inventoryStreetLight->rate * (int) $item->quantity, // Proper multiplication
+                        'total_value' => (float) $item->inventoryStreetLight->rate ??0* (int) $item->quantity, // Proper multiplication
                     ];
                 }),
             ];
