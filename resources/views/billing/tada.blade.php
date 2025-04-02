@@ -3,9 +3,13 @@
 <x-data-table id="tadaTable" :pageLength="50">
     <x-slot:thead>
       <tr>
-        <th>id</th>
+        <th data-select="true">
+          <input type="checkbox" id="selectAll" />
+        </th>
+          <th>From</th>
+          <th>To</th>
           <th>Kilometer</th>
-          <th>Mode of Transport</th>
+          <!-- <th>Mode of Transport</th> -->
           <th>Date</th>
           <th>Time</th>
           <th>Trip Price</th>
@@ -15,6 +19,8 @@
     </x-slot:thead>
     <x-slot:tbody>
         <tr>
+            <td></td>
+            <!-- <td></td> -->
             <td></td>
             <td></td>
             <td></td>
