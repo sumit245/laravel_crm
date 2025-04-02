@@ -100,7 +100,26 @@ class ProjectsController extends Controller
 
         // Fetch inventory items based on project type
         $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
-        $inventoryItems = $inventoryModel::where('project_id', $project->id)->get();
+
+        // Consolidated inventory items for streetlight projects
+        if ($project->project_type == 1) {
+            // Group by item name and sum quantities
+            $inventoryItems = $inventoryModel::where('project_id', $project->id)
+                ->select(
+                    'item_code',
+                    'item',
+                    DB::raw('SUM(quantity) as total_quantity'),
+                    'rate',
+                    DB::raw('SUM(quantity * rate) as total_value'),
+                    'make',
+                    'model'
+                )
+                ->groupBy('item_code','item','rate', 'make', 'model')
+                ->get();
+            Log::info($inventoryItems);
+        } else {
+            $inventoryItems = $inventoryModel::where('project_id', $project->id)->get();
+        }
 
         // Calculate Stock Values
         $initialStockValue = 0;

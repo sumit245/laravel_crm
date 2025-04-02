@@ -81,7 +81,7 @@
 
       <div class="d-flex justify-content-end">
         <button type="button" id="cancelStoreButton" class="btn btn-secondary me-2">Cancel</button>
-        <button type="submit" class="btn btn-primary">Save Store</button>
+        <button type="submit" id="dispatchSubmit" class="btn btn-primary">Save Store</button>
       </div>
     </form>
   </div>
@@ -304,12 +304,13 @@
             <!-- Vendor Selection -->
             <div class="form-group">
               <label for="vendorName">Vendor Name:</label>
-              <select class="form-select" id="vendorName" name="vendor_id" required>
+              <select class="form-select select2" id="vendorName" name="vendor_id" required>
                 <option value="">Select Vendor</option>
                 @foreach ($assignedVendors as $user)
                   <option value="{{ $user->id }}">{{ $user->name }}</option>
                 @endforeach
               </select>
+              {{-- TODO: Turn into select2 --}}
             </div>
             <div class="d-flex justify-content-end align-items-center">
               <button type="button" class="btn btn-danger btn-sm remove-item-btn m-1">
@@ -320,6 +321,7 @@
                 Add More Items
               </button>
             </div>
+            {{-- <pre>{{ print_r($inventoryItems->toArray(), true) }}</pre> --}}
             <!-- Dynamic Items Section -->
             <div id="itemsContainer">
               <div class="item-row mb-3">
@@ -329,7 +331,7 @@
                     <select class="form-select item-select" name="items[]" required>
                       <option value="">Select Item</option>
                       @foreach ($inventoryItems as $item)
-                        <option value="{{ $item->id }}" data-stock="{{ $item->quantity }}">
+                        <option value="{{ $item->item_code }}" data-stock="{{ $item->total_quantity }}">
                           {{ $item->item_code }} {{ $item->item }}
                         </option>
                       @endforeach
@@ -354,7 +356,7 @@
                   </div>
                   <div class="col-sm-8">
                     <!-- Scanned QR Codes List -->
-                    <ul id="scanned_qrs" class="list-group mb-3"></ul>
+                    <ul id="scanned_qrs" class="list-group my-1"></ul>
                   </div>
                 </div>
               </div>
@@ -482,6 +484,8 @@
 
 
 
+
+
     // Add New Item Row
     addMoreItemsButton.addEventListener('click', function() {
       const newItemRow = document.querySelector('.item-row').cloneNode(true);
@@ -506,7 +510,7 @@
       if (e.target.classList.contains('item-quantity')) {
         const select = e.target.closest('.item-row').querySelector('.item-select');
         if (select.selectedIndex > 0) {
-          //   const stock = select.selectedOptions[0].getAttribute('data-stock');
+          const stock = select.selectedOptions[0].getAttribute('data-stock');
           if (parseInt(e.target.value) > parseInt(stock)) {
             alert('Quantity cannot exceed stock.');
             e.target.value = stock;
@@ -549,75 +553,32 @@
       }
     }
 
-    document.getElementById("dispatchSubmit").addEventListener("click", function() {
-      let storeId = document.getElementById("dispatchStoreId").value;
-      let vendorId = document.getElementById("vendorName").value;
-      let items = [];
-
-      document.querySelectorAll(".dispatch-item").forEach(itemDiv => {
-        let itemCode = itemDiv.querySelector(".item-code").value;
-        let quantity = itemDiv.querySelector(".item-quantity").value;
-
-        if (itemCode && quantity > 0) {
-          items.push({
-            item_code: itemCode,
-            quantity: quantity
-          });
-        }
-      });
-
-      if (!storeId || !vendorId || items.length === 0) {
-        Swal.fire("Error", "Please fill all fields correctly!", "error");
-        return;
-      }
-
-      // Call API to dispatch items
-      fetch("/api/dispatch-inventory", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').content
-          },
-          body: JSON.stringify({
-            store_id: storeId,
-            vendor_id: vendorId,
-            items: items
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.success) {
-            Swal.fire("Success", "Items dispatched successfully!", "success");
-            closeDispatchModal();
-          } else {
-            Swal.fire("Error", data.message, "error");
-          }
-        })
-        .catch(error => {
-          Swal.fire("Error", "Something went wrong!", "error");
-        });
-    });
-
-    // On item selection, update quantity field
-    document.getElementById("item_id").addEventListener("change", function() {
-      availableQuantity = parseInt(this.selectedOptions[0].getAttribute("data-quantity")) || 0;
-      document.getElementById("quantity").value = availableQuantity;
-      scannedQRs = [];
-      updateScannedQRs();
-      document.getElementById("dispatchBtn").disabled = true;
-    });
-
     // Handle Qr Scanning
     const qrScanner = document.getElementById('qr_scanner');
     if (qrScanner) {
-      qrScanner.addEventListener('keyup', function(event) {
-        if (event.key === 'Enter' && this.value.trim() !== '') {
+      qrScanner.addEventListener('change', function(event) {
+        if (this.value.trim() !== '') {
           let scannedCode = this.value.trim();
           console.log('Scanned Code:', scannedCode);
           this.value = ''; // Clear input for next scan
 
           if (scannedQRs.includes(scannedCode)) {
             showError('QR code already scanned!');
+            return;
+          }
+          // Find the item-row that contains this QR scanner
+          const currentRow = this.closest('.item-row');
+          if (!currentRow) {
+            showError('Cannot determine which item row this scanner belongs to!');
+            return;
+          }
+          // Get the selected item ID
+          const selectedItemElement = document.querySelector('.item-select');
+          console.log(selectedItemElement)
+          const selectedItemId = selectedItemElement ? selectedItemElement.value : null;
+          console.log(selectedItemId)
+          if (!selectedItemId) {
+            showError('Please select an item first before scanning QR codes!');
             return;
           }
 
