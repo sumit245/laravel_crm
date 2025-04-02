@@ -413,6 +413,8 @@ class TaskController extends Controller
                 'district' => $pole->task->site->district ?? null,
                 'state' => $pole->task->site->state ?? null,
                 'beneficiary' => $pole->beneficiary,
+                "isSurveyed"=>true,
+                "isInstalled"=>false,
                 'installed_location' => [
                     'lat' => $pole->lat,
                     'lng' => $pole->lng,
@@ -444,6 +446,8 @@ class TaskController extends Controller
                 'battery_qr' => $pole->battery_qr,
                 'panel_qr' => $pole->panel_qr,
                 'beneficiary_contact' => $pole->beneficiary_contact,
+                "isSurveyed"=>true,
+                "isInstalled"=>true,
                 'sim_number' => $pole->sim_number,
                 'panchayat' => $pole->task->site->panchayat ?? null,
                 'block' => $pole->task->site->block ?? null,
