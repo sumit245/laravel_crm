@@ -115,10 +115,10 @@
                   onclick="openDispatchModal({{ $store->id }})">
                   Dispatch Inventory
                 </button>
-                <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
+                {{-- <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
                   onclick="deleteStore({{ $store->id }})">
                   Delete Store
-                </button>
+                </button> --}}
               </div>
             </div>
             <!-- Add Inventory Form (Initially Hidden) -->
@@ -284,7 +284,7 @@
     @endif
   </div>
 
-@include('projects.dispatchInventory')
+  @include("projects.dispatchInventory")
 
 </div>
 <script>
