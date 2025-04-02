@@ -2,10 +2,49 @@
     <h4>View Inventory for Store: {{ $storeName }} (Project ID: {{ $projectId }})</h4>
     <h4>Incharge Name: {{ $inchargeName }}</h4>
     <div class="row">
-      <div class="col-sm-3">
+      <div class="col-sm-3 mt-2 mb-2">
         <div class="card bg-success">
           <div class="card-header">
             Battery
+          </div>
+          <div class="card-body">
+            <span>Total Quantity: </span><span>12</span>
+            <p>Total Value</p>
+            <p>Dispatched Quantity</p>
+            <p>Dispatched Value</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-3 mt-2 mb-2">
+        <div class="card bg-warning">
+          <div class="card-header">
+            Luminary
+          </div>
+          <div class="card-body">
+            <p>Total Quantity</p>
+            <p>Total Value</p>
+            <p>Dispatched Quantity</p>
+            <p>Dispatched Value</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-3 mt-2 mb-2">
+        <div class="card bg-primary">
+          <div class="card-header">
+            Structure
+          </div>
+          <div class="card-body">
+            <p>Total Quantity</p><span></span>
+            <p>Total Value</p>
+            <p>Dispatched Quantity</p>
+            <p>Dispatched Value</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-3 mt-2 mb-2">
+        <div class="card bg-info">
+          <div class="card-header">
+            Module
           </div>
           <div class="card-body">
             <p>Total Quantity</p>
