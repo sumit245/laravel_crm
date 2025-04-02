@@ -59,7 +59,7 @@
                   </div>
                   <div class="col-sm-4 form-group">
                     <label for="quantity">Quantity:</label>
-                    <input type="number" class="form-control item-quantity" name="quantities[]" min="1"
+                    <input type="number" class="form-control item-quantity" name="total_quantity" min="1"
                       required>
                     <input type="hidden" name="total_value" id="total_value">
                   </div>
@@ -134,21 +134,6 @@
         }
       });
 
-      function fetchItemDetails(select) {
-        let selectedOption = select.options[select.selectedIndex];
-        let itemData = selectedOption.getAttribute("data-details");
-
-        if (itemData) {
-          let item = JSON.parse(itemData);
-          let parentDiv = select.closest('.dispatch-item');
-          parentDiv.querySelector('.item-name').textContent = item.item_name;
-          parentDiv.querySelector('.item-category').textContent = item.category;
-          parentDiv.querySelector('.item-stock').textContent = item.stock;
-          parentDiv.querySelector('.item-price').textContent = item.price;
-          parentDiv.querySelector('.item-details').classList.remove('hidden');
-        }
-      }
-
       function addDispatchItem() {
         let dispatchContainer = document.getElementById("dispatchItems");
         let itemTemplate = dispatchContainer.querySelector(".dispatch-item").cloneNode(true);
@@ -173,16 +158,15 @@
       if (itemSelect) {
         itemSelect.addEventListener('change', function() {
           const selectedOption = this.options[this.selectedIndex];
-
+          console.log(selectedOption)
           // Update hidden fields with item details
           document.getElementById('item_name').value = selectedOption.dataset.item || '';
           document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
           document.getElementById('item_make').value = selectedOption.dataset.make || '';
           document.getElementById('item_model').value = selectedOption.dataset.model || '';
-
           // Clear scanned QRs when item changes
           scannedQRs = [];
-          updateScannedQRsList();
+          updateScannedQRs();
           updateQuantityAndTotal();
         });
       }
@@ -209,7 +193,7 @@
             }
             // Get the selected item ID
             const selectedItemCode = document.querySelector('.item-select').value;
-            console.log(selectedItemId)
+            console.log(selectedItemCode)
             if (!selectedItemCode) {
               showError('Please select an item first before scanning QR codes!');
               return;
@@ -231,9 +215,9 @@
                 if (data.exists) {
                   scannedQRs.push(scannedCode);
                   updateScannedQRs();
-                          // Add hidden input for the serial number
-        addSerialNumberInput(scannedCode);
-        updateQuantityAndTotal();
+                  // Add hidden input for the serial number
+                  addSerialNumberInput(scannedCode);
+                  updateQuantityAndTotal();
                   clearError();
                 } else {
                   showError('Invalid QR code! Item not found in inventory.');
@@ -258,31 +242,31 @@
         }
       }
 
-        // Add hidden input for serial number
-  function addSerialNumberInput(serialNumber) {
-    const container = document.getElementById('serial_numbers_container');
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'serial_numbers[]';
-    input.value = serialNumber;
-    container.appendChild(input);
-  }
+      // Add hidden input for serial number
+      function addSerialNumberInput(serialNumber) {
+        const container = document.getElementById('serial_numbers_container');
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'serial_numbers[]';
+        input.value = serialNumber;
+        container.appendChild(input);
+      }
 
-   // Update quantity and total value
-  function updateQuantityAndTotal() {
-    const quantityInput = document.querySelector('.item-quantity');
-    const rate = parseFloat(document.getElementById('item_rate').value) || 0;
-    
-    // Set quantity to number of scanned QRs
-    const quantity = scannedQRs.length;
-    quantityInput.value = quantity;
-    
-    // Calculate and set total value
-    const totalValue = rate * quantity;
-    document.getElementById('total_value').value = totalValue.toFixed(2);
-  }
-  
-  
+      // Update quantity and total value
+      function updateQuantityAndTotal() {
+        const quantityInput = document.querySelector('.item-quantity');
+        const rate = parseFloat(document.getElementById('item_rate').value) || 0;
+
+        // Set quantity to number of scanned QRs
+        const quantity = scannedQRs.length;
+        quantityInput.value = quantity;
+
+        // Calculate and set total value
+        const totalValue = rate * quantity;
+        document.getElementById('total_value').value = totalValue.toFixed(2);
+      }
+
+
 
 
       // Show error message
