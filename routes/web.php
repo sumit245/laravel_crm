@@ -51,6 +51,16 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('sites', SiteController::class);
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
 
+    // Billing management
+    Route::get('/billing/tada', function () {
+        return view('billing.tada');
+    })->name('billing.tada');
+    Route::get('/billing/convenience', function () {
+        return view('billing.convenience');
+    })->name('billing.convenience');
+    
+
+
     // Inventory router
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
