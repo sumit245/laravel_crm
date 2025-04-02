@@ -13,7 +13,6 @@ use App\Models\Stores;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -258,8 +257,7 @@ class InventoryController extends Controller
     // Dispatch Inventory to a vendor
     public function dispatchInventory(Request $request)
     {
-        \Log::info('Dispatch Inventory Request Data:', $request->all());
-
+        Log::info('Dispatch Inventory Request Data:', $request->all());
         try {
             $request->validate([
                 'vendor_id' => 'required|exists:users,id',
@@ -308,7 +306,7 @@ class InventoryController extends Controller
             }
 
             // Log dispatched items
-        \Log::info('Dispatched Items:', $dispatchedItems);
+            Log::info('Dispatched Items:', $dispatchedItems);
 
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
