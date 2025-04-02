@@ -1,6 +1,27 @@
 @extends("layouts.main") @section("content") <div class="container">
     <h4>View Inventory for Store: {{ $storeName }} (Project ID: {{ $projectId }})</h4>
     <h4>Incharge Name: {{ $inchargeName }}</h4>
+    <div class="row">
+      <div class="col-sm-3">
+        <div class="card bg-success">
+          <div class="card-header">
+            Battery
+          </div>
+          <div class="card-body">
+            <p>Total Quantity</p>
+            <p>Total Value</p>
+            <p>Dispatched Quantity</p>
+            <p>Dispatched Value</p>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-3">
+      </div>
+      <div class="col-sm-3">
+      </div>
+      <div class="col-sm-3">
+      </div>
+    </div>
     <div class="mb-3">
       <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
       <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
