@@ -336,60 +336,66 @@ class InventoryController extends Controller
     }
 
     // Get dispatched inventory for a vendor
-    public function viewVendorInventory($vendorId)
-    {
-        Log::info("Fetching inventory for vendor_id: {$vendorId}");
-        try {
-            Log::info("Fetching inventory for vendor_id: {$vendorId}");
-            $inventory = InventoryDispatch::where('vendor_id', $vendorId)
-                ->with(['inventory', 'inventoryStreetLight', 'project', 'store', 'storeIncharge'])
-                ->get();
+   public function viewVendorInventory($vendorId)
+{
+    Log::info("Fetching inventory for vendor_id: {$vendorId}");
 
-            if ($inventory->isEmpty()) {
-                Log::warning("No inventory found for vendor_id: {$vendorId}");
-                return response()->json([
-                    'message' => 'No inventory found for this vendor.',
-                    'vendor_id' => $vendorId
-                ], 404);
-            }
-            // Calculate total inventory value
-            $totalInventoryValue = $inventory->sum(function ($item) {
-                $unitRate = (float) optional($item->inventoryStreetLight)->rate ?? 0;
-                $quantity = (int) $item->quantity ?? 0;
-                return (float) $unitRate * $quantity;
-            });
-            // Restructure response
-            $response = [
-                'vendor_id' => $vendorId,
-                'project_id' => optional($inventory->first()->project)->id,
-                'total_inventory_value' => number_format($totalInventoryValue, 2, '.', ''),
-                'inventory' => $inventory->map(function ($item) {
-                    return [
-                        'id' => $item->id,
-                        'inventory_id' => $item->inventory_id,
-                        'dispatch_date' => $item->dispatch_date,
-                        'manufacturer' => optional($item->inventoryStreetLight)->manufacturer,
-                        'item_code' => optional($item->inventoryStreetLight)->item_code,
-                        'item' => optional($item->inventoryStreetLight)->item,
-                        'make' => optional($item->inventoryStreetLight)->make,
-                        'model' => optional($item->inventoryStreetLight)->model,
-                        'serial_number' => optional($item->inventoryStreetLight)->serial_number,
-                        'hsn' => optional($item->inventoryStreetLight)->hsn,
-                        'unit' => optional($item->inventoryStreetLight)->unit,
-                        'rate' => (float) optional($item->inventoryStreetLight)->rate ?? 0,
-                        'quantity' => (int)$item->quantity ?? 0,  // Ensures it’s never null
-                        'total_value' => (float) optional($item->inventoryStreetLight)->rate ?? 0* (int) $item->quantity, // Proper multiplication
-                    ];
-                }),
-            ];
+    try {
+        // Get all dispatched inventory for this vendor
+        $inventory = InventoryDispatch::where('vendor_id', $vendorId)
+            ->with(['project', 'store', 'storeIncharge'])
+            ->get();
 
-            return response()->json($response);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
+        if ($inventory->isEmpty()) {
+            Log::warning("No inventory found for vendor_id: {$vendorId}");
             return response()->json([
-                'message' => 'Something went wrong!',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No inventory found for this vendor.',
+                'vendor_id' => $vendorId
+            ], 404);
         }
+
+        // Calculate total inventory value directly from total_value column
+        $totalInventoryValue = $inventory->sum('total_value');
+
+        // Group inventory by item_code for consolidated view
+        $groupedInventory = $inventory->groupBy('item_code')->map(function($items) {
+            $firstItem = $items->first();
+            
+            return [
+                'item_code' => $firstItem->item_code,
+                'item' => $firstItem->item,
+                'manufacturer' => $firstItem->make,
+                'make' => $firstItem->make,
+                'model' => $firstItem->model,
+                'rate' => (float)$firstItem->rate,
+                'total_quantity' => $items->sum('total_quantity'),
+                'total_value' => $items->sum('total_value'),
+                'dispatch_date' => $firstItem->dispatch_date->format('Y-m-d'),
+                'serial_numbers' => $items->pluck('serial_numbers')->flatten()->filter()->values()->all(),
+                'store_name' => optional($firstItem->store)->store_name,
+                'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' . 
+                                   optional($firstItem->storeIncharge)->lastName
+            ];
+        })->values();
+
+        // Restructure response
+        $response = [
+            'vendor_id' => $vendorId,
+            'project_id' => optional($inventory->first()->project)->id,
+            'project_name' => optional($inventory->first()->project)->project_name,
+            'total_inventory_value' => number_format($totalInventoryValue, 2, '.', ''),
+            'inventory_count' => $groupedInventory->count(),
+            'inventory' => $groupedInventory
+        ];
+
+        return response()->json($response);
+    } catch (Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([
+            'message' => 'Something went wrong!',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 }
