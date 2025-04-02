@@ -2,6 +2,7 @@
   $selectedProjectId = session("project_id");
 @endphp
 
+
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav" style="max-height: 80%;">
     <li class="nav-item nav-category">Project</li>
@@ -66,6 +67,34 @@
         <span class="menu-title">Target Management</span>
       </a>
     </li>
+<!-- Billing management -->
+<li class="nav-item nav-category">Billing Management</li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("billing.tada") }}">
+        <i class="menu-icon mdi mdi-store"></i>
+        <span class="menu-title">TA & DA</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("billing.convenience") }}">
+        <i class="menu-icon mdi mdi-store"></i>
+        <span class="menu-title">Convenience</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link disabled" href="#">
+        <i class="menu-icon mdi mdi-store"></i>
+        <span class="menu-title">Users</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link disabled" href="#">
+        <i class="menu-icon mdi mdi-store"></i>
+        <span class="menu-title">Settings</span>
+      </a>
+    </li>
+<!-- Billing management ends -->
+
     <li class="nav-item nav-category">Inventory</li>
     <li class="nav-item">
       <a class="nav-link disabled" href="{{ route("inventory.index") }}">
