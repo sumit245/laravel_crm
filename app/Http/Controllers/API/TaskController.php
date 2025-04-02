@@ -439,7 +439,12 @@ class TaskController extends Controller
             return [
                 'pole_id' => $pole->id,
                 'complete_pole_number' => $pole->complete_pole_number,
-                'ward' => $pole->task->site->ward ?? null,
+                'ward_name' => $pole->ward_name ?? null,
+                'luminary_qr' => $pole->luminary_qr,
+                'battery_qr' => $pole->battery_qr,
+                'panel_qr' => $pole->panel_qr,
+                'beneficiary_contact' => $pole->beneficiary_contact,
+                'sim_number' => $pole->sim_number,
                 'panchayat' => $pole->task->site->panchayat ?? null,
                 'block' => $pole->task->site->block ?? null,
                 'district' => $pole->task->site->district ?? null,
