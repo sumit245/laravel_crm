@@ -2,10 +2,11 @@
     <h4>View Inventory for Store: {{ $storeName }} (Project ID: {{ $projectId }})</h4>
     <h4>Incharge Name: {{ $inchargeName }}</h4>
     <div class="row">
-      <div class="col-sm-3 mt-2 mb-2">
+      <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-success">
           <div class="card-header">
-            Battery
+            <h3 class="card-title">Battery</h3>
+            <i class="mdi mdi-battery-high"></i>
           </div>
           <div class="card-body">
             <span>Total Quantity: </span><span>12</span>
@@ -15,10 +16,11 @@
           </div>
         </div>
       </div>
-      <div class="col-sm-3 mt-2 mb-2">
+      <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-warning">
-          <div class="card-header">
-            Luminary
+          <div class="d-flex justify-content-between">
+            <h3 class="card-title">Luminary</h3>
+            <i class="mdi mdi mdi-led-on"></i>
           </div>
           <div class="card-body">
             <p>Total Quantity</p>
@@ -28,10 +30,11 @@
           </div>
         </div>
       </div>
-      <div class="col-sm-3 mt-2 mb-2">
+      <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-primary">
           <div class="card-header">
-            Structure
+            <h3 class="card-title">Structure</h3>
+            <i class="mdi mdi-sign-pole"></i>
           </div>
           <div class="card-body">
             <p>Total Quantity</p><span></span>
@@ -41,10 +44,11 @@
           </div>
         </div>
       </div>
-      <div class="col-sm-3 mt-2 mb-2">
+      <div class="col-sm-3 mb-2 mt-2">
         <div class="card bg-info">
           <div class="card-header">
-            Module
+            <h3 class="card-title">Module</h3>
+            <i class="mdi mdi-solar-panel"></i>
           </div>
           <div class="card-body">
             <p>Total Quantity</p>
