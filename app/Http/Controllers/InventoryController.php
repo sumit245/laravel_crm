@@ -395,7 +395,7 @@ class InventoryController extends Controller
                     'total_quantity' => $items->sum('total_quantity'),
                     'total_value' => $items->sum('total_value'),
                     'dispatch_date' => $firstItem->dispatch_date,
-                    'serial_numbers' => $items->pluck('serial_numbers')->flatten()->filter()->values()->all(),
+                    'serial_number' => $items->pluck('serial_number')->flatten()->filter()->values()->all(),
                     'store_name' => optional($firstItem->store)->store_name,
                     'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' .
                         optional($firstItem->storeIncharge)->lastName
