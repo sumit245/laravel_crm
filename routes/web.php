@@ -58,7 +58,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/convenience', function () {
         return view('billing.convenience');
     })->name('billing.convenience');
-    
+
 
 
     // Inventory router
@@ -67,10 +67,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/import', [InventoryController::class, 'import'])->name('inventory.import');
     Route::post('/inventory/import-streetlight', [InventoryController::class, 'importStreetlight'])->name('inventory.import-streetlight');
-    Route::post('/inventory/checkQR', function (Request $request) {
-        $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)->exists();
-        return response()->json(['exists' => $exists]);
-    })->name('inventory.checkQR');
+    Route::post('/inventory/checkQR', [InventoryController::class, 'checkQR'])->name('inventory.checkQR');
     Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     // Inventory Edit
