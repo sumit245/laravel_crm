@@ -22,6 +22,7 @@ class InventoryDispatch extends Model
         'total_quantity',
         'total_value',
         'serial_number',
+        'isDispatched',
         'dispatch_date',
 
     ];
