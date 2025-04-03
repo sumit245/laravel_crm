@@ -67,12 +67,12 @@
         </div>
       </div>
     </div>
-    <div class="mb-3">
+    <!-- <div class="mb-3">
       <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
       <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
       <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
     </div>
-  </div>
+  </div> -->
   <!-- Commneted columns need to be added in the table -->
   @if ($inventory->isEmpty())
     <p>No inventory available for this store.</p>
