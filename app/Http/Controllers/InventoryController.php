@@ -249,7 +249,7 @@ class InventoryController extends Controller
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
             $totalBattery = $inventory->where('item_code', 'SL03')->count();
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'total'));
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
         }
