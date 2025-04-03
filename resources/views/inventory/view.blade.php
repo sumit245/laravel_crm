@@ -215,16 +215,5 @@
       document.body.appendChild(link);
       link.click();
     }
-
-    // Print table function
-    function printTable() {
-      let printContents = document.querySelector("#inventoryTable").outerHTML;
-      let newWindow = window.open("", "_blank");
-      newWindow.document.write("<html><head><title>Print Inventory</title></head><body>");
-      newWindow.document.write(printContents);
-      newWindow.document.write("</body></html>");
-      newWindow.document.close();
-      newWindow.print();
-    }
   </script>
 @endpush
