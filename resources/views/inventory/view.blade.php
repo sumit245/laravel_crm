@@ -1,7 +1,7 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container">
+  <div class="container-fluid m-2">
     <div class="d-flex justify-content-between my-1">
       <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
       <div>
