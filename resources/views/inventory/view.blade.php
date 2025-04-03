@@ -2,9 +2,13 @@
 
 @section("content")
   <div class="container">
-  <h4>View Inventory for Store: {{ $storeName }} (Project ID: {{ $projectId }})</h4>
-    <h4>Incharge Name: {{ $inchargeName }}</h4>
-
+    <div class="d-flex justify-content-between my-1">
+      <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
+      <div>
+        <h4>Store: {{ $storeName }} (Project ID: {{ $projectId }})</h4>
+        <h4>Incharge Name: {{ $inchargeName }}</h4>
+      </div>
+    </div>
     <div class="row">
       <!-- Inventory Summary -->
       <div class="col-sm-3 mb-2 mt-2">
@@ -17,7 +21,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
-            <p>Total Value: <span>{{ $totalBatteryValue }}</span></p>
+            <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -33,14 +37,14 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
-            <p>Total Value: <span>{{ $totalLuminaryValue }}</span></p>
+            <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
         </div>
       </div>
       <div class="col-sm-3 mb-2 mt-2">
-        <div class="card bg-primary">
+        <div class="card"style="background-color: #FF5733; color: black;">
           <div class="card-header">
             <div class="d-flex justify-content-between">
               <h3 class="card-title">Structure</h3>
@@ -51,7 +55,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
-            <p>Total Value: <span>{{ $totalStructureValue }}</span></p>
+            <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -67,7 +71,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
-            <p>Total Value: <span>{{ $totalModuleValue }}</span></p>
+            <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -89,11 +93,10 @@
             <th>Item Name</th>
             <th>Manufacturer</th>
             <th>Model</th>
+            <th>Serial Number</th>
+            <th>HSN Code</th>
             <th>Unit</th>
-            <th>Quantity</th>
-            <th>Rate</th>
-            <th>Total Value</th>
-            <th>Actions</th>
+            <th class="actions">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -103,10 +106,9 @@
               <td>{{ $item->item }}</td>
               <td>{{ $item->manufacturer }}</td>
               <td>{{ $item->model }}</td>
+              <td>{{ $item->serial_number }}</td>
+              <td>{{ $item->hsn }}</td>
               <td>{{ $item->unit }}</td>
-              <td>{{ $item->quantity }}</td>
-              <td>{{ $item->rate }}</td>
-              <td>{{ number_format($item->quantity * $item->rate, 2) }}</td>
               <td>
                 <a href="#modal{{ $item->id }}" data-toggle="modal" class="btn btn-sm btn-info">Details</a>
               </td>
@@ -152,19 +154,28 @@
             extend: 'excel',
             text: '<i class="mdi mdi-file-excel"></i>',
             className: 'btn btn-sm btn-success',
-            titleAttr: 'Export to Excel' // Tooltip
+            titleAttr: 'Export to Excel', // Tooltip,
+            exportOptions: {
+              columns: ':not(.actions)'
+            }
           },
           {
             extend: 'pdf',
             text: '<i class="mdi mdi-file-pdf"></i>',
             className: 'btn btn-sm btn-danger',
-            titleAttr: 'Export to PDF' // Tooltip
+            titleAttr: 'Export to PDF', // Tooltip
+            exportOptions: {
+              columns: ':not(.actions)'
+            }
           },
           {
             extend: 'print',
             text: '<i class="mdi mdi-printer"></i>',
             className: 'btn btn-sm btn-info',
-            titleAttr: 'Print Table' // Tooltip
+            titleAttr: 'Print Table',
+            exportOptions: {
+              columns: ':not(.actions)'
+            } // Tooltip
           }
         ],
         paging: true,
@@ -189,13 +200,12 @@
       @foreach ($inventory as $item)
         rows.push([
           "{{ $item->item_code }}",
-          "{{ $item->item_name }}",
+          "{{ $item->item }}",
           "{{ $item->manufacturer }}",
           "{{ $item->model }}",
+          "{{ $item->serial_number }}",
+          "{{ $item->hsn }}",
           "{{ $item->unit }}",
-          "{{ $item->quantity }}",
-          "{{ $item->rate }}",
-          "{{ number_format($item->quantity * $item->rate, 2) }}"
         ]);
       @endforeach
 
