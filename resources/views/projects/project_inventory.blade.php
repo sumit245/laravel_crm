@@ -113,7 +113,7 @@
 
                 <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
                   onclick="openDispatchModal({{ $store->id }})">
-                  Dispatch Inventory
+                  Material Issue
                 </button>
                 {{-- <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
                   onclick="deleteStore({{ $store->id }})">

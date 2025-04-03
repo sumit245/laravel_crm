@@ -414,15 +414,15 @@ class TaskController extends Controller
                 'state' => $pole->task->site->state ?? null,
                 'beneficiary' => $pole->beneficiary,
                 'beneficiary_contact' => $pole->beneficiary_contact,
-                "isSurveyed"=>true,
-                "isInstalled"=>false,
+                "isSurveyed" => true,
+                "isInstalled" => false,
                 'installed_location' => [
                     'lat' => $pole->lat,
                     'lng' => $pole->lng,
                 ],
                 'remarks' => $pole->remarks,
                 'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
+                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
                 'assigned_date' => $pole->created_at,
@@ -447,8 +447,8 @@ class TaskController extends Controller
                 'battery_qr' => $pole->battery_qr,
                 'panel_qr' => $pole->panel_qr,
                 'beneficiary_contact' => $pole->beneficiary_contact,
-                "isSurveyed"=>true,
-                "isInstalled"=>true,
+                "isSurveyed" => true,
+                "isInstalled" => true,
                 'sim_number' => $pole->sim_number,
                 'panchayat' => $pole->task->site->panchayat ?? null,
                 'block' => $pole->task->site->block ?? null,
@@ -460,8 +460,8 @@ class TaskController extends Controller
                     'lng' => $pole->lng,
                 ],
                 'remarks' => $pole->remarks,
-                'survey_image' => collect($pole->survey_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
+                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
+                'submission_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
             ];
