@@ -107,11 +107,13 @@ class InventoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-        $item = Inventory::findOrFail($id);
-        return view('inventory.show', compact('item'));
+    
+
+    public function distinctInventoryStreetlight(){
+        $distinctItems = InventroyStreetlightModel::select('item_code', 'item', 'total_quantity', 'rate', 'make', 'model')
+        ->groupBy('item_code')
+        ->get();
+        return view('projects.project_inventory', compact( 'distinctItems'));
     }
 
     /**

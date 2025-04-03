@@ -109,12 +109,13 @@ class ProjectsController extends Controller
                     'item_code',
                     'item',
                     DB::raw('SUM(quantity) as total_quantity'),
-                    'rate',
+                    DB::raw('MAX(rate) as rate'),  // Use MAX or AVG to avoid conflict
                     DB::raw('SUM(quantity * rate) as total_value'),
-                    'make',
-                    'model'
+                    DB::raw('MAX(make) as make'),  // Use MAX or AVG to avoid conflict
+                    DB::raw('MAX(model) as model')  // Use MAX or AVG to avoid conflict
+                    
                 )
-                ->groupBy('item_code', 'item', 'rate', 'make', 'model')
+                ->groupBy('item_code', 'item')
                 ->get();
             Log::info($inventoryItems);
         } else {
