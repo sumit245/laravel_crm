@@ -253,21 +253,25 @@ class InventoryController extends Controller
             $batteryRate = $inventory->where('item_code', 'SL03')
                             ->value('rate');
             $totalBatteryValue = $batteryRate * $totalBattery;
+            $totalBatteryValue = number_format($totalBatteryValue, 2);
             // Luminary Data
             $totalLuminary = $inventory->where('item_code', 'SL02')->count();
             $LuminaryRate = $inventory->where('item_code', 'SL02')
                             ->value('rate');
             $totalLuminaryValue = $LuminaryRate * $totalLuminary;
+            $totalLuminaryValue = number_format($totalLuminaryValue, 2);
             //Structure Data
             $totalStructure = $inventory->where('item_code', 'SL04')->count();
             $StructureRate = $inventory->where('item_code', 'SL04')
                             ->value('rate');
             $totalStructureValue = $StructureRate * $totalStructure;
+            $totalStructureValue = number_format($totalStructureValue, 2);
             // Module Data
             $totalModule = $inventory->where('item_code', 'SL01')->count();
             $ModuleRate = $inventory->where('item_code', 'SL01')
                             ->value('rate');
             $totalModuleValue = $ModuleRate * $totalModule;
+            $totalModuleValue = number_format($totalModuleValue, 2);
 
             return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'totalStructure', 'totalStructureValue', 'totalModule', 'totalModuleValue', 'totalLuminary', 'totalLuminaryValue' ));
         } catch (Exception $e) {
