@@ -248,6 +248,7 @@ class InventoryController extends Controller
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
+
             return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
