@@ -315,17 +315,17 @@ class InventoryController extends Controller
             if ($availableQuantity < $request->total_quantity) {
                 return redirect()->back()->with('error', "Not enough stock for {$request->item}. Available: {$availableQuantity}");
             }
-            // For each serial number, find the specific inventory item and dispatch it
-            $dispatchedItems = [];
+
             foreach ($request->serial_numbers as $serialNumber) {
                 // Find the specific inventory item with this serial number
                 $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
                     ->where('project_id', $request->project_id)
                     ->where('store_id', $request->store_id)
                     ->first();
+                // TODO: also check quantity is greater than 0
 
                 if (!$inventoryItem) {
-                    return redirect()->back()->with('error', "Item with serial number {$serialNumber} not found");
+                    return redirect()->back()->with('error', "Item with serial number {$serialNumber} not found or already dispatched");
                 }
 
                 // Create dispatch record
@@ -341,7 +341,7 @@ class InventoryController extends Controller
                     'model' => $request->model,
                     'total_quantity' => $request->total_quantity,
                     'total_value' => $request->total_value,
-                    'serial_numbers' => $serialNumber,
+                    'serial_number' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
 
                 ]);
@@ -395,7 +395,7 @@ class InventoryController extends Controller
                     'total_quantity' => $items->sum('total_quantity'),
                     'total_value' => $items->sum('total_value'),
                     'dispatch_date' => $firstItem->dispatch_date,
-                    'serial_numbers' => $items->pluck('serial_numbers')->flatten()->filter()->values()->all(),
+                    'serial_number' => $items->pluck('serial_number')->flatten()->filter()->values()->all(),
                     'store_name' => optional($firstItem->store)->store_name,
                     'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' .
                         optional($firstItem->storeIncharge)->lastName
