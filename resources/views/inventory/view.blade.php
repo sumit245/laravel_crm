@@ -2,6 +2,9 @@
 
 @section("content")
   <div class="container">
+  <h4>View Inventory for Store: {{ $storeName }} (Project ID: {{ $projectId }})</h4>
+    <h4>Incharge Name: {{ $inchargeName }}</h4>
+
     <div class="row">
       <!-- Inventory Summary -->
       <div class="col-sm-3 mb-2 mt-2">
@@ -14,7 +17,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
-            <p>Total Value: ₹<span>{{ $totalBatteryValue }}</span></p>
+            <p>Total Value: <span>{{ $totalBatteryValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -30,14 +33,14 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
-            <p>Total Value: ₹<span>{{ $totalLuminaryValue }}</span></p>
+            <p>Total Value: <span>{{ $totalLuminaryValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
         </div>
       </div>
       <div class="col-sm-3 mb-2 mt-2">
-        <div class="card" style="background-color: #FF5733; color: black;">
+        <div class="card bg-primary">
           <div class="card-header">
             <div class="d-flex justify-content-between">
               <h3 class="card-title">Structure</h3>
@@ -48,7 +51,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
-            <p>Total Value: ₹<span>{{ $totalStructureValue }}</span></p>
+            <p>Total Value: <span>{{ $totalStructureValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -64,7 +67,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
-            <p>Total Value: ₹<span>{{ $totalModuleValue }}</span></p>
+            <p>Total Value: <span>{{ $totalModuleValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -73,19 +76,15 @@
     </div>
     <div class="mb-3">
       <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
-      <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
-      <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
+      <!-- <button onclick="printTable()" class="btn btn-primary">Print Inventory</button> -->
+      <!-- <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button> -->
     </div>
   </div>
-  <!-- Commneted columns need to be added in the table -->
-  @if ($inventory->isEmpty())
-    <p>No inventory available for this store.</p>
-  @else
-    <table id="viewInventoryTable" :pageLength="50" class="table-striped table-bordered table-sm m-2 table">
-      <thead>
-        <tr>
-          <th>#</th>
-          @if ($projectType == 1)
+    <!-- Inventory Table -->
+    <div class="mt-4">
+      <table id="inventoryTable" class="table-striped table-bordered table">
+        <thead>
+          <tr>
             <th>Item Code</th>
             <th>Item Name</th>
             <th>Manufacturer</th>
