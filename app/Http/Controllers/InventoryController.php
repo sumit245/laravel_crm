@@ -262,7 +262,8 @@ class InventoryController extends Controller
             $totalBatteryValue = number_format($totalBatteryValue, 2);
             // Battery Dispatch data
             $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
-
+            $dispatchAmountBattery = $dispatch->where('item_code', 'SL03')->sum('total_value');
+            $dispatchAmountBattery = number_format($dispatchAmountBattery, 2);
             // Luminary Data
             $totalLuminary = $inventory->where('item_code', 'SL02')->count();
             $LuminaryRate = $inventory->where('item_code', 'SL02')
@@ -271,6 +272,8 @@ class InventoryController extends Controller
             $totalLuminaryValue = number_format($totalLuminaryValue, 2);
             // Luminary Dispatch data
             $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
+            $dispatchAmountLuminary = $dispatch->where('item_code', 'SL02')->sum('total_value');
+            $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
 
             //Structure Data
             $totalStructure = $inventory->where('item_code', 'SL04')->count();
@@ -280,6 +283,8 @@ class InventoryController extends Controller
             $totalStructureValue = number_format($totalStructureValue, 2);
             // Structure Dispatch data
             $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
+            $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
+            $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
 
             // Module Data
             $totalModule = $inventory->where('item_code', 'SL01')->count();
@@ -289,9 +294,10 @@ class InventoryController extends Controller
             $totalModuleValue = number_format($totalModuleValue, 2);
             // Module Dispatch data
             $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
+            $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
+            $dispatchAmountModule = number_format($dispatchAmountModule, 2);
 
-
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'batteryDispatch', 'totalStructure', 'totalStructureValue', 'structureDispatch', 'totalModule', 'totalModuleValue', 'moduleDispatch', 'totalLuminary', 'totalLuminaryValue', 'luminaryDispatch'));
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'batteryDispatch', 'dispatchAmountBattery', 'totalStructure', 'totalStructureValue', 'structureDispatch', 'dispatchAmountStructure', 'totalModule', 'totalModuleValue', 'moduleDispatch',  'dispatchAmountModule','totalLuminary', 'totalLuminaryValue', 'luminaryDispatch', 'dispatchAmountLuminary'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
         }

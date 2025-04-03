@@ -23,7 +23,7 @@
             <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
             <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
             <p>Dispatched Quantity: <span>{{ $batteryDispatch }}</span> </p>
-            <p>Dispatched Value</p>
+            <p>Dispatched Value: ₹<span>{{ $dispatchAmountBattery }}</span></p>
           </div>
         </div>
       </div>
@@ -39,7 +39,7 @@
             <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
             <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
             <p>Dispatched Quantity: <span>{{ $luminaryDispatch }}</span> </p>
-            <p>Dispatched Value</p>
+            <p>Dispatched Value: ₹<span>{{ $dispatchAmountLuminary }}</span></p>
           </div>
         </div>
       </div>
@@ -57,7 +57,7 @@
             <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
             <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
             <p>Dispatched Quantity: <span>{{ $structureDispatch }}</span> </p>
-            <p>Dispatched Value</p>
+            <p>Dispatched Value: ₹<span>{{ $dispatchAmountStructure }}</span></p>
           </div>
         </div>
       </div>
@@ -73,7 +73,7 @@
             <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
             <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
             <p>Dispatched Quantity: <span>{{ $moduleDispatch }}</span></p>
-            <p>Dispatched Value</p>
+            <p>Dispatched Value: ₹<span>{{ $dispatchAmountModule }}</span></p>
           </div>
         </div>
       </div>
