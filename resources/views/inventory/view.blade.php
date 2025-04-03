@@ -12,7 +12,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
-            <p>Total Value: <span>{{ $totalBatteryValue }}</span></p>
+            <p>Total Value: ₹<span>{{ $totalBatteryValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -28,14 +28,14 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
-            <p>Total Value: <span>{{ $totalLuminaryValue }}</span></p>
+            <p>Total Value: ₹<span>{{ $totalLuminaryValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
         </div>
       </div>
       <div class="col-sm-3 mb-2 mt-2">
-        <div class="card bg-primary">
+        <div class="card" style="background-color: #FF5733; color: black;">
           <div class="card-header">
             <div class="d-flex justify-content-between">
             <h3 class="card-title">Structure</h3>
@@ -44,7 +44,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
-            <p>Total Value: <span>{{ $totalStructureValue }}</span></p>
+            <p>Total Value: ₹<span>{{ $totalStructureValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
@@ -60,7 +60,7 @@
           </div>
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
-            <p>Total Value: <span>{{ $totalModuleValue }}</span></p>
+            <p>Total Value: ₹<span>{{ $totalModuleValue }}</span></p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
           </div>
