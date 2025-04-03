@@ -248,7 +248,8 @@ class InventoryController extends Controller
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType'));
+            $totalBattery = $inventory->where('item_code', 'SL03')->count();
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'total'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
         }
@@ -334,6 +335,7 @@ class InventoryController extends Controller
             return redirect()->back()->with('error', 'Inventory dispatched Failed');
         }
     }
+
 
     // Get dispatched inventory for a vendor
     public function viewVendorInventory($vendorId)
