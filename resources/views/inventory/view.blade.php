@@ -78,12 +78,12 @@
         </div>
       </div>
     </div>
-    <div class="mb-3">
+    <!-- <div class="mb-3">
       <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
-      <!-- <button onclick="printTable()" class="btn btn-primary">Print Inventory</button> -->
-      <!-- <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button> -->
+      <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
+      <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
     </div>
-  </div>
+  </div> -->
     <!-- Inventory Table -->
     <div class="mt-4">
       <table id="inventoryTable" class="table-striped table-bordered table">
