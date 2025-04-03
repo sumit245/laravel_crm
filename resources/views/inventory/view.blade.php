@@ -11,7 +11,7 @@
             </div>
           </div>
           <div class="card-body">
-            <p>Total Quantity: <span>12</span></p>
+            <p>Total Quantity: <span>{{ $total }}</span></p>
             <p>Total Value</p>
             <p>Dispatched Quantity</p>
             <p>Dispatched Value</p>
