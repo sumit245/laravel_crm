@@ -195,13 +195,12 @@
       @foreach ($inventory as $item)
         rows.push([
           "{{ $item->item_code }}",
-          "{{ $item->item_name }}",
+          "{{ $item->item }}",
           "{{ $item->manufacturer }}",
           "{{ $item->model }}",
+          "{{ $item->serial_number }}",
+          "{{ $item->hsn }}",
           "{{ $item->unit }}",
-          "{{ $item->quantity }}",
-          "{{ $item->rate }}",
-          "{{ number_format($item->quantity * $item->rate, 2) }}"
         ]);
       @endforeach
 
