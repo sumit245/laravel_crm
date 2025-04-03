@@ -95,7 +95,7 @@
           @foreach ($inventory as $item)
             <tr>
               <td>{{ $item->item_code }}</td>
-              <td>{{ $item->item_name }}</td>
+              <td>{{ $item->item }}</td>
               <td>{{ $item->manufacturer }}</td>
               <td>{{ $item->model }}</td>
               <td>{{ $item->unit }}</td>
@@ -136,20 +136,41 @@
   @endforeach
 @endsection
 
-@section("scripts")
-  <!-- Include jQuery and DataTables -->
-  {{-- <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap4.min.js"></script> --}}
-
+@push("scripts")
   <script>
     $(document).ready(function() {
       $('#inventoryTable').DataTable({
-        "pageLength": 50,
-        "ordering": true,
-        "searching": true,
-        "lengthChange": false,
-        "pagination": true
+        dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
+          "<'row'<'col-sm-12'tr>>" +
+          "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+        buttons: [{
+            extend: 'excel',
+            text: '<i class="mdi mdi-file-excel"></i>',
+            className: 'btn btn-sm btn-success',
+            titleAttr: 'Export to Excel' // Tooltip
+          },
+          {
+            extend: 'pdf',
+            text: '<i class="mdi mdi-file-pdf"></i>',
+            className: 'btn btn-sm btn-danger',
+            titleAttr: 'Export to PDF' // Tooltip
+          },
+          {
+            extend: 'print',
+            text: '<i class="mdi mdi-printer"></i>',
+            className: 'btn btn-sm btn-info',
+            titleAttr: 'Print Table' // Tooltip
+          }
+        ],
+        paging: true,
+        pageLength: 50, // Show 50 rows per page
+        searching: true,
+        ordering: true,
+        responsive: true,
+        language: {
+          search: '',
+          searchPlaceholder: 'Search Inventory'
+        }
       });
     });
 
@@ -196,4 +217,4 @@
       newWindow.print();
     }
   </script>
-@endsection
+@endpush
