@@ -110,7 +110,7 @@
               <td>{{ $item->hsn }}</td>
               <td>{{ $item->unit }}</td>
               <td>
-                <a href="#modal{{ $item->id }}" data-toggle="modal" class="btn btn-sm btn-info">Details</a>
+                <a href="#modal{{ $item->id }}" data-bs-toggle="modal" class="btn btn-sm btn-info">Details</a>
               </td>
             </tr>
           @endforeach
@@ -118,7 +118,7 @@
       </table>
     </div>
   </div>
-
+  
   <!-- Inventory Details Modal -->
   @foreach ($inventory as $item)
     <div class="modal fade" id="modal{{ $item->id }}" tabindex="-1" role="dialog">
