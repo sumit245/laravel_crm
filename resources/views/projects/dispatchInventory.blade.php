@@ -5,7 +5,7 @@
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="dispatchModalLabel">Dispatch Inventory</h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
             <span aria-hidden="true">&times;</span>
           </button>
         </div>
@@ -35,7 +35,6 @@
                 Add More Items
               </button>
             </div>
-            {{-- <pre>{{ print_r($inventoryItems->toArray(), true) }}</pre> --}}
             <!-- Dynamic Items Section -->
             <div id="itemsContainer">
               <div class="item-row mb-3">
@@ -86,7 +85,8 @@
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-            <button type="submit" class="btn btn-primary">Dispatch</button>
+            <button type="button" class="btn btn-primary printbtn">Print</button>
+            <button type="submit" class="btn btn-primary">Issue items</button>
           </div>
         </form>
 
@@ -193,11 +193,12 @@
             }
             // Get the selected item ID
             const selectedItemCode = document.querySelector('.item-select').value;
-            console.log(selectedItemCode)
             if (!selectedItemCode) {
               showError('Please select an item first before scanning QR codes!');
               return;
             }
+
+            const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
 
             // Check if QR exists in database via AJAX
             fetch('{{ route("inventory.checkQR") }}', {
@@ -207,7 +208,9 @@
                   'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({
-                  qr_code: scannedCode
+                  qr_code: scannedCode,
+                  store_id: storeId,
+                  item_code: selectedItemCode // Pass item_code along with store_id
                 })
               })
               .then(response => response.json())
@@ -266,9 +269,6 @@
         document.getElementById('total_value').value = totalValue.toFixed(2);
       }
 
-
-
-
       // Show error message
       function showError(message) {
         const errorElement = document.getElementById('qr_error');
@@ -303,3 +303,27 @@
       @endif
     });
   </script>
+
+  @push("styles")
+    <style>
+      .printbtn {
+        background: #ffaf00;
+        border: none
+      }
+
+      .printbtn:hover {
+        background: rgb(223, 152, 1);
+        border: none
+      }
+
+      .text-danger {
+        color: #F95F53 !important;
+        font-size: 14px;
+      }
+
+      .list-group-item {
+        padding: 5px;
+        top: 25px;
+      }
+    </style>
+  @endpush

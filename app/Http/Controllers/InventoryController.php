@@ -421,4 +421,20 @@ class InventoryController extends Controller
             ], 500);
         }
     }
+
+    public function checkQR(Request $request)
+    {
+        try {
+            Log::info($request->all());
+            $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)
+                ->where('store_id', $request->store_id) // Ensure it belongs to the same store
+                ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
+                ->where('quantity', '>', 0) // Ensure quantity is greater than 0
+                ->exists();
+            Log::info("Exists: " . $exists);
+            return response()->json(['exists' => $exists]);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
+        }
+    }
 }
