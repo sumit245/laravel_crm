@@ -233,7 +233,7 @@ class InventoryController extends Controller
 
             // Fetch the project to determine the type
             $project = Project::findOrFail($projectId);
-            $storeName = "";
+            // $storeName = "";
 
             // Fetch the project to determine the type
             $project = Project::findOrFail($projectId);
@@ -251,29 +251,29 @@ class InventoryController extends Controller
             // Battery Data
             $totalBattery = $inventory->where('item_code', 'SL03')->count();
             $batteryRate = $inventory->where('item_code', 'SL03')
-                            ->value('rate');
+                ->value('rate');
             $totalBatteryValue = $batteryRate * $totalBattery;
             $totalBatteryValue = number_format($totalBatteryValue, 2);
             // Luminary Data
             $totalLuminary = $inventory->where('item_code', 'SL02')->count();
             $LuminaryRate = $inventory->where('item_code', 'SL02')
-                            ->value('rate');
+                ->value('rate');
             $totalLuminaryValue = $LuminaryRate * $totalLuminary;
             $totalLuminaryValue = number_format($totalLuminaryValue, 2);
             //Structure Data
             $totalStructure = $inventory->where('item_code', 'SL04')->count();
             $StructureRate = $inventory->where('item_code', 'SL04')
-                            ->value('rate');
+                ->value('rate');
             $totalStructureValue = $StructureRate * $totalStructure;
             $totalStructureValue = number_format($totalStructureValue, 2);
             // Module Data
             $totalModule = $inventory->where('item_code', 'SL01')->count();
             $ModuleRate = $inventory->where('item_code', 'SL01')
-                            ->value('rate');
+                ->value('rate');
             $totalModuleValue = $ModuleRate * $totalModule;
             $totalModuleValue = number_format($totalModuleValue, 2);
 
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'totalStructure', 'totalStructureValue', 'totalModule', 'totalModuleValue', 'totalLuminary', 'totalLuminaryValue' ));
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'totalStructure', 'totalStructureValue', 'totalModule', 'totalModuleValue', 'totalLuminary', 'totalLuminaryValue'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
         }
@@ -365,7 +365,6 @@ class InventoryController extends Controller
     public function viewVendorInventory($vendorId)
     {
         Log::info("Fetching inventory for vendor_id: {$vendorId}");
-
         try {
             // Get all dispatched inventory for this vendor
             $inventory = InventoryDispatch::where('vendor_id', $vendorId)
@@ -386,11 +385,10 @@ class InventoryController extends Controller
             // Group inventory by item_code for consolidated view
             $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
                 $firstItem = $items->first();
-
                 return [
                     'item_code' => $firstItem->item_code,
                     'item' => $firstItem->item,
-                    'manufacturer' => $firstItem->make,
+                    'manufacturer' => $firstItem->manufacturer,
                     'make' => $firstItem->make,
                     'model' => $firstItem->model,
                     'rate' => (float)$firstItem->rate,
