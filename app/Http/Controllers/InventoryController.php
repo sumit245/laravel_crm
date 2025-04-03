@@ -107,13 +107,14 @@ class InventoryController extends Controller
     /**
      * Display the specified resource.
      */
-    
 
-    public function distinctInventoryStreetlight(){
+
+    public function distinctInventoryStreetlight()
+    {
         $distinctItems = InventroyStreetlightModel::select('item_code', 'item', 'total_quantity', 'rate', 'make', 'model')
-        ->groupBy('item_code')
-        ->get();
-        return view('projects.project_inventory', compact( 'distinctItems'));
+            ->groupBy('item_code')
+            ->get();
+        return view('projects.project_inventory', compact('distinctItems'));
     }
 
     /**
@@ -305,7 +306,6 @@ class InventoryController extends Controller
     // Dispatch Inventory to a vendor
     public function dispatchInventory(Request $request)
     {
-        Log::info('Dispatch Inventory Request Data:', $request->all());
         try {
             $request->validate([
                 'vendor_id' => 'required|exists:users,id',
@@ -366,6 +366,7 @@ class InventoryController extends Controller
                     'total_value' => $request->total_value,
                     'serial_number' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
+                    "isDispatched" => true
 
                 ]);
 
@@ -442,6 +443,22 @@ class InventoryController extends Controller
                 'message' => 'Something went wrong!',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    public function checkQR(Request $request)
+    {
+        try {
+            Log::info($request->all());
+            $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)
+                ->where('store_id', $request->store_id) // Ensure it belongs to the same store
+                ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
+                ->where('quantity', '>', 0) // Ensure quantity is greater than 0
+                ->exists();
+            Log::info("Exists: " . $exists);
+            return response()->json(['exists' => $exists]);
+        } catch (Exception $e) {
+            return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 }
