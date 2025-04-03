@@ -107,11 +107,13 @@ class InventoryController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
-    {
-        //
-        $item = Inventory::findOrFail($id);
-        return view('inventory.show', compact('item'));
+    
+
+    public function distinctInventoryStreetlight(){
+        $distinctItems = InventroyStreetlightModel::select('item_code', 'item', 'total_quantity', 'rate', 'make', 'model')
+        ->groupBy('item_code')
+        ->get();
+        return view('projects.project_inventory', compact( 'distinctItems'));
     }
 
     /**
@@ -248,32 +250,47 @@ class InventoryController extends Controller
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
+            // Dispatch Inventory
+            $dispatch = InventoryDispatch::where('isDispatched', true)->get();
+
             // Battery Data
             $totalBattery = $inventory->where('item_code', 'SL03')->count();
             $batteryRate = $inventory->where('item_code', 'SL03')
                 ->value('rate');
             $totalBatteryValue = $batteryRate * $totalBattery;
             $totalBatteryValue = number_format($totalBatteryValue, 2);
+            // Battery Dispatch data
+            $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
+
             // Luminary Data
             $totalLuminary = $inventory->where('item_code', 'SL02')->count();
             $LuminaryRate = $inventory->where('item_code', 'SL02')
                 ->value('rate');
             $totalLuminaryValue = $LuminaryRate * $totalLuminary;
             $totalLuminaryValue = number_format($totalLuminaryValue, 2);
+            // Luminary Dispatch data
+            $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
+
             //Structure Data
             $totalStructure = $inventory->where('item_code', 'SL04')->count();
             $StructureRate = $inventory->where('item_code', 'SL04')
                 ->value('rate');
             $totalStructureValue = $StructureRate * $totalStructure;
             $totalStructureValue = number_format($totalStructureValue, 2);
+            // Structure Dispatch data
+            $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
+
             // Module Data
             $totalModule = $inventory->where('item_code', 'SL01')->count();
             $ModuleRate = $inventory->where('item_code', 'SL01')
                 ->value('rate');
             $totalModuleValue = $ModuleRate * $totalModule;
             $totalModuleValue = number_format($totalModuleValue, 2);
+            // Module Dispatch data
+            $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
 
-            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'totalStructure', 'totalStructureValue', 'totalModule', 'totalModuleValue', 'totalLuminary', 'totalLuminaryValue'));
+
+            return view('inventory.view', compact('inventory', 'projectId', 'storeName', 'inchargeName', 'projectType', 'totalBattery', 'totalBatteryValue', 'batteryDispatch', 'totalStructure', 'totalStructureValue', 'structureDispatch', 'totalModule', 'totalModuleValue', 'moduleDispatch', 'totalLuminary', 'totalLuminaryValue', 'luminaryDispatch'));
         } catch (Exception $e) {
             Log::error($e->getMessage());
         }

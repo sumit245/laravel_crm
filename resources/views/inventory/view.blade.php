@@ -1,7 +1,7 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container">
+  <div class="container-fluid m-2">
     <div class="d-flex justify-content-between my-1">
       <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
       <div>
@@ -22,7 +22,7 @@
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
             <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
-            <p>Dispatched Quantity</p>
+            <p>Dispatched Quantity: <span>{{ $batteryDispatch }}</span> </p>
             <p>Dispatched Value</p>
           </div>
         </div>
@@ -38,7 +38,7 @@
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
             <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
-            <p>Dispatched Quantity</p>
+            <p>Dispatched Quantity: <span>{{ $luminaryDispatch }}</span> </p>
             <p>Dispatched Value</p>
           </div>
         </div>
@@ -56,7 +56,7 @@
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
             <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
-            <p>Dispatched Quantity</p>
+            <p>Dispatched Quantity: <span>{{ $structureDispatch }}</span> </p>
             <p>Dispatched Value</p>
           </div>
         </div>
@@ -72,13 +72,18 @@
           <div class="card-body">
             <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
             <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
-            <p>Dispatched Quantity</p>
+            <p>Dispatched Quantity: <span>{{ $moduleDispatch }}</span></p>
             <p>Dispatched Value</p>
           </div>
         </div>
       </div>
     </div>
-
+    <!-- <div class="mb-3">
+      <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
+      <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
+      <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
+    </div>
+  </div> -->
     <!-- Inventory Table -->
     <div class="mt-4">
       <table id="inventoryTable" class="table-striped table-bordered table">
