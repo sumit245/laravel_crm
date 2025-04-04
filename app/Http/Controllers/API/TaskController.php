@@ -349,17 +349,25 @@ class TaskController extends Controller
             $streetlight->increment('number_of_installed_poles');
 
             // ✅ Step 8: Update Inventory Dispatch (Mark items as consumed)
-            InventoryDispatch::whereIn('serial_number', [
+            $updatedRows =  InventoryDispatch::whereIn('serial_number', [
                 $request->luminary_qr,
                 $request->panel_qr,
                 $request->battery_qr
             ])
-                ->whereNull('is_consumed') // Only update unconsumed items
                 ->update([
                     'is_consumed' => true,
                     'streetlight_pole_id' => $pole->id,
                 ]);
+            Log::info("InventoryDispatch updated: {$updatedRows} rows affected.", [
+                'serial_numbers' => [
+                    $request->luminary_qr,
+                    $request->panel_qr,
+                    $request->battery_qr
+                ],
+                'pole_id' => $pole->id
+            ]);
         }
+        Log::info($pole);
         return response()->json([
             'message' => 'Pole details submitted successfully!',
             'pole'    => $pole,
