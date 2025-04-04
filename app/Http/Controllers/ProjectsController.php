@@ -112,8 +112,7 @@ class ProjectsController extends Controller
                     DB::raw('MAX(rate) as rate'),  // Use MAX or AVG to avoid conflict
                     DB::raw('SUM(quantity * rate) as total_value'),
                     DB::raw('MAX(make) as make'),  // Use MAX or AVG to avoid conflict
-                    DB::raw('MAX(model) as model')  // Use MAX or AVG to avoid conflict
-                    
+                    DB::raw('MAX(model) as model')  // Use MAX or AVG to avoid conflict  
                 )
                 ->groupBy('item_code', 'item')
                 ->get();
