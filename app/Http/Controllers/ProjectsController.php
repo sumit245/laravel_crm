@@ -133,8 +133,6 @@ class ProjectsController extends Controller
             $inStoreStockValue = (float)$initialStockValue - $dispatchedStockValue;
         }
 
-
-
         // Get engineers and vendors for this project
         $engineers = User::where('role', 1)->get();
         $vendors = User::where('role', 3)->get();
