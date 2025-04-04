@@ -9,7 +9,7 @@
           <div class="col-sm-3">
             <div class="mb-3">
               <label for="districtSelect" class="form-label">District</label>
-              <select id="districtSelect" class="form-select" style="width: 100%;">
+              <select id="districtSelect" class="form-select select2" style="width: 100%;">
                 <option value="">Select a District</option>
                 @foreach ($districts as $district)
                   <option value="{{ $district->district }}">{{ $district->district }}</option>
