@@ -71,19 +71,20 @@
           </div>
         </div>
         <hr />
-        <div class="row">
+        <!-- Tablist -->
+        <div class="row my-2">
           <div class="col-12">
-          <div class="tab-content-assignedTasks mt-3" id="myTabContent">
+            <div class="tab-content mt-1" id="myTabContent">
               <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="assigned-tab" data-bs-toggle="tab" data-bs-target="#assigned"
+                  <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
                     type="button" role="tab" aria-controls="sites" aria-selected="true">
                     Assigned Tasks
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="surveyed_pole-tab" data-bs-toggle="tab" data-bs-target="#surveyedPoles" type="button"
-                    role="tab" aria-controls="surveyedPoles">
+                  <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
+                    role="tab" aria-controls="staff">
                     Surveyed Poles
                   </button>
                 </li>
@@ -93,41 +94,31 @@
                     Installed Poles
                   </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory"
-                    type="button" role="tab" aria-controls="inventory" aria-selected="false">
-                    Rejected Tasks
-                  </button>
-                </li>
               </ul>
-
+              <!-- Sites Tab -->
               @if ($project->project_type == 1)
-              {{-- For Streetlight Projects --}}
-              <!-- Begin -->
-              <div class="tab-pane fade show active" id="assigned" role="tabpanel" aria-labelledby="assigned-tab">
-                 @include("staff.assignedTasks")
+              <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
+                @include("staff.assignedTasks")
               </div>
 
               <!-- Staffs Tab -->
-              <div class="tab-pane fade" id="surveyedPoles" role="tabpanel" aria-labelledby="surveyed_pole-tab">
+              <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
                 @include("staff.surveyedPoles")
               </div>
 
               <!-- Vendors Tab -->
               <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
-               
+                @include("staff.installedPoles")
               </div>
-
+                @endif
               <!-- Inventory Tab -->
-              <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
-                
-              </div>
-              <!-- End -->
-              @else
-                @include("staff.assignedRooftops")
-              @endif
+              
+
+              <!-- Tasks Tab -->
+              
+            </div>
           </div>
-        </div>        
+        </div>       
       </div>
     </div>
   </div>

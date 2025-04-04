@@ -80,7 +80,7 @@
               <label for="selectEngineer" class="form-label">Select Site Engineer</label>
               <select id="selectEngineer" name="engineer_id" class="form-select" required>
                 
-                @foreach ($engineers as $engineer)
+                @foreach ($assignedEngineers as $engineer)
                   <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
                 @endforeach
                 
@@ -89,7 +89,7 @@
             <div class="form-group mb-3">
               <label for="selectVendor" class="form-label">Select Vendor</label>
               <select id="selectVendor" name="vendor_id" class="form-select" required>
-                @foreach ($vendors as $vendor)
+                @foreach ($assignedVendors as $vendor)
                   <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
                 @endforeach
               </select>
@@ -200,30 +200,6 @@
         }
       });
       // Panachat search begins
-      $('#panchayatSearch').select2({
-      placeholder: 'Search Site...',
-      minimumInputLength: 2,
-      ajax: {
-        url: "{{ route('streetlights.search') }}", // Laravel route
-        dataType: 'json',
-        delay: 250,
-        data: function(params) {
-          return {
-            search: params.term
-          };
-        },
-        processResults: function(data) {
-          return {
-            results: data.map(item => ({
-              id: item.id,
-              text: item.text
-            }))
-          };
-        }
-      }
-    });
-      // Panchayat search ends
-      
 
       $('#panchayatSearch').on('keyup', function() {
         let query = $(this).val();
