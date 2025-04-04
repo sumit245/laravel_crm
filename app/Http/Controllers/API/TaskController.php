@@ -330,9 +330,10 @@ class TaskController extends Controller
                 'isSurveyDone'     => true,
                 'beneficiary'      => $request->beneficiary,
                 'remarks'          => $request->remarks,
-                'isNetworkAvailable' => filter_var($request->isNetworkAvailable, FILTER_VALIDATE_BOOLEAN),
+                'isNetworkAvailable' => $request->isNetworkAvailable,
             ]);
             $streetlight->increment('number_of_surveyed_poles');
+            Log::info($pole);
         }
         // ✅ Step 7: Update Installation Data
         if ($request->isInstallationDone && !$pole->isInstallationDone) {
@@ -341,9 +342,7 @@ class TaskController extends Controller
                 'luminary_qr'       => $request->luminary_qr,
                 'sim_number'        => $request->sim_number,
                 'panel_qr'          => $request->panel_qr,
-                'battery_qr'        => $request->battery_qr,
-                'lat'          => $request->latitude,
-                'lng'         => $request->longitude,
+                'battery_qr'        => $request->battery_qr
             ]);
 
             // Increment installed poles count in `streetlight_tasks`
