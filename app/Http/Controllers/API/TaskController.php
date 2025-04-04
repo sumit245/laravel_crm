@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Helpers\ExcelHelper;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryDispatch;
 use App\Models\Site;
 use App\Models\Streetlight;
 use App\Models\Pole;
@@ -347,6 +348,18 @@ class TaskController extends Controller
 
             // Increment installed poles count in `streetlight_tasks`
             $streetlight->increment('number_of_installed_poles');
+
+            // ✅ Step 8: Update Inventory Dispatch (Mark items as consumed)
+            InventoryDispatch::whereIn('serial_number', [
+                $request->luminary_qr,
+                $request->panel_qr,
+                $request->battery_qr
+            ])
+                ->whereNull('is_consumed') // Only update unconsumed items
+                ->update([
+                    'is_consumed' => true,
+                    'streetlight_pole_id' => $pole->id,
+                ]);
         }
         return response()->json([
             'message' => 'Pole details submitted successfully!',
