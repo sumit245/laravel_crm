@@ -1,4 +1,4 @@
-  <div class="row">
+<div class="row">
           <div class="col-12">
               <!-- Date filter -->
               <div class="d-flex justify-content-between align-items-center mb-3 p-2">
@@ -45,29 +45,31 @@
   </div>
               
   <div class="p-2">
-  <table id="assignedTasksTable" class="table-striped table-bordered table-sm table">
+  <table id="installedPolesTable" class="table-striped table-bordered table-sm table">
     <thead>
       <tr>
         <th>#</th>
-        <th>Site</th>
-        <th>Engineer</th>
-        <th>Installer</th>
-        <th>Wards</th>
-        <th>No. of Poles</th>
+        <th>Complete Pole Numbers</th>
+        <th>Location</th>
+        <th>Sim Numbers</th>
+        <th>Luminary QR</th>
+        <th>Battery QR</th>
+        <th>Panel QR</th>
+        <th>RMS status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      @foreach ($assignedTasks as $task)
+      @foreach ($installedPoles as $survey)
         <tr>
-          <td>{{ $task->id }}</td>
-          {{-- <td>{{ print_r($assignedTasks) ?? "N/A" }}</td> --}}
-          <td>{{ $task->site->district ?? "N/A" }}</td>
-          <td>{{ $task->engineer->firstName ?? "N/A" }}</td>
-          <td>{{ $task->site->vendorRelation->name ?? "N/A" }}</td>
-          <td>{{ $task->site->ward ?? "N/A" }}</td>
-          <td>{{ $task->site->number_of_poles ?? "N/A" }}</td>
-          {{-- <td>{{ $task->site->Wards ?? "N/A" }}</td> --}}
+          <td>{{ $survey->id }}</td>
+          <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
+          <td>{{ $survey->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
+          <td>{{ $survey->sim_number ?? "N/A" }}</td>
+          <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
+          <td>{{ $survey->battery_qr ?? "N/A" }}</td>
+          <td>{{ $survey->panel_qr ?? "N/A" }}</td>
+          <td>{{ $survey->be ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
             <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
@@ -87,7 +89,7 @@
 @push("scripts")
   <script>
     $(document).ready(function() {
-      $('#assignedTasksTable').DataTable({
+      $('#installedPolesTable').DataTable({
         dom: 
         "<'row d-flex align-items-center justify-content-between'" +
           "<'col-md-6 d-flex align-items-center' f>" + 

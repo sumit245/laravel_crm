@@ -71,9 +71,10 @@
           </div>
         </div>
         <hr />
-        <div class="row">
+        <!-- Tablist -->
+        <div class="row my-2">
           <div class="col-12">
-          <div class="tab-content-assignedTasks mt-3" id="myTabContent">
+            <div class="tab-content mt-1" id="myTabContent">
               <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
                   <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
@@ -93,22 +94,31 @@
                     Installed Poles
                   </button>
                 </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory"
-                    type="button" role="tab" aria-controls="inventory" aria-selected="false">
-                    Rejected Tasks
-                  </button>
-                </li>
               </ul>
-
+              <!-- Sites Tab -->
               @if ($project->project_type == 1)
-              {{-- For Streetlight Projects --}}
-                 @include("staff.assignedTasks")
-              @else
-                @include("staff.assignedRooftops")
-              @endif
+              <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
+                @include("staff.assignedTasks")
+              </div>
+
+              <!-- Staffs Tab -->
+              <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
+                @include("staff.surveyedPoles")
+              </div>
+
+              <!-- Vendors Tab -->
+              <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+                @include("staff.installedPoles")
+              </div>
+                @endif
+              <!-- Inventory Tab -->
+              
+
+              <!-- Tasks Tab -->
+              
+            </div>
           </div>
-        </div>        
+        </div>       
       </div>
     </div>
   </div>

@@ -129,6 +129,8 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $userId);
                 });
             })->where('isInstallationDone', 1)->count();
+            $surveyedPoles = Pole::all();
+            $installedPoles = Pole::all();
         } else {
             // Fetch regular Tasks
             $tasks = Task::with('site')
@@ -160,7 +162,9 @@ class StaffController extends Controller
             'pendingTasks',
             'rejectedTasks',
             'surveyedPolesCount',
+            'surveyedPoles',
             'isStreetlightProject',
+            'installedPoles',
             'installedPolesCount',
             'assignedTasksCount',
             'completedTasksCount',
@@ -291,4 +295,10 @@ class StaffController extends Controller
 
         return $username;
     }
+
+    public function showSurveyedPoles(){
+        $surveyedPoles = Pole::all();
+        return view('staff.surveyedPoles', compact('surveyedPoles'));
+    }
+
 }
