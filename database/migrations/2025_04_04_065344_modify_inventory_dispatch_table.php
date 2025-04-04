@@ -12,13 +12,10 @@ return new class extends Migration
     public function up()
     {
         Schema::table('inventory_dispatch', function (Blueprint $table) {
-            $table->boolean('is_consumed')->default(false)->after('isDispatched');
-            $table->unsignedBigInteger('streetlight_pole_id')->nullable()->after('is_consumed');
-
             // Foreign key constraint
             $table->foreign('streetlight_pole_id')
                 ->references('id')
-                ->on('streetlight_poles')
+                ->on('streelight_poles')
                 ->onDelete('set null');
         });
     }
