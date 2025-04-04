@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
 use App\Models\Task;
+use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -232,7 +233,9 @@ class StreetlightController extends Controller
 
     public function getPanchayatsByBlock($block)
     {
+        $assignedSiteIds = DB::table('streetlight_tasks')->pluck('site_id')->toArray();
         $panchayats = Streetlight::where('block', $block)
+        ->whereNotIn('id', $assignedSiteIds)
             ->distinct()
             ->pluck('panchayat');
         return response()->json($panchayats);

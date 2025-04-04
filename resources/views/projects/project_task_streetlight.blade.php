@@ -67,7 +67,7 @@
             </div> --}}
             <div class="form-group mb-3">
               <label for="panchayatSearch" class="form-label">Search By Panchayat</label>
-              <input type="text" id="panchayatSearch" placeholder="Search Site..." class="form-control">
+              <input id="panchayatSearch" placeholder="Search Site..." class="form-control">
               <div id="siteList"></div>
 
               <!-- Selected Sites -->
@@ -79,15 +79,17 @@
             <div class="form-group mb-3">
               <label for="selectEngineer" class="form-label">Select Site Engineer</label>
               <select id="selectEngineer" name="engineer_id" class="form-select" required>
-                @foreach ($engineers as $engineer)
+                
+                @foreach ($assignedEngineers as $engineer)
                   <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
                 @endforeach
+                
               </select>
             </div>
             <div class="form-group mb-3">
               <label for="selectVendor" class="form-label">Select Vendor</label>
               <select id="selectVendor" name="vendor_id" class="form-select" required>
-                @foreach ($vendors as $vendor)
+                @foreach ($assignedVendors as $vendor)
                   <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
                 @endforeach
               </select>
@@ -161,6 +163,10 @@
 
 @push("scripts")
   <script>
+    // Select2 box for the panchayat search
+    
+    
+  
     $(document).ready(function() {
 
       // Fetch Blocks Based on Selected District
@@ -193,6 +199,8 @@
           });
         }
       });
+      // Panachat search begins
+
       $('#panchayatSearch').on('keyup', function() {
         let query = $(this).val();
         if (query.length > 1) {
