@@ -76,14 +76,14 @@
           <div class="tab-content-assignedTasks mt-3" id="myTabContent">
               <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
+                  <button class="nav-link active" id="assigned-tab" data-bs-toggle="tab" data-bs-target="#assigned"
                     type="button" role="tab" aria-controls="sites" aria-selected="true">
                     Assigned Tasks
                   </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
-                    role="tab" aria-controls="staff">
+                  <button class="nav-link" id="surveyed_pole-tab" data-bs-toggle="tab" data-bs-target="#surveyedPoles" type="button"
+                    role="tab" aria-controls="surveyedPoles">
                     Surveyed Poles
                   </button>
                 </li>
@@ -103,7 +103,26 @@
 
               @if ($project->project_type == 1)
               {{-- For Streetlight Projects --}}
+              <!-- Begin -->
+              <div class="tab-pane fade show active" id="assigned" role="tabpanel" aria-labelledby="assigned-tab">
                  @include("staff.assignedTasks")
+              </div>
+
+              <!-- Staffs Tab -->
+              <div class="tab-pane fade" id="surveyedPoles" role="tabpanel" aria-labelledby="surveyed_pole-tab">
+                @include("staff.surveyedPoles")
+              </div>
+
+              <!-- Vendors Tab -->
+              <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
+               
+              </div>
+
+              <!-- Inventory Tab -->
+              <div class="tab-pane fade" id="inventory" role="tabpanel" aria-labelledby="inventory-tab">
+                
+              </div>
+              <!-- End -->
               @else
                 @include("staff.assignedRooftops")
               @endif

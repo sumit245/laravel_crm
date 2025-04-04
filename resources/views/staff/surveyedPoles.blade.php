@@ -1,4 +1,4 @@
-  <div class="row">
+<div class="row">
           <div class="col-12">
               <!-- Date filter -->
               <div class="d-flex justify-content-between align-items-center mb-3 p-2">
@@ -45,11 +45,11 @@
   </div>
               
   <div class="p-2">
-  <table id="assignedTasksTable" class="table-striped table-bordered table-sm table">
+  <table id="TasksTable" class="table-striped table-bordered table-sm table">
     <thead>
       <tr>
         <th>#</th>
-        <th>Site</th>
+        <th>crazy</th>
         <th>Engineer</th>
         <th>Installer</th>
         <th>Wards</th>
@@ -87,7 +87,7 @@
 @push("scripts")
   <script>
     $(document).ready(function() {
-      $('#assignedTasksTable').DataTable({
+      $('#TasksTable').DataTable({
         dom: 
         "<'row d-flex align-items-center justify-content-between'" +
           "<'col-md-6 d-flex align-items-center' f>" + 
