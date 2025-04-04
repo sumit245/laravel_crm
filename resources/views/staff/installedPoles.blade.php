@@ -45,27 +45,31 @@
   </div>
               
   <div class="p-2">
-  <table id="surveyedPolesTable" class="table-striped table-bordered table-sm table">
+  <table id="installedPolesTable" class="table-striped table-bordered table-sm table">
     <thead>
       <tr>
         <th>#</th>
-        <th>Ward Name</th>
         <th>Complete Pole Numbers</th>
         <th>Location</th>
-        <th>Beneficiary_Contact</th>
-        <th>Remarks</th>
+        <th>Sim Numbers</th>
+        <th>Luminary QR</th>
+        <th>Battery QR</th>
+        <th>Panel QR</th>
+        <th>RMS status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      @foreach ($surveyedPoles as $survey)
+      @foreach ($installedPoles as $survey)
         <tr>
           <td>{{ $survey->id }}</td>
-          <td>{{ $survey->ward_name ?? "N/A" }}</td>
           <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
           <td>{{ $survey->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
-          <td>{{ $survey->beneficiary_contact ?? "N/A" }}</td>
-          <td>{{ $survey->remarks ?? "N/A" }}</td>
+          <td>{{ $survey->sim_number ?? "N/A" }}</td>
+          <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
+          <td>{{ $survey->battery_qr ?? "N/A" }}</td>
+          <td>{{ $survey->panel_qr ?? "N/A" }}</td>
+          <td>{{ $survey->be ?? "N/A" }}</td>
           <td>
             <!-- View Button -->
             <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
@@ -85,7 +89,7 @@
 @push("scripts")
   <script>
     $(document).ready(function() {
-      $('#surveyedPolesTable').DataTable({
+      $('#installedPolesTable').DataTable({
         dom: 
         "<'row d-flex align-items-center justify-content-between'" +
           "<'col-md-6 d-flex align-items-center' f>" + 
