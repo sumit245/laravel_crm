@@ -498,18 +498,43 @@ class InventoryController extends Controller
     }
 
     // TODO: Add the show dispatch inventory code here
-    public function showDispatchInventory(){
-        $dispatch = InventoryDispatch::with('project', 'store', 'storeIncharge')->get();
-        $batteryDispatch = $dispatch->where('item_code', 'SL03'); ;
-        $structureDispatch = $dispatch->where('item_code', 'SL04');;
-        $moduleDispatch = $dispatch->where('item_code', 'SL01');;
-        $LuminaryDispatch = $dispatch->where('item_code', 'SL02');;
+    public function showDispatchInventory($type = null){
+        
+        $dispatch = InventoryDispatch::all();
+        $availableDispatch = InventoryDispatch::where('isDispatched', true)->get();
+        $batteryDispatch = $dispatch->where('item_code', 'SL03');
+        $structureDispatch = $dispatch->where('item_code', 'SL04');
+        $moduleDispatch = $dispatch->where('item_code', 'SL01');
+        $LuminaryDispatch = $dispatch->where('item_code', 'SL02');
+        
+        if ($type == 'battery') {
+            $specificDispatch = $batteryDispatch;
+            $title = 'Battery';
 
+            $totalBattery = $dispatch->where('item_code', 'SL03')->count();
+            $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
+            $availableBattery = $totalBattery - $batteryDispatch;
+
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'availableBattery', 'title'));
+        } 
+        else if ($type == 'luminary') {
+            $specificDispatch = $LuminaryDispatch;
+            $title = 'Luminary';
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
+        }
+        else if ($type == 'structure') {
+            $specificDispatch = $structureDispatch;
+            $title = 'Structure';
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
+        }
+        else if ($type == 'module') {
+            $specificDispatch = $moduleDispatch;
+            $title = 'Module';
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
+        }
+        
         return view('inventory.dispatchedStock', compact(
-            'dispatch',
-            'batteryDispatch',
-            'structureDispatch',
-            'moduleDispatch',
+            'dispatch'
         ));
     }
 
