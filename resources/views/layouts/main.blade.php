@@ -13,6 +13,11 @@
     <link rel="stylesheet" href="{{ asset("vendors/ti-icons/css/themify-icons.css") }}">
     <link rel="stylesheet" href="{{ asset("vendors/simple-line-icons/css/simple-line-icons.css") }}">
 
+    {{-- base css --}}
+    <link rel="stylesheet" href="{{ asset("vendors/css/vendor.bundle.base.css") }}">
+    <link rel="stylesheet" href="{{ asset("css/vertical-layout-light/style.css") }}">
+
+
     {{-- datatables css --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.dataTables.min.css">
@@ -24,7 +29,6 @@
     {{-- select2 css --}}
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
     <link rel="stylesheet" href="{{ asset("vendors/select2-bootstrap-theme/select2-bootstrap.min.css") }}">
-
     <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
     @stack("styles") <!-- For page-specific styles -->
   </head>
@@ -43,7 +47,7 @@
     <!-- plugins:js -->
     <script src="{{ asset("vendors/js/vendor.bundle.base.js") }}"></script>
     <!-- endinject -->
-
+    
     <!-- Plugin js for this page -->
     <script src="{{ asset("vendors/chart.js/Chart.min.js") }}"></script>
     <script src="{{ asset("vendors/bootstrap-datepicker/bootstrap-datepicker.min.js") }}"></script>

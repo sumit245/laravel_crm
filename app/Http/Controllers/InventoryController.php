@@ -499,8 +499,18 @@ class InventoryController extends Controller
 
     // TODO: Add the show dispatch inventory code here
     public function showDispatchInventory(){
+        $dispatch = InventoryDispatch::with('project', 'store', 'storeIncharge')->get();
+        $batteryDispatch = $dispatch->where('item_code', 'SL03'); ;
+        $structureDispatch = $dispatch->where('item_code', 'SL04');;
+        $moduleDispatch = $dispatch->where('item_code', 'SL01');;
+        $LuminaryDispatch = $dispatch->where('item_code', 'SL02');;
 
-        return view('inventory.dispatchedStock');
+        return view('inventory.dispatchedStock', compact(
+            'dispatch',
+            'batteryDispatch',
+            'structureDispatch',
+            'moduleDispatch',
+        ));
     }
 
 
