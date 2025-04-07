@@ -17,6 +17,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::apiResource('staff', StaffController::class);
 Route::prefix('staff')->group(function () {
     Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
+    Route::get('/get-performance/{user_id}', [StaffController::class, 'getStaffPerformance']);
 });
 
 Route::prefix('vendor')->group(function () {

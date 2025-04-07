@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -42,20 +43,7 @@ class StaffController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
-    {
-        //   $user = User::find($id);
-
-        //   if (!$user || $user->role != 3) {
-        //    return response()->json([
-        //     'message' => 'Vendor not found or invalid role',
-        //    ], 404);
-        //   }
-
-        //   return response()->json([
-        //    'user' => $user,
-        //   ]);
-    }
+    public function show($id) {}
 
     /**
      * Edit a specific vendor.
@@ -63,20 +51,7 @@ class StaffController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
-    {
-        //   $user = User::find($id);
-
-        //   if (!$user || $user->role != 3) {
-        //    return response()->json([
-        //     'message' => 'Vendor not found or invalid role',
-        //    ], 404);
-        //   }
-
-        //   return response()->json([
-        //    'user' => $user,
-        //   ]);
-    }
+    public function edit($id) {}
 
     /**
      * Update the vendor information.
@@ -85,45 +60,7 @@ class StaffController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
-    {
-        // Validate incoming request data (you can expand validation as needed)
-        //   $validatedData = $request->validate([
-        //    'firstName' => 'nullable|string|max:255',
-        //    'lastName'  => 'nullable|string|max:255',
-        //    'email'     => 'nullable|email|max:255',
-        //    'password'  => 'nullable|string|min:8', // Add more password rules if needed
-        //    'contactNo' => 'nullable|string|max:20',
-        //    'address'   => 'nullable|string|max:255',
-        //   ]);
-
-        //   // Find the vendor
-        //   $user = User::find($id);
-
-        //   if (!$user || $user->role != 3) {
-        //    return response()->json([
-        //     'message' => 'Vendor not found or invalid role',
-        //    ], 404);
-        //   }
-
-        // Prepare data for update, only including fields that are present in the request
-        //   $updateData = array_filter($validatedData, function ($value) {
-        //    return $value !== null; // Exclude null values
-        //   });
-
-        //   // Handle password separately, ensuring it is hashed if provided
-        //   if (isset($updateData['password'])) {
-        //    $updateData['password'] = bcrypt($updateData['password']);
-        //   }
-
-        //   // Update vendor data
-        //   $user->update($updateData);
-
-        //   return response()->json([
-        //    'message' => 'Vendor updated successfully',
-        //    'user'    => $user,
-        //   ]);
-    }
+    public function update(Request $request, $id) {}
 
     /**
      * Delete a vendor.
@@ -158,5 +95,47 @@ class StaffController extends Controller
             'message' => 'Profile picture uploaded successfully',
             'image_url' => $user->image, // Return full image URL
         ], 200);
+    }
+
+    public function getStaffPerformance($user_id)
+    {
+        try {
+            // Step 1: Fetch all engineers (non-admin users)
+            $engineers = User::where('role', '!=', 0)->get(); // Adjust role filter as per your logic
+
+            // Step 2: Fetch all tasks once
+            $allTasks = Task::all();
+
+            // Step 3: Map performance for each engineer
+            $performanceData = $engineers->map(function ($engineer) use ($allTasks, $user_id) {
+                $engineerTasks = $allTasks->where('engineer_id', $engineer->id);
+
+                $total_alloted = $engineerTasks->count();
+                $total_completed = $engineerTasks->where('status', 'Completed')->count();
+                $total_pending = $engineerTasks->where('status', 'Pending')->count();
+
+                return $total_alloted > 0 ? [
+                    'id' => $engineer->id,
+                    'name' => $engineer->first_name . ' ' . $engineer->last_name,
+                    'total_alloted' => $total_alloted,
+                    'total_completed' => $total_completed,
+                    'is_logged_in_user' => $engineer->id == $user_id
+                ] : null;
+            })->filter(); // Remove nulls
+
+            // Step 4: Sort with logged-in user first, then by completed descending
+            $sorted = $performanceData->sort(function ($a, $b) {
+                if ($a['is_logged_in_user']) return -1;
+                if ($b['is_logged_in_user']) return 1;
+                return $b['total_completed'] <=> $a['total_completed'];
+            })->values(); // Re-index
+
+            return response()->json($sorted);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => 'Something went wrong.',
+                'message' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
