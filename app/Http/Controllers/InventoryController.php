@@ -498,7 +498,8 @@ class InventoryController extends Controller
     }
 
     // TODO: Add the show dispatch inventory code here
-    public function showDispatchInventory($type = null){
+    public function showDispatchInventory(Request $request){
+        $type = $request->type;
         $total = Inventory::all();
         $dispatch = InventoryDispatch::all();
         $availableDispatch = InventoryDispatch::where('isDispatched', true)->get();

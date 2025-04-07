@@ -90,7 +90,7 @@
     <i class="mdi mdi-printer"></i> Print
   </button>
 
-            <button type="submit" class="btn btn-primary">Issue items</button>
+            <button type="button" id="issueMaterial" class="btn btn-primary">Issue items</button>
           </div>
         </form>
 
@@ -334,7 +334,9 @@ itemsContainer.addEventListener("click", function (e) {
       }
 
 
-   
+      const dispatchButton = document.getElementById('issueMaterial');
+      dispatchButton.addEventListern('click',function)
+      
 
       // Update scanned QR list
       function updateScannedQRs() {

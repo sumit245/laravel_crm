@@ -22,7 +22,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
       <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "battery") }}'>Dispatched Quantity</a></p>
+      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory",  [ "type" => "battery"]) }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
     </div>
   </div>
