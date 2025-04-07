@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Helpers\ExcelHelper;
 use App\Http\Controllers\Controller;
+use App\Models\InventoryDispatch;
 use App\Models\Site;
 use App\Models\Streetlight;
 use App\Models\Pole;
@@ -220,6 +221,46 @@ class TaskController extends Controller
         return response()->json(['message' => 'Task deleted']);
     }
 
+    public function getInstallablePoles($ward)
+    {
+        try {
+            // Step 1: Define all possible poles (1 to 20)
+            $allPoles = range(1, 20);
+
+            // Step 2: Fetch only poles for the given ward
+            $existingPoles = Pole::pluck('complete_pole_number')
+                ->map(function ($poleNumber) use ($ward) {
+                    $parts = explode('/', $poleNumber);
+                    $count = count($parts);
+
+                    if ($count < 2) return null; // Ensure the format is valid
+
+                    // Extract ward and pole number
+                    $poleWard = (int) $parts[$count - 2]; // Second last part is ward
+                    $poleNumber = (int) $parts[$count - 1]; // Last part is pole number
+
+                    return $poleWard === (int) $ward ? $poleNumber : null;
+                })
+                ->filter() // Remove null values
+                ->unique() // Ensure unique poles
+                ->values()
+                ->toArray();
+
+            // Step 3: Filter out existing poles for the given ward
+            $installablePoles = array_values(array_diff($allPoles, $existingPoles));
+
+            // Step 4: Return response
+            return response()->json([
+                'installable_poles' => $installablePoles
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Something went wrong!',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     public function getSitesForVendor($vendorId)
     {
         // Fetch tasks where the given vendor_id matches and eager load the site relationship
@@ -329,9 +370,10 @@ class TaskController extends Controller
                 'isSurveyDone'     => true,
                 'beneficiary'      => $request->beneficiary,
                 'remarks'          => $request->remarks,
-                'isNetworkAvailable' => filter_var($request->isNetworkAvailable, FILTER_VALIDATE_BOOLEAN),
+                'isNetworkAvailable' => $request->isNetworkAvailable,
             ]);
             $streetlight->increment('number_of_surveyed_poles');
+            Log::info($pole);
         }
         // ✅ Step 7: Update Installation Data
         if ($request->isInstallationDone && !$pole->isInstallationDone) {
@@ -340,14 +382,32 @@ class TaskController extends Controller
                 'luminary_qr'       => $request->luminary_qr,
                 'sim_number'        => $request->sim_number,
                 'panel_qr'          => $request->panel_qr,
-                'battery_qr'        => $request->battery_qr,
-                'lat'          => $request->latitude,
-                'lng'         => $request->longitude,
+                'battery_qr'        => $request->battery_qr
             ]);
 
             // Increment installed poles count in `streetlight_tasks`
             $streetlight->increment('number_of_installed_poles');
+
+            // ✅ Step 8: Update Inventory Dispatch (Mark items as consumed)
+            $updatedRows =  InventoryDispatch::whereIn('serial_number', [
+                $request->luminary_qr,
+                $request->panel_qr,
+                $request->battery_qr
+            ])
+                ->update([
+                    'is_consumed' => true,
+                    'streetlight_pole_id' => $pole->id,
+                ]);
+            Log::info("InventoryDispatch updated: {$updatedRows} rows affected.", [
+                'serial_numbers' => [
+                    $request->luminary_qr,
+                    $request->panel_qr,
+                    $request->battery_qr
+                ],
+                'pole_id' => $pole->id
+            ]);
         }
+        Log::info($pole);
         return response()->json([
             'message' => 'Pole details submitted successfully!',
             'pole'    => $pole,

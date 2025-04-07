@@ -24,6 +24,8 @@ class InventoryDispatch extends Model
         'serial_number',
         'isDispatched',
         'dispatch_date',
+        'is_consumed',
+        'streetlight_pole_id'
 
     ];
 
@@ -53,5 +55,9 @@ class InventoryDispatch extends Model
     public function storeIncharge()
     {
         return $this->belongsTo(User::class, 'store_incharge_id');
+    }
+    public function streetlightPole()
+    {
+        return $this->belongsTo(Pole::class, 'id');
     }
 }

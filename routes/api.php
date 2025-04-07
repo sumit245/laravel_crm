@@ -17,6 +17,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::apiResource('staff', StaffController::class);
 Route::prefix('staff')->group(function () {
     Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
+    Route::get('/get-performance/{user_id}', [StaffController::class, 'getStaffPerformance']);
 });
 
 Route::prefix('vendor')->group(function () {
@@ -37,6 +38,7 @@ Route::apiResource('site', SiteController::class);
 
 Route::apiResource('task', TaskController::class);
 Route::post('/tasks/{id}/approve', [TaskController::class, 'approveTask']);
+Route::get('/get_installable_pole/{ward}', [TaskController::class, 'getInstallablePoles']);
 Route::post('streetlight/tasks/update', [TaskController::class, 'submitStreetlightTasks']);
 Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEngineerTasks']);
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
