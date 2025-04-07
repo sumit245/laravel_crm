@@ -263,10 +263,10 @@ class InventoryController extends Controller
             // Battery Dispatch data
             $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
             $availableBattery = $totalBattery - $batteryDispatch;
-            
+
             $dispatchAmountBattery = $dispatch->where('item_code', 'SL03')->sum('total_value');
             $dispatchAmountBattery = number_format($dispatchAmountBattery, 2);
-            
+
             // Luminary Data
             $totalLuminary = $inventory->where('item_code', 'SL02')->count();
             $LuminaryRate = $inventory->where('item_code', 'SL02')
@@ -276,7 +276,7 @@ class InventoryController extends Controller
             // Luminary Dispatch data
             $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
             $availableLuminary = $totalLuminary - $luminaryDispatch;
-            
+
             $dispatchAmountLuminary = $dispatch->where('item_code', 'SL02')->sum('total_value');
             $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
 
@@ -289,7 +289,7 @@ class InventoryController extends Controller
             // Structure Dispatch data
             $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
             $availableStructure = $totalStructure - $structureDispatch;
-            
+
             $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
             $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
 
@@ -302,35 +302,36 @@ class InventoryController extends Controller
             // Module Dispatch data
             $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
             $availableModule = $totalModule - $moduleDispatch;
-            
+
             $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
             $dispatchAmountModule = number_format($dispatchAmountModule, 2);
 
-            return view('inventory.view', compact('inventory',
-             'projectId',
-              'storeName',
-               'inchargeName', 
-               'projectType', 
-               'totalBattery', 
-               'totalBatteryValue', 
-               'batteryDispatch', 
-               'availableBattery',
-               'dispatchAmountBattery', 
-               'totalStructure', 
-               'totalStructureValue', 
-               'structureDispatch', 
-               'dispatchAmountStructure',
-               'availableStructure', 
-               'totalModule', 
-               'totalModuleValue',
-               'availableModule',
-               'moduleDispatch', 
-               'dispatchAmountModule',
-               'totalLuminary', 
-               'totalLuminaryValue', 
-               'luminaryDispatch', 
-               'dispatchAmountLuminary',
-               'availableLuminary',
+            return view('inventory.view', compact(
+                'inventory',
+                'projectId',
+                'storeName',
+                'inchargeName',
+                'projectType',
+                'totalBattery',
+                'totalBatteryValue',
+                'batteryDispatch',
+                'availableBattery',
+                'dispatchAmountBattery',
+                'totalStructure',
+                'totalStructureValue',
+                'structureDispatch',
+                'dispatchAmountStructure',
+                'availableStructure',
+                'totalModule',
+                'totalModuleValue',
+                'availableModule',
+                'moduleDispatch',
+                'dispatchAmountModule',
+                'totalLuminary',
+                'totalLuminaryValue',
+                'luminaryDispatch',
+                'dispatchAmountLuminary',
+                'availableLuminary',
             ));
         } catch (Exception $e) {
             Log::error($e->getMessage());
@@ -419,12 +420,14 @@ class InventoryController extends Controller
     }
 
 
-    // Get dispatched inventory for a vendor
     public function viewVendorInventory($vendorId)
     {
         Log::info("Fetching inventory for vendor_id: {$vendorId}");
+
         try {
-            // Get all dispatched inventory for this vendor
+            $todayDate = now()->toDateString(); // Get today's date
+
+            // Fetch inventory dispatched to the vendor
             $inventory = InventoryDispatch::where('vendor_id', $vendorId)
                 ->with(['project', 'store', 'storeIncharge'])
                 ->get();
@@ -437,37 +440,55 @@ class InventoryController extends Controller
                 ], 404);
             }
 
-            // Calculate total inventory value directly from total_value column
-            $totalInventoryValue = $inventory->sum('total_value');
+            // Filter today's inventory
+            $todayInventory = $inventory->where('dispatch_date', '>=', $todayDate)
+                ->groupBy('item_code')->map(function ($items) {
+                    return $this->formatInventoryItem($items);
+                })->values();
 
-            // Group inventory by item_code for consolidated view
+            // Group inventory by item_code
             $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
-                $firstItem = $items->first();
-                return [
-                    'item_code' => $firstItem->item_code,
-                    'item' => $firstItem->item,
-                    'manufacturer' => $firstItem->manufacturer,
-                    'make' => $firstItem->make,
-                    'model' => $firstItem->model,
-                    'rate' => (float)$firstItem->rate,
-                    'total_quantity' => $items->sum('total_quantity'),
-                    'total_value' => $items->sum('total_value'),
-                    'dispatch_date' => $firstItem->dispatch_date,
-                    'serial_number' => $items->pluck('serial_number')->flatten()->filter()->values()->all(),
-                    'store_name' => optional($firstItem->store)->store_name,
-                    'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' .
-                        optional($firstItem->storeIncharge)->lastName
-                ];
-            })->values();
+                return $this->formatInventoryItem($items);
+            });
 
-            // Restructure response
+            // Split into categories based on `is_consumed`
+            $totalReceived = [];
+            $inStock = [];
+            $consumed = [];
+
+            foreach ($groupedInventory as $item) {
+                $matchingItems = $inventory->where('item_code', $item['item_code']);
+
+                $consumedItems = $matchingItems->where('is_consumed', 1);
+                $inStockItems = $matchingItems->where('is_consumed', 0);
+
+                // If any item is consumed, move to "consumed"
+                if ($consumedItems->isNotEmpty()) {
+                    $consumed[] = $this->formatInventoryItem($consumedItems);
+                }
+
+                // If any item is still in stock, move to "in_stock"
+                if ($inStockItems->isNotEmpty()) {
+                    $inStock[] = $this->formatInventoryItem($inStockItems);
+                }
+
+                // Add all items to total received
+                $totalReceived[] = $item;
+            }
+
+            // Prepare final response
             $response = [
                 'vendor_id' => $vendorId,
                 'project_id' => optional($inventory->first()->project)->id,
                 'project_name' => optional($inventory->first()->project)->project_name,
-                'total_inventory_value' => number_format($totalInventoryValue, 2, '.', ''),
-                'inventory_count' => $groupedInventory->count(),
-                'inventory' => $groupedInventory
+                'total_inventory_value' => number_format($inventory->sum('total_value'), 2, '.', ''),
+                'inventory_count' => count($groupedInventory),
+                'today_inventory' => $todayInventory,
+                'all_inventory' => [
+                    'total_received' => $totalReceived,
+                    'in_stock' => $inStock,
+                    'consumed' => $consumed,
+                ],
             ];
 
             return response()->json($response);
@@ -479,6 +500,30 @@ class InventoryController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Helper function to format inventory items
+     */
+    private function formatInventoryItem($items)
+    {
+        $firstItem = $items->first();
+        return [
+            'item_code' => $firstItem->item_code,
+            'item' => $firstItem->item,
+            'manufacturer' => $firstItem->manufacturer,
+            'make' => $firstItem->make,
+            'model' => $firstItem->model,
+            'rate' => (float)$firstItem->rate,
+            'total_quantity' => $items->sum('total_quantity'),
+            'total_value' => $items->sum('total_value'),
+            'dispatch_date' => $firstItem->dispatch_date,
+            'serial_number' => $items->pluck('serial_number')->flatten()->filter()->values()->all(),
+            'store_name' => optional($firstItem->store)->store_name,
+            'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' .
+                optional($firstItem->storeIncharge)->lastName,
+        ];
+    }
+
 
     public function checkQR(Request $request)
     {
@@ -494,7 +539,6 @@ class InventoryController extends Controller
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
-
     }
 
     // TODO: Add the show dispatch inventory code here
@@ -507,7 +551,7 @@ class InventoryController extends Controller
         $structureDispatch = $dispatch->where('item_code', 'SL04');
         $moduleDispatch = $dispatch->where('item_code', 'SL01');
         $LuminaryDispatch = $dispatch->where('item_code', 'SL02');
-        
+
         if ($type == 'battery') {
             $specificDispatch = $batteryDispatch;
             $title = 'Battery';
@@ -517,8 +561,7 @@ class InventoryController extends Controller
             $availableBattery = $totalBattery - $batteryDispatch;
 
             return view('inventory.dispatchedStock', compact('specificDispatch', 'availableBattery', 'title'));
-        } 
-        else if ($type == 'luminary') {
+        } else if ($type == 'luminary') {
             $specificDispatch = $LuminaryDispatch;
             $title = 'Luminary';
 
@@ -527,8 +570,7 @@ class InventoryController extends Controller
             $availableLuminary = $totalLuminary - $luminaryDispatch;
 
             return view('inventory.dispatchedStock', compact('specificDispatch', 'title', 'availableLuminary'));
-        }
-        else if ($type == 'structure') {
+        } else if ($type == 'structure') {
             $specificDispatch = $structureDispatch;
             $title = 'Structure';
 
@@ -537,8 +579,7 @@ class InventoryController extends Controller
             $availableStructure = $totalStructure - $structureDispatch;
 
             return view('inventory.dispatchedStock', compact('specificDispatch', 'title', 'availableStructure'));
-        }
-        else if ($type == 'module') {
+        } else if ($type == 'module') {
             $specificDispatch = $moduleDispatch;
             $title = 'Module';
 
@@ -548,11 +589,9 @@ class InventoryController extends Controller
 
             return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
         }
-        
+
         return view('inventory.dispatchedStock', compact(
             'dispatch'
         ));
     }
-
-
 }
