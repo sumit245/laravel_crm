@@ -499,7 +499,7 @@ class InventoryController extends Controller
 
     // TODO: Add the show dispatch inventory code here
     public function showDispatchInventory($type = null){
-        
+        $total = Inventory::all();
         $dispatch = InventoryDispatch::all();
         $availableDispatch = InventoryDispatch::where('isDispatched', true)->get();
         $batteryDispatch = $dispatch->where('item_code', 'SL03');
@@ -511,7 +511,7 @@ class InventoryController extends Controller
             $specificDispatch = $batteryDispatch;
             $title = 'Battery';
 
-            $totalBattery = $dispatch->where('item_code', 'SL03')->count();
+            $totalBattery = $total->where('item_code', 'SL03')->count();
             $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
             $availableBattery = $totalBattery - $batteryDispatch;
 
@@ -520,16 +520,31 @@ class InventoryController extends Controller
         else if ($type == 'luminary') {
             $specificDispatch = $LuminaryDispatch;
             $title = 'Luminary';
-            return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
+
+            $totalLuminary = $total->where('item_code', 'SL02')->count();
+            $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
+            $availableLuminary = $totalLuminary - $luminaryDispatch;
+
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'title', 'availableLuminary'));
         }
         else if ($type == 'structure') {
             $specificDispatch = $structureDispatch;
             $title = 'Structure';
-            return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
+
+            $totalStructure = $total->where('item_code', 'SL04')->count();
+            $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
+            $availableStructure = $totalStructure - $structureDispatch;
+
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'title', 'availableStructure'));
         }
         else if ($type == 'module') {
             $specificDispatch = $moduleDispatch;
             $title = 'Module';
+
+            $totalModule = $total->where('item_code', 'SL01')->count();
+            $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
+            $availableModule = $totalModule - $moduleDispatch;
+
             return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
         }
         
