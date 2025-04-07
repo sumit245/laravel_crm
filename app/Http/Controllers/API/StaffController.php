@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\Pole;
+use App\Models\Project;
+use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -112,43 +115,95 @@ class StaffController extends Controller
             $managerId = $loggedInUser->manager_id;
             $projectId = $loggedInUser->project_id;
 
+            $project = Project::find($projectId);
+            if (!$project) {
+                return response()->json(['error' => 'Project not found'], 404);
+            }
+
+            $projectType = $project->project_type;
+
+
             // Step 1: Fetch all engineers (non-admin users)
             $engineers = User::where('role', '!=', 0)
                 ->where('manager_id', $managerId)
                 ->where('project_id', $projectId)
                 ->get();
-            Log::info($loggedInUser);
 
-            // Step 2: Fetch all tasks once
-            $allTasks = Task::all();
+            if ($projectType != 1) {
+                // Handle Rooftop Projects
+                $allTasks = Task::all();
 
-            // Step 3: Map performance for each engineer
-            $performanceData = $engineers->map(function ($engineer) use ($allTasks, $user_id, $today) {
-                $engineerTasks = $allTasks->where('engineer_id', $engineer->id);
-                $total_alloted = $engineerTasks->count();
-                $total_completed = $engineerTasks->where('status', 'Completed')->count();
-                $total_pending = $engineerTasks->where('status', 'Pending')->count();
+                $performanceData = $engineers->map(function ($engineer) use ($allTasks, $user_id, $today) {
+                    $engineerTasks = $allTasks->where('engineer_id', $engineer->id);
 
-                // Backlogs: pending tasks with end_date < today
-                $total_backlogs = $engineerTasks->filter(function ($task) use ($today) {
-                    return $task->status === 'Pending' && $task->end_date < $today;
-                })->count();
+                    $total_alloted = $engineerTasks->count();
+                    $total_completed = $engineerTasks->where('status', 'Completed')->count();
+                    $total_pending = $engineerTasks->where('status', 'Pending')->count();
+                    $total_backlogs = $engineerTasks->filter(function ($task) use ($today) {
+                        return $task->status === 'Pending' && $task->end_date < $today;
+                    })->count();
 
-                $performance_percentage = $total_alloted > 0
-                    ? round(($total_completed / $total_alloted) * 100, 2)
-                    : 0;
+                    $performance_percentage = $total_alloted > 0
+                        ? round(($total_completed / $total_alloted) * 100, 2)
+                        : 0;
 
-                return $total_alloted > 0 ? [
-                    'id' => $engineer->id,
-                    'name' => $engineer->firstName . ' ' . $engineer->lastName,
-                    'total_alloted' => $total_alloted,
-                    'total_completed' => $total_completed,
-                    'total_pending' => $total_pending,
-                    'total_backlogs' => $total_backlogs,
-                    'performance_percentage' => $performance_percentage,
-                    'is_logged_in_user' => $engineer->id == $user_id
-                ] : null;
-            })->filter(); // Remove nulls
+                    return $total_alloted > 0 ? [
+                        'id' => $engineer->id,
+                        'name' => $engineer->firstName . ' ' . $engineer->lastName,
+                        'total_alloted' => $total_alloted,
+                        'total_completed' => $total_completed,
+                        'total_pending' => $total_pending,
+                        'total_backlogs' => $total_backlogs,
+                        'performance_percentage' => $performance_percentage,
+                        'is_logged_in_user' => $engineer->id == $user_id
+                    ] : null;
+                })->filter();
+            } else {
+                // Handle Streetlight Projects
+                $allStreetlightTasks = StreetlightTask::where('project_id', $projectId)->get();
+
+                $performanceData = $engineers->map(function ($engineer) use ($allStreetlightTasks, $user_id, $today) {
+                    $engineerTasks = $allStreetlightTasks->where('engineer_id', $engineer->id);
+
+                    // Get total allotted from linked streetlight sites
+                    $total_alloted = $engineerTasks->sum(function ($task) {
+                        $site = \App\Models\Streetlight::find($task->site_id);
+                        return $site ? (int) ($site->total_poles ?? 0) : 0;
+                    });
+
+                    // All related poles
+                    $taskIds = $engineerTasks->pluck('id')->toArray();
+                    $allPoles = Pole::whereIn('task_id', $taskIds)->get();
+
+                    $total_surveyed = $allPoles->where('isSurveyDone', 1)->count();
+                    $total_installed = $allPoles->where('isInstallationDone', 1)->count();
+
+                    $total_completed = $engineerTasks->where('status', 'Completed')->count();
+                    $total_pending = $engineerTasks->where('status', 'Pending')->count();
+
+                    $total_backlogs = $engineerTasks->filter(function ($task) use ($today) {
+                        return $task->status === 'Pending' && $task->end_date < $today;
+                    })->count();
+
+                    $performance_percentage = $total_alloted > 0
+                        ? round(($total_installed / $total_alloted) * 100, 2)
+                        : 0;
+
+                    return $total_alloted > 0 ? [
+                        'id' => $engineer->id,
+                        'name' => $engineer->firstName . ' ' . $engineer->lastName,
+                        'total_alloted' => $total_alloted,
+                        'total_surveyed' => $total_surveyed,
+                        'total_installed' => $total_installed,
+                        'total_completed' => $total_completed,
+                        'total_pending' => $total_pending,
+                        'total_backlogs' => $total_backlogs,
+                        'performance_percentage' => $performance_percentage,
+                        'is_logged_in_user' => $engineer->id == $user_id
+                    ] : null;
+                })->filter();
+            }
+
 
             // Step 4: Sort
             $sorted = $performanceData->sort(function ($a, $b) {
