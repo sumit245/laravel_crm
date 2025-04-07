@@ -635,7 +635,8 @@ class TaskController extends Controller
         }
         $poles = $query->paginate(25);
         $totalInstalled = $query->count();
-        return view('poles.installed', compact('poles', 'totalInstalled', 'districts', 'blocks', 'panchayats'));
+        // 'totalInstalled', 'districts', 'blocks', 'panchayats'
+        return view('poles.installed', compact('poles', 'totalInstalled'));
     }
 
     public function viewPoleDetails($id)
