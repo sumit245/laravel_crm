@@ -413,7 +413,7 @@ itemsContainer.addEventListener("click", function (e) {
       return;
     }
 
-    const printWindow = window.open('', '_blank');
+    const printWindow = window.open('');
     printWindow.document.write(`
       <html>
         <head>
