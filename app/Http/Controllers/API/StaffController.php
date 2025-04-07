@@ -113,7 +113,7 @@ class StaffController extends Controller
             $projectId = $loggedInUser->project_id;
 
             // Step 1: Fetch all engineers (non-admin users)
-            $engineers = User::where('role', 1)
+            $engineers = User::where('role', '!=', 0)
                 ->where('manager_id', $managerId)
                 ->where('project_id', $projectId)
                 ->get();
