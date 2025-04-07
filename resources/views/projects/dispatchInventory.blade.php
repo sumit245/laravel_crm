@@ -91,9 +91,9 @@
           </button>
 
           {{-- TODO: unbind enter button --}}
-          <button type="button" id="issueMaterial" class="btn btn-primary">Issue items</button>
+          <button type="submit" id="issueMaterial" class="btn btn-primary">Issue items</button>
         </div>
-      </form>
+      </form> 
 
     </div>
 
@@ -212,131 +212,68 @@
 
     // Handle Qr Scanning
     const qrScanner = document.getElementById('qr_scanner');
-    // if (qrScanner) {
+    if (qrScanner) {
     //   // TODO: Modify with keyup listener so that form doesnot submit on scan
-    //   qrScanner.addEventListener('change', function(event) {
-    //     if (this.value.trim() !== '') {
-    //       let scannedCode = this.value.trim();
-    //       console.log('Scanned Code:', scannedCode);
-    //       this.value = ''; // Clear input for next scan
+      qrScanner.addEventListener('change', function(event) {
+        if (this.value.trim() !== '') {
+          let scannedCode = this.value.trim();
+          console.log('Scanned Code:', scannedCode);
+          this.value = ''; // Clear input for next scan
 
-    //       if (scannedQRs.includes(scannedCode)) {
-    //         showError('QR code already scanned!');
-    //         return;
-    //       }
-    //       // Find the item-row that contains this QR scanner
-    //       const currentRow = this.closest('.item-row');
-    //       if (!currentRow) {
-    //         showError('Cannot determine which item row this scanner belongs to!');
-    //         return;
-    //       }
-    //       // Get the selected item ID
-    //       const selectedItemCode = document.querySelector('.item-select').value;
-    //       console.log(selectedItemCode)
-    //       if (!selectedItemCode) {
-    //         showError('Please select an item first before scanning QR codes!');
-    //         return;
-    //       }
-    //       const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
-    //       // Check if QR exists in database via AJAX
-    //       fetch('{{-- route("inventory.checkQR") --}}', {
-    //           method: 'POST',
-    //           headers: {
-    //             'Content-Type': 'application/json',
-    //             'X-CSRF-TOKEN': '{{-- csrf_token() --}}'
-    //           },
-    //           body: JSON.stringify({
-    //             qr_code: scannedCode,
-    //             store_id: storeId,
-    //             item_code: selectedItemCode
-    //           })
-    //         })
-    //         .then(response => response.json())
-    //         .then(data => {
-    //           if (data.exists) {
-    //             scannedQRs.push(scannedCode);
-    //             updateScannedQRs();
-    //             // Add hidden input for the serial number
-    //             addSerialNumberInput(scannedCode);
-    //             updateQuantityAndTotal();
-    //             clearError();
-    //           } else {
-    //             showError('Invalid QR code! Item not found in inventory.');
-    //           }
-    //         })
-    //         .catch(() => showError('Error checking QR code!'));
-    //     }
-    //   });
-    // }
+          if (scannedQRs.includes(scannedCode)) {
+            showError('QR code already scanned!');
+            return;
+          }
+          // Find the item-row that contains this QR scanner
+          const currentRow = this.closest('.item-row');
+          if (!currentRow) {
+            showError('Cannot determine which item row this scanner belongs to!');
+            return;
+          }
+          // Get the selected item ID
+          const selectedItemCode = document.querySelector('.item-select').value;
+          console.log(selectedItemCode)
+          if (!selectedItemCode) {
+            showError('Please select an item first before scanning QR codes!');
+            return;
+          }
+          const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
+          // Check if QR exists in database via AJAX
+          fetch('{{ route("inventory.checkQR") }}', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+              },
+              body: JSON.stringify({
+                qr_code: scannedCode,
+                store_id: storeId,
+                item_code: selectedItemCode
+              })
+            })
+            .then(response => response.json())
+            .then(data => {
+              if (data.exists) {
+                scannedQRs.push(scannedCode);
+                updateScannedQRs();
+                // Add hidden input for the serial number
+                addSerialNumberInput(scannedCode);
+                updateQuantityAndTotal();
+                clearError();
+              } else {
+                showError('Invalid QR code! Item not found in inventory.');
+              }
+            })
+            .catch(() => showError('Error checking QR code!'));
+        }
+      });
+    }
 
 
     // Show error message
     
     //New method to prevent premature form submission
-    if (qrScanner) {
-  qrScanner.addEventListener('keyup', function(event) {
-    // We only want to handle the Enter key (to prevent accidental submission)
-    if (event.key === "Enter") {
-      event.preventDefault(); // Prevent form submission on Enter key
-
-      if (this.value.trim() !== '') {
-        let scannedCode = this.value.trim();
-        console.log('Scanned Code:', scannedCode);
-        this.value = ''; // Clear input for next scan
-
-        if (scannedQRs.includes(scannedCode)) {
-          showError('QR code already scanned!');
-          return;
-        }
-
-        // Find the item-row that contains this QR scanner
-        const currentRow = this.closest('.item-row');
-        if (!currentRow) {
-          showError('Cannot determine which item row this scanner belongs to!');
-          return;
-        }
-
-        // Get the selected item ID
-        const selectedItemCode = currentRow.querySelector('.item-select').value; // Ensure you're using the correct item select for the row
-        console.log(selectedItemCode);
-        if (!selectedItemCode) {
-          showError('Please select an item first before scanning QR codes!');
-          return;
-        }
-
-        const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
-        
-        // Check if QR exists in the database via AJAX
-        fetch('{{ route("inventory.checkQR") }}', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': '{{ csrf_token() }}'
-          },
-          body: JSON.stringify({
-            qr_code: scannedCode,
-            store_id: storeId,
-            item_code: selectedItemCode
-          })
-        })
-        .then(response => response.json())
-        .then(data => {
-          if (data.exists) {
-            scannedQRs.push(scannedCode);
-            updateScannedQRs();
-            // Add hidden input for the serial number
-            addSerialNumberInput(scannedCode);
-            updateQuantityAndTotal();
-            clearError();
-          } else {
-            showError('Invalid QR code! Item not found in inventory.');
-          }
-        })
-        .catch(() => showError('Error checking QR code!'));
-      }
-    }
-  });
-}
+  
 
 
     function showError(message) {
