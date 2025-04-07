@@ -58,8 +58,8 @@
                     </tr>
                     <tr>
                         <td>6.</td>
-                        <td>Exact location on installation Latitude and longitude 
-                            exactly One photo of system showing longitude and 
+                        <td>Exact location on installation Latitude and longitude <br>
+                            exactly One photo of system showing longitude and <br>
                             latitude in photo</td>
                         <td></td>
                     </tr>
@@ -76,7 +76,7 @@
                     <tr>
                         <td>9.</td>
                         <td>Name & Address of the local service Centre:<br>
-                            Contact person name with mobile no - 
+                            Contact person name with mobile no - <br>
                             Mandatory Email address:</td>
                         <td></td>
                     </tr>
@@ -110,7 +110,7 @@
                         <td width="45%">
                             f) Is the SSLS installed at shadow free (Yes/No)<br>
                             g) Tilt angle of module to true south<br>
-                            h) Module is fixed properly to withstand wind 
+                            h) Module is fixed properly to withstand wind <br>
                             loading of 150 km/hr. of wind velocity.
                         </td>
                         <td width="50%">
@@ -177,7 +177,7 @@
                     <tr>
                         <td>13.</td>
                         <td>
-                            a) Specify the Name of Manufacture of POLE / 
+                            a) Specify the Name of Manufacture of POLE / <br>
                             STRUCTURE / HARDWARE
                         </td>
                         <td></td>
@@ -195,7 +195,7 @@
                     <tr>
                         <td></td>
                         <td>
-                            c) Grouting of Pole (300 x 300 x 1000 mm below 
+                            c) Grouting of Pole (300 x 300 x 1000 mm below <br>
                             the ground).
                         </td>
                         <td>Yes or No</td>
@@ -207,7 +207,7 @@
                     </tr>
                     <tr>
                         <td></td>
-                        <td>e) UID no. is Properly embossed / Punched on the 
+                        <td>e) UID no. is Properly embossed / Punched on the <br>
                             system / Pole</td>
                         <td>Yes or No</td>
                     </tr>
@@ -219,7 +219,7 @@
                 <tbody>
                     <tr>
                         <td width="5%"></td>
-                        <td width="45%">f) Toll Free no Properly embossed / Punched on the 
+                        <td width="45%">f) Toll Free no Properly embossed / Punched on the <br>
                             system / Pole</td>
                         <td width="50%">Yes or No</td>
                     </tr>
@@ -230,25 +230,25 @@
                     </tr>
                     <tr>
                         <td></td>
-                        <td>h) System is installed with anti-theft locking nut 
+                        <td>h) System is installed with anti-theft locking nut <br>
                             and Bolt</td>
                         <td>Yes or No</td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td>i) All the cable should be multi strand copper 
+                        <td>i) All the cable should be multi strand copper <br>
                             conductor properly insulated and sheathed.</td>
                         <td>Yes or No</td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td>j) Training for operation & maintenance of the 
+                        <td>j) Training for operation & maintenance of the <br>
                             system</td>
                         <td>Yes or No</td>
                     </tr>
                     <tr>
                         <td></td>
-                        <td>k) Technical literature, operation & 
+                        <td>k) Technical literature, operation & <br>
                             maintenance manual with in English/Hindi</td>
                         <td>Yes or No</td>
                     </tr>
