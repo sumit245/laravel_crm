@@ -282,7 +282,7 @@
             </div>
         </div>
     </div>
-    @push("script")
+    @push("scripts")
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
@@ -301,85 +301,142 @@
 
 @endpush
 
-      @push("styles")
-
+@push("styles")
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-      
-      .form-container {
-            border: 2px solid #000;
-            padding: 20px;
-            position: relative;
-            margin-top: 50px;
-        }
+<style>
+    *, *::before, *::after {
+        box-sizing: border-box;
+    }
+
+    .container {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .form-container {
+        border: 2px solid #000;
+        padding: 20px;
+        position: relative;
+        margin-top: 50px;
+        max-width: 100%;
+        overflow-x: auto;
+    }
+
+    .print-btn {
+        position: absolute;
+      right:40px;
+    }
+
+    .form-header {
+        text-align: center;
+        font-weight: bold;
+        margin-bottom: 15px;
+        font-size: 1.2rem;
+    }
+
+    .intro-text {
+        text-align: justify;
+        margin-bottom: 15px;
+    }
+
+    .details-line {
+        margin-bottom: 10px;
+    }
+
+    .table {
+        width: 100%;
+        border: 1px solid #000;
+        table-layout: fixed;
+        word-wrap: break-word;
+    }
+
+    .table th, .table td {
+        border: 1px solid #000;
+        padding: 8px;
+        vertical-align: top;
+        word-wrap: break-word;
+    }
+
+    .signature-section {
+        margin-top: 30px;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 20px;
+    }
+
+    .signature-box {
+        text-align: center;
+        width: 200px;
+    }
+
+    .signature-line {
+        border-top: 1px solid #000;
+        margin-top: 50px;
+    }
+
+    .page-number {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+    }
+
+    @media screen and (max-width: 768px) {
         .print-btn {
-            position: absolute;
-           right:30px;
-        }
-        .page-header {
-            text-align: center;
+            position: static;
             margin-bottom: 20px;
         }
-        .form-header {
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 15px;
+
+        .form-container {
+            padding: 15px;
         }
-        .intro-text {
-            text-align: justify;
-            margin-bottom: 15px;
+
+        .table, .table th, .table td {
+            font-size: 0.85rem;
         }
-        .details-line {
-            margin-bottom: 10px;
-        }
-        .table {
-            border: 1px solid #000;
-        }
-        .table th, .table td {
-            border: 1px solid #000;
-            padding: 8px;
-            vertical-align: top;
-        }
+
         .signature-section {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
+            flex-direction: column;
+            align-items: center;
         }
+
         .signature-box {
-            text-align: center;
-            width: 200px;
+            width: 100%;
         }
+    }
+
+    @media print {
+     
+
+        .print-btn {
+            display: none !important;
+        }
+
+        .form-container {
+            border: 2px solid #000 !important;
+            margin-top: 0;
+            padding: 15px;
+            width: 100%;
+            max-width: 100%;
+            overflow: visible;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .table, .table th, .table td {
+            border: 1px solid #000 !important;
+            word-wrap: break-word;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
         .signature-line {
-            border-top: 1px solid #000;
-            margin-top: 50px;
+            border-top: 1px solid #000 !important;
         }
-        .page-number {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
+
+        .page-break {
+            page-break-before: always;
         }
-        
-        @media print {
-         
-            .form-container {
-                border: 2px solid #000 !important;
-                margin-top: 0;
-                padding: 15px;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .table, .table th, .table td {
-                border: 1px solid #000 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-            .signature-line {
-                border-top: 1px solid #000 !important;
-            }
-            /* Force page breaks at specific points if needed */
-            .page-break {
-                page-break-before: always;
-            }
-        }
-    </style>
-    @endpush
+    }
+</style>
+@endpush
