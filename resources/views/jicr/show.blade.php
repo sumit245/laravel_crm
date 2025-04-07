@@ -286,11 +286,7 @@
     @push("styles")
 
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            line-height: 1.5;
-            padding: 20px;
-        }
+      
         .page-header {
             text-align: center;
             margin-bottom: 20px;
