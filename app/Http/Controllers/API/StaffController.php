@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class StaffController extends Controller
 {
@@ -100,34 +101,60 @@ class StaffController extends Controller
     public function getStaffPerformance($user_id)
     {
         try {
+            $today = now();
+
+            // Get logged-in user
+            $loggedInUser = User::find($user_id);
+            if (!$loggedInUser) {
+                return response()->json(['error' => 'User not found'], 404);
+            }
+
+            $managerId = $loggedInUser->manager_id;
+            $projectId = $loggedInUser->project_id;
+
             // Step 1: Fetch all engineers (non-admin users)
-            $engineers = User::where('role', '!=', 0)->get(); // Adjust role filter as per your logic
+            $engineers = User::where('role', 1)
+                ->where('manager_id', $managerId)
+                ->where('project_id', $projectId)
+                ->get();
+            Log::info($loggedInUser);
 
             // Step 2: Fetch all tasks once
             $allTasks = Task::all();
 
             // Step 3: Map performance for each engineer
-            $performanceData = $engineers->map(function ($engineer) use ($allTasks, $user_id) {
+            $performanceData = $engineers->map(function ($engineer) use ($allTasks, $user_id, $today) {
                 $engineerTasks = $allTasks->where('engineer_id', $engineer->id);
-
                 $total_alloted = $engineerTasks->count();
                 $total_completed = $engineerTasks->where('status', 'Completed')->count();
                 $total_pending = $engineerTasks->where('status', 'Pending')->count();
 
+                // Backlogs: pending tasks with end_date < today
+                $total_backlogs = $engineerTasks->filter(function ($task) use ($today) {
+                    return $task->status === 'Pending' && $task->end_date < $today;
+                })->count();
+
+                $performance_percentage = $total_alloted > 0
+                    ? round(($total_completed / $total_alloted) * 100, 2)
+                    : 0;
+
                 return $total_alloted > 0 ? [
                     'id' => $engineer->id,
-                    'name' => $engineer->first_name . ' ' . $engineer->last_name,
+                    'name' => $engineer->firstName . ' ' . $engineer->lastName,
                     'total_alloted' => $total_alloted,
                     'total_completed' => $total_completed,
+                    'total_pending' => $total_pending,
+                    'total_backlogs' => $total_backlogs,
+                    'performance_percentage' => $performance_percentage,
                     'is_logged_in_user' => $engineer->id == $user_id
                 ] : null;
             })->filter(); // Remove nulls
 
-            // Step 4: Sort with logged-in user first, then by completed descending
+            // Step 4: Sort
             $sorted = $performanceData->sort(function ($a, $b) {
                 if ($a['is_logged_in_user']) return -1;
                 if ($b['is_logged_in_user']) return 1;
-                return $b['total_completed'] <=> $a['total_completed'];
+                return $b['performance_percentage'] <=> $a['performance_percentage'];
             })->values(); // Re-index
 
             return response()->json($sorted);
