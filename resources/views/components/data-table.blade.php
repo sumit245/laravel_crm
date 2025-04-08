@@ -20,24 +20,11 @@
           text: '<i class="mdi mdi-menu"></i> Actions',
           className: 'btn btn-sm btn-secondary',
           buttons: [{
-              text: 'Delete Selected',
-              action: function() {
-                performBulkAction('delete');
-              }
-            },
-            {
-              text: 'Assign to Vendor',
-              action: function() {
-                performBulkAction('assign');
-              }
-            },
-            {
-              text: 'Dispatch Inventory',
-              action: function() {
-                performBulkAction('dispatch');
-              }
+            text: 'Delete Selected',
+            action: function() {
+              performBulkAction('delete');
             }
-          ]
+          }]
         },
         {
           extend: 'excel',
