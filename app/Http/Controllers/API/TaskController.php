@@ -670,7 +670,7 @@ class TaskController extends Controller
         }
 
         // Fetch related users (Installer, Project Manager, Site Engineer) from the latest task
-        $latestTask = $pole->task()->latest()->first(); // Get latest assigned task
+        $latestTask = $pole->task()->first(); // Get latest assigned task
         Log::info($latestTask);
 
         $installer = $latestTask?->vendor;    // Installer

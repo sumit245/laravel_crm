@@ -72,8 +72,9 @@
         </div>
         <hr />
         <!-- Tablist -->
-
+        <h3>Performance Today</h3>
         @if ($project->project_type == 1)
+          {{-- Implement date filters here --}}
           @include("staff.streetlight-performance")
         @endif
 
