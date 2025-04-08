@@ -8,40 +8,58 @@
     <x-data-table id="installedPole" class="table-striped table">
       <x-slot:thead>
         <tr>
-        <th data-select="true">
-          <input type="checkbox" id="selectAll" />
-        </th>
-        <th>#</th>
-        <th>Complete Pole Numbers</th>
-        <th>Location</th>
-        <th>Sim Numbers</th>
-        <th>Luminary QR</th>
-        <th>Battery QR</th>
-        <th>Panel QR</th>
-        <th>RMS status</th>
-        <th>Actions</th>
+          <th data-select="true">
+            <input type="checkbox" id="selectAll" />
+          </th>
+          <th>Complete Pole Numbers</th>
+          <th>IMEI</th>
+          <th>Sim Number</th>
+          <th>Battery Serial</th>
+          <th>Panel Serial</th>
+          <th>Location</th>
+          <th>RMS status</th>
+          <th>Actions</th>
         </tr>
       </x-slot:thead>
       <x-slot:tbody>
         @foreach ($poles as $pole)
           <tr>
-          <td>{{ $pole->id }}</td>
-          <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
-          <td>{{ $pole->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
-          <td>{{ $pole->sim_number ?? "N/A" }}</td>
-          <td>{{ $pole->luminary_qr ?? "N/A" }}</td>
-          <td>{{ $pole->battery_qr ?? "N/A" }}</td>
-          <td>{{ $pole->panel_qr ?? "N/A" }}</td>
-          <td>{{ $pole->be ?? "N/A" }}</td>
-          <td>
-            <!-- View Button -->
-            <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-              <i class="mdi mdi-eye">info</i>
-            </a>
-          </td>
+            <td>
+              <input type="checkbox" id="selectAll" />
+            </td>
+            <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
+            <td>{{ $pole->luminary_qr ?? "N/A" }}</td>
+            <td>{{ $pole->sim_number ?? "N/A" }}</td>
+            <td>{{ $pole->battery_qr ?? "N/A" }}</td>
+            <td>{{ $pole->panel_qr ?? "N/A" }}</td>
+            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
+              {{-- TODO:  --}}
+              <span class="text-primary">View Location</span>
+            </td>
+            <td>{{ $pole->rms_status ?? "N/A" }}</td>
+            <td>
+              <!-- View Button -->
+              <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+                title="View Details">
+                <i class="mdi mdi-eye">info</i>
+              </a>
+            </td>
           </tr>
         @endforeach
       </x-slot:tbody>
     </x-data-table>
   </div>
 @endsection
+
+@push("scripts")
+  <script>
+    function locateOnMap(lat, lng) {
+      if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(url, '_blank');
+      } else {
+        alert('Location coordinates not available.');
+      }
+    }
+  </script>
+@endpush
