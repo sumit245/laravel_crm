@@ -11,38 +11,38 @@
       </div>
     </div>
     <div class="row">
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Sl. No.</label>
         <p class="mg-b-0">{{ $pole->id }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Complete Pole Number</label>
         <p class="mg-b-0">{{ $pole->complete_pole_number }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Beneficiary</label>
         <p class="mg-b-0">{{ $pole->beneficiary }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Location</label>
         <p class="mg-b-0">{{ $pole->lat }}, {{ $pole->lng }}</p>
       </div>
     </div>
     <hr />
     <div class="row">
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Survey Status</label>
         <p class="mg-b-0">{{ $pole->isSurveyDone ? "Yes" : "No" }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installation Status</label>
         <p class="mg-b-0">{{ $pole->isInstallationDone ? "Yes" : "No" }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Network Status</label>
         <p class="mg-b-0">{{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installer Name</label>
         <p class="mg-b-0">{{ $installer->name ?? "" }}</p>
       </div>
