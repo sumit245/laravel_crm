@@ -1,3 +1,4 @@
+@extends('layouts.main')
 <div class="row">
           <div class="col-12">
               <!-- Date filter -->
