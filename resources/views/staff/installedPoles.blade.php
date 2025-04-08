@@ -1,31 +1,33 @@
-<table id="installedPolesTable" class="table-striped table-bordered table-sm table">
+<table id="installedPolesTable" class="table-striped table-bordered table-sm table mt-4">
   <thead>
     <tr>
-      <th>#</th>
-      <th>Complete Pole Numbers</th>
+      <th data-select="true">
+        <input type="checkbox" id="selectAll" />
+      </th>
+      <th>Pole Number</th>
+      <th>IMEI</th>
+      <th>Sim Number</th>
+      <th>Battery</th>
+      <th>Panel</th>
       <th>Location</th>
-      <th>Sim Numbers</th>
-      <th>Luminary QR</th>
-      <th>Battery QR</th>
-      <th>Panel QR</th>
-      <th>RMS status</th>
+      <th>RMS</th>
       <th>Actions</th>
     </tr>
   </thead>
   <tbody>
     @foreach ($installedPoles as $survey)
       <tr>
-        <td>{{ $survey->id }}</td>
         <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
-        <td>{{ $survey->lat && $survey->lng ? $survey->lat . ", " . $survey->lng : "N/A" }}</td>
-        <td>{{ $survey->sim_number ?? "N/A" }}</td>
         <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
+        <td>{{ $survey->sim_number ?? "N/A" }}</td>
         <td>{{ $survey->battery_qr ?? "N/A" }}</td>
-        <td>{{ $survey->panel_qr ?? "N/A" }}</td>
-        <td>{{ $survey->be ?? "N/A" }}</td>
+        <td>{{ $survey->module_qr ?? "N/A" }}</td>
+        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;"></td>
+            <span class="text-primary">View Location</span>
+            <td>{{ $survey->rms_status ?? "N/A" }}</td>
         <td>
           <!-- View Button -->
-          <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+          <a href="{{ route("poles.show", $survey->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
             <i class="mdi mdi-eye"></i>
           </a>
 
@@ -148,5 +150,14 @@
         }
       }
     });
+    // Map script
+    function locateOnMap(lat, lng) {
+      if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(url, '_blank');
+      } else {
+        alert('Location coordinates not available.');
+      }
+    }
   </script>
 @endpush
