@@ -47,6 +47,7 @@
         <p class="mg-b-0">{{ $installer->name ?? "" }}</p>
       </div>
     </div>
+    <hr />
     <div class="row">
       <div class="col-sm-6">
         @if (!empty($surveyImages))
@@ -69,7 +70,7 @@
             @endforeach
           </div>
         @else
-          <p>No survey images available.</p>
+          <p>No submission images available.</p>
         @endif
       </div>
     </div>

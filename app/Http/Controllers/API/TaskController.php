@@ -642,7 +642,8 @@ class TaskController extends Controller
     public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
-        $pole = Pole::with(['streetlight', 'task', 'tasks'])->findOrFail($id);
+        $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
+        Log::info($pole);
 
         // Decode survey images JSON (ensure it's an array)
         $surveyImages = [];
@@ -669,7 +670,7 @@ class TaskController extends Controller
         }
 
         // Fetch related users (Installer, Project Manager, Site Engineer) from the latest task
-        $latestTask = $pole->tasks()->latest()->first(); // Get latest assigned task
+        $latestTask = $pole->task()->latest()->first(); // Get latest assigned task
         Log::info($latestTask);
 
         $installer = $latestTask?->vendor;    // Installer
