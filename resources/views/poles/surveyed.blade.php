@@ -6,6 +6,7 @@
     <p>Total Surveyed Poles: <strong>{{ $totalSurveyed }}</strong></p>
 
     <!-- Search and Filter Form -->
+     {{--  
     <form method="GET" action="{{ route("surveyed.poles") }}" class="mb-3">
       <div class="row">
         <div class="col-md-3">
@@ -53,33 +54,43 @@
         </div>
       </div>
     </form>
-
-    <table class="table-striped table">
-      <thead>
+--}}
+    <x-data-table id="surveyedPole" class="table-striped table">
+      <x-slot:thead>
         <tr>
-          <th>Pole ID</th>
-          <th>Complete Pole Number</th>
-          <th>Survey Status</th>
-          <th>Installation Status</th>
-          <th>Location</th>
-          <th>Actions</th>
+        <th data-select="true">
+          <input type="checkbox" id="selectAll" />
+        </th>
+        
+        <th>Ward Name</th>
+        <th>Complete Pole Numbers</th>
+        <th>Location</th>
+        <th>Beneficiary_Contact</th>
+        <th>Remarks</th>
+        <th>Actions</th>
         </tr>
-      </thead>
-      <tbody>
+      </x-slot:thead>
+      <x-slot:tbody>
         @foreach ($poles as $pole)
           <tr>
-            <td>{{ $pole->id }}</td>
-            <td>{{ $pole->complete_pole_number }}</td>
-            <td>{{ $pole->isSurveyDone ? "Completed" : "Pending" }}</td>
-            <td>{{ $pole->isInstallationDone ? "Installed" : "Not Installed" }}</td>
-            <td>{{ $pole->lat }}, {{ $pole->lng }}</td>
-            <td>
-              <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-info">View</a>
-              <!-- Add more action buttons as needed -->
-            </td>
+          
+          <td>{{ $pole->ward_name ?? "N/A" }}</td>
+          <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
+          <td>{{ $pole->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
+          <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
+          <td>{{ $pole->remarks ?? "N/A" }}</td>
+          <td>
+            <!-- View Button -->
+            <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+              <i class="mdi mdi-eye"></i>
+            </a>
+
+            <!-- Delete Button -->
+
+          </td>
           </tr>
         @endforeach
-      </tbody>
-    </table>
+      </x-slot:tbody>
+    </x-data-table>
   </div>
 @endsection
