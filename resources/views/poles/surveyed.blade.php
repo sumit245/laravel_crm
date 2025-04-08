@@ -6,7 +6,7 @@
     <p>Total Surveyed Poles: <strong>{{ $totalSurveyed }}</strong></p>
 
     <!-- Search and Filter Form -->
-     {{--  
+    {{--  
     <form method="GET" action="{{ route("surveyed.poles") }}" class="mb-3">
       <div class="row">
         <div class="col-md-3">
@@ -58,36 +58,36 @@
     <x-data-table id="surveyedPole" class="table-striped table">
       <x-slot:thead>
         <tr>
-        <th data-select="true">
-          <input type="checkbox" id="selectAll" />
-        </th>
-        
-        <th>Ward Name</th>
-        <th>Complete Pole Numbers</th>
-        <th>Location</th>
-        <th>Beneficiary_Contact</th>
-        <th>Remarks</th>
-        <th>Actions</th>
+          <th data-select="true">
+            <input type="checkbox" id="selectAll" />
+          </th>
+          <th>Complete Pole Numbers</th>
+          <th>Ward Name</th>
+          <th>Location</th>
+          <th>Beneficiary Contact</th>
+          <th>Remarks</th>
+          <th>Actions</th>
         </tr>
       </x-slot:thead>
       <x-slot:tbody>
         @foreach ($poles as $pole)
           <tr>
-          
-          <td>{{ $pole->ward_name ?? "N/A" }}</td>
-          <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
-          <td>{{ $pole->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
-          <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
-          <td>{{ $pole->remarks ?? "N/A" }}</td>
-          <td>
-            <!-- View Button -->
-            <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-              <i class="mdi mdi-eye"></i>
-            </a>
+            <td><input type="checkbox" id="selectAll" /></td>
+            <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
+            <td>{{ $pole->ward_name ?? "N/A" }}</td>
+            <td>{{ $pole->lat && $pole->lng ? $pole->lat . ", " . $pole->lng : "N/A" }}</td>
+            <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
+            <td>{{ $pole->remarks ?? "N/A" }}</td>
+            <td>
+              <!-- View Button -->
+              <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+                title="View Details">
+                <i class="mdi mdi-eye"></i>
+              </a>
 
-            <!-- Delete Button -->
+              <!-- Delete Button -->
 
-          </td>
+            </td>
           </tr>
         @endforeach
       </x-slot:tbody>
