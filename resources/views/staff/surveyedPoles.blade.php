@@ -87,6 +87,9 @@
   @push("scripts")
     <script>
       $(document).ready(function() {
+        if ($.fn.DataTable.isDataTable('#surveyedPolesTable')) {
+          $('#surveyedPolesTable').DataTable().clear().destroy();
+        }
         $('#surveyedPolesTable').DataTable({
           dom: "<'row d-flex align-items-center justify-content-between'" +
             "<'col-md-6 d-flex align-items-center' f>" +
