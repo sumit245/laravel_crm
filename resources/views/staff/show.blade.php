@@ -72,59 +72,16 @@
         </div>
         <hr />
         <!-- Tablist -->
-        <div class="row my-2">
-          <div class="col-12">
-            <div class="tab-content mt-1" id="myTabContent">
-            @if ($project->project_type == 1)
-              <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
-                    type="button" role="tab" aria-controls="sites" aria-selected="true">
-                    Assigned Tasks
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff" type="button"
-                    role="tab" aria-controls="staff">
-                    Surveyed Poles
-                  </button>
-                </li>
-                <li class="nav-item" role="presentation">
-                  <button class="nav-link" id="vendors-tab" data-bs-toggle="tab" data-bs-target="#vendors" type="button"
-                    role="tab" aria-controls="vendors" aria-selected="false">
-                    Installed Poles
-                  </button>
-                </li>
-              </ul>
-              <!-- Sites Tab -->
-            
-              <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
-              <div class="p-2">  
-                  @include("staff.assignedTasks")
-                </div>
-              </div>
+        <h3>Performance Today</h3>
+        @if ($project->project_type == 1)
+          {{-- Implement date filters here --}}
+          @include("staff.streetlight-performance")
+        @endif
 
-              <!-- Staffs Tab -->
-              <div class="tab-pane fade" id="staff" role="tabpanel" aria-labelledby="staff-tab">
-                <div class="p-2">  
-                  @include("staff.surveyedPoles")
-                </div>
-              </div>
-
-              <!-- Vendors Tab -->
-              <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
-                <div class="p-2">  
-                  @include("staff.installedPoles")
-                </div>
-              </div>
-            @endif
-            </div>
-          </div>
-        </div>       
       </div>
     </div>
   </div>
-  
+
 @endsection
 
 @push("styles")
@@ -137,54 +94,6 @@
       margin-top: 50px;
       margin-left: 0px;
       transform: translateY(-10px);
-    }
-
-    .image-container {
-      position: relative;
-      margin-left: 250px;
-      transform: translateY(-20px);
-    }
-
-    .row {
-      display: flex;
-      flex-wrap: wrap;
-      margin-top: 5px;
-    }
-
-    .col {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .list-header {
-      padding: 10px;
-      color: white;
-      border-radius: 4px 4px 0 0;
-      text-align: center;
-    }
-
-    .list-container {
-      background-color: white;
-      padding: 10px;
-      border: 1px solid #dee2e6;
-      text-align: center;
-    }
-
-    .header-green {
-      background-color: #28a745;
-    }
-
-    .header-red {
-      background-color: #dc3545;
-    }
-
-    .header-blue {
-      background-color: #2d1cc0;
-      color: rgb(255, 255, 255);
-    }
-
-    .header-darkGreen {
-      background-color: #0a3314;
     }
 
     .user-card {
@@ -204,39 +113,6 @@
       height: 40px;
       border-radius: 50%;
       margin-right: 10px;
-    }
-
-    .nested-list {
-      margin-left: 20px;
-      display: none;
-    }
-
-    .status-badge {
-      background-color: #e9ecef;
-      padding: 2px 8px;
-      border-radius: 12px;
-      font-size: 0.8rem;
-    }
-
-    .position-text {
-      color: #6c757d;
-      font-size: 0.9rem;
-    }
-
-    .ward-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 5px;
-      margin-top: 5px;
-    }
-
-    .ward-tag {
-      background-color: #007bff;
-      color: white;
-      padding: 2px 4px;
-      border-radius: 4px;
-      font-size: 0.65rem;
-      display: inline-block;
     }
   </style>
 @endpush

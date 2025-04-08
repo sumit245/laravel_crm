@@ -49,11 +49,11 @@ class StreetlightTask extends Model
     // Relationship: A task belongs to a vendor
     public function vendor()
     {
-        return $this->belongsTo(User::class, 'vendor_id');
+        return $this->belongsTo(User::class, 'vendor_id', 'id');
     }
     public function manager()
     {
-        return $this->belongsTo(User::class, 'manager_id');
+        return $this->belongsTo(User::class, 'manager_id', 'id');
     }
 
     public function poles()

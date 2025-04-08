@@ -47,17 +47,32 @@
         <p class="mg-b-0">{{ $installer->name ?? "" }}</p>
       </div>
     </div>
+    <hr />
     <div class="row">
-      @if (!empty($surveyImages))
-        <h3>Survey Images</h3>
-        <div class="image-gallery">
-          @foreach ($surveyImages as $image)
-            <img src="{{ $image }}" alt="Survey Image" style="width: 200px; height: auto; margin: 10px;">
-          @endforeach
-        </div>
-      @else
-        <p>No survey images available.</p>
-      @endif
+      <div class="col-sm-6">
+        @if (!empty($surveyImages))
+          <h3>Survey Images</h3>
+          <div class="image-gallery">
+            @foreach ($surveyImages as $image)
+              <img src="{{ $image }}" alt="Survey Image" style="width: 200px; height: auto; margin: 10px;">
+            @endforeach
+          </div>
+        @else
+          <p>No survey images available.</p>
+        @endif
+      </div>
+      <div class="col-sm-6">
+        @if (!empty($submissionImages))
+          <h3>Installation Image</h3>
+          <div class="image-gallery">
+            @foreach ($submissionImages as $image)
+              <img src="{{ $image }}" alt="Installation Image" style="width: 200px; height: auto; margin: 10px;">
+            @endforeach
+          </div>
+        @else
+          <p>No submission images available.</p>
+        @endif
+      </div>
     </div>
   </div>
 @endsection
