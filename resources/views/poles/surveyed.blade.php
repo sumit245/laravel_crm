@@ -6,6 +6,7 @@
     <p>Total Surveyed Poles: <strong>{{ $totalSurveyed }}</strong></p>
 
     <!-- Search and Filter Form -->
+     {{--  
     <form method="GET" action="{{ route("surveyed.poles") }}" class="mb-3">
       <div class="row">
         <div class="col-md-3">
@@ -53,7 +54,7 @@
         </div>
       </div>
     </form>
-    
+--}}
     <x-data-table id="surveyedPole" class="table-striped table">
       <x-slot:thead>
         <tr>
