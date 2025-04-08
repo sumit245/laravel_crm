@@ -46,7 +46,7 @@
   </div>
               
   <div class="p-2">
-  <table id="installedPolesTable" class="table-striped table-bordered table-sm table">
+  <table id="instal" class="table-striped table-bordered table-sm table">
     <thead>
       <tr>
         <th>#</th>

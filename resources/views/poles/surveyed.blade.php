@@ -76,7 +76,7 @@
           
           <td>{{ $pole->ward_name ?? "N/A" }}</td>
           <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
-          <td>{{ $pole->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
+          <td>{{ $pole->lat && $pole->lng ? $pole->lat .', '.$pole->lng : "N/A" }}</td>
           <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
           <td>{{ $pole->remarks ?? "N/A" }}</td>
           <td>
