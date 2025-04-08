@@ -61,7 +61,7 @@
         <th data-select="true">
           <input type="checkbox" id="selectAll" />
         </th>
-        <th>#</th>
+        
         <th>Ward Name</th>
         <th>Complete Pole Numbers</th>
         <th>Location</th>
@@ -73,7 +73,7 @@
       <x-slot:tbody>
         @foreach ($poles as $pole)
           <tr>
-          <td>{{ $pole->id }}</td>
+          
           <td>{{ $pole->ward_name ?? "N/A" }}</td>
           <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
           <td>{{ $pole->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>

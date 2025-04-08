@@ -36,7 +36,7 @@
           <td>
             <!-- View Button -->
             <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-              <i class="mdi mdi-eye"></i>
+              <i class="mdi mdi-eye">info</i>
             </a>
           </td>
           </tr>
