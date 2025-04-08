@@ -7,7 +7,7 @@
       <div class="d-flex">
         <a href="#" data-toggle="modal" class="btn btn-sm btn-white d-flex align-items-center"
           onclick="window.history.goBack();">
-          <span class="d-none d-sm-inline mg-l-5"> Go Back</span></a>
+          <span class="d-none d-sm-inline mg-l-5">Go Back</span></a>
       </div>
     </div>
     <div class="row">
