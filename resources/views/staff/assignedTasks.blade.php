@@ -86,7 +86,12 @@
 
 @push("scripts")
   <script>
+    
+
     $(document).ready(function() {
+      if ($.fn.DataTable.isDataTable('#assignedTasksTable')) {
+    $('#assignedTasksTable').DataTable().clear().destroy();
+      }
       $('#assignedTasksTable').DataTable({
         dom: 
         "<'row d-flex align-items-center justify-content-between'" +

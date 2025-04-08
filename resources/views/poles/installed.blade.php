@@ -27,7 +27,7 @@
           <tr>
           <td>{{ $pole->id }}</td>
           <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
-          <td>{{ $pole->lat && $survey->lng ? $survey->lat .', '. $survey->lng : "N/A" }}</td>
+          <td>{{ $pole->lat && $pole->lng ? $pole->lat .', '. $pole->lng : "N/A" }}</td>
           <td>{{ $pole->sim_number ?? "N/A" }}</td>
           <td>{{ $pole->luminary_qr ?? "N/A" }}</td>
           <td>{{ $pole->battery_qr ?? "N/A" }}</td>

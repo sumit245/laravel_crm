@@ -45,7 +45,7 @@
   </div>
               
   <div class="p-2">
-  <table id="surveyedPolesTable" class="table-striped table-bordered table-sm table">
+  <table id="surveyed" class="table-striped table-bordered table-sm table">
     <thead>
       <tr>
         <th>#</th>
