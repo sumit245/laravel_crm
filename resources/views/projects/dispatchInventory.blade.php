@@ -93,7 +93,7 @@
           {{-- TODO: unbind enter button --}}
           <button type="submit" id="issueMaterial" class="btn btn-primary">Issue items</button>
         </div>
-      </form> 
+      </form>
 
     </div>
 
@@ -213,7 +213,7 @@
     // Handle Qr Scanning
     const qrScanner = document.getElementById('qr_scanner');
     if (qrScanner) {
-    //   // TODO: Modify with keyup listener so that form doesnot submit on scan
+      //   // TODO: Modify with keyup listener so that form doesnot submit on scan
       qrScanner.addEventListener('change', function(event) {
         if (this.value.trim() !== '') {
           let scannedCode = this.value.trim();
@@ -268,12 +268,6 @@
         }
       });
     }
-
-
-    // Show error message
-    
-    //New method to prevent premature form submission
-  
 
 
     function showError(message) {
@@ -347,21 +341,21 @@
     // submitting the form
     const dispatchButton = document.getElementById('issueMaterial');
     dispatchButton.addEventListener('click', function(e) {
-    e.preventDefault(); // Prevent any default action, like form submission
+      e.preventDefault(); // Prevent any default action, like form submission
 
-  // Add validation logic here if needed (for example, check if required fields are filled)
-  const form = document.querySelector('form'); // Assuming the button is inside a form
+      // Add validation logic here if needed (for example, check if required fields are filled)
+      const form = document.querySelector('form'); // Assuming the button is inside a form
 
-  // Check if the form is valid
-  if (form.checkValidity()) {
-    // If the form is valid, you can submit it
-    form.submit(); // Submit the form
-    console.log("Form submitted successfully!");
-  } else {
-    // Show an error if the form is not valid
-    showError('Please make sure all fields are filled out correctly.');
-  }
-});
+      // Check if the form is valid
+      if (form.checkValidity()) {
+        // If the form is valid, you can submit it
+        form.submit(); // Submit the form
+        console.log("Form submitted successfully!");
+      } else {
+        // Show an error if the form is not valid
+        showError('Please make sure all fields are filled out correctly.');
+      }
+    });
 
 
 
