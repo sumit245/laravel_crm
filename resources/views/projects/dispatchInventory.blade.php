@@ -196,7 +196,10 @@
                 showError('Invalid QR code! Item not found in inventory.');
               }
             })
-            .catch(() => showError('Error checking QR code!'));
+            .catch((err) => {
+              console.log(err);
+              showError('Error checking QR code!')
+            });
         }
       }
     });
@@ -337,29 +340,6 @@
         updateQuantityAndTotal();
       });
     }
-
-
-    // submitting the form
-    const dispatchButton = document.getElementById('issueMaterial');
-    dispatchButton.addEventListener('click', function(e) {
-      e.preventDefault(); // Prevent any default action, like form submission
-
-      // Add validation logic here if needed (for example, check if required fields are filled)
-      const form = document.querySelector('form'); // Assuming the button is inside a form
-
-      // Check if the form is valid
-      if (form.checkValidity()) {
-        // If the form is valid, you can submit it
-        form.submit(); // Submit the form
-        console.log("Form submitted successfully!");
-      } else {
-        // Show an error if the form is not valid
-        showError('Please make sure all fields are filled out correctly.');
-      }
-    });
-
-
-
 
     // Update scanned QR list
     function updateScannedQRs() {
