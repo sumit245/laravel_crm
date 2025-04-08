@@ -656,6 +656,18 @@ class TaskController extends Controller
             }
         }
 
+        // Decode survey images JSON (ensure it's an array)
+        $submissionImages = [];
+        if (!empty($pole->submission_image)) {
+            $submissionImagesArray = json_decode($pole->submission_image, true); // Decode JSON string into an array
+
+            if (is_array($submissionImagesArray)) { // Ensure it's an array before looping
+                foreach ($submissionImagesArray as $image) {
+                    $submissionImages[] = Storage::disk('s3')->url($image);
+                }
+            }
+        }
+
         // Fetch related users (Installer, Project Manager, Site Engineer) from the latest task
         $latestTask = $pole->tasks()->latest()->first(); // Get latest assigned task
         Log::info($latestTask);
@@ -665,7 +677,7 @@ class TaskController extends Controller
         $siteEngineer = $latestTask?->engineer;  // Site Engineer
 
         // Return the view with the pole details
-        return view('poles.show', compact('pole', 'surveyImages', 'installer', 'projectManager', 'siteEngineer'));
+        return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
     }
 
     public function exportPoles($vendor_id)
