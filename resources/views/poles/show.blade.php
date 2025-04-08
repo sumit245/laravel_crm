@@ -6,48 +6,115 @@
       <h6 class="mg-b-0">Pole Details</h6>
       <div class="d-flex">
         <a href="#" data-toggle="modal" class="btn btn-sm btn-white d-flex align-items-center"
-          onclick="window.location.goBack();">
+          onclick="window.history.goBack();">
           <span class="d-none d-sm-inline mg-l-5"> Go Back</span></a>
       </div>
     </div>
     <div class="row">
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Sl. No.</label>
         <p class="mg-b-0">{{ $pole->id }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Complete Pole Number</label>
         <p class="mg-b-0">{{ $pole->complete_pole_number }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Beneficiary</label>
         <p class="mg-b-0">{{ $pole->beneficiary }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Location</label>
         <p class="mg-b-0">{{ $pole->lat }}, {{ $pole->lng }}</p>
       </div>
     </div>
     <hr />
     <div class="row">
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Survey Status</label>
         <p class="mg-b-0">{{ $pole->isSurveyDone ? "Yes" : "No" }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installation Status</label>
         <p class="mg-b-0">{{ $pole->isInstallationDone ? "Yes" : "No" }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Network Status</label>
         <p class="mg-b-0">{{ $pole->isNetworkAvailable ? "Yes" : "No" }}</p>
       </div>
-      <div class="col-6 col-sm">
+      <div class="col-3 col-sm">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installer Name</label>
         <p class="mg-b-0">{{ $installer->name ?? "" }}</p>
       </div>
     </div>
     <hr />
+    <!-- Streetlight Poles column -->
+    <div class="row">
+      <div class="col-3 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Remarks</label>
+        <p class="mg-b-0">{{ $pole->remarks ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Luminary QR</label>
+        <p class="mg-b-0">{{ $pole->luminary_qr ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Battery QR</label>
+        <p class="mg-b-0">{{ $pole->battery_qr ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Panel QR</label>
+        <p class="mg-b-0">{{-- $installer->name ?? "" --}}{{ $pole->panel_qr? "Yes" : "No" }}</p>
+      </div>
+    </div>
+    <hr />
+    <!-- sim number, engineer name, project manager, vendor name -->
+    <div class="row">
+      <div class="col-3 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Sim Number</label>
+        <p class="mg-b-0">{{ $pole->sim_number ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Engineer</label>
+        <p class="mg-b-0">{{ $siteEngineer ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Project Manager</label>
+        <p class="mg-b-0">{{ $projectManager ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Vendor Name</label>
+        <p class="mg-b-0">{{-- $installer->name ?? "" --}}{{ $installer? "Yes" : "No" }}</p>
+      </div>
+    </div>
+    <!-- Streetlight Poles column end -->
+     <hr />
+     <!-- Streelights columns need to call from database -->
+     <div class="row">
+      <div class="col-3 col-sm">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">State</label>
+        <p class="mg-b-0">{{ $pole->streetlight->state ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        <!-- Table map to enginner name -->
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">District</label>
+        <p class="mg-b-0">{{ $pole->streetlight->district  ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        <!-- Table map to project manager name -->
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Block</label>
+        <p class="mg-b-0">{{ $pole->streetlight->block  ? "Yes" : "No" }}</p>
+      </div>
+      <div class="col-3 col-sm">
+        <!-- Table map to vendor name -->
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Panchayat</label>
+        <p class="mg-b-0">{{ $pole->streetlight->panchayat ? "Yes" : "No" }}</p>
+      </div>
+    </div>
+     <!-- Streelight column end -->
     <div class="row">
       <div class="col-sm-6">
         @if (!empty($surveyImages))
