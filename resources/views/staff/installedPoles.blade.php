@@ -25,7 +25,7 @@
         <td>{{ $survey->be ?? "N/A" }}</td>
         <td>
           <!-- View Button -->
-          <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+          <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
             <i class="mdi mdi-eye"></i>
           </a>
 
