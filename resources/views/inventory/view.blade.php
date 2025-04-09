@@ -1,5 +1,10 @@
 @extends("layouts.main")
 
+@php
+  $projectId = request()->get("project_id");
+  $storeId = request()->get("store_id");
+@endphp
+
 @section("content")
   <div class="container-fluid m-2">
     <div class="d-flex justify-content-between my-1">
@@ -23,7 +28,8 @@
             <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
             <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
             <p><a style="text-decoration: none; color:black;"
-                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL03"]) }}'>Dispatched Quantity</a></p>
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL03", "store_id" => $storeId]) }}'>Dispatched
+                Quantity</a></p>
             <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
           </div>
         </div>
@@ -40,7 +46,8 @@
             <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
             <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
             <p><a style="text-decoration: none; color:black;"
-                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL02"]) }}'>Dispatched Quantity</a>
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL02", "store_id" => $storeId]) }}'>Dispatched
+                Quantity</a>
             </p>
             <p>Available Quantity: <span>{{ $availableLuminary }}</span></p>
           </div>
@@ -60,7 +67,8 @@
             <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
             <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
             <p><a style="text-decoration: none; color:black;"
-                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL04"]) }}'>Dispatched Quantity</a>
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL04", "store_id" => $storeId]) }}'>Dispatched
+                Quantity</a>
             </p>
             <p>Available Quantity: <span>{{ $availableStructure }}</span></p>
           </div>
@@ -78,19 +86,15 @@
             <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
             <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
             <p><a style="text-decoration: none; color:black;"
-                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL01"]) }}'>Dispatched Quantity</a>
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL01", "store_id" => $storeId]) }}'>Dispatched
+                Quantity</a>
             </p>
             <p>Available Quantity: <span>{{ $availableModule }}</span></p>
           </div>
         </div>
       </div>
     </div>
-    <!-- <div class="mb-3">
-            <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
-            <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
-            <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
-          </div>
-        </div> -->
+
     <!-- Inventory Table -->
     <div class="mt-4">
       <table id="inventoryTable" class="table-striped table-bordered table">
