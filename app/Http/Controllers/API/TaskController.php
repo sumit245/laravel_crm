@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Helpers\ExcelHelper;
+use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
 use App\Models\InventoryDispatch;
 use App\Models\Site;
@@ -319,7 +320,9 @@ class TaskController extends Controller
 
         // ✅ Step 2: Fetch task & site
         $task = StreetlightTask::findOrFail($validated['task_id']);
+        $approved_by = $task->engineer->firstName . " " . $task->engineer->lastName;
         $streetlight = Streetlight::findOrFail($task->site_id);
+
 
         // ✅ Step 3: Create or get pole
         $pole = Pole::firstOrCreate(
@@ -388,6 +391,8 @@ class TaskController extends Controller
                 'is_consumed' => true,
                 'streetlight_pole_id' => $pole->id,
             ]);
+            $site = Streetlight::findOrFail($task->site_id);
+            RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
             Log::info("InventoryDispatch updated: {$affected} rows", [
                 'serials' => $serials,
@@ -404,7 +409,7 @@ class TaskController extends Controller
         ]);
     }
 
-    // Controller to get details of     
+    // Controller to get details of pole by Id    
     public function getPoleDetails(Request $request)
     {
         $id = $request->pole_id;
@@ -632,6 +637,7 @@ class TaskController extends Controller
         return view('poles.installed', compact('poles', 'totalInstalled'));
     }
 
+    // Get Pole Details by ID
     public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
@@ -674,6 +680,7 @@ class TaskController extends Controller
         return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
     }
 
+    // Api to export poles in excel in vendor/staff app
     public function exportPoles($vendor_id)
     {
         $vendor = User::find($vendor_id);
