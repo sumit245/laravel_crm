@@ -551,7 +551,11 @@ class InventoryController extends Controller
             $item = InventroyStreetLightModel::where('item_code', $itemCode)
                 ->where('store_id', $storeid)
                 ->get();
-            print_r($item->toArray());
+            $specificDispatch = InventoryDispatch::where('item_code', $itemCode)->get();
+            $availableQuantity = 0;
+            $title = $itemCode;
+            // print_r($dispatchedItem->toArray());
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'availableQuantity', 'title'));
         } catch (\Exception $e) {
             //throw $th;
             echo ($e->getMessage());
