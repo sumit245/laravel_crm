@@ -12,78 +12,85 @@
     <div class="row">
       <!-- Inventory Summary -->
       <div class="col-sm-3 mb-2 mt-2">
-  <div class="card bg-success">
-    <div class="card-header">
-      <div class="d-flex justify-content-between">
-        <h3 class="card-title">Battery</h3>
-        <i class="mdi mdi-battery"></i>
+        <div class="card bg-success">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h3 class="card-title">Battery</h3>
+              <i class="mdi mdi-battery"></i>
+            </div>
+          </div>
+          <div class="card-body">
+            <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
+            <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
+            <p><a style="text-decoration: none; color:black;"
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL03"]) }}'>Dispatched Quantity</a></p>
+            <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card-body">
-      <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
-      <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory",  [ "type" => "battery"]) }}'>Dispatched Quantity</a></p>
-      <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
-    </div>
-  </div>
-</div>
-<div class="col-sm-3 mb-2 mt-2">
-  <div class="card bg-warning">
-    <div class="card-header">
-      <div class="d-flex justify-content-between">
-        <h3 class="card-title">Luminary</h3>
-        <i class="mdi mdi mdi-led-on"></i>
+      <div class="col-sm-3 mb-2 mt-2">
+        <div class="card bg-warning">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h3 class="card-title">Luminary</h3>
+              <i class="mdi mdi mdi-led-on"></i>
+            </div>
+          </div>
+          <div class="card-body">
+            <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
+            <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
+            <p><a style="text-decoration: none; color:black;"
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL02"]) }}'>Dispatched Quantity</a>
+            </p>
+            <p>Available Quantity: <span>{{ $availableLuminary }}</span></p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card-body">
-      <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
-      <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "luminary") }}'>Dispatched Quantity</a></p>
-      <p>Available Quantity: <span>{{ $availableLuminary }}</span></p>
-    </div>
-  </div>
-</div>
-<div class="col-sm-3 mb-2 mt-2">
-  <div class="card"style="background-color: #FF5733; color: black;">
-    <div class="card-header">
-      <div class="d-flex justify-content-between">
-        <h3 class="card-title">Structure</h3>
-        <img width="20" height="20"
-          src="https://img.icons8.com/external-others-pike-picture/50/external-Steel-Frame-house-others-pike-picture-2.png"
-          alt="external-Steel-Frame-house-others-pike-picture-2" />
+      <div class="col-sm-3 mb-2 mt-2">
+        <div class="card"style="background-color: #FF5733; color: black;">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h3 class="card-title">Structure</h3>
+              <img width="20" height="20"
+                src="https://img.icons8.com/external-others-pike-picture/50/external-Steel-Frame-house-others-pike-picture-2.png"
+                alt="external-Steel-Frame-house-others-pike-picture-2" />
+            </div>
+          </div>
+          <div class="card-body">
+            <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
+            <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
+            <p><a style="text-decoration: none; color:black;"
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL04"]) }}'>Dispatched Quantity</a>
+            </p>
+            <p>Available Quantity: <span>{{ $availableStructure }}</span></p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card-body">
-      <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
-      <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "structure") }}'>Dispatched Quantity</a></p>
-      <p>Available Quantity: <span>{{ $availableStructure }}</span></p>
-    </div>
-  </div>
-</div>
-<div class="col-sm-3 mb-2 mt-2">
-  <div class="card bg-info">
-    <div class="card-header">
-      <div class="d-flex justify-content-between">
-        <h3 class="card-title">Module</h3>
-        <i class="mdi mdi-solar-panel"></i>
+      <div class="col-sm-3 mb-2 mt-2">
+        <div class="card bg-info">
+          <div class="card-header">
+            <div class="d-flex justify-content-between">
+              <h3 class="card-title">Module</h3>
+              <i class="mdi mdi-solar-panel"></i>
+            </div>
+          </div>
+          <div class="card-body">
+            <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
+            <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
+            <p><a style="text-decoration: none; color:black;"
+                href='{{ route("inventory.showDispatchInventory", ["item_code" => "SL01"]) }}'>Dispatched Quantity</a>
+            </p>
+            <p>Available Quantity: <span>{{ $availableModule }}</span></p>
+          </div>
+        </div>
       </div>
-    </div>
-    <div class="card-body">
-      <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
-      <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "module") }}'>Dispatched Quantity</a></p>
-      <p>Available Quantity: <span>{{ $availableModule }}</span></p>
-    </div>
-  </div>
-</div>
     </div>
     <!-- <div class="mb-3">
-      <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
-      <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
-      <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
-    </div>
-  </div> -->
+            <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
+            <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
+            <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
+          </div>
+        </div> -->
     <!-- Inventory Table -->
     <div class="mt-4">
       <table id="inventoryTable" class="table-striped table-bordered table">
@@ -118,7 +125,7 @@
       </table>
     </div>
   </div>
-  
+
   <!-- Inventory Details Modal -->
   @foreach ($inventory as $item)
     <div class="modal fade" id="modal{{ $item->id }}" tabindex="-1" role="dialog">
