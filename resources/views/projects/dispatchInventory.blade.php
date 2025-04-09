@@ -14,8 +14,7 @@
         @csrf
         <input type="hidden" id="dispatchStoreId" name="store_id">
         <input type="hidden" name="project_id" value="{{ $project->id }}">
-        <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? "" }}">
-
+        <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id }}">
         <div class="modal-body">
           <!-- Vendor Selection -->
           <div class="form-group">
@@ -196,10 +195,7 @@
                 showError('Invalid QR code! Item not found in inventory.');
               }
             })
-            .catch((err) => {
-              console.log(err);
-              showError('Error checking QR code!')
-            });
+            .catch(() => showError('Error checking QR code!'));
         }
       }
     });
@@ -274,6 +270,12 @@
     }
 
 
+    // Show error message
+
+    //New method to prevent premature form submission
+
+
+
     function showError(message) {
       const errorElement = document.getElementById('qr_error');
       if (errorElement) {
@@ -340,6 +342,29 @@
         updateQuantityAndTotal();
       });
     }
+
+
+    // submitting the form
+    const dispatchButton = document.getElementById('issueMaterial');
+    dispatchButton.addEventListener('click', function(e) {
+      e.preventDefault(); // Prevent any default action, like form submission
+
+      // Add validation logic here if needed (for example, check if required fields are filled)
+      const form = document.querySelector('form'); // Assuming the button is inside a form
+
+      // Check if the form is valid
+      if (form.checkValidity()) {
+        // If the form is valid, you can submit it
+        form.submit(); // Submit the form
+        console.log("Form submitted successfully!");
+      } else {
+        // Show an error if the form is not valid
+        showError('Please make sure all fields are filled out correctly.');
+      }
+    });
+
+
+
 
     // Update scanned QR list
     function updateScannedQRs() {
@@ -488,100 +513,7 @@
     @endif
 
     // Print functionality
-    document.getElementById('printButton').addEventListener('click', function(e) {
-      e.preventDefault();
 
-      const vendorSelect = document.getElementById('vendorName');
-      if (vendorSelect.selectedIndex === 0) {
-        alert('Please select a vendor first.');
-        return;
-      }
-      const vendorName = vendorSelect.options[vendorSelect.selectedIndex].textContent;
-
-      const itemRows = document.querySelectorAll('#itemsContainer .item-row');
-      const itemsData = [];
-
-      itemRows.forEach(row => {
-        const itemSelect = row.querySelector('.item-select');
-        if (itemSelect.selectedIndex === 0) return;
-
-        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-        const scannedQRsList = row.querySelector('ul.list-group.my-1');
-        const scannedQRs = Array.from(scannedQRsList.querySelectorAll('li')).map(li => li.textContent);
-
-        itemsData.push({
-          code: selectedOption.value,
-          name: selectedOption.dataset.item,
-          rate: selectedOption.dataset.rate,
-          make: selectedOption.dataset.make,
-          model: selectedOption.dataset.model,
-          quantity: row.querySelector('.item-quantity').value,
-          serials: scannedQRs
-        });
-      });
-
-      if (itemsData.length === 0) {
-        alert('Please add at least one item to print.');
-        return;
-      }
-
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-      <html>
-        <head>
-          <title>Dispatch Report</title>
-          <style>
-            body { font-family: Arial; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-            th { background-color: #f5f5f5; }
-            .serial-list { max-width: 300px; word-break: break-all; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>Inventory Dispatch Report</h2>
-            <p><strong>Vendor:</strong> ${vendorName}</p>
-            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Item Code</th>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Make/Model</th>
-                <th>Serial Numbers</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsData.map(item => `
-                <tr>
-                  <td>${item.code}</td>
-                  <td>${item.name}</td>
-                  <td>${item.quantity}</td>
-                  <td>₹${item.rate}</td>
-                  <td>${item.make} ${item.model}</td>
-                  <td class="serial-list">${item.serials.join(', ')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(() => window.close(), 500);
-            }
-          <\/script>
-        </body>
-      </html>
-    `);
-      printWindow.document.close();
-    });
 
     @if (session("error"))
       Swal.fire({
