@@ -535,7 +535,6 @@ class InventoryController extends Controller
                 ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
                 ->where('quantity', '>', 0) // Ensure quantity is greater than 0
                 ->exists();
-            Log::info("Exists: " . $exists);
             return response()->json(['exists' => $exists]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
@@ -546,9 +545,12 @@ class InventoryController extends Controller
     public function showDispatchInventory(Request $request)
     {
         $itemCode = $request->item_code;
+        $storeid = $request->store_id;
         try {
             //code...
-            $item = InventroyStreetLightModel::where('item_code', $itemCode)->get();
+            $item = InventroyStreetLightModel::where('item_code', $itemCode)
+                ->where('store_id', $storeid)
+                ->get();
             print_r($item->toArray());
         } catch (\Exception $e) {
             //throw $th;
