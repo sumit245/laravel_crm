@@ -295,126 +295,115 @@ class TaskController extends Controller
 
     public function submitStreetlightTasks(Request $request)
     {
-        // Step 1: Validate Request
-        $validator = Validator::make($request->all(), [
-            'task_id'        => 'required|exists:streetlight_tasks,id',
-            'complete_pole_number'         => 'required|string|max:255',
-            'ward_name' => 'nullable|string|max:255',
-            'isSurveyDone'      => 'nullable|string|in:true,false',
+        // ✅ Step 1: Validation
+        $validated = $request->validate([
+            'task_id'             => 'required|exists:streetlight_tasks,id',
+            'complete_pole_number' => 'required|string|max:255',
+            'ward_name'           => 'nullable|string|max:255',
+            'isSurveyDone'        => 'nullable|in:true,false',
             'survey_image'        => 'nullable|array',
-            'isNetworkAvailable'  => 'nullable|string|in:true,false',
+            'isNetworkAvailable'  => 'nullable|in:true,false',
             'beneficiary'         => 'nullable|string|max:255',
             'beneficiary_contact' => 'nullable|string|max:20',
             'remarks'             => 'nullable|string',
-            'isInstallationDone' => 'nullable|string|in:true,false',
+            'isInstallationDone'  => 'nullable|in:true,false',
             'luminary_qr'         => 'nullable|string|max:255',
-            'sim_number'    => 'nullable|string|max:200',
+            'sim_number'          => 'nullable|string|max:200',
             'panel_qr'            => 'nullable|string|max:255',
             'battery_qr'          => 'nullable|string|max:255',
             'submission_image'    => 'nullable|array',
-            'lat'            => 'nullable|numeric',
-            'lng'           => 'nullable|numeric',
+            'lat'                 => 'nullable|numeric',
+            'lng'                 => 'nullable|numeric',
         ]);
-        if ($validator->fails()) {
-            return response()->json(['error' => $validator->errors()], 422);
-        }
 
-        //Step 2: Fetch Task
-        $task = StreetlightTask::findOrFail($request->task_id);
+        // ✅ Step 2: Fetch task & site
+        $task = StreetlightTask::findOrFail($validated['task_id']);
         $streetlight = Streetlight::findOrFail($task->site_id);
 
-        // ✅ Step 4: Check if Pole Already Exists
-        $pole = Pole::where('task_id', $request->task_id)
-            ->where('complete_pole_number', $request->complete_pole_number)
-            ->first();
+        // ✅ Step 3: Create or get pole
+        $pole = Pole::firstOrCreate(
+            [
+                'task_id'              => $validated['task_id'],
+                'complete_pole_number' => $validated['complete_pole_number']
+            ],
+            [
+                'ward_name'           => $validated['ward_name'] ?? null,
+                'beneficiary'         => $validated['beneficiary'] ?? null,
+                'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
+                'remarks'             => $validated['remarks'] ?? null,
+                'isSurveyDone'        => true,
+                'isInstallationDone'  => false,
+                'lat'                 => $validated['lat'] ?? null,
+                'lng'                 => $validated['lng'] ?? null,
+            ]
+        );
 
-        // If pole does not exist, create a new one
-        if (!$pole) {
-            $pole = Pole::create([
-                'task_id'              => $request->task_id,
-                'complete_pole_number' => $request->complete_pole_number,
-                'ward_name'            => $request->ward_name,
-                'isSurveyDone'         => true,
-                'isInstallationDone'   => false,
-                'beneficiary'          => $request->beneficiary,
-                'beneficiary_contact'  => $request->beneficiary_contact,
-                'remarks'              => $request->remarks,
-                'luminary_qr'          => null,
-                'panel_qr'             => null,
-                'battery_qr'           => null,
-                'lat'             => $request->lat,
-                'lng'            => $request->lng,
-            ]);
-
-            // Increment surveyed poles count in `streetlight_tasks`
+        if ($pole->wasRecentlyCreated) {
             $streetlight->increment('number_of_surveyed_poles');
         }
-        // ✅ Step 5: Upload Images (If Any)
-        if ($request->hasFile('survey_image')) {
-            $uploadedSurveyImages = [];
-            foreach ($request->file('survey_image') as $image) {
-                $uploadedSurveyImages[] = $this->uploadToS3($image, "streetlights/survey/{$pole->id}");
+
+        // ✅ Step 4: Upload images
+        foreach (['survey_image' => 'survey', 'submission_image' => 'installation'] as $field => $folder) {
+            if ($request->hasFile($field)) {
+                $images = collect($request->file($field))->map(
+                    fn($img) =>
+                    $this->uploadToS3($img, "streetlights/{$folder}/{$pole->id}")
+                );
+                $pole->update([$field => json_encode($images)]);
             }
-            $pole->update(['survey_image' => json_encode($uploadedSurveyImages)]);
         }
-        if ($request->hasFile('submission_image')) {
-            $uploadedSubmissionImages = [];
-            foreach ($request->file('submission_image') as $image) {
-                $uploadedSubmissionImages[] = $this->uploadToS3($image, "streetlights/installation/{$pole->id}");
-            }
-            $pole->update(['submission_image' => json_encode($uploadedSubmissionImages)]);
-        }
-        // ✅ Step 6: Update Survey Data
-        if ($request->isSurveyDone && !$pole->isSurveyDone) {
+
+        // ✅ Step 5: Update survey data
+        if ($validated['isSurveyDone'] === 'true' && !$pole->isSurveyDone) {
             $pole->update([
-                'isSurveyDone'     => true,
-                'beneficiary'      => $request->beneficiary,
-                'remarks'          => $request->remarks,
-                'isNetworkAvailable' => $request->isNetworkAvailable,
+                'isSurveyDone'        => true,
+                'beneficiary'         => $validated['beneficiary'] ?? null,
+                'remarks'             => $validated['remarks'] ?? null,
+                'isNetworkAvailable'  => $validated['isNetworkAvailable'] ?? null,
             ]);
             $streetlight->increment('number_of_surveyed_poles');
-            Log::info($pole);
         }
-        // ✅ Step 7: Update Installation Data
-        if ($request->isInstallationDone && !$pole->isInstallationDone) {
+
+        // ✅ Step 6: Update installation data
+        if ($validated['isInstallationDone'] === 'true' && !$pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
-                'luminary_qr'       => $request->luminary_qr,
-                'sim_number'        => $request->sim_number,
-                'panel_qr'          => $request->panel_qr,
-                'battery_qr'        => $request->battery_qr
+                'luminary_qr'        => $validated['luminary_qr'] ?? null,
+                'sim_number'         => $validated['sim_number'] ?? null,
+                'panel_qr'           => $validated['panel_qr'] ?? null,
+                'battery_qr'         => $validated['battery_qr'] ?? null,
             ]);
 
-            // Increment installed poles count in `streetlight_tasks`
             $streetlight->increment('number_of_installed_poles');
 
-            // ✅ Step 8: Update Inventory Dispatch (Mark items as consumed)
-            $updatedRows =  InventoryDispatch::whereIn('serial_number', [
-                $request->luminary_qr,
-                $request->panel_qr,
-                $request->battery_qr
-            ])
-                ->update([
-                    'is_consumed' => true,
-                    'streetlight_pole_id' => $pole->id,
-                ]);
-            Log::info("InventoryDispatch updated: {$updatedRows} rows affected.", [
-                'serial_numbers' => [
-                    $request->luminary_qr,
-                    $request->panel_qr,
-                    $request->battery_qr
-                ],
+            // ✅ Step 7: Mark inventory as consumed
+            $serials = [
+                $validated['luminary_qr'] ?? null,
+                $validated['panel_qr'] ?? null,
+                $validated['battery_qr'] ?? null,
+            ];
+
+            $affected = InventoryDispatch::whereIn('serial_number', array_filter($serials))->update([
+                'is_consumed' => true,
+                'streetlight_pole_id' => $pole->id,
+            ]);
+
+            Log::info("InventoryDispatch updated: {$affected} rows", [
+                'serials' => $serials,
                 'pole_id' => $pole->id
             ]);
         }
-        Log::info($pole);
+
+        Log::info('Pole Submitted:', $pole->toArray());
+
         return response()->json([
             'message' => 'Pole details submitted successfully!',
             'pole'    => $pole,
             'task'    => $task,
-        ], 200);
+        ]);
     }
 
+    // Controller to get details of 
     public function getPoleDetails(Request $request)
     {
         $id = $request->pole_id;
