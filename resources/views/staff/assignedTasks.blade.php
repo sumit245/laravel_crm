@@ -1,8 +1,10 @@
 {{-- TODO: show data in reverse order and bring filters to top  --}}
-<table id="assignedTasksTable" class="table-striped table-bordered table-sm table">
+<table id="assignedTasksTable" class="table-striped table-bordered table-sm table mt-4">
   <thead>
     <tr>
-      <th>#</th>
+    <th data-select="true">
+            <input type="checkbox" id="selectAll" />
+          </th>
       <th>Site</th>
       <th>Engineer</th>
       <th>Installer</th>
@@ -14,7 +16,7 @@
   <tbody>
     @foreach ($assignedTasks as $task)
       <tr>
-        <td>{{ $task->id }}</td>
+        
         {{-- <td>{{ print_r($assignedTasks) ?? "N/A" }}</td> --}}
         <td>{{ $task->site->district ?? "N/A" }}</td>
         <td>{{ $task->engineer->firstName ?? "N/A" }}</td>

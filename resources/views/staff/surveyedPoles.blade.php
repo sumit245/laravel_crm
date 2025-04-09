@@ -1,27 +1,27 @@
-<table id="surveyedPolesTable" class="table-striped table-bordered table-sm table">
+<table id="surveyedPolesTable" class="table-striped table-bordered table-sm table mt-4">
   <thead>
     <tr>
-      <th>#</th>
-      <th>Ward Name</th>
-      <th>Complete Pole Numbers</th>
+      <th data-select="true">
+          <input type="checkbox" id="selectAll" />
+      </th>
+      <th>Pole Number</th>
+      <th>Beneficiary</th>
+      <th>Beneficiary Contact</th>
       <th>Location</th>
-      <th>Beneficiary_Contact</th>
-      <th>Remarks</th>
       <th>Actions</th>
     </tr>
   </thead>
   <tbody>
     @foreach ($surveyedPoles as $survey)
       <tr>
-        <td>{{ $survey->id }}</td>
-        <td>{{ $survey->ward_name ?? "N/A" }}</td>
-        <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
-        <td>{{ $survey->lat && $survey->lng ? $survey->lat . ", " . $survey->lng : "N/A" }}</td>
+        <td>{{ $survey->complete_pole_number }}</td>
+        <td>{{ $survey->beneficiary ?? "N/A" }}</td>
         <td>{{ $survey->beneficiary_contact ?? "N/A" }}</td>
-        <td>{{ $survey->remarks ?? "N/A" }}</td>
+        <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
+        <td>{{ $survey->beneficiary_contact ?? "N/A" }}</td>
         <td>
           <!-- View Button -->
-          <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+          <a href="{{ route("poles.show", $survey->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
             <i class="mdi mdi-eye"></i>
           </a>
 
@@ -144,5 +144,16 @@
         }
       }
     });
+
+    // Map script
+    function locateOnMap(lat, lng) {
+      if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(url, '_blank');
+      } else {
+        alert('Location coordinates not available.');
+      }
+    }
+
   </script>
 @endpush

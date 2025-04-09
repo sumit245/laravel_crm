@@ -1,8 +1,8 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container p-2">
-    <h3 class="fw-bold">Surveyed Poles</h3>
+  <div class="container-fluid p-3">
+    <h3 class="fw-bold mt-2">Surveyed Poles</h3>
     <p>Total Surveyed Poles: <strong>{{ $totalSurveyed }}</strong></p>
 
     <!-- Search and Filter Form -->
@@ -61,11 +61,10 @@
           <th data-select="true">
             <input type="checkbox" id="selectAll" />
           </th>
-          <th>Complete Pole Numbers</th>
-          <th>Ward Name</th>
-          <th>Location</th>
+          <th>Pole Number</th>
+          <th>Beneficiary</th>
           <th>Beneficiary Contact</th>
-          <th>Remarks</th>
+          <th>Location</th>
           <th>Actions</th>
         </tr>
       </x-slot:thead>
@@ -74,9 +73,9 @@
           <tr>
             <td><input type="checkbox" id="selectAll" /></td>
             <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
-            <td>{{ $pole->ward_name ?? "N/A" }}</td>
-            <td>{{ $pole->lat && $pole->lng ? $pole->lat . ", " . $pole->lng : "N/A" }}</td>
+            <td>{{ $pole->beneficiary ?? "N/A" }}</td>
             <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
+            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
             <td>{{ $pole->remarks ?? "N/A" }}</td>
             <td>
               <!-- View Button -->
@@ -94,3 +93,16 @@
     </x-data-table>
   </div>
 @endsection
+
+@push("scripts")
+  <script>
+    function locateOnMap(lat, lng) {
+      if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(url, '_blank');
+      } else {
+        alert('Location coordinates not available.');
+      }
+    }
+  </script>
+@endpush
