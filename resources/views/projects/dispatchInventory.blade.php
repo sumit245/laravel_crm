@@ -396,7 +396,26 @@
     document.getElementById('issueMaterial').addEventListener('click', function(e) {
       e.preventDefault()
       const form = document.getElementById('dispatchForm')
-      console.log(form)
+      const formData = new FormData(form);
+      fetch("{{ route("inventory.dispatchweb") }}", {
+          method: "POST",
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          },
+          body: formData
+        })
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          console.log('Success:', data);
+          // You can show a success message or redirect
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          // Optionally show error to the user
+        });
     })
 
     // Sweet alert success popup
