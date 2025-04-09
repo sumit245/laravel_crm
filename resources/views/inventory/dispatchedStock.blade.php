@@ -15,7 +15,7 @@
         </th>
         <th>Item</th>
         <th>Serial number</th>
-        <th>Available Quantity</th>
+        {{-- <th>Available Quantity</th> --}}
         <th>Value</th>
         <th>Vendor</th>
         <th>Used At</th>
@@ -28,7 +28,7 @@
             <td><input type="checkbox" class="select-item" /></td>
             <td>{{ $item->item_code }}-{{ $item->item }}</td>
             <td>{{ $item->serial_number ?? "NA" }}</td>
-            <td>{{ $availableBattery ?? "N/A" }}</td>
+            {{-- <td>{{ $availableBattery ?? "N/A" }}</td> --}}
             <td>₹{{ $item->total_value ?? "N/A" }}</td>
             <td>{{ $item->vendor->name ?? "N/A" }}</td>
             <td>
