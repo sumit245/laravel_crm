@@ -1,8 +1,8 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container">
-    <h3 class="fw-bold">Installed Poles</h3>
+  <div class="container-fluid p-3">
+    <h3 class="fw-bold mt-2">Installed Poles</h3>
     <p>Total Installed Poles: <strong>{{ $totalInstalled }}</strong></p>
 
     <x-data-table id="installedPole" class="table-striped table">
@@ -11,13 +11,13 @@
           <th data-select="true">
             <input type="checkbox" id="selectAll" />
           </th>
-          <th>Complete Pole Numbers</th>
+          <th>Pole Number</th>
           <th>IMEI</th>
           <th>Sim Number</th>
-          <th>Battery Serial</th>
-          <th>Panel Serial</th>
+          <th>Battery</th>
+          <th>Panel</th>
           <th>Location</th>
-          <th>RMS status</th>
+          <th>RMS</th>
           <th>Actions</th>
         </tr>
       </x-slot:thead>
@@ -62,4 +62,12 @@
       }
     }
   </script>
+@endpush
+
+@push("styles")
+    <style>
+      #installedPole{
+        margin-top: 15px;
+      }
+    </style>
 @endpush

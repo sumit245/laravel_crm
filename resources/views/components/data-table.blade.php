@@ -1,5 +1,5 @@
 <div>
-  <table id="{{ $id }}" class="table-striped table-bordered table-sm table">
+  <table id="{{ $id }}" class="table-striped table-bordered table-sm table mt-4">
     <thead>
       {{ $thead }}
     </thead>
