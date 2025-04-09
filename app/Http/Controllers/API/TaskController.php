@@ -486,7 +486,8 @@ class TaskController extends Controller
                 'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
                 'assigned_date' => $pole->created_at,
-                'submission_date' => $pole->updated_at
+                'submission_date' => $pole->updated_at,
+                'status' => $pole->status
             ];
         });
 
@@ -524,6 +525,7 @@ class TaskController extends Controller
                 'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
+                'status' => $pole->status
             ];
         });
 
