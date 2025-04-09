@@ -21,10 +21,24 @@ class InventoryController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
         //
-        $inventory = Inventory::all();
+        // $inventory = Inventory::all();
+        $projectId = $request->query('project_id');
+        $storeId = $request->query('store_id');
+    
+        // If filtering values are provided, filter the data
+        if ($projectId && $storeId) {
+            $inventory = InventroyStreetLightModel::where('project_id', $projectId)
+                ->where('store_id', $storeId)
+                ->get();
+        } else {
+            // Otherwise return all entries
+            $inventory = InventroyStreetLightModel::all();
+        }
+    
+        
         return view('inventory.index', compact('inventory'));
     }
 
@@ -77,7 +91,57 @@ class InventoryController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming data without requiring a username
+        $projectType = $request->project_type;
+
+        
+        if($projectType==1){
+        // Validation for Street Light inventory (project_type == 1)
+        $validated = $request->validate([
+            'dropdown'      => 'required|string|max:255', // item name
+            'code'          => 'required|string|max:255', // item code
+            'manufacturer'  => 'required|string|max:255',
+            'model'         => 'required|string|max:255',
+            'serialnumber'  => 'required|string|max:255',
+            'make'          => 'required|string|max:255',
+            'rate'          => 'required|numeric',
+            'number'        => 'required|numeric', // quantity
+            'totalvalue'    => 'required|numeric',
+            'hsncode'       => 'required|string|max:255',
+            'description'   => 'nullable|string',
+            'unit'          => 'required|string|max:255',
+            'receiveddate'  => 'required|date',
+        ]);
+
+        try {
+            InventroyStreetLightModel::create([
+                'project_id'    => $request->input('project_id'),
+                'store_id'       => $request->input('store_id'),
+                'item'      => $validated['dropdown'],
+                'item_code'      => $validated['code'],
+                'manufacturer'   => $validated['manufacturer'],
+                'model'          => $validated['model'],
+                'serial_number'  => $validated['serialnumber'],
+                'make'           => $validated['make'],
+                'rate'           => $validated['rate'],
+                'quantity'       => $validated['number'],
+                'total_value'    => $validated['totalvalue'],
+                'hsn'       => $validated['hsncode'],
+                'description'    => $validated['description'],
+                'unit'           => $validated['unit'],
+                'received_date'  => $validated['receiveddate'],
+            ]);
+
+            return redirect()->route('inventory.index', [
+                'project_id' => $request->input('project_id'),
+                'store_id' => $request->input('store_id'),
+            ])
+                ->with('success', 'Inventory (Street Light) added successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()])
+                ->withInput();
+        }
+    }else {
         $validated = $request->validate([
             'productName'     => 'required|string|max:255',
             'brand'           => 'nullable|string',
@@ -87,12 +151,14 @@ class InventoryController extends Controller
             'unit'            => 'required|string|max:25',
             'receivedDate'    => 'nullable|date',
         ]);
+    
 
         try {
 
             $inventory = Inventory::create($validated);
 
-            return redirect()->route('inventory.show', $inventory->id)
+            return redirect()->route('inventory.index')
+
                 ->with('success', 'Inventory created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
@@ -102,7 +168,12 @@ class InventoryController extends Controller
                 ->withErrors(['error' => $errorMessage])
                 ->withInput();
         }
+
     }
+    
+    
+}
+
 
     /**
      * Display the specified resource.

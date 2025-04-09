@@ -150,7 +150,7 @@
       itemsContainer.appendChild(newItemRow);
     });
 
-    document.addEventListener('change', function(event) {
+    document.addEventListener('keyup', function(event) {
       if (event.target && event.target.id === 'qr_scanner') {
         const qrScanner = event.target;
         const rowIndex = qrScanner.getAttribute("data-row") || 1;
@@ -191,6 +191,7 @@
                 li.className = 'list-group-item';
                 li.textContent = scannedCode;
                 scannedList.appendChild(li);
+                
                 clearError();
               } else {
                 showError('Invalid QR code! Item not found in inventory.');

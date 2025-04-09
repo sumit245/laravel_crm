@@ -70,6 +70,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/inventory/checkQR', [InventoryController::class, 'checkQR'])->name('inventory.checkQR');
     Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
+        // adding inventory data
+    Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
 
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
