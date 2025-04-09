@@ -293,6 +293,7 @@ class TaskController extends Controller
         ]);
     }
 
+    // Update poles survey or install
     public function submitStreetlightTasks(Request $request)
     {
         // ✅ Step 1: Validation
@@ -300,13 +301,13 @@ class TaskController extends Controller
             'task_id'             => 'required|exists:streetlight_tasks,id',
             'complete_pole_number' => 'required|string|max:255',
             'ward_name'           => 'nullable|string|max:255',
-            'isSurveyDone'        => 'nullable|in:true,false',
             'survey_image'        => 'nullable|array',
-            'isNetworkAvailable'  => 'nullable|in:true,false',
+            'isSurveyDone'      => 'nullable|string|in:true,false',
+            'isNetworkAvailable'  => 'nullable|string|in:true,false',
+            'isInstallationDone' => 'nullable|string|in:true,false',
             'beneficiary'         => 'nullable|string|max:255',
             'beneficiary_contact' => 'nullable|string|max:20',
             'remarks'             => 'nullable|string',
-            'isInstallationDone'  => 'nullable|in:true,false',
             'luminary_qr'         => 'nullable|string|max:255',
             'sim_number'          => 'nullable|string|max:200',
             'panel_qr'            => 'nullable|string|max:255',
@@ -354,18 +355,18 @@ class TaskController extends Controller
         }
 
         // ✅ Step 5: Update survey data
-        if ($validated['isSurveyDone'] === 'true' && !$pole->isSurveyDone) {
+        if ($request->isSurveyDone && !$pole->isSurveyDone) {
             $pole->update([
                 'isSurveyDone'        => true,
                 'beneficiary'         => $validated['beneficiary'] ?? null,
                 'remarks'             => $validated['remarks'] ?? null,
-                'isNetworkAvailable'  => $validated['isNetworkAvailable'] ?? null,
+                'isNetworkAvailable'  => $validated['isNetworkAvailable'] ?? 0,
             ]);
             $streetlight->increment('number_of_surveyed_poles');
         }
 
         // ✅ Step 6: Update installation data
-        if ($validated['isInstallationDone'] === 'true' && !$pole->isInstallationDone) {
+        if ($request->isInstallationDone && !$pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
                 'luminary_qr'        => $validated['luminary_qr'] ?? null,
@@ -403,7 +404,7 @@ class TaskController extends Controller
         ]);
     }
 
-    // Controller to get details of 
+    // Controller to get details of     
     public function getPoleDetails(Request $request)
     {
         $id = $request->pole_id;
@@ -418,6 +419,7 @@ class TaskController extends Controller
         ], 200);
     }
 
+    // Get Installed Pole for Site Engineers
     public function getInstalledPolesForSiteEngineer($engineer_id)
     {
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
