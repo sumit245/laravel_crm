@@ -241,7 +241,6 @@ class InventoryController extends Controller
             $projectType = $project->project_type;
 
             // Determine the model to query based on project type
-            // Determine the model to query based on project type
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
 
@@ -250,10 +249,13 @@ class InventoryController extends Controller
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
             // Dispatch Inventory
-            $dispatch = InventoryDispatch::where('isDispatched', true)->get();
+            $dispatch = InventoryDispatch::where('isDispatched', true)
+                ->where('store_id', $storeId)
+                ->get();
 
             // Battery Data
-            $totalBattery = $inventory->where('item_code', 'SL03')->count();
+            $totalBattery = $inventory->where('item_code', 'SL03')
+                ->count();
             $batteryRate = $inventory->where('item_code', 'SL03')
                 ->value('rate');
             $totalBatteryValue = $batteryRate * $totalBattery;
