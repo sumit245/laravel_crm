@@ -104,8 +104,8 @@ class JICRController extends Controller
                         'complete_pole_number' => $pole->complete_pole_number,
                         'ward_no' => $pole->ward_name,
                         'beneficiary' => $pole->beneficiary,
-                        'latitude' => $pole->latitude,
-                        'longitude' => $pole->longitude,
+                        'latitude' => $pole->lat,
+                        'longitude' => $pole->lng,
                         'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
                     ];
                 });

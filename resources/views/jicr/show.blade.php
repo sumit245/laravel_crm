@@ -294,10 +294,10 @@
       </div>
     </div>
     <div class="annexure_table">
-      <table border="1" cellpadding="6" cellspacing="0"
-        style="width: 100%; border-collapse: collapse; font-size: 14px;">
+      <table>
         <thead>
           <tr>
+            <td>Sl. No.</td>
             <th>District</th>
             <th>Block</th>
             <th>Panchayat</th>
@@ -314,8 +314,9 @@
           </tr>
         </thead>
         <tbody>
-          @foreach ($data["poles"] as $pole)
+          @foreach ($data["poles"] as $index => $pole)
             <tr>
+              <td>{{ $index + 1 }}</td>
               <td>{{ $pole["district"] }}</td>
               <td>{{ $pole["block"] }}</td>
               <td>{{ $pole["panchayat"] }}</td>
