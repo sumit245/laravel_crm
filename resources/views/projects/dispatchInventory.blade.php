@@ -394,29 +394,47 @@
     });
 
     document.getElementById('issueMaterial').addEventListener('click', function(e) {
-      e.preventDefault()
-      const form = document.getElementById('dispatchForm')
+      e.preventDefault();
+      const form = document.getElementById('dispatchForm');
       const formData = new FormData(form);
+
       fetch("{{ route("inventory.dispatchweb") }}", {
           method: "POST",
           headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest',
           },
           body: formData
         })
-        .then(response => {
-          if (!response.ok) throw new Error('Network response was not ok');
-          return response.json();
-        })
+        .then(response => response.json())
         .then(data => {
-          console.log('Success:', data);
-          // You can show a success message or redirect
+          if (data.status === 'success') {
+            Swal.fire({
+              title: 'Success!',
+              text: data.message,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: data.message,
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
         })
         .catch(error => {
           console.error('Error:', error);
-          // Optionally show error to the user
+          Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
         });
-    })
+    });
+
 
     // Sweet alert success popup
     @if (session("success"))
