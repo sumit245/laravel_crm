@@ -294,10 +294,47 @@
       </div>
     </div>
     <div class="annexure_table">
-      <pre>
-            {{ $data["poles"] }}
-        </pre>
+      <table border="1" cellpadding="6" cellspacing="0"
+        style="width: 100%; border-collapse: collapse; font-size: 14px;">
+        <thead>
+          <tr>
+            <th>District</th>
+            <th>Block</th>
+            <th>Panchayat</th>
+            <th>Solar Panel No.</th>
+            <th>Battery No.</th>
+            <th>Luminary No.</th>
+            <th>SIM No.</th>
+            <th>Complete Pole No.</th>
+            <th>Ward No.</th>
+            <th>Beneficiary</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+            <th>Date of Installation</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach ($data["poles"] as $pole)
+            <tr>
+              <td>{{ $pole["district"] }}</td>
+              <td>{{ $pole["block"] }}</td>
+              <td>{{ $pole["panchayat"] }}</td>
+              <td>{{ $pole["solar_panel_no"] }}</td>
+              <td>{{ $pole["battery_no"] }}</td>
+              <td>{{ $pole["luminary_no"] }}</td>
+              <td>{{ $pole["sim_no"] }}</td>
+              <td>{{ $pole["complete_pole_number"] }}</td>
+              <td>{{ $pole["ward_no"] }}</td>
+              <td>{{ $pole["beneficiary"] }}</td>
+              <td>{{ $pole["latitude"] }}</td>
+              <td>{{ $pole["longitude"] }}</td>
+              <td>{{ $pole["date_of_installation"] }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
     </div>
+
   </div>
 </div>
 @push("scripts")
