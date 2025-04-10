@@ -397,8 +397,8 @@ class InventoryController extends Controller
                     'rate' => $request->rate,
                     'make' => $request->make,
                     'model' => $request->model,
-                    'total_quantity' => $request->total_quantity,
-                    'total_value' => $request->total_value,
+                    'total_quantity' => "1",
+                    'total_value' => $request->rate,
                     'serial_number' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
                     "isDispatched" => true
