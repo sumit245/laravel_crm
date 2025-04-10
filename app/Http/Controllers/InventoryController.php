@@ -36,12 +36,10 @@ class InventoryController extends Controller
         ]);
         $projectId = $request->projectId;
         $storeId   = $request->storeId;
-        Log::info($storeId);
         try {
             Excel::import(new InventoryImport($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
         } catch (\Exception $e) {
-            //    return alert('Error importing inventory: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -53,7 +51,6 @@ class InventoryController extends Controller
         ]);
         $projectId = $request->projectId;
         $storeId   = $request->storeId;
-        Log::info($storeId);
         try {
             Excel::import(new InventroyStreetLight($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
@@ -410,9 +407,12 @@ class InventoryController extends Controller
                 $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
             }
-
-            // Log dispatched items
-            Log::info('Dispatched Items:', $dispatchedItems);
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Inventory dispatched successfully'
+                ]);
+            }
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
             Log::error($e->getMessage());
