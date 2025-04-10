@@ -75,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
     // Dispatch Inventory
-    Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
+    Route::get('/inventory/dispatch/{type?}', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
 
 
     // Task router
