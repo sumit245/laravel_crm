@@ -6,16 +6,14 @@
       <div class="modal-header">
         <h5 class="modal-title" id="dispatchModalLabel">Dispatch Inventory</h5>
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-          <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
-      <form id="dispatchForm" action="{{ route("inventory.dispatchweb") }}" method="POST">
+      <form id="dispatchForm">
         @csrf
         <input type="hidden" id="dispatchStoreId" name="store_id">
         <input type="hidden" name="project_id" value="{{ $project->id }}">
-        <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? "" }}">
-
+        <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id }}">
         <div class="modal-body">
           <!-- Vendor Selection -->
           <div class="form-group">
@@ -92,7 +90,7 @@
           </button>
 
           {{-- TODO: unbind enter button --}}
-          <button type="submit" id="issueMaterial" class="btn btn-primary">Issue items</button>
+          <button type="button" id="issueMaterial" class="btn btn-primary">Issue items</button>
         </div>
       </form>
 
@@ -107,10 +105,8 @@
     let availableQuantity = 0;
     let scannedQRs = [];
 
-
     // Add New Item Row
     let rowCount = 1;
-
     addMoreItemsButton.addEventListener("click", function() {
       const originalRow = document.querySelector(".item-row");
       if (!originalRow) return;
@@ -150,61 +146,6 @@
       itemsContainer.appendChild(newItemRow);
     });
 
-    document.addEventListener('keyup', function(event) {
-      if (event.target && event.target.id === 'qr_scanner') {
-        const qrScanner = event.target;
-        const rowIndex = qrScanner.getAttribute("data-row") || 1;
-        const scannedListId = `scanned_qrs_${rowIndex}`;
-        const scannedList = document.getElementById(scannedListId);
-
-        if (qrScanner.value.trim() !== '' && scannedList) {
-          let scannedCode = qrScanner.value.trim();
-          qrScanner.value = '';
-
-          if ([...scannedList.children].some(li => li.textContent === scannedCode)) {
-            showError('QR code already scanned!');
-            return;
-          }
-          const selectedItemCode = document.querySelector('.item-select').value;
-          console.log(selectedItemCode)
-          if (!selectedItemCode) {
-            showError('Please select an item first before scanning QR codes!');
-            return;
-          }
-          const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
-          fetch('{{ route("inventory.checkQR") }}', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-              },
-              body: JSON.stringify({
-                qr_code: scannedCode,
-                store_id: storeId,
-                item_code: selectedItemCode
-              })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.exists) {
-                let li = document.createElement('li');
-                li.className = 'list-group-item';
-                li.textContent = scannedCode;
-                scannedList.appendChild(li);
-                
-                clearError();
-              } else {
-                showError('Invalid QR code! Item not found in inventory.');
-              }
-            })
-            .catch((err) => {
-              console.log(err);
-              showError('Error checking QR code!')
-            });
-        }
-      }
-    });
-
     // Remove Item Row
     itemsContainer.addEventListener("click", function(e) {
       if (e.target.closest(".remove-item-btn")) {
@@ -217,66 +158,63 @@
 
     // Handle Qr Scanning
     const qrScanner = document.getElementById('qr_scanner');
-    if (qrScanner) {
-      //   // TODO: Modify with keyup listener so that form doesnot submit on scan
-      qrScanner.addEventListener('change', function(event) {
-        if (this.value.trim() !== '') {
-          let scannedCode = this.value.trim();
-          console.log('Scanned Code:', scannedCode);
-          this.value = ''; // Clear input for next scan
+    // TODO: Modify with keyup listener so that form doesnot submit on scan
+    qrScanner.addEventListener('keyup', function(event) {
+      if (event.key === 'Enter' && this.value.trim() !== '') {
+        let scannedCode = this.value.trim();
+        this.value = ''; // Clear input for next scan
 
-          if (scannedQRs.includes(scannedCode)) {
-            showError('QR code already scanned!');
-            return;
-          }
-          // Find the item-row that contains this QR scanner
-          const currentRow = this.closest('.item-row');
-          if (!currentRow) {
-            showError('Cannot determine which item row this scanner belongs to!');
-            return;
-          }
-          // Get the selected item ID
-          const selectedItemCode = document.querySelector('.item-select').value;
-          console.log(selectedItemCode)
-          if (!selectedItemCode) {
-            showError('Please select an item first before scanning QR codes!');
-            return;
-          }
-          const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
-          // Check if QR exists in database via AJAX
-          fetch('{{ route("inventory.checkQR") }}', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-              },
-              body: JSON.stringify({
-                qr_code: scannedCode,
-                store_id: storeId,
-                item_code: selectedItemCode
-              })
-            })
-            .then(response => response.json())
-            .then(data => {
-              if (data.exists) {
-                scannedQRs.push(scannedCode);
-                updateScannedQRs();
-                // Add hidden input for the serial number
-                addSerialNumberInput(scannedCode);
-                updateQuantityAndTotal();
-                clearError();
-              } else {
-                showError('Invalid QR code! Item not found in inventory.');
-              }
-            })
-            .catch(() => showError('Error checking QR code!'));
+        if (scannedQRs.includes(scannedCode)) {
+          showError('QR code already scanned!', 'qr_error');
+          return;
         }
-      });
-    }
+        // Find the item-row that contains this QR scanner
+        const currentRow = this.closest('.item-row');
+        if (!currentRow) {
+          showError('Cannot determine which item row this scanner belongs to!', 'qr_error');
+          return;
+        }
+        // Get the selected item ID
+        const selectedItemCode = document.querySelector('.item-select').value;
+        console.log(selectedItemCode)
+        if (!selectedItemCode) {
+          showError('Please select an item first before scanning QR codes!', 'qr_error');
+          return;
+        }
+        const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
+        // Check if QR exists in database via AJAX
+        fetch('{{ route("inventory.checkQR") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+              qr_code: scannedCode,
+              store_id: storeId,
+              item_code: selectedItemCode
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.exists) {
+              scannedQRs.push(scannedCode);
+              updateScannedQRs();
+              // Add hidden input for the serial number
+              addSerialNumberInput(scannedCode);
+              updateQuantityAndTotal();
+              clearError();
+            } else {
+              showError('Invalid QR code! Item not found in inventory.', 'qr_error');
+            }
+          })
+          .catch(() => showError('Error checking QR code!', 'qr_error'));
+      }
+    });
 
-
-    function showError(message) {
-      const errorElement = document.getElementById('qr_error');
+    // Show error message
+    function showError(message, context) {
+      const errorElement = document.getElementById(context);
       if (errorElement) {
         errorElement.textContent = message;
       }
@@ -289,7 +227,6 @@
         errorElement.textContent = '';
       }
     }
-
 
     // Validate Quantity Against Stock
     itemsContainer.addEventListener('input', function(e) {
@@ -305,27 +242,8 @@
       }
     });
 
-    function addDispatchItem() {
-      let dispatchContainer = document.getElementById("dispatchItems");
-      let itemTemplate = dispatchContainer.querySelector(".dispatch-item").cloneNode(true);
-
-      // Reset dropdown and quantity field
-      itemTemplate.querySelector(".item-code").selectedIndex = 0;
-      itemTemplate.querySelector(".item-quantity").value = "";
-      itemTemplate.querySelector(".item-details").classList.add("hidden");
-
-      dispatchContainer.appendChild(itemTemplate);
-    }
-
-    function removeItem(button) {
-      let dispatchContainer = document.getElementById("dispatchItems");
-      if (dispatchContainer.children.length > 1) {
-        button.closest('.dispatch-item').remove();
-      }
-    }
 
     const itemSelect = document.querySelector('.item-select');
-
     if (itemSelect) {
       itemSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
@@ -370,7 +288,6 @@
     function updateQuantityAndTotal() {
       const quantityInput = document.querySelector('.item-quantity');
       const rate = parseFloat(document.getElementById('item_rate').value) || 0;
-
       // Set quantity to number of scanned QRs
       const quantity = scannedQRs.length;
       quantityInput.value = quantity;
@@ -379,7 +296,6 @@
       const totalValue = rate * quantity;
       document.getElementById('total_value').value = totalValue.toFixed(2);
     }
-
 
     // Print Functionality
     document.getElementById('printButton').addEventListener('click', function(e) {
@@ -421,64 +337,106 @@
 
       const printWindow = window.open('');
       printWindow.document.write(`
-      <html>
-        <head>
-          <title>Dispatch Report</title>
-          <style>
-            body { font-family: Arial; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-            th { background-color: #f5f5f5; }
-            .serial-list { max-width: 300px; word-break: break-all; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>Inventory Dispatch Report</h2>
-            <p><strong>Vendor:</strong> ${vendorName}</p>
-            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Item Code</th>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Make/Model</th>
-                <th>Serial Numbers</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsData.map(item => `
+        <html>
+          <head>
+            <title>Dispatch Report</title>
+            <style>
+              body { font-family: Arial; margin: 20px; }
+              .header { text-align: center; margin-bottom: 30px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+              th { background-color: #f5f5f5; }
+              .serial-list { max-width: 300px; word-break: break-all; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>Inventory Dispatch Report</h2>
+              <p><strong>Vendor:</strong> ${vendorName}</p>
+              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <table>
+              <thead>
                 <tr>
-                  <td>${item.code}</td>
-                  <td>${item.name}</td>
-                  <td>${item.quantity}</td>
-                  <td>₹${item.rate}</td>
-                  <td>${item.make} ${item.model}</td>
-                  <td class="serial-list">${item.serials.join(', ')}</td>
+                  <th>Item Code</th>
+                  <th>Item Name</th>
+                  <th>Quantity</th>
+                  <th>Rate</th>
+                  <th>Make/Model</th>
+                  <th>Serial Numbers</th>
                 </tr>
-              `).join('')}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                ${itemsData.map(item => `
+                  <tr>
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>₹${item.rate}</td>
+                    <td>${item.make} ${item.model}</td>
+                    <td class="serial-list">${item.serials.join(', ')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
 
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(() => window.close(), 500);
-            }
-          <\/script>
-        </body>
-      </html>
-    `);
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(() => window.close(), 500);
+              }
+            <\/script>
+          </body>
+        </html>
+      `);
       printWindow.document.close();
     });
 
+    document.getElementById('issueMaterial').addEventListener('click', function(e) {
+      e.preventDefault();
+      const form = document.getElementById('dispatchForm');
+      const formData = new FormData(form);
+
+      fetch("{{ route("inventory.dispatchweb") }}", {
+          method: "POST",
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.status === 'success') {
+            Swal.fire({
+              title: 'Success!',
+              text: data.message,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: data.message,
+              icon: 'error',
+              confirmButtonText: 'OK'
+            });
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+          Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          });
+        });
+    });
 
 
+    // Sweet alert success popup
     @if (session("success"))
       Swal.fire({
         title: 'Success!',
@@ -488,102 +446,7 @@
       });
     @endif
 
-    // Print functionality
-    document.getElementById('printButton').addEventListener('click', function(e) {
-      e.preventDefault();
-
-      const vendorSelect = document.getElementById('vendorName');
-      if (vendorSelect.selectedIndex === 0) {
-        alert('Please select a vendor first.');
-        return;
-      }
-      const vendorName = vendorSelect.options[vendorSelect.selectedIndex].textContent;
-
-      const itemRows = document.querySelectorAll('#itemsContainer .item-row');
-      const itemsData = [];
-
-      itemRows.forEach(row => {
-        const itemSelect = row.querySelector('.item-select');
-        if (itemSelect.selectedIndex === 0) return;
-
-        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-        const scannedQRsList = row.querySelector('ul.list-group.my-1');
-        const scannedQRs = Array.from(scannedQRsList.querySelectorAll('li')).map(li => li.textContent);
-
-        itemsData.push({
-          code: selectedOption.value,
-          name: selectedOption.dataset.item,
-          rate: selectedOption.dataset.rate,
-          make: selectedOption.dataset.make,
-          model: selectedOption.dataset.model,
-          quantity: row.querySelector('.item-quantity').value,
-          serials: scannedQRs
-        });
-      });
-
-      if (itemsData.length === 0) {
-        alert('Please add at least one item to print.');
-        return;
-      }
-
-      const printWindow = window.open('', '_blank');
-      printWindow.document.write(`
-      <html>
-        <head>
-          <title>Dispatch Report</title>
-          <style>
-            body { font-family: Arial; margin: 20px; }
-            .header { text-align: center; margin-bottom: 30px; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-            th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-            th { background-color: #f5f5f5; }
-            .serial-list { max-width: 300px; word-break: break-all; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h2>Inventory Dispatch Report</h2>
-            <p><strong>Vendor:</strong> ${vendorName}</p>
-            <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-          </div>
-          
-          <table>
-            <thead>
-              <tr>
-                <th>Item Code</th>
-                <th>Item Name</th>
-                <th>Quantity</th>
-                <th>Rate</th>
-                <th>Make/Model</th>
-                <th>Serial Numbers</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${itemsData.map(item => `
-                <tr>
-                  <td>${item.code}</td>
-                  <td>${item.name}</td>
-                  <td>${item.quantity}</td>
-                  <td>₹${item.rate}</td>
-                  <td>${item.make} ${item.model}</td>
-                  <td class="serial-list">${item.serials.join(', ')}</td>
-                </tr>
-              `).join('')}
-            </tbody>
-          </table>
-
-          <script>
-            window.onload = function() {
-              window.print();
-              setTimeout(() => window.close(), 500);
-            }
-          <\/script>
-        </body>
-      </html>
-    `);
-      printWindow.document.close();
-    });
-
+    // Sweet alert error popup
     @if (session("error"))
       Swal.fire({
         title: 'Error!',
