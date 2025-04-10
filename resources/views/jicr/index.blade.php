@@ -49,17 +49,10 @@
         </div>
     </div>
     </form>
-    {{-- @if (isset($showReport))
-      <div class="alert alert-info">
-        showReport value: {{ var_export($showReport, true) }}<br>
-        district: {{ $district ?? "not set" }}<br>
-        block: {{ $block ?? "not set" }}<br>
-        panchayat: {{ $panchayat ?? "not set" }}
-      </div>
-    @endif --}}
-    {{-- @if (isset($showReport) && $showReport) --}}
-    @include("jicr.show")
-    {{-- @endif --}}
+    @if (!empty($showReport) && isset($data))
+      @include("jicr.show", ["data" => $data])
+    @endif
+
   </div>
   </div>
 @endsection
