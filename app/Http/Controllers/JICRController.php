@@ -2,11 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 class JICRController extends Controller
@@ -53,43 +55,61 @@ class JICRController extends Controller
 
             $assignedTasks = StreetlightTask::where('site_id', $streetlight->id)
                 ->with(['engineer', 'vendor', 'manager'])
-                ->get();
-            $flatTasks = $assignedTasks->map(function ($task) {
-                return [
-                    'task_id' => $task->id,
-                    'project_id' => $task->project_id,
-                    'status' => $task->status,
-                    'start_date' => $task->start_date,
-                    'end_date' => $task->end_date,
-                    'engineer_name' => optional($task->engineer)->firstName . ' ' . optional($task->engineer)->lastName,
-                    'engineer_image' => optional($task->engineer)->image,
-                    'vendor_name' => optional($task->vendor)->firstName . ' ' . optional($task->vendor)->lastName,
-                    'vendor_image' => optional($task->vendor)->image,
-                    'manager_name' => optional($task->manager)->firstName . ' ' . optional($task->manager)->lastName,
-                    'manager_image' => optional($task->manager)->image,
-                    'contact_engineer' => optional($task->engineer)->contactNo,
-                    'contact_vendor' => optional($task->vendor)->contactNo,
-                    'contact_manager' => optional($task->manager)->contactNo
-                ];
-            });
-
-            // Prepare data for the view
+                ->first();
             $data = [
-                'task_id' => $streetlight->task_id,
+                'task_id' => $assignedTasks->id,
                 'state' => $streetlight->state,
                 'district' => $streetlight->district,
                 'block' => $streetlight->block,
                 'panchayat' => $streetlight->panchayat,
-                'ward' => $streetlight->ward,
+                'ward' => array_map('intval', explode(',', $streetlight->ward)),
                 'number_of_surveyed_poles' => $streetlight->number_of_surveyed_poles,
                 'number_of_installed_poles' => $streetlight->number_of_installed_poles,
                 'total_poles' => $streetlight->total_poles,
-                'from_date' => $request->from_date,
-                'to_date' => $request->to_date,
-                'tasks' => $flatTasks,
-                'project' => $project,
-                'showReport' => true,
+                'project_name' => $project->project_name ?? '',
+                'project_start_date' => $project->start_date ?? '',
+                'agreement_number' => $project->agreement_number,
+                'project_capacity' => $project->project_capacity,
+                'agreement_date' => $project->agreement_date,
+                'project_end_date' => $project->end_date ?? '',
+                'work_order_number' => $project->work_order_number ?? '',
+
             ];
+            if ($assignedTasks) {
+                $data['engineer_name'] = optional($assignedTasks->engineer)->firstName . ' ' . optional($assignedTasks->engineer)->lastName;
+                $data['engineer_image'] = optional($assignedTasks->engineer)->image;
+                $data['engineer_contact'] = optional($assignedTasks->engineer)->contactNo;
+
+                $data['vendor_name'] = optional($assignedTasks->vendor)->firstName . ' ' . optional($assignedTasks->vendor)->lastName;
+                $data['vendor_image'] = optional($assignedTasks->vendor)->image;
+                $data['vendor_contact'] = optional($assignedTasks->vendor)->contactNo;
+
+                $data['project_manager_name'] = optional($assignedTasks->manager)->firstName . ' ' . optional($assignedTasks->manager)->lastName;
+                $data['project_manager_image'] = optional($assignedTasks->manager)->image;
+                $data['project_manager_contact'] = optional($assignedTasks->manager)->contactNo;
+            }
+
+            $data['poles'] = Pole::where('task_id', $assignedTasks->id)
+                ->whereBetween('updated_at', [$request->from_date, $request->to_date])
+                ->get()
+                ->map(function ($pole) use ($streetlight) {
+                    return [
+                        'district' => $streetlight->district,
+                        'block' => $streetlight->block,
+                        'panchayat' => $streetlight->panchayat,
+                        'solar_panel_no' => $pole->panel_qr,
+                        'battery_no' => $pole->battery_qr,
+                        'luminary_no' => $pole->luminary_qr,
+                        'sim_no' => $pole->sim_number,
+                        'complete_pole_number' => $pole->complete_pole_number,
+                        'ward_no' => $pole->ward_name,
+                        'beneficiary' => $pole->beneficiary,
+                        'latitude' => $pole->latitude,
+                        'longitude' => $pole->longitude,
+                        'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
+                    ];
+                });
+            $data['showReport'] = true; // Flag to show the report
             Log::info($data);
 
             // If it's a download request, generate PDF
@@ -101,7 +121,11 @@ class JICRController extends Controller
             $districts = Streetlight::select('district')->distinct()->get();
             $data['districts'] = $districts;
 
-            return view('jicr.index', $data);
+            return view('jicr.index', [
+                'districts' => $districts,
+                'showReport' => true,
+                'data' => $data, // Make sure this is either an object or associative array
+            ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
         }
