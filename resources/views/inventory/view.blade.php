@@ -1,5 +1,10 @@
 @extends("layouts.main")
 
+@php
+  $projectId = request()->get("project_id");
+  $storeId = request()->get("store_id");
+@endphp
+
 @section("content")
   <div class="container-fluid m-2">
     <div class="d-flex justify-content-between my-1">
@@ -22,7 +27,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
       <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
-      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory",  [ "type" => "battery"]) }}'>Dispatched Quantity</a></p>
+      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory",  [ "type" => "battery"]) }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
     </div>
   </div>
@@ -38,7 +43,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
       <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
-      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory", "luminary") }}'>Dispatched Quantity</a></p>
+      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "luminary") }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableLuminary }}</span></p>
     </div>
   </div>
@@ -56,7 +61,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
       <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
-      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory", "structure") }}'>Dispatched Quantity</a></p>
+      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "structure") }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableStructure }}</span></p>
     </div>
   </div>
@@ -72,18 +77,13 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
       <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
-      <p><a style=" color:black;" href='{{ route("inventory.showDispatchInventory", "module") }}'>Dispatched Quantity</a></p>
+      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "module") }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableModule }}</span></p>
     </div>
   </div>
 </div>
     </div>
-    <!-- <div class="mb-3">
-      <a href="{{ url()->previous() }}" class="btn btn-secondary">Back</a>
-      <button onclick="printTable()" class="btn btn-primary">Print Inventory</button>
-      <button onclick="exportToCSV()" class="btn btn-success">Export Inventory</button>
-    </div>
-  </div> -->
+
     <!-- Inventory Table -->
     <div class="mt-4">
       <table id="inventoryTable" class="table-striped table-bordered table mt-4">
@@ -118,7 +118,7 @@
       </table>
     </div>
   </div>
-  
+
   <!-- Inventory Details Modal -->
   @foreach ($inventory as $item)
     <div class="modal fade" id="modal{{ $item->id }}" tabindex="-1" role="dialog">
