@@ -110,7 +110,6 @@ class JICRController extends Controller
                     ];
                 });
             $data['showReport'] = true; // Flag to show the report
-            Log::info($data);
 
             // If it's a download request, generate PDF
             if ($request->has('download') && $request->download == 'pdf') {

@@ -176,7 +176,6 @@
         }
         // Get the selected item ID
         const selectedItemCode = document.querySelector('.item-select').value;
-        console.log(selectedItemCode)
         if (!selectedItemCode) {
           showError('Please select an item first before scanning QR codes!', 'qr_error');
           return;
