@@ -497,5 +497,41 @@
         page-break-before: always;
       }
     }
+
+    .annexure_table {
+      margin-top: 5vh;
+    }
+
+    .annexure_table table {
+      font-size: 10px;
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 15px;
+    }
+
+    .annexure_table table th,
+    .annexure_table table td {
+      border: 1px solid #000;
+      padding: 2px;
+      vertical-align: top;
+      word-wrap: break-word;
+    }
+
+    @media print {
+      .annexure_table table {
+        page-break-inside: avoid;
+        font-size: 9px;
+      }
+
+      .annexure_table table th,
+      .annexure_table table td {
+        padding: 2px;
+        border: 0.5px solid #000 !important;
+      }
+
+      .signature-section {
+        margin-bottom: 20px;
+      }
+    }
   </style>
 @endpush

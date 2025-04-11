@@ -40,8 +40,9 @@
                 id="fromDate" name="from_date" class="form-control" required></div>
           </div>
           <div class="col-sm-3">
-            <div class="mb-3"><label for="toDate" class="form-label">To Date</label><input type="date"
-                id="toDate" name="to_date" class="form-control" required></div>
+            <div class="mb-3"><label for="toDate" class="form-label">To Date</label>
+              <input type="date" id="toDate" name="to_date" class="form-control" required>
+            </div>
           </div>
         </div>
         <div class="mt-3">
@@ -126,10 +127,10 @@
       });
       const now = new Date();
       const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
-      const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      // const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
 
       document.getElementById('fromDate').valueAsDate = firstDay;
-      document.getElementById('toDate').valueAsDate = lastDay;
+      document.getElementById('toDate').valueAsDate = firstDay;
     });
   </script>
 @endpush
