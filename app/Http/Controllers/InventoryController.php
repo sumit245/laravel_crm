@@ -614,7 +614,7 @@ class InventoryController extends Controller
         }
     }
 
-    // TODO: Add the show dispatch inventory code here
+    // TODO: Streetlight show dispatch inventory code here
     public function showDispatchInventory(Request $request)
     {
         $itemCode = $request->item_code;

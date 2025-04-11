@@ -416,7 +416,7 @@
               confirmButtonText: 'OK'
             }).then(() => {
               form.reset();
-              updateScannedListUI(); // Clear form + scanned data here
+              location.reload(); // Clear form + scanned data here
                 });
           } else {
             Swal.fire({
@@ -536,7 +536,6 @@ function updateScannedListUI() {
     }
 }
 
-            // {TRIAL ENDS}
             
   });
 
