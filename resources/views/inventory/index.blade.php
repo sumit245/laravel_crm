@@ -37,10 +37,13 @@
     <table id="inventoryTable" class="table-striped table-bordered table-sm table">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Product Name</th>
-          <th>Brand</th>
-          <th>Quantity(in stock)</th>
+          
+          <th>Item Code</th>
+          <th>Item name</th>
+          <th>Manufacturer</th>
+          <th>Model</th>
+          <th>Serial Number</th>
+          <th>HSN Code</th>
           <th>Unit</th>
           <th>Actions</th>
         </tr>
@@ -48,34 +51,49 @@
       <tbody>
         @foreach ($inventory as $member)
           <tr>
-            <td>{{ $loop->iteration }}</td>
-            <td>{{ $member->productName }}</td>
-            <td>{{ $member->brand }}</td>
-            <td>{{ $member->quantityStock }}</td>
+            
+            <td>{{ $member->item_code }}</td>
+            <td>{{ $member->item }}</td>
+            <td>{{ $member->manufacturer }}</td>
+            <td>{{ $member->model }}</td>
+            <td>{{ $member->serial_number }}</td>
+            <td>{{ $member->hsn }}</td>
             <td>{{ $member->unit }}</td>
             <td>
               <!-- View Button -->
-              <a href="{{ route("inventory.show", $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
-                title="View Details">
-                <i class="mdi mdi-eye"></i>
-              </a>
+              <a href="#modal{{ $member->id }}" data-bs-toggle="modal" class="btn btn-sm btn-info">Details</a>
               <!-- Edit Button -->
-              <a href="{{ route("inventory.edit", $member->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
-                title="Edit Item">
-                <i class="mdi mdi-pencil"></i>
-              </a>
+              
               <!-- Delete Button -->
-              <button type="submit" class="btn btn-icon btn-danger delete-item" data-toggle="tooltip" title="Delete Item"
-                data-id="{{ $member->id }}" data-name="{{ $member->productName }}"
-                data-url="{{ route("inventory.destroy", $member->id) }}">
-                <i class="mdi mdi-delete"></i>
-              </button>
+              
             </td>
           </tr>
         @endforeach
       </tbody>
     </table>
   </div>
+  <!-- Inventory Details Modal -->
+  @foreach ($inventory as $item)
+    <div class="modal fade" id="modal{{ $item->id }}" tabindex="-1" role="dialog">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Item Details: {{ $item->item_name }}</h5>
+            <button type="button" class="close" data-dismiss="modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <p><strong>Item Code:</strong> {{ $item->item_code }}</p>
+            <p><strong>Manufacturer:</strong> {{ $item->manufacturer }}</p>
+            <p><strong>Model:</strong> {{ $item->model }}</p>
+            <p><strong>Unit:</strong> {{ $item->unit }}</p>
+            <p><strong>Quantity:</strong> {{ $item->quantity }}</p>
+            <p><strong>Rate:</strong> {{ $item->rate }}</p>
+            <p><strong>Total Value:</strong> {{ number_format($item->quantity * $item->rate, 2) }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endforeach
 @endsection
 
 @push("scripts")
