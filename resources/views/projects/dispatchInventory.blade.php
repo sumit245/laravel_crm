@@ -262,17 +262,42 @@
 
     // Update scanned QR list
     function updateScannedQRs() {
-      let list = document.getElementById('scanned_qrs');
-      if (list) {
-        list.innerHTML = '';
-        scannedQRs.forEach(qr => {
-          let li = document.createElement('li');
-          li.className = 'list-group-item';
-          li.textContent = qr;
-          list.appendChild(li);
-        });
-      }
-    }
+  const list = document.getElementById('scanned_qrs');
+  if (!list) return;
+
+  list.innerHTML = ''; // Clear the list
+
+  scannedQRs.forEach((qr, index) => {
+    const li = document.createElement('li');
+    li.className = 'list-group-item';
+
+    // Create a wrapper div to separate text and delete button
+    const wrapper = document.createElement('div');
+    wrapper.className = 'd-flex justify-content-between align-items-center';
+
+    const qrText = document.createElement('span');
+    qrText.textContent = qr;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.className = 'btn btn-sm btn-danger';
+    deleteBtn.innerHTML = '&times;';
+    deleteBtn.onclick = (e) => {
+      e.preventDefault();
+      scannedQRs.splice(index, 1); // Remove QR from array
+      updateScannedQRs(); // Refresh UI
+    };
+
+    wrapper.appendChild(qrText);
+    wrapper.appendChild(deleteBtn);
+    li.appendChild(wrapper);
+    list.appendChild(li);
+  });
+}
+
+
+
+
 
     // Add hidden input for serial number
     function addSerialNumberInput(serialNumber) {
