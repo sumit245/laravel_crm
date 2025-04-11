@@ -23,7 +23,7 @@ class RemoteApiHelper
             'lat' => $pole->lat,
             'lng' => $pole->lng,
             'file' => '',
-            "project" => "test", //TODO: Get project from .env
+            "project" => "BREDA-SSL", //TODO: Get project from .env
             'remark' => $pole->remarks,
             'updated_by' => $approver,
             'MfId' => 101,
