@@ -5,8 +5,8 @@
     <div class="card p-2">
       <form id="jicrForm" action="{{ route("jicr.generate") }}" method="GET">
         @csrf
-        <div class="row">
-          <div class="col-sm-3">
+        <div class="row p-4">
+          <div class="col-sm-4">
             <div class="mb-3">
               <label for="districtSelect" class="form-label">District</label>
               <select id="districtSelect" class="form-select select2" name="district" style="width: 100%;">
@@ -17,7 +17,7 @@
               </select>
             </div>
           </div>
-          <div class="col-sm-3">
+          <div class="col-sm-4">
             <div class="mb-3">
               <label for="blockSelect" class="form-label">Block</label>
               <select id="blockSelect" class="form-select" name="block" style="width: 100%;" disabled>
@@ -25,7 +25,7 @@
               </select>
             </div>
           </div>
-          <div class="col-sm-3">
+          <div class="col-sm-4">
             <div class="mb-3">
               <label for="panchayatSelect" class="form-label">Panchayat</label>
               <select id="panchayatSelect" class="form-select" name="panchayat" style="width: 100%;" disabled>
@@ -34,7 +34,7 @@
             </div>
           </div>
         </div>
-        <div class="row">
+        <div class="row p-4">
           <div class="col-sm-3">
             <div class="mb-3"><label for="fromDate" class="form-label">From Date</label><input type="date"
                 id="fromDate" name="from_date" class="form-control" required></div>
@@ -133,4 +133,16 @@
       document.getElementById('toDate').valueAsDate = firstDay;
     });
   </script>
+@endpush
+
+@push("styles")
+  <style>
+    /* Optional: style the dropdown container */
+    .select2-container--default .select2-selection--single {
+      height: 38px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
 @endpush
