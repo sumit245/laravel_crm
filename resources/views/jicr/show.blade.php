@@ -71,7 +71,8 @@
         </tr>
         <tr>
           <td>6.</td>
-          <td>Exact location on installation Latitude and longitude <br>
+          <td style="white-space: normal; word-wrap: break-word; max-width: 20vw;">Exact location on installation
+            Latitude and longitude <br>
             exactly One photo of system showing longitude and <br>
             latitude in photo</td>
           <td>As Per Annexure</td>
@@ -107,7 +108,7 @@
             e) Module wattage
           </td>
           <td>
-            a)Poly Crystalline<br>
+            a)Mono Crystalline<br>
             b)As per Annexure<br>
             c)Alpex<br>
             d)120wp<br>
@@ -202,7 +203,8 @@
             b) Length and Size of installed Pole
           </td>
           <td>
-            length in meter.------------<br>
+            length in meter.<span style="text-decoration-line: underline; text-decoration-style: dotted;">11
+              M</span><br>
             and dia in mm -------------
           </td>
         </tr>
@@ -344,11 +346,8 @@
     function printDocument() {
       const originalContents = document.body.innerHTML;
       const formContents = document.querySelector('.form-container').outerHTML;
-
       document.body.innerHTML = formContents;
-
       window.print();
-
       document.body.innerHTML = originalContents;
       location.reload();
     }
