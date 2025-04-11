@@ -89,8 +89,8 @@
             <i class="mdi mdi-printer"></i> Print
           </button>
 
-          {{-- TODO: unbind enter button --}}
-          <button onclick="showBuffering()" type="button" id="issueMaterial" class="btn btn-primary">Issue items</button>
+          <button type="button" id="issueMaterial" class="btn btn-primary">Issue
+            items</button>
         </div>
       </form>
 
@@ -104,6 +104,7 @@
     const addMoreItemsButton = document.getElementById('addMoreItems');
     let availableQuantity = 0;
     let scannedQRs = [];
+    let loadingIssue = false
 
     // Add New Item Row
     let rowCount = 1;
@@ -142,7 +143,6 @@
         removeButton.innerHTML = '<i class="mdi mdi-delete"></i> Remove';
         newItemRow.appendChild(removeButton);
       }
-
       itemsContainer.appendChild(newItemRow);
     });
 
@@ -394,6 +394,14 @@
 
     document.getElementById('issueMaterial').addEventListener('click', function(e) {
       e.preventDefault();
+      loadingIssue = true
+      const button = this;
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      Processing...
+      `;
       const form = document.getElementById('dispatchForm');
       const formData = new FormData(form);
 
@@ -407,6 +415,9 @@
         })
         .then(response => response.json())
         .then(data => {
+          loadingIssue = false;
+          button.disabled = false;
+          button.innerHTML = originalText;
           if (data.status === 'success') {
             Swal.fire({
               title: 'Success!',
@@ -415,132 +426,53 @@
               confirmButtonText: 'OK'
             }).then(() => {
               form.reset();
-              updateScannedListUI(); // Clear form + scanned data here
-                });
+              location.reload()
+            });
           } else {
             Swal.fire({
               title: 'Error!',
               text: data.message,
               icon: 'error',
               confirmButtonText: 'OK'
+            }).then(() => {
+              loadingIssue = false;
+              button.disabled = false;
+              button.innerHTML = originalText;
             });
           }
         })
         .catch(error => {
-          console.error('Error:', error);
           Swal.fire({
             title: 'Error!',
             text: 'Something went wrong. Please try again.',
             icon: 'error',
             confirmButtonText: 'OK'
-          });
+          }).then(() => {
+            loadingIssue = false;
+            button.disabled = false;
+            button.innerHTML = originalText;
+          });;
         });
     });
-//     function resetFormAndScannedCodes() {
-//     const form = document.getElementById('dispatchForm');
-//     if (form) form.reset();
 
-//     // Manually clear all inputs/fields just to be sure
-//     document.querySelectorAll('#dispatchForm input, #dispatchForm textarea, #dispatchForm select').forEach(el => {
-//         el.value = '';
-//     });
+    // Sweet alert success popup
+    @if (session("success"))
+      Swal.fire({
+        title: 'Success!',
+        text: "{{ session("success") }}",
+        icon: 'success',
+        confirmButtonText: 'OK'
 
-//     // Reset scannedCodes array (in-place)
-//     if (typeof scannedCodes !== 'undefined') {
-//         scannedCodes.length = 0;
-//     }
-
-//     //  Clear scanned QR code list in the UI
-//     const scannedQRList = document.getElementById('scanned_qrs');
-//     if (scannedQRList) scannedQRList.innerHTML = '';
-
-//     //  Clear serial numbers container (if used)
-//     const serialContainer = document.getElementById('serial_numbers_container');
-//     if (serialContainer) serialContainer.innerHTML = '';
-
-//     // If there's a function that re-renders the scanned list
-//     if (typeof updateScannedListUI === 'function') {
-//         updateScannedListUI();
-//     }
-// }
-function updateScannedListUI() {
-    const scannedQRList = document.getElementById('scanned_qrs');
-
-    // Clear existing list
-    scannedQRList.innerHTML = '';
-
-    // Re-populate with current scanned codes
-    scannedCodes.forEach(code => {
-        const listItem = document.createElement('li');
-        listItem.classList.add('list-group-item');
-        listItem.textContent = code;
-        scannedQRList.appendChild(listItem);
-    });
-}
-
-
-            // Sweet alert success popup
-            @if (session("success"))
-            Swal.fire({
-                title: 'Success!',
-                text: "{{ session("success") }}",
-                icon: 'success',
-                confirmButtonText: 'OK'
-                
-            });
-            @elseif (session("error"))
-            Swal.fire({
-                title: 'Error!',
-                text: "{{ session("error") }}",
-                icon: 'error',
-                confirmButtonText: 'OK'
-            });
-            @endif
-
-            // {TRIAL}
-            document.addEventListener('DOMContentLoaded', function () {
-    const dispatchModal = document.getElementById('dispatchModal');
-
-    if (dispatchModal) {
-        dispatchModal.addEventListener('hidden.bs.modal', function () {
-            // this runs AFTER the modal is closed
-            resetFormAndData();
-        });
-    }
-});
-
-
-            function resetFormAndData() {
-    // 1. Reset the form fields
-    const form = document.getElementById('dispatchForm'); // or use the correct ID
-    if (form) {
-        form.reset(); // standard HTML form reset
-    }
-
-    // 2. Clear scanned codes display (if you're appending scanned codes somewhere)
-    const scannedCodeList = document.getElementById('scannedCodeList'); // update to your real element ID
-    if (scannedCodeList) {
-        scannedCodeList.innerHTML = ''; // clears the HTML content
-    }
-
-    // 3. Empty JS array holding scanned codes (example)
-    if (typeof scannedCodes !== 'undefined') {
-        scannedCodes = [];
-    }
-
-    // 4. Hide error messages or alerts (optional)
-    const errorBox = document.getElementById('errorBox');
-    if (errorBox) {
-        errorBox.style.display = 'none';
-    }
-}
-
-            // {TRIAL ENDS}
-            
+      });
+    @elseif (session("error"))
+      Swal.fire({
+        title: 'Error!',
+        text: "{{ session("error") }}",
+        icon: 'error',
+        confirmButtonText: 'OK'
+      });
+    @endif
   });
-
-  
-
 </script>
 
 @push("styles")
