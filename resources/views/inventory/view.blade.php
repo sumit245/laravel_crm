@@ -27,7 +27,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
       <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory",  [ "type" => "battery"]) }}'>Dispatched Quantity</a></p>
+      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory",  [ "type" => "battery"]) }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
     </div>
   </div>
@@ -43,7 +43,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
       <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "luminary") }}'>Dispatched Quantity</a></p>
+      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory", "luminary") }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableLuminary }}</span></p>
     </div>
   </div>
@@ -61,7 +61,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
       <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "structure") }}'>Dispatched Quantity</a></p>
+      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory", "structure") }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableStructure }}</span></p>
     </div>
   </div>
@@ -77,7 +77,7 @@
     <div class="card-body">
       <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
       <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
-      <p><a style="text-decoration: none; color:black;" href='{{ route("inventory.showDispatchInventory", "module") }}'>Dispatched Quantity</a></p>
+      <p><a style="color:black;" href='{{ route("inventory.showDispatchInventory", "module") }}'>Dispatched Quantity</a></p>
       <p>Available Quantity: <span>{{ $availableModule }}</span></p>
     </div>
   </div>
