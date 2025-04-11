@@ -236,7 +236,7 @@
           <td width="5%"></td>
           <td width="45%">f) Toll Free no Properly embossed / Punched on the <br>
             system / Pole</td>
-          <td width="50%">Yes or No</td>
+          <td width="50%">Yes</td>
         </tr>
         <tr>
           <td></td>
