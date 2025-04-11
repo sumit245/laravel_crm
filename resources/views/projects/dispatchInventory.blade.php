@@ -162,6 +162,7 @@
     qrScanner.addEventListener('keyup', function(event) {
       if (event.key === 'Enter' && this.value.trim() !== '') {
         let scannedCode = this.value.trim();
+
         this.value = ''; // Clear input for next scan
 
         if (scannedQRs.includes(scannedCode)) {
@@ -180,6 +181,10 @@
           showError('Please select an item first before scanning QR codes!', 'qr_error');
           return;
         }
+        if (selectedItemCode === "SL02") {
+          scannedCode = scannedCode.split(';')[0]
+        }
+        console.log(selectedItemCode, scannedCode)
         const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
         // Check if QR exists in database via AJAX
         fetch('{{ route("inventory.checkQR") }}', {
@@ -246,7 +251,6 @@
     if (itemSelect) {
       itemSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
-        console.log(selectedOption)
         // Update hidden fields with item details
         document.getElementById('item_name').value = selectedOption.dataset.item || '';
         document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
