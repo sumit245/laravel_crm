@@ -16,7 +16,9 @@
   <tbody>
     @foreach ($assignedTasks as $task)
       <tr>
-        
+      <td>
+    <input type="checkbox" name="selected_tasks[]" value="{{ $task->id }}" class="task-checkbox" />
+  </td>
         {{-- <td>{{ print_r($assignedTasks) ?? "N/A" }}</td> --}}
         <td>{{ $task->site->district ?? "N/A" }}</td>
         <td>{{ $task->engineer->firstName ?? "N/A" }}</td>

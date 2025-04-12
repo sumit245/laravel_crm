@@ -17,6 +17,9 @@
   <tbody>
     @foreach ($installedPoles as $survey)
       <tr>
+      <td>
+    <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />
+  </td>
         <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
         <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
         <td>{{ $survey->sim_number ?? "N/A" }}</td>

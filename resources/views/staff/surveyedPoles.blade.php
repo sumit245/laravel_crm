@@ -14,11 +14,14 @@
   <tbody>
     @foreach ($surveyedPoles as $survey)
       <tr>
+      <td>
+    <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />
+  </td>
         <td>{{ $survey->complete_pole_number }}</td>
         <td>{{ $survey->beneficiary ?? "N/A" }}</td>
         <td>{{ $survey->beneficiary_contact ?? "N/A" }}</td>
-        <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
-        <td>{{ $survey->beneficiary_contact ?? "N/A" }}</td>
+        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+        
         <td>
           <!-- View Button -->
           <a href="{{ route("poles.show", $survey->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
