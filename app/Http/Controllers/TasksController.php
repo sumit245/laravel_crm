@@ -99,9 +99,10 @@ class TasksController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         //
+        Log::info("Project type is " . $request->project_type);
         $task        = Task::findOrFail($id);
         $engineer_id = $task->engineer_id;
         $vendor = $task->vendor;
