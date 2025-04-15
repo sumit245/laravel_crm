@@ -59,31 +59,21 @@
             </div>
 
             <!-- Panchayat Search (Dependent on Block) -->
-            {{-- <div class="form-group mb-3">
+            <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
-              <select id="panchayatSearch" name="panchayats[]" class="form-select" multiple disabled>
-                <option value="">Select Panchayat</option>
-              </select>
-            </div> --}}
-            <div class="form-group mb-3">
-              <label for="panchayatSearch" class="form-label">Search By Panchayat</label>
-              <input id="panchayatSearch" placeholder="Search Site..." class="form-control">
-              <div id="siteList"></div>
-
-              <!-- Selected Sites -->
-              <ul id="selectedSites"></ul>
-              <!-- Hidden Select to Store Selected Sites -->
-              <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
+              <select id="panchayatSearch" name="panchayats" class="form-select" style="width: 100%;">
+                <option value="">Select a Panchayat</option>
               </select>
             </div>
-            <div class="form-group mb-3">
+
+            <div class="mb-3">
               <label for="selectEngineer" class="form-label">Select Site Engineer</label>
               <select id="selectEngineer" name="engineer_id" class="form-select" required>
-                
+
                 @foreach ($assignedEngineers as $engineer)
                   <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
                 @endforeach
-                
+
               </select>
             </div>
             <div class="form-group mb-3">
@@ -163,24 +153,34 @@
 
 @push("scripts")
   <script>
-    // Select2 box for the panchayat search
-    
-    
-  
     $(document).ready(function() {
-
+      $('#panchayatSearch').select2({
+        placeholder: "Select a Panchayat",
+        allowClear: true
+      });
       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
         let district = $(this).val();
-        $('#blockSearch').html('<option value="">Select Block</option>').prop('disabled', true);
-        $('#panchayatSearch').html('<option value="">Select Panchayat</option>').prop('disabled', true);
+        $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
+        $('#panchayatSearch').prop('disabled', true).empty().append(
+          '<option value="">Select a Panchayat</option>');
 
         if (district) {
-          $.get(`/blocks-by-district/${district}`, function(blocks) {
-            blocks.forEach(block => {
-              $('#blockSearch').append(`<option value="${block}">${block}</option>`);
-            });
-            $('#blockSearch').prop('disabled', false);
+          $.ajax({
+            url: '/blocks-by-district/' + district,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+              console.log(data)
+              $.each(data, function(index, block) {
+                $('#blockSearch').append('<option value="' + block + '">' + block + '</option>');
+              });
+
+            },
+            error: function(xhr, status, error) {
+              console.error("AJAX Error:", status, error);
+              console.log("Response:", xhr.responseText);
+            }
           });
         }
       });
@@ -188,62 +188,39 @@
       // Fetch Panchayats Based on Selected Block
       $('#blockSearch').change(function() {
         let block = $(this).val();
-        $('#panchayatSearch').html('<option value="">Select Panchayat</option>').prop('disabled', true);
+        $('#panchayatSearch').prop('disabled', false).empty().append(
+          '<option value="">Select a Panchayat</option>');
 
-        if (block) {
-          $.get(`/panchayats-by-block/${block}`, function(panchayats) {
-            panchayats.forEach(panchayat => {
-              $('#panchayatSearch').append(`<option value="${panchayat}">${panchayat}</option>`);
-            });
-            $('#panchayatSearch').prop('disabled', false);
-          });
-        }
-      });
-      // Panachat search begins
-
-      $('#panchayatSearch').on('keyup', function() {
-        let query = $(this).val();
-        if (query.length > 1) {
+        if (block) { // You're checking 'district' instead of 'block'
           $.ajax({
-            url: "{{ route("streetlights.search") }}",
-            method: 'GET',
-            data: {
-              search: query
-            },
-            success: function(response) {
-              let html = '';
-              response.forEach(site => {
-                html += `<div>
-                                    <input type="checkbox" class="siteCheckbox" data-name="${site.text}" value="${site.id}">
-                                    ${site.text}
-                                </div>`;
+            url: '/panchayats-by-block/' + block,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+              $.each(data, function(index, panchayat) {
+                $('#panchayatSearch').append('<option value="' + panchayat + '">' + panchayat +
+                  '</option>');
               });
-              $('#siteList').html(html);
+            },
+            error: function(xhr, status, error) {
+              console.error("AJAX Error:", status, error);
+              console.log("Response:", xhr.responseText);
             }
           });
-        } else {
-          $('#siteList').html('');
         }
       });
-
-      $(document).on('change', '.siteCheckbox', function() {
-        let siteId = $(this).val();
-        let siteName = $(this).data('name');
-
-        if ($(this).is(':checked')) {
-          // Add to selected list
-          $('#selectedSites').append(`<li data-id="${siteId}">${siteName}</li>`);
-
-          // Add to hidden select
-          $('#selectedSitesSelect').append(`<option value="${siteId}" selected>${siteName}</option>`);
-        } else {
-          // Remove from selected list
-          $(`#selectedSites li[data-id="${siteId}"]`).remove();
-
-          // Remove from hidden select
-          $(`#selectedSitesSelect option[value="${siteId}"]`).remove();
-        }
-      });
+      // Panachayat search begins
     });
   </script>
+@endpush
+
+@push("styles")
+  <style>
+    .select2-container--default .select2-selection--single {
+      height: 38px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
 @endpush
