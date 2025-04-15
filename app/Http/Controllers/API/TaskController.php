@@ -782,8 +782,9 @@ class TaskController extends Controller
 
         foreach ($poles as $pole) {
             try {
-                $streetlight = Streetlight::findOrFail($pole->task_id);
+
                 $task = StreetlightTask::findOrFail($pole->task_id);
+                $streetlight = Streetlight::findOrFail($task->site_id);
                 $engineer = $task->engineer;
                 $approved_by = $engineer->firstName . ' ' . $engineer->lastName;
                 Log::info("Sending data now");
