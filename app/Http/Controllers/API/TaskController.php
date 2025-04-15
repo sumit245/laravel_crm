@@ -323,7 +323,6 @@ class TaskController extends Controller
         $approved_by = $task->engineer->firstName . " " . $task->engineer->lastName;
         $streetlight = Streetlight::findOrFail($task->site_id);
 
-
         // ✅ Step 3: Create or get pole
         $pole = Pole::firstOrCreate(
             [
@@ -751,5 +750,66 @@ class TaskController extends Controller
         ];
 
         return ExcelHelper::exportMultipleSheets($sheets, $fileName);
+    }
+
+    // Api to update all poles to RMS at once
+    public function sendDataToRMS(Request $request)
+    {
+        // Optional filters if you want to limit by installed or surveyed poles
+        $validated = $request->validate([
+            'filter' => 'nullable|string|in:all,surveyed,installed',
+        ]);
+
+        $query = Pole::query();
+
+        if ($validated['filter'] ?? null) {
+            switch ($validated['filter']) {
+                case 'surveyed':
+                    $query->where('isSurveyDone', true);
+                    break;
+                case 'installed':
+                    $query->where('isInstallationDone', true);
+                    break;
+                case 'all':
+                default:
+                    // No filter
+                    break;
+            }
+        }
+
+        $poles = $query->get();
+        $responses = [];
+
+        foreach ($poles as $pole) {
+            try {
+                $streetlight = Streetlight::findOrFail($pole->site_id);
+                $task = StreetlightTask::findOrFail($pole->task_id);
+                $engineer = $task->engineer;
+                $approved_by = $engineer->firstName . ' ' . $engineer->lastName;
+
+                RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
+
+                $responses[] = [
+                    'pole_id' => $pole->id,
+                    'status' => 'success',
+                ];
+            } catch (\Exception $e) {
+                Log::error("Failed to send pole data to RMS", [
+                    'pole_id' => $pole->id,
+                    'error' => $e->getMessage(),
+                ]);
+
+                $responses[] = [
+                    'pole_id' => $pole->id,
+                    'status' => 'error',
+                    'message' => $e->getMessage(),
+                ];
+            }
+        }
+
+        return response()->json([
+            'message' => 'Pole data sync process completed.',
+            'result' => $responses,
+        ]);
     }
 }
