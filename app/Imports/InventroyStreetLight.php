@@ -25,6 +25,15 @@ class InventroyStreetLight implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
+        if ((int) $row['quantity'] === 0) {
+            throw new \Exception("Import failed: Quantity cannot be zero for item code '{$row['item_code']}'");
+        }
+         // ✅ Check if serial number already exists in the database
+        $existing = InventroyStreetLightModel::where('serial_number', $row['serial_number'])->exists();
+        if ($existing) {
+            throw new \Exception("Import failed: Duplicate serial number '{$row['serial_number']}' found.");
+        }
+
         return new InventroyStreetLightModel([
             'project_id' => $this->projectId,
             'store_id'   => $this->storeId,
