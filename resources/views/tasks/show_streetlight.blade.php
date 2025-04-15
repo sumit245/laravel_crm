@@ -69,7 +69,7 @@
                         <!-- <th scope="col" width="25%">PROGRESS</th> -->
                         <th scope="col" width="20%">Surveyed Poles</th>
                         <th scope="col" width="20%">Installed Poles</th>
-                        <th scope="col" width="20%">STATUS</th>
+                        <!-- <th scope="col" width="20%">STATUS</th> -->
                     </tr>
                 </thead>
                 <tbody>
@@ -109,9 +109,9 @@
                                 </div>
                             </div>
                         </td> -->
-                        <td>
+                        <!-- <td>
                             <span class="badge badge-in-progress px-3 py-2 rounded-pill">In progress</span>
-                        </td>
+                        </td> -->
                     </tr>
 
                     <!-- Row 2 -->
@@ -149,9 +149,9 @@
                                 </div>
                             </div>
                         </td> -->
-                        <td>
+                        <!-- <td>
                             <span class="badge badge-in-progress px-3 py-2 rounded-pill">In progress</span>
-                        </td>
+                        </td> -->
                     </tr>
 
                     <!-- Row 3 -->
@@ -190,9 +190,9 @@
                                 </div>
                             </div>
                         </td> -->
-                        <td>
+                        <!-- <td>
                             <span class="badge badge-in-progress px-3 py-2 rounded-pill">In progress</span>
-                        </td>
+                        </td> -->
                     </tr>
                 </tbody>
             </table>
