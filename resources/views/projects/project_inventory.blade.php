@@ -159,18 +159,21 @@
                         <label for="dropdown"><strong>Item Name</strong></label>
                         <select id="dropdown" name="dropdown" class="form-control">
                           <option value="">-- Select a item name --</option>
-                          <option value="item1">Module</option>
-                          <option value="item2">Luminary</option>
-                          <option value="item3">Battery</option>
-                          <option value="item4">Structure</option>
+                          <option value="Module">Module</option>
+                          <option value="Luminary">Luminary</option>
+                          <option value="Battery">Battery</option>
+                          <option value="Structure">Structure</option>
                         </select>
                       </div>
                       <div class="col-6">
-                        <label for="code"><strong>Item Code</strong></label>
-                        <input type="text" id="code" name="code" class="form-control" value=""
-                          required>
-                      </div>
-
+                      <label for="dropdown"><strong>Item Code</strong></label>
+                        <select id="code" name="code" class="form-control">
+                          <option value="">-- Select a item code --</option>
+                          <option value="SL01">SL01</option>
+                          <option value="SL02">SL02</option>
+                          <option value="SL03">SL03</option>
+                          <option value="SL04">SL04</option>
+                        </select>
                     </div>
                   </div>
                   <div class="form-group">
@@ -261,7 +264,6 @@
                   <div class="form-group" style="float:right">
                   <a href="javascript:void(0);" class="btn btn-secondary" onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
                     <button type="submit" class="btn btn-primary">Save</button>
-                    <button type="submit" class="btn btn-primary">Add More</button>
                   </div>
                 </form>
                 <!-- end form -->
