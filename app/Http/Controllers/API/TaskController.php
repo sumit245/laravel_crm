@@ -786,7 +786,7 @@ class TaskController extends Controller
                 $task = StreetlightTask::findOrFail($pole->task_id);
                 $engineer = $task->engineer;
                 $approved_by = $engineer->firstName . ' ' . $engineer->lastName;
-
+                Log::info("Sending data now");
                 RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
                 $responses[] = [
