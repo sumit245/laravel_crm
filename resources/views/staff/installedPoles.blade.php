@@ -25,8 +25,8 @@
         <td>{{ $survey->sim_number ?? "N/A" }}</td>
         <td>{{ $survey->battery_qr ?? "N/A" }}</td>
         <td>{{ $survey->module_qr ?? "N/A" }}</td>
-        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;"></td>
-            <span class="text-primary">View Location</span>
+        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+            <span class="text-primary">View Location</span> </td>
             <td>{{ $survey->rms_status ?? "N/A" }}</td>
         <td>
           <!-- View Button -->
