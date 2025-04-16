@@ -630,9 +630,9 @@ class TaskController extends Controller
                 $q->where('vendor_id', $request->vendor);
             });
         }
+        $clonedQuery = clone $query;
         $poles = $query->paginate(25);
-        $totalInstalled = $query->count();
-        // 'totalInstalled', 'districts', 'blocks', 'panchayats'
+        $totalInstalled = $clonedQuery->count();
         return view('poles.installed', compact('poles', 'totalInstalled'));
     }
 
