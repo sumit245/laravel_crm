@@ -367,7 +367,7 @@ class HomeController extends Controller
             case 'custom':
                 return [request()->start_date, request()->end_date];
             default:
-                return [now()->startOfDay(), now()]; // From the Unix epoch to now
+                return [now()->startOfWeek(), now()]; // From the Unix epoch to now
         }
     }
 
