@@ -149,7 +149,7 @@ class HomeController extends Controller
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
+                    ->whereBetween('updated_at', $dateRange);
             })->where('isInstallationDone', true)->count();
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
