@@ -136,20 +136,29 @@ class HomeController extends Controller
             // Get total poles for all panchayats assigned to this user in date range
             $totalPoles = Streetlight::whereHas('streetlightTasks', function ($q) use ($user, $dateRange) {
                 $q->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
+                    ->where(function ($q2) use ($dateRange) {
+                        $q2->whereBetween('created_at', $dateRange)
+                            ->orWhereBetween('updated_at', $dateRange);
+                    });
             })->sum('total_poles');
 
             // Get surveyed and installed poles by this user in date range
             $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
+                    ->where(function ($q2) use ($dateRange) {
+                        $q2->whereBetween('created_at', $dateRange)
+                            ->orWhereBetween('updated_at', $dateRange);
+                    });
             })->where('isSurveyDone', true)->count();
 
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
+                    ->where(function ($q2) use ($dateRange) {
+                        $q2->whereBetween('created_at', $dateRange)
+                            ->orWhereBetween('updated_at', $dateRange);
+                    });
             })->where('isInstallationDone', true)->count();
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
@@ -359,18 +368,18 @@ class HomeController extends Controller
     {
         switch ($filter) {
             case 'today':
-                return [now()->startOfDay(), now()->endOfDay()];
+                return [now()->subDay(), now()]; // Last 24 hours
             case 'this_week':
-                return [now()->startOfWeek(), now()->endOfWeek()];
+                return [now()->subDays(7), now()]; // Last 7 days
             case 'this_month':
-                return [now()->startOfMonth(), now()->endOfMonth()];
+                return [now()->subDays(30), now()]; // Last 30 days
             case 'custom':
                 return [request()->start_date, request()->end_date];
             default:
-                // Return all time data
-                return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
+                return [now()->subDay()->startOfDay(), now()]; // From beginning of yesterday to now
         }
     }
+
 
     public function exportToExcel()
     {
