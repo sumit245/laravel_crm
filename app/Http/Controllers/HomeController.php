@@ -367,8 +367,7 @@ class HomeController extends Controller
             case 'custom':
                 return [request()->start_date, request()->end_date];
             default:
-                // Return all time data
-                return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
+                return [now()->startOfDay(), now()]; // From the Unix epoch to now
         }
     }
 
