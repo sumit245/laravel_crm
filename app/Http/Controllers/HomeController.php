@@ -149,7 +149,7 @@ class HomeController extends Controller
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('updated_at', $dateRange);
+                    ->whereBetween('created_at', $dateRange);
             })->where('isInstallationDone', true)->count();
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
@@ -367,7 +367,8 @@ class HomeController extends Controller
             case 'custom':
                 return [request()->start_date, request()->end_date];
             default:
-                return [now()->startOfWeek(), now()]; // From the Unix epoch to now
+                // Return all time data
+                return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
         }
     }
 
