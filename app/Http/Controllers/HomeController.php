@@ -136,14 +136,14 @@ class HomeController extends Controller
             // Get total poles for all panchayats assigned to this user in date range
             $totalPoles = Streetlight::whereHas('streetlightTasks', function ($q) use ($user, $dateRange) {
                 $q->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('updated_at', $dateRange);
+                    ->whereBetween('created_at', $dateRange);
             })->sum('total_poles');
 
             // Get surveyed and installed poles by this user in date range
             $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('updated_at', $dateRange);
+                    ->whereBetween('created_at', $dateRange);
             })->where('isSurveyDone', true)->count();
 
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
