@@ -169,7 +169,7 @@ class HomeController extends Controller
         } else {
             $tasksQuery = $taskModel::where('project_id', $projectId)
                 ->where($this->getRoleColumn($user->role), $user->id)
-                ->whereBetween('updated_at', $dateRange);
+                ->whereBetween('created_at', $dateRange);
 
             $totalTasks = $tasksQuery->count();
             if ($totalTasks == 0) return null;
@@ -284,7 +284,7 @@ class HomeController extends Controller
         $poles = Pole::whereHas('task.site', function ($q) use ($projectId, $user) {
             $q->where('project_id', $projectId)
                 ->where($this->getRoleColumn($user->role), $user->id);
-        })->whereBetween('updated_at', $dateRange);
+        })->whereBetween('created_at', $dateRange);
 
         return [
             'surveyedPoles' => (clone $poles)->where('isSurveyDone', true)->count(),
