@@ -51,7 +51,7 @@
                       </option>
                     @endforeach
                   </select>
-                  <input type="hidden" name="item" id="item_name">
+                  <input type="hidden" name="item" id="item_namesss">
                   <input type="hidden" name="rate" id="item_rate">
                   <input type="hidden" name="make" id="item_make">
                   <input type="hidden" name="model" id="item_model">
@@ -184,7 +184,7 @@
         if (selectedItemCode === "SL02") {
           scannedCode = scannedCode.split(';')[0]
         }
-        console.log(selectedItemCode, scannedCode)
+
         const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
         // Check if QR exists in database via AJAX
         fetch('{{ route("inventory.checkQR") }}', {
@@ -252,11 +252,15 @@
       itemSelect.addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
         // Update hidden fields with item details
-        document.getElementById('item_name').value = selectedOption.dataset.item || '';
+        console.log(document.querySelectorAll('#item_namesss').length);
+        document.getElementById('item_namesss').value = selectedOption.dataset.item || '';
         document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
         document.getElementById('item_make').value = selectedOption.dataset.make || '';
         document.getElementById('item_model').value = selectedOption.dataset.model || '';
         // Clear scanned QRs when item changes
+        const form = document.getElementById('dispatchForm');
+        console.log(form)
+
         scannedQRs = [];
         updateScannedQRs();
         updateQuantityAndTotal();
@@ -297,10 +301,6 @@
         list.appendChild(li);
       });
     }
-
-
-
-
 
     // Add hidden input for serial number
     function addSerialNumberInput(serialNumber) {
@@ -432,6 +432,7 @@
       Processing...
       `;
       const form = document.getElementById('dispatchForm');
+      console.log(form)
       const formData = new FormData(form);
 
       fetch("{{ route("inventory.dispatchweb") }}", {
@@ -471,6 +472,7 @@
           }
         })
         .catch(error => {
+          console.error(error);
           Swal.fire({
             Log::info();
             title: 'Error!',

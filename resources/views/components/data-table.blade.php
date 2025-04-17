@@ -1,5 +1,5 @@
 <div>
-  <table id="{{ $id }}" class="table-striped table-bordered table-sm table mt-4">
+  <table id="{{ $id }}" class="table-striped table-bordered table-sm mt-4 table">
     <thead>
       {{ $thead }}
     </thead>
@@ -40,7 +40,7 @@
         }
       ],
       paging: true,
-      pageLength: {{ $pageLength ?? 10 }},
+      pageLength: {{ $pageLength ?? 25 }},
       searching: true,
       responsive: true,
       language: {
