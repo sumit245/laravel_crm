@@ -156,7 +156,8 @@
     $(document).ready(function() {
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
-        allowClear: true
+        allowClear: true,
+        dropdownParent: $('#addTargetModal')
       });
       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
