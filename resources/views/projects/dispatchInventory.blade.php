@@ -472,6 +472,7 @@
         })
         .catch(error => {
           Swal.fire({
+            Log::info();
             title: 'Error!',
             text: 'Something went wrong. Please try again.',
             icon: 'error',
