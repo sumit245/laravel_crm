@@ -17,6 +17,7 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::apiResource('staff', StaffController::class);
 Route::prefix('staff')->group(function () {
     Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
+    Route::get('/get-performance/{user_id}', [StaffController::class, 'getStaffPerformance']);
 });
 
 Route::prefix('vendor')->group(function () {
@@ -46,12 +47,6 @@ Route::apiResource('streetlight', StreetlightController::class);
 Route::apiResource('inventories', InventoryController::class);
 Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
 Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
-// Route::get('get-consumed-inventory/vendor/{vendor_id}', [InventoryController::class, 'viewConsumedInventory']);
-// Route::get('/test-route/{vendorId}', function ($vendorId) {
-//     return response()->json(["message" => "Route is working!", "vendor_id" => $vendorId]);
-// });
-
-
 
 Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
 Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);

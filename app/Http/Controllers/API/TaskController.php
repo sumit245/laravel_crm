@@ -486,7 +486,8 @@ class TaskController extends Controller
                 'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
                 'assigned_date' => $pole->created_at,
-                'submission_date' => $pole->updated_at
+                'submission_date' => $pole->updated_at,
+                'status' => $pole->status
             ];
         });
 
@@ -521,9 +522,10 @@ class TaskController extends Controller
                 ],
                 'remarks' => $pole->remarks,
                 'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
+                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
+                'status' => $pole->status
             ];
         });
 
@@ -635,13 +637,15 @@ class TaskController extends Controller
         }
         $poles = $query->paginate(25);
         $totalInstalled = $query->count();
-        return view('poles.installed', compact('poles', 'totalInstalled', 'districts', 'blocks', 'panchayats'));
+        // 'totalInstalled', 'districts', 'blocks', 'panchayats'
+        return view('poles.installed', compact('poles', 'totalInstalled'));
     }
 
     public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
-        $pole = Pole::with(['streetlight', 'task', 'tasks'])->findOrFail($id);
+        $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
+        Log::info($pole);
 
         // Decode survey images JSON (ensure it's an array)
         $surveyImages = [];
@@ -655,8 +659,20 @@ class TaskController extends Controller
             }
         }
 
+        // Decode survey images JSON (ensure it's an array)
+        $submissionImages = [];
+        if (!empty($pole->submission_image)) {
+            $submissionImagesArray = json_decode($pole->submission_image, true); // Decode JSON string into an array
+
+            if (is_array($submissionImagesArray)) { // Ensure it's an array before looping
+                foreach ($submissionImagesArray as $image) {
+                    $submissionImages[] = Storage::disk('s3')->url($image);
+                }
+            }
+        }
+
         // Fetch related users (Installer, Project Manager, Site Engineer) from the latest task
-        $latestTask = $pole->tasks()->latest()->first(); // Get latest assigned task
+        $latestTask = $pole->task()->first(); // Get latest assigned task
         Log::info($latestTask);
 
         $installer = $latestTask?->vendor;    // Installer
@@ -664,7 +680,7 @@ class TaskController extends Controller
         $siteEngineer = $latestTask?->engineer;  // Site Engineer
 
         // Return the view with the pole details
-        return view('poles.show', compact('pole', 'surveyImages', 'installer', 'projectManager', 'siteEngineer'));
+        return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
     }
 
     public function exportPoles($vendor_id)

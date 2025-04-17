@@ -1,11 +1,12 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container p-2">
-    <h3 class="fw-bold">Surveyed Poles</h3>
+  <div class="container-fluid p-3">
+    <h3 class="fw-bold mt-2">Surveyed Poles</h3>
     <p>Total Surveyed Poles: <strong>{{ $totalSurveyed }}</strong></p>
 
     <!-- Search and Filter Form -->
+    {{--  
     <form method="GET" action="{{ route("surveyed.poles") }}" class="mb-3">
       <div class="row">
         <div class="col-md-3">
@@ -53,33 +54,55 @@
         </div>
       </div>
     </form>
-
-    <table class="table-striped table">
-      <thead>
+--}}
+    <x-data-table id="surveyedPole" class="table-striped table">
+      <x-slot:thead>
         <tr>
-          <th>Pole ID</th>
-          <th>Complete Pole Number</th>
-          <th>Survey Status</th>
-          <th>Installation Status</th>
+          <th data-select="true">
+            <input type="checkbox" id="selectAll" />
+          </th>
+          <th>Pole Number</th>
+          <th>Beneficiary</th>
+          <th>Beneficiary Contact</th>
           <th>Location</th>
           <th>Actions</th>
         </tr>
-      </thead>
-      <tbody>
+      </x-slot:thead>
+      <x-slot:tbody>
         @foreach ($poles as $pole)
           <tr>
-            <td>{{ $pole->id }}</td>
-            <td>{{ $pole->complete_pole_number }}</td>
-            <td>{{ $pole->isSurveyDone ? "Completed" : "Pending" }}</td>
-            <td>{{ $pole->isInstallationDone ? "Installed" : "Not Installed" }}</td>
-            <td>{{ $pole->lat }}, {{ $pole->lng }}</td>
+            <td><input type="checkbox" id="selectAll" /></td>
+            <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
+            <td>{{ $pole->beneficiary ?? "N/A" }}</td>
+            <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
+            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
+            <td>{{ $pole->remarks ?? "N/A" }}</td>
             <td>
-              <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-info">View</a>
-              <!-- Add more action buttons as needed -->
+              <!-- View Button -->
+              <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+                title="View Details">
+                <i class="mdi mdi-eye"></i>
+              </a>
+
+              <!-- Delete Button -->
+
             </td>
           </tr>
         @endforeach
-      </tbody>
-    </table>
+      </x-slot:tbody>
+    </x-data-table>
   </div>
 @endsection
+
+@push("scripts")
+  <script>
+    function locateOnMap(lat, lng) {
+      if (lat && lng) {
+        const url = `https://www.google.com/maps?q=${lat},${lng}`;
+        window.open(url, '_blank');
+      } else {
+        alert('Location coordinates not available.');
+      }
+    }
+  </script>
+@endpush
