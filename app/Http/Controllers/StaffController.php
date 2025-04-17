@@ -109,6 +109,7 @@ class StaffController extends Controller
         if ($isStreetlightProject) {
             // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
             $tasks = StreetlightTask::with(['site', 'poles'])
+                ->whereDate('created_at', Carbon::today())
                 ->where(function ($query) use ($staff) {
                     $query->where('engineer_id', $staff->id)
                         ->orWhere('manager_id', $staff->id)
@@ -129,8 +130,19 @@ class StaffController extends Controller
                         ->orWhere('vendor_id', $userId);
                 });
             })->where('isInstallationDone', 1)->count();
-            $surveyedPoles = Pole::all();
-            $installedPoles = Pole::all();
+            $surveyedPoles = Pole::where('isSurveyDone', 1)
+                ->whereDate('created_at', Carbon::today())
+                ->whereHas('task', function ($query) use ($userId) {
+                    $query->where('manager_id', $userId);
+                })
+                ->get();
+            // TODO: modify the m
+            $installedPoles = Pole::where('isInstallationDone', 1)
+                ->whereDate('created_at', Carbon::today())
+                ->whereHas('task', function ($query) use ($userId) {
+                    $query->where('manager_id', $userId);
+                })
+                ->get();
         } else {
             // Fetch regular Tasks
             $tasks = Task::with('site')
@@ -296,9 +308,9 @@ class StaffController extends Controller
         return $username;
     }
 
-    public function showSurveyedPoles(){
+    public function showSurveyedPoles()
+    {
         $surveyedPoles = Pole::all();
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
-
 }

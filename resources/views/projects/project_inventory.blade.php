@@ -148,19 +148,21 @@
                   </div>
                 </form>
                 <!-- Form for add inventory -->
-                <form action="#" method="POST" class="mt-5">
+                <form action="{{ route('inventory.store') }}" method="POST" class="mt-5">
                   @csrf
-                  @method("PUT")
+                  <input type="hidden" name="project_type" value="{{ $project->project_type }}">
+                  <input type="hidden" name="project_id" value="{{ $project->id }}">
+                  <input type="hidden" name="store_id" value="{{ $store->id }}">
                   <div class="form-group" id="inventoryForm">
                     <div class="row">
                       <div class="col-6">
                         <label for="dropdown"><strong>Item Name</strong></label>
                         <select id="dropdown" name="dropdown" class="form-control">
                           <option value="">-- Select a item name --</option>
-                          <option value="item1">Item 1</option>
-                          <option value="item2">Item 2</option>
-                          <option value="item3">Item 3</option>
-                          <option value="item4">Item 4</option>
+                          <option value="item1">Module</option>
+                          <option value="item2">Luminary</option>
+                          <option value="item3">Battery</option>
+                          <option value="item4">Structure</option>
                         </select>
                       </div>
                       <div class="col-6">
@@ -190,7 +192,7 @@
                     <div class="row">
                       <div class="col-6">
                         <label for="serialNumber"><strong>Serial Number</strong></label>
-                        <input type="number" id="serialnumber" name="serialnumber" class="form-control"
+                        <input type="text" id="serialnumber" name="serialnumber" class="form-control"
                           value="" required>
                       </div>
                       <div class="col-6">
@@ -257,7 +259,7 @@
                   </div>
 
                   <div class="form-group" style="float:right">
-                    <a href="{{ route("staff.index") }}" class="btn btn-secondary">Cancel</a>
+                  <a href="javascript:void(0);" class="btn btn-secondary" onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
                     <button type="submit" class="btn btn-primary">Save</button>
                     <button type="submit" class="btn btn-primary">Add More</button>
                   </div>
@@ -324,6 +326,14 @@
       form.style.display = "none";
     }
   }
+  // Closing the add inventory form
+  function closeInventoryForm(storeId) {
+  var form = document.getElementById("addInventoryForm-" + storeId);
+  if (form) {
+    form.style.display = "none";
+  }
+}
+
 
   function addInventory(storeId) {
     // Redirect to the inventory import route with the store ID

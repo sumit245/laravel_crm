@@ -1,5 +1,5 @@
 <div>
-  <table id="{{ $id }}" class="table-striped table-bordered table-sm table">
+  <table id="{{ $id }}" class="table-striped table-bordered table-sm table mt-4">
     <thead>
       {{ $thead }}
     </thead>
@@ -20,24 +20,11 @@
           text: '<i class="mdi mdi-menu"></i> Actions',
           className: 'btn btn-sm btn-secondary',
           buttons: [{
-              text: 'Delete Selected',
-              action: function() {
-                performBulkAction('delete');
-              }
-            },
-            {
-              text: 'Assign to Vendor',
-              action: function() {
-                performBulkAction('assign');
-              }
-            },
-            {
-              text: 'Dispatch Inventory',
-              action: function() {
-                performBulkAction('dispatch');
-              }
+            text: 'Delete Selected',
+            action: function() {
+              performBulkAction('delete');
             }
-          ]
+          }]
         },
         {
           extend: 'excel',
