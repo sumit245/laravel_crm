@@ -27,7 +27,8 @@ class VendorController extends Controller
     public function create()
     {
         $siteEngineers = User::where('role', 1)->get();
-        return view('uservendors.create', compact('siteEngineers'));
+        $projects = Project::all();
+        return view('uservendors.create', compact('siteEngineers','projects'));
     }
 
     /**
@@ -165,7 +166,8 @@ class VendorController extends Controller
     {
         //
         $vendor = User::find($id);
-        return view('uservendors.edit', compact('vendor'));
+        $projects = Project::all();
+        return view('uservendors.edit', compact('vendor','projects'));
     }
 
     /**
