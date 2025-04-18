@@ -10,7 +10,7 @@
       <th>Installer</th>
       <th>Wards</th>
       <th>No. of Poles</th>
-      <th>Actions</th>
+      <!-- <th>Actions</th> -->
     </tr>
   </thead>
   <tbody>
@@ -26,15 +26,15 @@
         <td>{{ $task->site->ward ?? "N/A" }}</td>
         <td>{{ $task->site->number_of_poles ?? "N/A" }}</td>
         {{-- <td>{{ $task->site->Wards ?? "N/A" }}</td> --}}
-        <td>
+        <!-- <td> -->
           <!-- View Button -->
-          <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+          <!-- <a href="{{-- route("inventory.show", $member->id) --}}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
             <i class="mdi mdi-eye"></i>
-          </a>
+          </a> -->
 
           <!-- Delete Button -->
 
-        </td>
+        <!-- </td> -->
       </tr>
     @endforeach
   </tbody>

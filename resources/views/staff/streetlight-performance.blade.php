@@ -15,7 +15,7 @@
     <li class="nav-item" role="presentation">
       <button class="nav-link" id="installed-tab" data-bs-toggle="tab" data-bs-target="#installed_poles" type="button"
         role="tab" aria-controls="installed-tab" aria-selected="false">
-        Installed Poles
+        Installed Lights
       </button>
     </li>
   </ul>
