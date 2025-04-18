@@ -67,11 +67,16 @@
                     <th>Submitted sites</th>
                   @endif
                   @if ($isStreetLightProject)
-                    <th>Installed Poles</th>
+                    <th>Installed Lights</th>
                   @else
                     <th>Approved sites</th>
                   @endif
-                  <th>Performance (%)</th>
+                  @if ($isStreetLightProject)
+                    <th>Billed</th>
+                  @else
+                    <th>billed sites</th>
+                  @endif
+                  <th>Performance(%)</th>
                 </tr>
               </thead>
               <tbody>
@@ -110,6 +115,11 @@
                       <td>{{ $user->installedPoles ?? 0 }}</td>
                     @else
                       <td>{{ $user->approvedSites ?? 0 }}</td>
+                    @endif
+                    @if ($isStreetLightProject)
+                      <td>{{  0 }}</td>
+                    @else
+                      <td>{{  0 }}</td>
                     @endif
                     <td>
                       <div class="progress">
