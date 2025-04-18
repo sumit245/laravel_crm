@@ -13,6 +13,43 @@
 
   <div class="container mt-4">
   <div class="row">
+  
+  <form id="jicrForm" action="{{ route('jicr.generate') }}" method="GET" class="d-inline">
+    <input type="hidden" name="district" value="{{ $streetlightTask->site->district }}">
+    <input type="hidden" name="block" value="{{ $streetlightTask->site->block }}">
+    <input type="hidden" name="panchayat" value="{{ $streetlightTask->site->panchayat }}">
+
+    <div class="row">
+        <div class="col-3 mb-2">
+        <label for="fromDate" class="form-label">From Date</label><input type="date"
+                id="fromDate" name="from_date" class="form-control" required>
+        </div>
+        <div class="col-3 mb-2">
+        <label for="toDate" class="form-label">To Date</label>
+              <input type="date" id="toDate" name="to_date" class="form-control" required>
+        </div>
+        <div class="col-2 d-flex align-items-end mb-1">
+            <button type="submit" class="btn btn-primary w-70">
+                Generate JICR
+            </button>
+        </div>
+        <div class="col-2 d-flex align-items-end mb-1">
+            <a href="#" class="btn btn-primary w-50">
+                Edit
+            </a>
+        </div>
+    </div>
+    
+    
+    
+  </form>
+  @if (!empty($showReport) && isset($data))
+      @include("jicr.show", ["data" => $data])
+    @endif
+    <div id="jicrReportContainer" class="mt-4"></div>
+
+  </div>
+  <div class="row">
     <div class="col-md-4 mb-3">
       <strong>District</strong><p>{{ $streetlightTask->site->district }}</p> 
     </div>
