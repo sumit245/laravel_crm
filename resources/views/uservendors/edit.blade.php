@@ -14,6 +14,23 @@
         </div>
         @endif
         <h4 class="card-title">Add Vendor</h4>
+        <!-- Project Selection Dropdown -->
+    <div class="form-group mb-4">
+    <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="team_lead" class="form-label"> </label>
+                <select name="team_lead_id" class="form-select" id="team_lead">
+                  <option value="">-- Select Project --</option>
+                  @foreach ($projects as $category)
+                    <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+</div>
+      
+    </div>
         <form class="forms-sample" action="{{ route("uservendors.update",$vendor->id) }}" method="POST">
           @csrf
           @method('PUT')

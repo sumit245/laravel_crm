@@ -47,7 +47,8 @@ class StaffController extends Controller
     public function create()
     {
         $teamLeads = User::where('role', 2)->get();
-        return view('staff.create', compact('teamLeads'));
+        $projects = Project::all();
+        return view('staff.create', compact('teamLeads' , 'projects'));
     }
 
 
@@ -193,7 +194,9 @@ class StaffController extends Controller
     {
         //
         $staff = User::findOrFail($id);
-        return view('staff.edit', compact('staff')); // Form to edit staff
+        $projects = Project::all();
+            
+        return view('staff.edit', compact('staff', 'projects')); // Form to edit staff
     }
 
     /**
@@ -313,4 +316,5 @@ class StaffController extends Controller
         $surveyedPoles = Pole::all();
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
+
 }
