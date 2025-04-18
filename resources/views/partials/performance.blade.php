@@ -74,15 +74,9 @@
                   @if ($isStreetLightProject)
                     <th>Billed</th>
                   @else
-<<<<<<< HEAD
-                    <th>billed sites</th>
-                  @endif
-                  <th>Performance(%)</th>
-=======
                     <th>Billed sites</th>
                   @endif
                   <th>Performance (%)</th>
->>>>>>> 68a0b9d9e9ed8588728014731e54baf08f235665
                 </tr>
               </thead>
               <tbody>
@@ -123,15 +117,9 @@
                       <td>{{ $user->approvedSites ?? 0 }}</td>
                     @endif
                     @if ($isStreetLightProject)
-<<<<<<< HEAD
-                      <td>{{  0 }}</td>
-                    @else
-                      <td>{{  0 }}</td>
-=======
                       <td> 0 </td>
                     @else
                       <td> 0 </td>
->>>>>>> 68a0b9d9e9ed8588728014731e54baf08f235665
                     @endif
                     <td>
                       <div class="progress">
