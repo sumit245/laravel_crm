@@ -153,6 +153,15 @@
 
 @push("scripts")
   <script>
+    function confirmDelete() {
+        const confirmed = confirm("Are you sure you want to delete this task?");
+        if (confirmed) {
+            setTimeout(() => {
+                alert("Task deleted successfully.");
+            }, 100); // Show after delete is sent
+        }
+        return confirmed;
+    }
     $(document).ready(function() {
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
