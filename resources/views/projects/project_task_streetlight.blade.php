@@ -207,6 +207,7 @@
             type: 'GET',
             dataType: 'json',
             success: function(data) {
+              console.log(data);
               $.each(data, function(index, panchayat) {
                 $('#panchayatSearch').append('<option value="' + panchayat + '">' + panchayat +
                   '</option>');

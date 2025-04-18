@@ -84,7 +84,9 @@
         <div class="row">
 
 <!-- Manager Card -->
+
 <div class="col-md-4 mb-4">
+<a href="{{ route('staff.show', $streetlightTask->manager->id) }}">
   <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
     <img src="{{ $streetlightTask->manager->image }}" alt="{{ $streetlightTask->manager->firstName }}" class="rounded-circle" width="60" height="60">
     <div class="ms-3">
@@ -92,10 +94,12 @@
       <small class="text-muted">Manager</small>
     </div>
   </div>
+  </a>
 </div>
 
 <!-- Vendor Card -->
 <div class="col-md-4 mb-4">
+<a href="{{ route('staff.show', $streetlightTask->vendor->id) }}">
   <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
     <img src="{{ $vendor->image }}" alt="{{ $vendor->name }}" class="rounded-circle" width="60" height="60">
     <div class="ms-3">
@@ -103,10 +107,12 @@
       <small class="text-muted">Vendor</small>
     </div>
   </div>
+</a>
 </div>
 
 <!-- Engineer Card -->
 <div class="col-md-4 mb-4">
+<a href="{{ route('staff.show', $streetlightTask->engineer->id) }}">
   <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
     <img src="{{ $streetlightTask->engineer->image }}" alt="{{ $streetlightTask->engineer->firstName }}" class="rounded-circle" width="60" height="60">
     <div class="ms-3">
@@ -114,13 +120,13 @@
       <small class="text-muted">Engineer</small>
     </div>
   </div>
+  </a>
 </div>
 
 </div>
 
 <div class="tab-content mt-1" id="poleTabsContent">
   <!-- Nav Tabs -->
-<<<<<<< HEAD
   <ul class="nav nav-tabs fixed-navbar-project" id="poleTabs" role="tablist">
     <li class="nav-item" role="presentation">
       <button class="nav-link active" id="installed-tab" data-bs-toggle="tab" data-bs-target="#installed" type="button"
@@ -135,22 +141,6 @@
       </button>
     </li>
   </ul>
-=======
-  <div class="d-flex overflow-auto mb-3">
-    <ul class="nav nav-tabs flex-nowrap" id="poleTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="installed-tab" data-bs-toggle="tab" data-bs-target="#installed" type="button" role="tab" aria-controls="installed" aria-selected="true">
-          Installed Lights
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="surveyed-tab" data-bs-toggle="tab" data-bs-target="#surveyed" type="button" role="tab" aria-controls="surveyed" aria-selected="false">
-          Surveyed Poles
-        </button>
-      </li>
-    </ul>
-  </div>
->>>>>>> 68a0b9d9e9ed8588728014731e54baf08f235665
 
   <!-- Tab Content -->
   <div class="tab-pane fade show active" id="installed" role="tabpanel" aria-labelledby="installed-tab">
@@ -173,6 +163,11 @@
 
 @push("styles")
 <style>
+
+        a {
+          text-decoration: none;
+          color:black;
+        }
         .container {
             background-color: white;
             border-radius: 8px;
