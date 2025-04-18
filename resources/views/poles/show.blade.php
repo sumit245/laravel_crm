@@ -5,10 +5,13 @@
     <div class="d-flex align-items-center justify-content-between mg-b-25">
       <h6 class="mg-b-0">Pole Details</h6>
       <div class="d-flex">
-        <a href="#" data-toggle="modal" class="btn btn-sm btn-white d-flex align-items-center"
-          onclick="window.history.goBack();">
-          <span class="d-none d-sm-inline mg-l-5">Go Back</span></a>
-      </div>
+  <a href="javascript:void(0);" class="btn btn-sm btn-white d-flex align-items-center"
+     onclick="goBackWithFallback();">
+    <span class="d-none d-sm-inline mg-l-5">Go Back</span>
+  </a>
+</div>
+
+
     </div>
     <div class="row">
       <div class="col-3 col-sm-3">
@@ -69,19 +72,41 @@
     <hr />
     <!-- sim number, engineer name, project manager, vendor name -->
     <div class="row">
-      <div class="col-3 col-sm">
+      <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Engineer</label>
         <p class="mg-b-0">{{ $siteEngineer->name ?? "Yes" }}</p>
       </div>
-      <div class="col-3 col-sm">
+      <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Project Manager</label>
         <p class="mg-b-0">{{ $projectManager->name ?? "" }}</p>
       </div>
-      <div class="col-6 col-sm-6">
+      
+      <div class="col-3 col-sm-3">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installation Date</label>
+        <p class="mg-b-0">{{$pole-> created_at}}</p>
+      </div>
+      <div class="col-3 col-sm-3">
+        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Submitted at</label>
+        <p class="mg-b-0">
+  <?= $pole->isInstallationDone == 1 ? $pole->updated_at : "" ?>
+</p>
+
+<!-- anything -->
+      </div>
+    </div>
+    
+
+    <hr />
+    <!-- newly added row  -->
+    <div class="row">
+      
+      
+      <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Remarks</label>
         <p class="mg-b-0">{{ $pole->remarks ?? "" }}</p>
       </div>
     </div>
+
     <!-- Streetlight Poles column end -->
     <hr />
     <!-- Streelights columns need to call from database -->
@@ -146,5 +171,17 @@
         alert('Location coordinates not available.');
       }
     }
+
+
+    
+
+  function goBackWithFallback() {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      window.location.href = '/'; // fallback to homepage or a desired page
+    }
+  }
+
   </script>
 @endpush
