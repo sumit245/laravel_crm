@@ -39,6 +39,7 @@ class ProjectsController extends Controller
         return view('projects.index', compact('projects'));
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
