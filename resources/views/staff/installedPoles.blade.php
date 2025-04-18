@@ -9,7 +9,8 @@
       <th>Sim Number</th>
       <th>Battery</th>
       <th>Panel</th>
-      <th>Location</th>
+      <th>Bill Raised</th>
+      <!-- <th>Location</th> -->
       <th>RMS</th>
       <th>Actions</th>
     </tr>
@@ -20,13 +21,15 @@
       <td>
     <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />
   </td>
-        <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
+  <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+  <span class="text-primary">{{ $survey->complete_pole_number ?? "N/A" }}</span></td>
         <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
         <td>{{ $survey->sim_number ?? "N/A" }}</td>
         <td>{{ $survey->battery_qr ?? "N/A" }}</td>
         <td>{{ $survey->module_qr ?? "N/A" }}</td>
-        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
-            <span class="text-primary">View Location</span> </td>
+        <td>0</td>
+        <!-- <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+            <span class="text-primary">View Location</span> </td> -->
             <td>{{ $survey->rms_status ?? "N/A" }}</td>
         <td>
           <!-- View Button -->

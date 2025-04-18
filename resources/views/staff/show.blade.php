@@ -45,21 +45,21 @@
                     class="text-primary text-decoration-none">Poles Surveyed:
                     {{ $surveyedPolesCount }}</a> <br />
                   <a href="{{ route("installed.poles", ["site_engineer" => $staff->id, "role" => 1]) }}"
-                    class="text-success text-decoration-none">Installed Poles:
+                    class="text-success text-decoration-none">Installed Lights:
                     {{ $installedPolesCount ?? 0 }}</a>
                 @elseif($staff->role == 3)
                   <a href="{{ route("surveyed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
                     class="text-primary text-decoration-none">Poles Surveyed:
                     {{ $surveyedPolesCount }}</a> <br />
                   <a href="{{ route("installed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
-                    class="text-success text-decoration-none">Installed Poles:
+                    class="text-success text-decoration-none">Installed lights:
                     {{ $installedPolesCount ?? 0 }}</a>
                 @else
                   <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
                     class="text-primary text-decoration-none">Poles Surveyed:
                     {{ $surveyedPolesCount }}</a> <br />
                   <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
-                    class="text-success text-decoration-none">Installed Poles:
+                    class="text-success text-decoration-none">Installed Lights:
                     {{ $installedPolesCount ?? 0 }}</a>
                 @endif
               </div>

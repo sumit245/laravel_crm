@@ -88,7 +88,7 @@
     <ul class="nav nav-tabs flex-nowrap" id="poleTabs" role="tablist">
       <li class="nav-item" role="presentation">
         <button class="nav-link active" id="installed-tab" data-bs-toggle="tab" data-bs-target="#installed" type="button" role="tab" aria-controls="installed" aria-selected="true">
-          Installed Poles
+          Installed Lights
         </button>
       </li>
       <li class="nav-item" role="presentation">

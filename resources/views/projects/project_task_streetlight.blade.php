@@ -16,7 +16,7 @@
       <div class="card bg-info mx-2" style="min-width: 33%;">
         <div class="card-body">
           <h5 class="card-title">{{ $totalInstalledPoles ?? 0 }}</h5>
-          <p class="card-text">Installed Poles</p>
+          <p class="card-text">Installed Lights</p>
         </div>
       </div>
     </div>
