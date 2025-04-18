@@ -2,14 +2,9 @@
 
 @section("content")
   <div class="container-fluid p-3">
-<<<<<<< HEAD
-  <h3 class="fw-bold mt-2">Installed Lights</h3>
-  <p>Total Installed Lights: <strong>{{ $totalInstalled }}</strong></p>
-=======
     <h3 class="fw-bold mt-2">Installed Lights</h3>
     <p>Total Installed Lights: <strong>{{ $totalInstalled }}</strong></p>
 
->>>>>>> 68a0b9d9e9ed8588728014731e54baf08f235665
     <x-data-table id="installedPole" class="table-striped table">
       <x-slot:thead>
         <tr>
