@@ -61,7 +61,7 @@
             <!-- Panchayat Search (Dependent on Block) -->
             <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
-              <select id="panchayatSearch" name="panchayats" class="form-select" style="width: 100%;">
+              <select id="panchayatSearch" name="sites[]" class="form-select" style="width: 100%;">
                 <option value="">Select a Panchayat</option>
               </select>
             </div>
@@ -165,7 +165,8 @@
     $(document).ready(function() {
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
-        allowClear: true
+        allowClear: true,
+        dropdownParent: $('#addTargetModal')
       });
       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
