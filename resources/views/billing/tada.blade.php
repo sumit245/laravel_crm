@@ -75,9 +75,10 @@
                             <td>₹1980</td>
                             <td>₹2785</td>
                             <td>
-                                <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#billsModal">
-                                    <i class="bi bi-eye"></i> View Bills
-                                </button>
+                            <a href="{{ route('view.bills') }}" class="btn btn-sm btn-outline-primary" >
+                               <i class="bi bi-eye"></i> View Bills
+                            </a>
+
                             </td>
                             <td>
                                 <span class="badge badge-status badge-pending">Pending</span>
@@ -130,58 +131,56 @@
         </div>
     </div>
 
-    {{-- Bills Modal --}}
-<div class="modal fade" id="billsModal" tabindex="-1" aria-labelledby="billsModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-light">
-                <h5 class="modal-title fw-bold" id="billsModalLabel">Uploaded Bills</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <ul class="list-group">
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Bill 1 (Train Ticket)
-                        <div>
-                            <a href="{{ asset('storage/bills/sample-bill1.pdf') }}" target="_blank" class="btn btn-sm btn-info me-2">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-                            <a href="{{ asset('storage/bills/sample-bill1.pdf') }}" download class="btn btn-sm btn-primary">
-                                <i class="bi bi-download"></i> Download
-                            </a>
+    {{-- Updated Bills Modal --}}
+    <div class="modal fade" id="billsModal" tabindex="-1" aria-labelledby="billsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="billsModalLabel"><i class="bi bi-receipt-cutoff me-2"></i> Uploaded Bills</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body py-4 px-4">
+                    <div class="row g-3">
+                        @foreach ([
+                            ['title' => 'Train Ticket', 'file' => 'sample-bill1.pdf'],
+                            ['title' => 'Hotel Receipt', 'file' => 'sample-bill2.pdf'],
+                            ['title' => 'Food', 'file' => 'sample-bill3.pdf'],
+                            ['title' => 'Food', 'file' => 'sample-bill3.pdf']
+                        ] as $bill)
+                        <div class="col-md-4">
+                            <div class="bill-card border rounded shadow-sm p-3 h-100 d-flex flex-column justify-content-between">
+                                <div class="mb-2">
+                                    <div class="d-flex align-items-center">
+                                        <div class="file-icon me-2">
+                                            <i class="bi bi-file-earmark-pdf text-danger fs-2"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1 fw-semibold">{{ $bill['title'] }}</h6>
+                                            <small class="text-muted">{{ $bill['file'] }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="d-flex justify-content-end mt-auto">
+                                    <a href="{{ asset('storage/bills/' . $bill['file']) }}" target="_blank" class="btn btn-sm btn-outline-info me-2">
+                                        <i class="bi bi-eye"></i> View
+                                    </a>
+                                    <a href="{{ asset('storage/bills/' . $bill['file']) }}" download class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-download"></i> Download
+                                    </a>
+                                </div>
+                            </div>
                         </div>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Bill 2 (Hotel Receipt)
-                        <div>
-                            <a href="{{ asset('storage/bills/sample-bill2.pdf') }}" target="_blank" class="btn btn-sm btn-info me-2">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-                            <a href="{{ asset('storage/bills/sample-bill2.pdf') }}" download class="btn btn-sm btn-primary">
-                                <i class="bi bi-download"></i> Download
-                            </a>
-                        </div>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        Bill 3 (Food)
-                        <div>
-                            <a href="{{ asset('storage/bills/sample-bill3.pdf') }}" target="_blank" class="btn btn-sm btn-info me-2">
-                                <i class="bi bi-eye"></i> View
-                            </a>
-                            <a href="{{ asset('storage/bills/sample-bill3.pdf') }}" download class="btn btn-sm btn-primary">
-                                <i class="bi bi-download"></i> Download
-                            </a>
-                        </div>
-                    </li>
-                </ul>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        @endforeach
+                    </div>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle"></i> Close
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
 
 </div>
 @endsection
@@ -261,6 +260,10 @@
         transition: all 0.3s ease-in-out;
     }
 
+    .table-responsive {
+        overflow: hidden;
+    }
+
     .card-summary:hover {
         transform: translateY(-3px);
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -306,6 +309,30 @@
     .list-group-item .btn {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
+    }
+
+    /* Bill Modal Enhancements */
+    .bill-card {
+        transition: all 0.2s ease-in-out;
+        background-color: #fff;
+    }
+
+    .bill-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+
+    .file-icon i {
+        font-size: 2rem;
+        color: #dc3545;
+    }
+
+    .bill-card h6 {
+        font-size: 1rem;
+    }
+
+    .bill-card small {
+        font-size: 0.75rem;
     }
 </style>
 @endpush
