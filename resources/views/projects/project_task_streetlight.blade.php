@@ -60,7 +60,6 @@
 
             <!-- Panchayat Search (Dependent on Block) -->
             <div class="mb-3">
-            <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
               <select id="panchayatSearch" name="sites[]" class="form-select" style="width: 100%;">
                 <option value="">Select a Panchayat</option>
@@ -68,16 +67,12 @@
             </div>
 
             <div class="mb-3">
-
-            <div class="mb-3">
               <label for="selectEngineer" class="form-label">Select Site Engineer</label>
               <select id="selectEngineer" name="engineer_id" class="form-select" required>
-
 
                 @foreach ($assignedEngineers as $engineer)
                   <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
                 @endforeach
-
 
               </select>
             </div>
@@ -171,37 +166,16 @@
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
         allowClear: true,
-        // dropdownParent: $('#addTargetModal')
-        
+        dropdownParent: $('#addTargetModal')
       });
-
-      
-      //       // Fetch Blocks Based on Selected District
+      // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
         let district = $(this).val();
         $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
         $('#panchayatSearch').prop('disabled', true).empty().append(
           '<option value="">Select a Panchayat</option>');
-        $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
-        $('#panchayatSearch').prop('disabled', true).empty().append(
-          '<option value="">Select a Panchayat</option>');
 
         if (district) {
-          $.ajax({
-            url: '/blocks-by-district/' + district,
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-              console.log(data)
-              $.each(data, function(index, block) {
-                $('#blockSearch').append('<option value="' + block + '">' + block + '</option>');
-              });
-
-            },
-            error: function(xhr, status, error) {
-              console.error("AJAX Error:", status, error);
-              console.log("Response:", xhr.responseText);
-            }
           $.ajax({
             url: '/blocks-by-district/' + district,
             type: 'GET',
@@ -228,10 +202,6 @@
           '<option value="">Select a Panchayat</option>');
 
         if (block) { // You're checking 'district' instead of 'block'
-        $('#panchayatSearch').prop('disabled', false).empty().append(
-          '<option value="">Select a Panchayat</option>');
-
-        if (block) { // You're checking 'district' instead of 'block'
           $.ajax({
             url: '/panchayats-by-block/' + block,
             type: 'GET',
@@ -253,25 +223,6 @@
       // Panachayat search begins
     });
   </script>
-@endpush
-
-@push("styles")
-  <style>
-    .select2-container--default .select2-selection--single {
-      height: 38px;
-      padding: 6px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
-    .select2-container--open .select2-dropdown--below {
-    top: 100% !important;
-    bottom: auto !important;
-  }
-  .select2-dropdown {
-    z-index: 9999 !important;
-  }
-  </style>
 @endpush
 
 @push("styles")
