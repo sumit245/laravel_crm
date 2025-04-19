@@ -349,17 +349,22 @@ class InventoryController extends Controller
             $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
 
             //Structure Data
-            $totalStructure = $inventory->where('item_code', 'SL04')->count();
-            $StructureRate = $inventory->where('item_code', 'SL04')
-                ->value('rate');
-            $totalStructureValue = $StructureRate * $totalStructure;
-            $totalStructureValue = number_format($totalStructureValue, 2);
+            // $totalStructure = $inventory->where('item_code', 'SL04')->count();
+            // $StructureRate = $inventory->where('item_code', 'SL04')
+                // ->value('rate');
+            // $totalStructureValue = $StructureRate * $totalStructure;
+            // $totalStructureValue = number_format($totalStructureValue, 2);
             // Structure Dispatch data
-            $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
-            $availableStructure = $totalStructure - $structureDispatch;
+            // $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
+            // $availableStructure = $totalStructure - $structureDispatch;
+            // $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
+            // $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
 
-            $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
-            $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
+            // Linking Battery to Structure
+            $totalStructure = $totalBattery;
+            $totalStructureValue = $totalBattery * 400;
+            $structureDispatch = $batteryDispatch;
+            $availableStructure = $availableBattery;
 
             // Module Data
             $totalModule = $inventory->where('item_code', 'SL01')->count();
@@ -388,7 +393,6 @@ class InventoryController extends Controller
                 'totalStructure',
                 'totalStructureValue',
                 'structureDispatch',
-                'dispatchAmountStructure',
                 'availableStructure',
                 'totalModule',
                 'totalModuleValue',

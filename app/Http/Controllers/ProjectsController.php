@@ -39,6 +39,7 @@ class ProjectsController extends Controller
         return view('projects.index', compact('projects'));
     }
 
+
     /**
      * Show the form for creating a new resource.
      */
@@ -312,4 +313,14 @@ class ProjectsController extends Controller
         $project->users()->syncWithoutDetaching($validated['user_ids']);
         return redirect()->back()->with('success', 'Users assigned successfully');
     }
+
+    // Delete controller
+    public function destroyTarget($id)
+    {
+        $task = StreetlightTask::findOrFail($id);
+        $task->delete(); // Permanently deletes from DB
+
+        return redirect()->back()->with('success', 'Task permanently deleted.');
+    }
+
 }

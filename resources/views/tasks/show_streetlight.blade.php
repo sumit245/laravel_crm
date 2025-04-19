@@ -13,29 +13,66 @@
 
   <div class="container mt-4">
   <div class="row">
+  
+  <form id="jicrForm" action="{{ route('jicr.generate') }}" method="GET" class="d-inline">
+    <input type="hidden" name="district" value="{{ $streetlightTask->site->district }}">
+    <input type="hidden" name="block" value="{{ $streetlightTask->site->block }}">
+    <input type="hidden" name="panchayat" value="{{ $streetlightTask->site->panchayat }}">
+
+    <div class="row">
+        <div class="col-3 mb-2">
+        <label for="fromDate" class="form-label">From Date</label><input type="date"
+                id="fromDate" name="from_date" class="form-control" required>
+        </div>
+        <div class="col-3 mb-2">
+        <label for="toDate" class="form-label">To Date</label>
+              <input type="date" id="toDate" name="to_date" class="form-control" required>
+        </div>
+        <div class="col-2 d-flex align-items-end mb-1">
+            <button type="submit" class="btn btn-primary w-70">
+                Generate JICR
+            </button>
+        </div>
+        <div class="col-2 d-flex align-items-end mb-1">
+            <a href="#" class="btn btn-primary w-50">
+                Edit
+            </a>
+        </div>
+    </div>
+    
+    
+    
+  </form>
+  @if (!empty($showReport) && isset($data))
+      @include("jicr.show", ["data" => $data])
+    @endif
+    <div id="jicrReportContainer" class="mt-4"></div>
+
+  </div>
+  <div class="row">
     <div class="col-md-4 mb-3">
-      <strong>District:</strong><p>{{ $streetlightTask->site->district }}</p> 
+      <strong>District</strong><p>{{ $streetlightTask->site->district }}</p> 
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Block:</strong><p> {{ $streetlightTask->site->block }}</p>
+      <strong>Block</strong><p> {{ $streetlightTask->site->block }}</p>
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Panchayat:</strong> <p>{{ $streetlightTask->site->panchayat }}</p>
+      <strong>Panchayat</strong> <p>{{ $streetlightTask->site->panchayat }}</p>
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Alloted:</strong><p> {{ $streetlightTask->site->ward }}</p>
+      <strong>Alloted Wards</strong><p> {{ $streetlightTask->site->ward }}</p>
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Mukhiya Contact:</strong> <p>{{ $streetlightTask->site->mukhiya_contact }}</p>
+      <strong>Mukhiya Contact</strong> <p>{{ $streetlightTask->site->mukhiya_contact }}</p>
     </div>
-    <!-- <div class="col-md-4 mb-3">
-      <strong>Surveyed Poles:</strong><p> {{ $streetlightTask->site->number_of_surveyed_poles }}</p>
+     <div class="col-md-4 mb-3">
+      <strong>Surveyed Poles</strong><p> {{ $streetlightTask->site->number_of_surveyed_poles }}</p>
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Installed Poles:</strong><p> {{ $streetlightTask->site->number_of_installed_poles }}</p>
-    </div> -->
+      <strong>Installed Poles</strong><p> {{ $streetlightTask->site->number_of_installed_poles }}</p>
+    </div>
     <div class="col-md-4 mb-3">
-      <strong>Total Poles:</strong><p> {{ $streetlightTask->site->total_poles }}</p>
+      <strong>Total Poles</strong><p> {{ $streetlightTask->site->total_poles }}</p>
     </div>
   </div>
 </div>
@@ -47,7 +84,9 @@
         <div class="row">
 
 <!-- Manager Card -->
+
 <div class="col-md-4 mb-4">
+<a href="{{ route('staff.show', $streetlightTask->manager->id) }}">
   <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
     <img src="{{ $streetlightTask->manager->image }}" alt="{{ $streetlightTask->manager->firstName }}" class="rounded-circle" width="60" height="60">
     <div class="ms-3">
@@ -55,10 +94,12 @@
       <small class="text-muted">Manager</small>
     </div>
   </div>
+  </a>
 </div>
 
 <!-- Vendor Card -->
 <div class="col-md-4 mb-4">
+<a href="{{ route('staff.show', $streetlightTask->vendor->id) }}">
   <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
     <img src="{{ $vendor->image }}" alt="{{ $vendor->name }}" class="rounded-circle" width="60" height="60">
     <div class="ms-3">
@@ -66,10 +107,12 @@
       <small class="text-muted">Vendor</small>
     </div>
   </div>
+</a>
 </div>
 
 <!-- Engineer Card -->
 <div class="col-md-4 mb-4">
+<a href="{{ route('staff.show', $streetlightTask->engineer->id) }}">
   <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
     <img src="{{ $streetlightTask->engineer->image }}" alt="{{ $streetlightTask->engineer->firstName }}" class="rounded-circle" width="60" height="60">
     <div class="ms-3">
@@ -77,40 +120,38 @@
       <small class="text-muted">Engineer</small>
     </div>
   </div>
+  </a>
 </div>
 
 </div>
 
-  <!-- Tablist -->
-  <div class="container mt-4">
+<div class="tab-content mt-1" id="poleTabsContent">
   <!-- Nav Tabs -->
-  <div class="d-flex overflow-auto mb-3">
-    <ul class="nav nav-tabs flex-nowrap" id="poleTabs" role="tablist">
-      <li class="nav-item" role="presentation">
-        <button class="nav-link active" id="installed-tab" data-bs-toggle="tab" data-bs-target="#installed" type="button" role="tab" aria-controls="installed" aria-selected="true">
-          Installed Poles
-        </button>
-      </li>
-      <li class="nav-item" role="presentation">
-        <button class="nav-link" id="surveyed-tab" data-bs-toggle="tab" data-bs-target="#surveyed" type="button" role="tab" aria-controls="surveyed" aria-selected="false">
-          Surveyed Poles
-        </button>
-      </li>
-    </ul>
-  </div>
+  <ul class="nav nav-tabs fixed-navbar-project" id="poleTabs" role="tablist">
+    <li class="nav-item" role="presentation">
+      <button class="nav-link active" id="installed-tab" data-bs-toggle="tab" data-bs-target="#installed" type="button"
+        role="tab" aria-controls="installed" aria-selected="true">
+        Installed Poles
+      </button>
+    </li>
+    <li class="nav-item" role="presentation">
+      <button class="nav-link" id="surveyed-tab" data-bs-toggle="tab" data-bs-target="#surveyed" type="button"
+        role="tab" aria-controls="surveyed" aria-selected="false">
+        Surveyed Poles
+      </button>
+    </li>
+  </ul>
 
   <!-- Tab Content -->
-  <div class="tab-content p-3 border border-top-0" id="poleTabsContent">
-    <div class="tab-pane fade show active" id="installed" role="tabpanel" aria-labelledby="installed-tab">
-      @if(request()->get('project_type') == 1)
-        @includeIf('staff.installedPoles')
-      @endif
-    </div>
-    <div class="tab-pane fade" id="surveyed" role="tabpanel" aria-labelledby="surveyed-tab">
-      @if(request()->get('project_type') == 1)
-        @includeIf('staff.surveyedPoles')
-      @endif
-    </div>
+  <div class="tab-pane fade show active" id="installed" role="tabpanel" aria-labelledby="installed-tab">
+    @if(request()->get('project_type') == 1)
+      @includeIf('staff.installedPoles')
+    @endif
+  </div>
+  <div class="tab-pane fade" id="surveyed" role="tabpanel" aria-labelledby="surveyed-tab">
+    @if(request()->get('project_type') == 1)
+      @includeIf('staff.surveyedPoles')
+    @endif
   </div>
 </div>
 
@@ -122,6 +163,11 @@
 
 @push("styles")
 <style>
+
+        a {
+          text-decoration: none;
+          color:black;
+        }
         .container {
             background-color: white;
             border-radius: 8px;

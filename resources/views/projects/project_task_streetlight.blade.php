@@ -16,7 +16,7 @@
       <div class="card bg-info mx-2" style="min-width: 33%;">
         <div class="card-body">
           <h5 class="card-title">{{ $totalInstalledPoles ?? 0 }}</h5>
-          <p class="card-text">Installed Poles</p>
+          <p class="card-text">Installed Lights</p>
         </div>
       </div>
     </div>
@@ -153,6 +153,15 @@
 
 @push("scripts")
   <script>
+    function confirmDelete() {
+        const confirmed = confirm("Are you sure you want to delete this task?");
+        if (confirmed) {
+            setTimeout(() => {
+                alert("Task deleted successfully.");
+            }, 100); // Show after delete is sent
+        }
+        return confirmed;
+    }
     $(document).ready(function() {
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
@@ -198,6 +207,7 @@
             type: 'GET',
             dataType: 'json',
             success: function(data) {
+              console.log(data);
               $.each(data, function(index, panchayat) {
                 $('#panchayatSearch').append('<option value="' + panchayat + '">' + panchayat +
                   '</option>');
