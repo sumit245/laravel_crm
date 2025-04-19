@@ -22,6 +22,7 @@
           <div class="col-md-4">
             <h6><strong>Assigned To (Vendor):</strong></h6>
             <p>{{ $vendor->name }}</p>
+            <!--  -->
           </div>
         </div>
         <div class="row mb-3">

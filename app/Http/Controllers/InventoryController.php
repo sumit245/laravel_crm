@@ -15,6 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use PhpParser\Node\Stmt\TryCatch;
 
 class InventoryController extends Controller
 {
@@ -27,7 +28,7 @@ class InventoryController extends Controller
         // $inventory = Inventory::all();
         $projectId = $request->query('project_id');
         $storeId = $request->query('store_id');
-    
+
         // If filtering values are provided, filter the data
         if ($projectId && $storeId) {
             $inventory = InventroyStreetLightModel::where('project_id', $projectId)
@@ -37,8 +38,8 @@ class InventoryController extends Controller
             // Otherwise return all entries
             $inventory = InventroyStreetLightModel::all();
         }
-    
-        
+
+
         return view('inventory.index', compact('inventory'));
     }
 
@@ -49,12 +50,10 @@ class InventoryController extends Controller
         ]);
         $projectId = $request->projectId;
         $storeId   = $request->storeId;
-        Log::info($storeId);
         try {
             Excel::import(new InventoryImport($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
         } catch (\Exception $e) {
-            //    return alert('Error importing inventory: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -66,7 +65,6 @@ class InventoryController extends Controller
         ]);
         $projectId = $request->projectId;
         $storeId   = $request->storeId;
-        Log::info($storeId);
         try {
             Excel::import(new InventroyStreetLight($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
@@ -93,86 +91,83 @@ class InventoryController extends Controller
     {
         $projectType = $request->project_type;
 
-        
-        if($projectType==1){
-        // Validation for Street Light inventory (project_type == 1)
-        $validated = $request->validate([
-            'dropdown'      => 'required|string|max:255', // item name
-            'code'          => 'required|string|max:255', // item code
-            'manufacturer'  => 'required|string|max:255',
-            'model'         => 'required|string|max:255',
-            'serialnumber'  => 'required|string|max:255',
-            'make'          => 'required|string|max:255',
-            'rate'          => 'required|numeric',
-            'number'        => 'required|numeric', // quantity
-            'totalvalue'    => 'required|numeric',
-            'hsncode'       => 'required|string|max:255',
-            'description'   => 'nullable|string',
-            'unit'          => 'required|string|max:255',
-            'receiveddate'  => 'required|date',
-        ]);
 
-        try {
-            InventroyStreetLightModel::create([
-                'project_id'    => $request->input('project_id'),
-                'store_id'       => $request->input('store_id'),
-                'item'      => $validated['dropdown'],
-                'item_code'      => $validated['code'],
-                'manufacturer'   => $validated['manufacturer'],
-                'model'          => $validated['model'],
-                'serial_number'  => $validated['serialnumber'],
-                'make'           => $validated['make'],
-                'rate'           => $validated['rate'],
-                'quantity'       => $validated['number'],
-                'total_value'    => $validated['totalvalue'],
-                'hsn'       => $validated['hsncode'],
-                'description'    => $validated['description'],
-                'unit'           => $validated['unit'],
-                'received_date'  => $validated['receiveddate'],
+        if ($projectType == 1) {
+            // Validation for Street Light inventory (project_type == 1)
+            $validated = $request->validate([
+                'dropdown'      => 'required|string|max:255', // item name
+                'code'          => 'required|string|max:255', // item code
+                'manufacturer'  => 'required|string|max:255',
+                'model'         => 'required|string|max:255',
+                'serialnumber'  => 'required|string|max:255',
+                'make'          => 'required|string|max:255',
+                'rate'          => 'required|numeric',
+                'number'        => 'required|numeric', // quantity
+                'totalvalue'    => 'required|numeric',
+                'hsncode'       => 'required|string|max:255',
+                'description'   => 'nullable|string',
+                'unit'          => 'required|string|max:255',
+                'receiveddate'  => 'required|date',
             ]);
 
-            return redirect()->route('inventory.index', [
-                'project_id' => $request->input('project_id'),
-                'store_id' => $request->input('store_id'),
-            ])
-                ->with('success', 'Inventory (Street Light) added successfully.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => $e->getMessage()])
-                ->withInput();
+            try {
+                InventroyStreetLightModel::create([
+                    'project_id'    => $request->input('project_id'),
+                    'store_id'       => $request->input('store_id'),
+                    'item'      => $validated['dropdown'],
+                    'item_code'      => $validated['code'],
+                    'manufacturer'   => $validated['manufacturer'],
+                    'model'          => $validated['model'],
+                    'serial_number'  => $validated['serialnumber'],
+                    'make'           => $validated['make'],
+                    'rate'           => $validated['rate'],
+                    'quantity'       => $validated['number'],
+                    'total_value'    => $validated['totalvalue'],
+                    'hsn'       => $validated['hsncode'],
+                    'description'    => $validated['description'],
+                    'unit'           => $validated['unit'],
+                    'received_date'  => $validated['receiveddate'],
+                ]);
+
+                return redirect()->route('inventory.index', [
+                    'project_id' => $request->input('project_id'),
+                    'store_id' => $request->input('store_id'),
+                ])
+                    ->with('success', 'Inventory (Street Light) added successfully.');
+            } catch (\Exception $e) {
+                return redirect()->back()
+                    ->withErrors(['error' => $e->getMessage()])
+                    ->withInput();
+            }
+        } else {
+            $validated = $request->validate([
+                'productName'     => 'required|string|max:255',
+                'brand'           => 'nullable|string',
+                'description'     => 'nullable|string',
+                'initialQuantity' => 'required|string',
+                'quantityStock'   => 'nullable|string',
+                'unit'            => 'required|string|max:25',
+                'receivedDate'    => 'nullable|date',
+            ]);
+
+
+            try {
+
+                $inventory = Inventory::create($validated);
+
+                return redirect()->route('inventory.index')
+
+                    ->with('success', 'Inventory created successfully.');
+            } catch (\Exception $e) {
+                // Catch database or other errors
+                $errorMessage = $e->getMessage();
+
+                return redirect()->back()
+                    ->withErrors(['error' => $errorMessage])
+                    ->withInput();
+            }
         }
-    }else {
-        $validated = $request->validate([
-            'productName'     => 'required|string|max:255',
-            'brand'           => 'nullable|string',
-            'description'     => 'nullable|string',
-            'initialQuantity' => 'required|string',
-            'quantityStock'   => 'nullable|string',
-            'unit'            => 'required|string|max:25',
-            'receivedDate'    => 'nullable|date',
-        ]);
-    
-
-        try {
-
-            $inventory = Inventory::create($validated);
-
-            return redirect()->route('inventory.index')
-
-                ->with('success', 'Inventory created successfully.');
-        } catch (\Exception $e) {
-            // Catch database or other errors
-            $errorMessage = $e->getMessage();
-
-            return redirect()->back()
-                ->withErrors(['error' => $errorMessage])
-                ->withInput();
-        }
-
     }
-    
-    
-}
 
 
     /**
@@ -314,7 +309,6 @@ class InventoryController extends Controller
             $projectType = $project->project_type;
 
             // Determine the model to query based on project type
-            // Determine the model to query based on project type
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
 
@@ -323,10 +317,13 @@ class InventoryController extends Controller
                 ->where('store_id', $storeId) // Filter by store_id directly
                 ->get();
             // Dispatch Inventory
-            $dispatch = InventoryDispatch::where('isDispatched', true)->get();
+            $dispatch = InventoryDispatch::where('isDispatched', true)
+                ->where('store_id', $storeId)
+                ->get();
 
             // Battery Data
-            $totalBattery = $inventory->where('item_code', 'SL03')->count();
+            $totalBattery = $inventory->where('item_code', 'SL03')
+                ->count();
             $batteryRate = $inventory->where('item_code', 'SL03')
                 ->value('rate');
             $totalBatteryValue = $batteryRate * $totalBattery;
@@ -457,6 +454,7 @@ class InventoryController extends Controller
                     return redirect()->back()->with('error', "Item with serial number {$serialNumber} not found or already dispatched");
                 }
 
+
                 // Create dispatch record
                 $dispatch = InventoryDispatch::create([
                     'vendor_id' => $request->vendor_id,
@@ -468,21 +466,26 @@ class InventoryController extends Controller
                     'rate' => $request->rate,
                     'make' => $request->make,
                     'model' => $request->model,
-                    'total_quantity' => $request->total_quantity,
-                    'total_value' => $request->total_value,
+                    'total_quantity' => "1",
+                    'total_value' => $request->rate,
                     'serial_number' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
                     "isDispatched" => true
 
                 ]);
+                Log::info("Dispatching item");
+                Log::info($dispatch);
 
                 // Reduce stock from inventory
                 $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
             }
-
-            // Log dispatched items
-            Log::info('Dispatched Items:', $dispatchedItems);
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Inventory dispatched successfully'
+                ]);
+            }
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
         } catch (Exception $e) {
             Log::error($e->getMessage());
@@ -605,65 +608,31 @@ class InventoryController extends Controller
                 ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
                 ->where('quantity', '>', 0) // Ensure quantity is greater than 0
                 ->exists();
-            Log::info("Exists: " . $exists);
             return response()->json(['exists' => $exists]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
 
-    // TODO: Add the show dispatch inventory code here
+    // TODO: Streetlight show dispatch inventory code here
     public function showDispatchInventory(Request $request)
     {
-        $type = $request->type;
-        $total = Inventory::all();
-        $dispatch = InventoryDispatch::all();
-        $availableDispatch = InventoryDispatch::where('isDispatched', true)->get();
-        $batteryDispatch = $dispatch->where('item_code', 'SL03');
-        $structureDispatch = $dispatch->where('item_code', 'SL04');
-        $moduleDispatch = $dispatch->where('item_code', 'SL01');
-        $LuminaryDispatch = $dispatch->where('item_code', 'SL02');
-
-        if ($type == 'battery') {
-            $specificDispatch = $batteryDispatch;
-            $title = 'Battery';
-
-            $totalBattery = $total->where('item_code', 'SL03')->count();
-            $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
-            $availableBattery = $totalBattery - $batteryDispatch;
-
-            return view('inventory.dispatchedStock', compact('specificDispatch', 'availableBattery', 'title'));
-        } else if ($type == 'luminary') {
-            $specificDispatch = $LuminaryDispatch;
-            $title = 'Luminary';
-
-            $totalLuminary = $total->where('item_code', 'SL02')->count();
-            $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
-            $availableLuminary = $totalLuminary - $luminaryDispatch;
-
-            return view('inventory.dispatchedStock', compact('specificDispatch', 'title', 'availableLuminary'));
-        } else if ($type == 'structure') {
-            $specificDispatch = $structureDispatch;
-            $title = 'Structure';
-
-            $totalStructure = $total->where('item_code', 'SL04')->count();
-            $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
-            $availableStructure = $totalStructure - $structureDispatch;
-
-            return view('inventory.dispatchedStock', compact('specificDispatch', 'title', 'availableStructure'));
-        } else if ($type == 'module') {
-            $specificDispatch = $moduleDispatch;
-            $title = 'Module';
-
-            $totalModule = $total->where('item_code', 'SL01')->count();
-            $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
-            $availableModule = $totalModule - $moduleDispatch;
-
-            return view('inventory.dispatchedStock', compact('specificDispatch', 'title'));
+        $itemCode = $request->item_code;
+        $storeid = $request->store_id;
+        try {
+            //code...
+            $item = InventroyStreetLightModel::where('item_code', $itemCode)
+                ->where('store_id', $storeid)
+                ->get();
+            $specificDispatch = InventoryDispatch::where('item_code', $itemCode)
+                ->where('store_id', $storeid)->get();
+            $availableQuantity = 0;
+            $title = $itemCode;
+            // print_r($dispatchedItem->toArray());
+            return view('inventory.dispatchedStock', compact('specificDispatch', 'availableQuantity', 'title'));
+        } catch (\Exception $e) {
+            //throw $th;
+            echo ($e->getMessage());
         }
-
-        return view('inventory.dispatchedStock', compact(
-            'dispatch'
-        ));
     }
 }

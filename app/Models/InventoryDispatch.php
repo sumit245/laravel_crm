@@ -58,6 +58,6 @@ class InventoryDispatch extends Model
     }
     public function streetlightPole()
     {
-        return $this->belongsTo(Pole::class, 'id');
+        return $this->belongsTo(Pole::class, 'streetlight_pole_id', 'id');
     }
 }

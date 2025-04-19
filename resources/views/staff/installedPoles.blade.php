@@ -17,13 +17,16 @@
   <tbody>
     @foreach ($installedPoles as $survey)
       <tr>
+      <td>
+    <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />
+  </td>
         <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
         <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
         <td>{{ $survey->sim_number ?? "N/A" }}</td>
         <td>{{ $survey->battery_qr ?? "N/A" }}</td>
         <td>{{ $survey->module_qr ?? "N/A" }}</td>
-        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;"></td>
-            <span class="text-primary">View Location</span>
+        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+            <span class="text-primary">View Location</span> </td>
             <td>{{ $survey->rms_status ?? "N/A" }}</td>
         <td>
           <!-- View Button -->
