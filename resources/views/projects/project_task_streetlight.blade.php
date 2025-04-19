@@ -171,9 +171,12 @@
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
         allowClear: true,
-        dropdownParent: $('#addTargetModal')
+        // dropdownParent: $('#addTargetModal')
+        
       });
-      // Fetch Blocks Based on Selected District
+
+      
+      //       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
         let district = $(this).val();
         $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
@@ -260,6 +263,14 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
+    .select2-container--open .select2-dropdown--below {
+    top: 100% !important;
+    bottom: auto !important;
+  }
+  .select2-dropdown {
+    z-index: 9999 !important;
+  }
   </style>
 @endpush
 

@@ -196,7 +196,7 @@ class StaffController extends Controller
         $staff = User::findOrFail($id);
         $projects = Project::all();
             
-        return view('staff.edit', compact('staff', 'projects')); // Form to edit staff
+        return view('staff.edit', compact('staff')); // Form to edit staff
     }
 
     /**
