@@ -22,84 +22,92 @@
       </tr>
     </x-slot:thead>
     <x-slot:tbody>
-      @if (isset($specificDispatch))
-        @foreach ($specificDispatch as $item)
-          <tr>
-            <td><input type="checkbox" class="select-item" /></td>
-            <td>{{ $item->item_code }}-{{ $item->item }}</td>
-            <td>{{ $item->serial_number ?? "NA" }}</td>
-            {{-- <td>{{ $availableBattery ?? "N/A" }}</td> --}}
-            <td>₹{{ $item->total_value ?? "N/A" }}</td>
-            <td>{{ $item->vendor->name ?? "N/A" }}</td>
-            <td>
-              @if ($item->is_consumed && $item->streetlightPole)
-                <a href="{{ route("poles.show", $item->streetlightPole->id) }}">
-                  {{ $item->streetlightPole->complete_pole_number }}
+        @if(isset($specificDispatch))
+            @foreach($specificDispatch as $item)
+            <tr>
+                <td><input type="checkbox" class="select-item" /></td>
+                <td>{{ $item->item_code }}</td>
+                <td>
+                    {{ $item->item }}
+                </td>
+                <td>{{ $item->total_quantity ?? 'NA' }}</td>
+                <td>{{ $availableBattery ?? 'N/A' }}</td>
+                <td>₹{{ $item->total_value ?? 'N/A' }}</td>
+                <td>{{ $item->vendor->name ?? 'N/A' }}</td>
+                <td>
+                    <a href="#" class="btn btn-info btn-sm item-details" data-bs-toggle="modal" data-bs-target="#detailsModal" 
+                       data-item-code="{{ $item->item_code }}"
+                       data-item-name="{{ $item->item_name ?? '' }}"
+                       data-manufacturer="{{ $item->manufacturer ?? '' }}"
+                       data-serial-number="{{ $item->serial_number ?? '' }}"
+                       data-model="{{ $item->model ?? '' }}"
+                       data-quantity="{{ $item->quantity }}"
+                       data-vendor="{{ $item->vendor->name ?? '' }}"
+                       data-status="{{ $item->status ?? '' }}"
+                       data-total="{{ $item->total ?? '' }}"
+                       data-date="{{ $item->created_at ? date('d F Y', strtotime($item->created_at)) : 'N/A' }}"
+                       data-site="{{ $item->project->name ?? 'N/A' }}">
+                        <i class="mdi mdi-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            @endforeach
+        @elseif(isset($dispatch))
+            @foreach($dispatch as $item)
+            <tr>
+                <td><input type="checkbox" class="select-item" /></td>
+                <td>{{ $item->item_code }}</td>
+                <td>
+                    @if($item->item_code == 'SL01')
+                        Module
+                    @elseif($item->item_code == 'SL02')
+                        Luminary
+                    @elseif($item->item_code == 'SL03')
+                        Battery
+                    @elseif($item->item_code == 'SL04')
+                        Structure
+                    @else
+                        Unknown
+                    @endif
+                </td>
+                <td>{{ $item->quantity }}</td>
+                <td>{{ $item->available_quantity ?? 'N/A' }}</td>
+                <td>₹{{ $item->value ?? 'N/A' }}</td>
+                <td>{{ $item->vendor ?? 'N/A' }}</td>
+                <td>
+                    <a href="#" class="btn btn-info btn-sm item-details" data-bs-toggle="modal" data-bs-target="#detailsModal" 
+                       data-item-code="{{ $item->item_code }}"
+                       data-item-name="{{ $item->item_name ?? '' }}"
+                       data-manufacturer="{{ $item->manufacturer ?? '' }}"
+                       data-serial-number="{{ $item->serial_number ?? '' }}"
+                       data-model="{{ $item->model ?? '' }}"
+                       data-quantity="{{ $item->quantity }}"
+                       data-vendor="{{ $item->vendor ?? '' }}"
+                       data-status="{{ $item->status ?? '' }}"
+                       data-total="{{ $item->total ?? '' }}"
+                       data-date="{{ $item->created_at ? date('d F Y', strtotime($item->created_at)) : 'N/A' }}"
+                       data-site="{{ $item->project->name ?? 'N/A' }}">
+                        <i class="mdi mdi-eye"></i>
+                    </a>
+                </td>
+            </tr>
+            @endforeach
+        @else
+            <tr>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal">
+                    <i class="mdi mdi-eye"></i>
                 </a>
-              @else
-              @php
-                $daysInCustody = \Carbon\Carbon::parse($item->dispatch_date)->diffInDays(\Carbon\Carbon::now());
-              @endphp
-                In Vendor Custody
-              <span style="color: {{ $daysInCustody > 5 ? 'red' : 'inherit' }}">
-                ({{ $daysInCustody }} days)
-              </span>
-            @endif
-            </td>
-          </tr>
-        @endforeach
-      @elseif(isset($dispatch))
-        @foreach ($dispatch as $item)
-          <tr>
-            <td><input type="checkbox" class="select-item" /></td>
-            <td>{{ $item->item_code }}</td>
-            <td>
-              @if ($item->item_code == "SL01")
-                Module
-              @elseif($item->item_code == "SL02")
-                Luminary
-              @elseif($item->item_code == "SL03")
-                Battery
-              @elseif($item->item_code == "SL04")
-                Structure
-              @else
-                Unknown
-              @endif
-            </td>
-            <td>{{ $item->quantity }}</td>
-            <td>{{ $item->available_quantity ?? "N/A" }}</td>
-            <td>₹{{ $item->value ?? "N/A" }}</td>
-            <td>{{ $item->vendor ?? "N/A" }}</td>
-            <td>
-              <a href="#" class="btn btn-info btn-sm item-details" data-bs-toggle="modal"
-                data-bs-target="#detailsModal" data-item-code="{{ $item->item_code }}"
-                data-item-name="{{ $item->item_name ?? "" }}" data-manufacturer="{{ $item->manufacturer ?? "" }}"
-                data-serial-number="{{ $item->serial_number ?? "" }}" data-model="{{ $item->model ?? "" }}"
-                data-quantity="{{ $item->quantity }}" data-vendor="{{ $item->vendor ?? "" }}"
-                data-status="{{ $item->status ?? "" }}" data-total="{{ $item->total ?? "" }}"
-                data-date="{{ $item->created_at ? date("d F Y", strtotime($item->created_at)) : "N/A" }}"
-                data-site="{{ $item->project->name ?? "N/A" }}">
-                <i class="mdi mdi-eye"></i>
-              </a>
-            </td>
-          </tr>
-        @endforeach
-      @else
-        <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td>
-            <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal">
-              <i class="mdi mdi-eye"></i>
-            </a>
-          </td>
-        </tr>
-      @endif
+                </td>
+            </tr>
+        @endif
     </x-slot:tbody>
   </x-data-table>
 

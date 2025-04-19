@@ -8,7 +8,10 @@
         <button type="button" class="close" data-bs-dismiss="modal" aria-label="Close">
           <span aria-hidden="true">&times;</span>
         </button>
+          <span aria-hidden="true">&times;</span>
+        </button>
       </div>
+      <form id="dispatchForm">
       <form id="dispatchForm">
         @csrf
         <input type="hidden" id="dispatchStoreId" name="store_id">
@@ -51,6 +54,7 @@
                       </option>
                     @endforeach
                   </select>
+                  <input type="hidden" name="item" id="item_namesss">
                   <input type="hidden" name="item" id="item_namesss">
                   <input type="hidden" name="rate" id="item_rate">
                   <input type="hidden" name="make" id="item_make">
@@ -101,6 +105,7 @@
     const addMoreItemsButton = document.getElementById('addMoreItems');
     let availableQuantity = 0;
     let scannedQRs = [];
+    let loadingIssue = false
     let loadingIssue = false
 
     // Add New Item Row
@@ -161,7 +166,67 @@
         let scannedCode = this.value.trim();
 
         this.value = ''; // Clear input for next scan
+    // TODO: Modify with keyup listener so that form doesnot submit on scan
+    qrScanner.addEventListener('keyup', function(event) {
+      if (event.key === 'Enter' && this.value.trim() !== '') {
+        let scannedCode = this.value.trim();
 
+        this.value = ''; // Clear input for next scan
+
+        if (scannedQRs.includes(scannedCode)) {
+          showError('QR code already scanned!', 'qr_error');
+          return;
+        }
+        // Find the item-row that contains this QR scanner
+        const currentRow = this.closest('.item-row');
+        if (!currentRow) {
+          showError('Cannot determine which item row this scanner belongs to!', 'qr_error');
+          return;
+        }
+        // Get the selected item ID
+        const selectedItemCode = document.querySelector('.item-select').value;
+        if (!selectedItemCode) {
+          showError('Please select an item first before scanning QR codes!', 'qr_error');
+          return;
+        }
+        if (selectedItemCode === "SL02") {
+          scannedCode = scannedCode.split(';')[0]
+        }
+
+        const storeId = document.getElementById('dispatchStoreId').value; // Get store_id from hidden input
+        // Check if QR exists in database via AJAX
+        fetch('{{ route("inventory.checkQR") }}', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+              qr_code: scannedCode,
+              store_id: storeId,
+              item_code: selectedItemCode
+            })
+          })
+          .then(response => response.json())
+          .then(data => {
+            if (data.exists) {
+              scannedQRs.push(scannedCode);
+              updateScannedQRs();
+              // Add hidden input for the serial number
+              addSerialNumberInput(scannedCode);
+              updateQuantityAndTotal();
+              clearError();
+            } else {
+              showError('Invalid QR code! Item not found in inventory.', 'qr_error');
+            }
+          })
+          .catch(() => showError('Error checking QR code!', 'qr_error'));
+      }
+    });
+
+    // Show error message
+    function showError(message, context) {
+      const errorElement = document.getElementById(context);
         if (scannedQRs.includes(scannedCode)) {
           showError('QR code already scanned!', 'qr_error');
           return;
@@ -251,10 +316,15 @@
         // Update hidden fields with item details
         console.log(document.querySelectorAll('#item_namesss').length);
         document.getElementById('item_namesss').value = selectedOption.dataset.item || '';
+        console.log(document.querySelectorAll('#item_namesss').length);
+        document.getElementById('item_namesss').value = selectedOption.dataset.item || '';
         document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
         document.getElementById('item_make').value = selectedOption.dataset.make || '';
         document.getElementById('item_model').value = selectedOption.dataset.model || '';
         // Clear scanned QRs when item changes
+        const form = document.getElementById('dispatchForm');
+        console.log(form)
+
         const form = document.getElementById('dispatchForm');
         console.log(form)
 
@@ -266,6 +336,37 @@
 
     // Update scanned QR list
     function updateScannedQRs() {
+      const list = document.getElementById('scanned_qrs');
+      if (!list) return;
+
+      list.innerHTML = ''; // Clear the list
+
+      scannedQRs.forEach((qr, index) => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item';
+
+        // Create a wrapper div to separate text and delete button
+        const wrapper = document.createElement('div');
+        wrapper.className = 'd-flex justify-content-between align-items-center';
+
+        const qrText = document.createElement('span');
+        qrText.textContent = qr;
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.type = 'button';
+        deleteBtn.className = 'btn btn-sm btn-danger';
+        deleteBtn.innerHTML = '&times;';
+        deleteBtn.onclick = (e) => {
+          e.preventDefault();
+          scannedQRs.splice(index, 1); // Remove QR from array
+          updateScannedQRs(); // Refresh UI
+        };
+
+        wrapper.appendChild(qrText);
+        wrapper.appendChild(deleteBtn);
+        li.appendChild(wrapper);
+        list.appendChild(li);
+      });
       const list = document.getElementById('scanned_qrs');
       if (!list) return;
 
@@ -405,7 +506,59 @@
                 `).join('')}
               </tbody>
             </table>
+        <html>
+          <head>
+            <title>Dispatch Report</title>
+            <style>
+              body { font-family: Arial; margin: 20px; }
+              .header { text-align: center; margin-bottom: 30px; }
+              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+              th { background-color: #f5f5f5; }
+              .serial-list { max-width: 300px; word-break: break-all; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>Inventory Dispatch Report</h2>
+              <p><strong>Vendor:</strong> ${vendorName}</p>
+              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+            </div>
+            
+            <table>
+              <thead>
+                <tr>
+                  <th>Item Code</th>
+                  <th>Item Name</th>
+                  <th>Quantity</th>
+                  <th>Rate</th>
+                  <th>Make/Model</th>
+                  <th>Serial Numbers</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${itemsData.map(item => `
+                  <tr>
+                    <td>${item.code}</td>
+                    <td>${item.name}</td>
+                    <td>${item.quantity}</td>
+                    <td>₹${item.rate}</td>
+                    <td>${item.make} ${item.model}</td>
+                    <td class="serial-list">${item.serials.join(', ')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
 
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(() => window.close(), 500);
+              }
+            <\/script>
+          </body>
+        </html>
+      `);
             <script>
               window.onload = function() {
                 window.print();
@@ -484,6 +637,72 @@
     });
 
     // Sweet alert success popup
+    document.getElementById('issueMaterial').addEventListener('click', function(e) {
+      e.preventDefault();
+      loadingIssue = true
+      const button = this;
+      const originalText = button.innerHTML;
+      button.disabled = true;
+      button.innerHTML = `
+      <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+      Processing...
+      `;
+      const form = document.getElementById('dispatchForm');
+      console.log(form)
+      const formData = new FormData(form);
+
+      fetch("{{ route("inventory.dispatchweb") }}", {
+          method: "POST",
+          headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'X-Requested-With': 'XMLHttpRequest',
+          },
+          body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+          loadingIssue = false;
+          button.disabled = false;
+          button.innerHTML = originalText;
+          if (data.status === 'success') {
+            Swal.fire({
+              title: 'Success!',
+              text: data.message,
+              icon: 'success',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              form.reset();
+              location.reload()
+            });
+          } else {
+            Swal.fire({
+              title: 'Error!',
+              text: data.message,
+              icon: 'error',
+              confirmButtonText: 'OK'
+            }).then(() => {
+              loadingIssue = false;
+              button.disabled = false;
+              button.innerHTML = originalText;
+            });
+          }
+        })
+        .catch(error => {
+          console.error(error);
+          Swal.fire({
+            title: 'Error!',
+            text: 'Something went wrong. Please try again.',
+            icon: 'error',
+            confirmButtonText: 'OK'
+          }).then(() => {
+            loadingIssue = false;
+            button.disabled = false;
+            button.innerHTML = originalText;
+          });;
+        });
+    });
+
+    // Sweet alert success popup
     @if (session("success"))
       Swal.fire({
         title: 'Success!',
@@ -491,7 +710,9 @@
         icon: 'success',
         confirmButtonText: 'OK'
 
+
       });
+    @elseif (session("error"))
     @elseif (session("error"))
       Swal.fire({
         title: 'Error!',
