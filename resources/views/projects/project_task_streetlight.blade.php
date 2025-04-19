@@ -153,13 +153,24 @@
 
 @push("scripts")
   <script>
+    function confirmDelete() {
+        const confirmed = confirm("Are you sure you want to delete this task?");
+        if (confirmed) {
+            setTimeout(() => {
+                alert("Task deleted successfully.");
+            }, 100); // Show after delete is sent
+        }
+        return confirmed;
+    }
     $(document).ready(function() {
-      // $('#panchayatSearch').select2({
-      //   placeholder: "Select a Panchayat",
-      //   allowClear: true,
-      //   dropdownParent: $('#addTargetModal')
+      $('#panchayatSearch').select2({
+        placeholder: "Select a Panchayat",
+        allowClear: true,
+        // dropdownParent: $('#addTargetModal')
         
-      // });
+      });
+
+      
       //       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
         let district = $(this).val();
@@ -199,6 +210,7 @@
             type: 'GET',
             dataType: 'json',
             success: function(data) {
+              console.log(data);
               $.each(data, function(index, panchayat) {
                 $('#panchayatSearch').append('<option value="' + panchayat + '">' + panchayat +
                   '</option>');
@@ -224,5 +236,13 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
+    .select2-container--open .select2-dropdown--below {
+    top: 100% !important;
+    bottom: auto !important;
+  }
+  .select2-dropdown {
+    z-index: 9999 !important;
+  }
   </style>
 @endpush

@@ -58,6 +58,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/convenience', function () {
         return view('billing.convenience');
     })->name('billing.convenience');
+        //Convenience Details
+    Route::get('/convenience-details', function () {
+        return view('convenienceDetails');
+    })->name('convenience.details');
 
 
 
@@ -84,6 +88,12 @@ Route::middleware(['auth'])->group(function () {
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
+    
+    // Projects Controller
+    // Deleting target
+    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
+
+
 
     // Route for Surveyed Poles
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');

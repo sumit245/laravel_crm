@@ -48,6 +48,7 @@
         <div class="mt-3">
           <button type="submit" class="btn btn-primary">Generate JICR</button>
         </div>
+        
     </div>
     </form>
     @if (!empty($showReport) && isset($data))
