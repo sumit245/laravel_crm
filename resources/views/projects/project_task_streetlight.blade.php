@@ -154,12 +154,13 @@
 @push("scripts")
   <script>
     $(document).ready(function() {
-      $('#panchayatSearch').select2({
-        placeholder: "Select a Panchayat",
-        allowClear: true,
-        dropdownParent: $('#addTargetModal')
-      });
-      // Fetch Blocks Based on Selected District
+      // $('#panchayatSearch').select2({
+      //   placeholder: "Select a Panchayat",
+      //   allowClear: true,
+      //   dropdownParent: $('#addTargetModal')
+        
+      // });
+      //       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
         let district = $(this).val();
         $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
