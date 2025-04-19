@@ -96,18 +96,21 @@
           @endif
 
           <td>
-            <a href="{{ route("sites.show", $site->id) }}" class="btn btn-info btn-icon" data-toggle="tooltip"
+            <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon" data-toggle="tooltip"
               title="View Details">
               <i class="mdi mdi-eye"></i>
             </a>
-            <a href="{{ route("sites.edit", $site->id) }}" class="btn btn-warning btn-icon" data-toggle="tooltip"
+            <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon" data-toggle="tooltip"
               title="Edit Site">
               <i class="mdi mdi-pencil"></i>
             </a>
-            <button class="btn btn-danger btn-icon delete-site" data-id="{{ $site->id }}"
-              data-name="{{ $site->site_name }}">
-              <i class="mdi mdi-delete"></i>
-            </button>
+            <form action="{{ route('sites.destroy', $site->id) }}?project_id={{ $project->id }}" method="POST" style="display:inline;">
+              @csrf
+              @method('DELETE')
+              <button type="submit" class="btn btn-danger btn-icon" data-toggle="tooltip" title="Delete Site">
+                <i class="mdi mdi-delete"></i>
+              </button>
+            </form>
 
           </td>
         </tr>

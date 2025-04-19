@@ -8,6 +8,7 @@ use App\Models\City;
 use App\Models\Project;
 use App\Models\Site;
 use App\Models\State;
+use App\Models\Streetlight;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -97,13 +98,25 @@ class SiteController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show(string $id, Request $request)
     {
-        $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
-        $states    = State::all();
-        $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
-        $projects  = Project::all();
-        $users     = User::all(); // For vendor and engineer names
+        // dd('Show method hit');
+        $projectId = $request->query('project_id');
+        // \Log::info('Showing site with ID: ' . $projectId);
+        // \Log::info('Showing site with ID: ' . $id);
+        if($projectId==11){
+            $streetlight = Streetlight::findOrFail($id);
+            $states = $streetlight->state;
+            $districts = $streetlight->district;
+            
+            return view('sites.show', compact('streetlight', 'states', 'districts', 'projectId'));
+
+        }
+            $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
+            $states    = State::all();
+            $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
+            $projects  = Project::all();
+            $users     = User::all(); // For vendor and engineer names
 
         return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users'));
     }
@@ -138,46 +151,127 @@ class SiteController extends Controller
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(string $id)
+    public function edit(string $id, Request $request)
     {
         //
+        $projectId = $request->query('project_id');
+        if($projectId==11){
+            $streetlight = Streetlight::findOrFail($id);
+            return view('sites.edit', compact('streetlight', 'projectId'));
+        }
+
         $site = Site::findOrFail($id);
         return view('sites.edit', compact('site'));
     }
 
+    public function update(Request $request, string $id)
+{
+    try {
+        // If project_id == 11, use Streetlight instead
+        if ($request->project_id == 11) {
+            $streetlight = Streetlight::findOrFail($id);
+
+            // Update only specific fields relevant to the Streetlight model
+            $streetlight->update($request->only([
+                'task_id',
+                'state',
+                'district',
+                'block',
+                'panchayat',
+                'ward',
+                'mukhiya_contact'
+            ]));
+
+            return redirect()->back()
+                ->with('success', 'Streetlight site updated successfully.');
+        } else {
+            // Normal Site model update
+            $site = Site::findOrFail($id);
+            $site->update($request->only([
+                'task_id',
+                'state',
+                'district',
+                'block',
+                'panchayat',
+                'ward',
+                'mukhiya_contact',
+                // Include any other columns you allow updating
+            ]));
+
+            return redirect()->route('sites.show', $site->id)
+                ->with('success', 'Site updated successfully.');
+        }
+
+    } catch (\Exception $e) {
+        $errorMessage = $e->getMessage();
+
+        return redirect()->back()
+            ->withErrors(['error' => $errorMessage])
+            ->withInput();
+    }
+}
+
+
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        //
-        try {
-            $site = Site::findOrFail($id);
-            $site->update($request->all());
-            return redirect()->route('sites.show', $site->id)
-                ->with('success', 'Site created successfully.');
-        } catch (\Exception $e) {
-            $errorMessage = $e->getMessage();
+    // public function update(Request $request, string $id)
+    // {
+    //     //
+    //     try {
+    //         $site = Site::findOrFail($id);
+    //         $site->update($request->all());
+    //         return redirect()->route('sites.show', $site->id)
+    //             ->with('success', 'Site created successfully.');
+    //     } catch (\Exception $e) {
+    //         $errorMessage = $e->getMessage();
 
+    //         return redirect()->back()
+    //             ->withErrors(['error' => $errorMessage])
+    //             ->withInput();
+    //     }
+    // }
+
+
+    public function destroy(string $id, Request $request)
+{
+    // \Log::info('Request received for delete site with id: ' . $id);
+    try {
+        // Check if project_id is 11 (from the site record)
+        
+
+        if ($request->project_id == 11) {
+            // Delete from streetlights table instead
+            $streetlight = Streetlight::findOrFail($id); // assumes same id is used
+            $streetlight->delete();
             return redirect()->back()
-                ->withErrors(['error' => $errorMessage])
-                ->withInput();
+            ->with('success', 'Streetlight site deleted successfully.');
+        } else {
+            $site = Site::findOrFail($id);
+            // Default delete from sites table
+            $site->delete();
+            return response()->json(['message' => 'Site deleted']);
         }
+
+    } catch (\Exception $e) {
+        return response()->json(['message' => $e->getMessage()], 500);
     }
+}
+
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(string $id)
-    {
-        //
-        //
-        try {
-            $site = Site::findOrFail($id);
-            $site->delete();
-            return response()->json(['message' => 'Site deleted']);
-        } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()]);
-        }
-    }
+    // public function destroy(string $id)
+    // {
+    //     //
+    //     //
+    //     try {
+    //         $site = Site::findOrFail($id);
+    //         $site->delete();
+    //         return response()->json(['message' => 'Site deleted']);
+    //     } catch (\Exception $e) {
+    //         return response()->json(['message' => $e->getMessage()]);
+    //     }
+    // }
 }
