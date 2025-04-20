@@ -61,7 +61,7 @@
             <!-- Panchayat Search (Dependent on Block) -->
             <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
-              <select id="panchayatSearch" name="sites[]" class="form-select" style="width: 100%;">
+              <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select" style="width: 100%;">
                 <option value="">Select a Panchayat</option>
               </select>
             </div>
@@ -154,19 +154,39 @@
 @push("scripts")
   <script>
     function confirmDelete() {
-        const confirmed = confirm("Are you sure you want to delete this task?");
-        if (confirmed) {
-            setTimeout(() => {
-                alert("Task deleted successfully.");
-            }, 100); // Show after delete is sent
-        }
-        return confirmed;
+      const confirmed = confirm("Are you sure you want to delete this task?");
+      if (confirmed) {
+        setTimeout(() => {
+          alert("Task deleted successfully.");
+        }, 100); // Show after delete is sent
+      }
+      return confirmed;
     }
     $(document).ready(function() {
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
         allowClear: true,
-        dropdownParent: $('#addTargetModal')
+        dropdownParent: $('#addTargetModal'),
+        ajax: {
+          url: "{{ route("streetlights.search") }}", // Laravel route
+          dataType: 'json',
+          method: "GET",
+          delay: 250,
+          data: function(params) {
+            return {
+              search: params.term
+            };
+          },
+          processResults: function(data) {
+            console.log(data)
+            return {
+              results: data.map(item => ({
+                id: item.id,
+                text: item.text
+              }))
+            };
+          }
+        }
       });
       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
@@ -203,13 +223,14 @@
 
         if (block) { // You're checking 'district' instead of 'block'
           $.ajax({
-            url: '/panchayats-by-block/' + block,
+            url: '/jicr/panchayats/' + block,
             type: 'GET',
             dataType: 'json',
             success: function(data) {
               console.log(data);
               $.each(data, function(index, panchayat) {
-                $('#panchayatSearch').append('<option value="' + panchayat + '">' + panchayat +
+                $('#panchayatSearch').append('<option value="' + panchayat.panchayat + '">' + panchayat
+                  .panchayat +
                   '</option>');
               });
             },
