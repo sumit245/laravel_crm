@@ -94,15 +94,14 @@
     @else
       <ul class="list-group">
         @foreach ($stores as $store)
-        <li class="list-group-item">
-          <!-- <div class="list-group-item"> -->
+          <li class="list-group-item">
             <div class="d-flex justify-content-between">
-              <div class="d-block mt-2">
+              <div class="d-block mt-2" style="max-width: 60%;">
                 <strong>{{ $store->store_name }}</strong><br>
                 Address: {{ $store->address }}<br>
                 Incharge: {{ $store->store_incharge_id }}
               </div>
-              <div class="d-flex mt-2">
+              <div class="d-flex mt-2" style="max-width: 40%;">
                 <button class="btn btn-success m-2" style="max-height: 3.4rem;" id="addInventoryBtn"
                   onclick="toggleAddInventory({{ $store->id }})">
                   Add Inventory
@@ -111,15 +110,10 @@
                   class="btn btn-primary m-2" style="max-height: 3.4rem;">
                   View Inventory
                 </a>
-
                 <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
                   onclick="openDispatchModal({{ $store->id }})">
                   Material Issue
                 </button>
-                {{-- <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
-                  onclick="deleteStore({{ $store->id }})">
-                  Delete Store
-                </button> --}}
               </div>
             </div>
             <!-- Add Inventory Form (Initially Hidden) -->
@@ -149,7 +143,7 @@
                   </div>
                 </form>
                 <!-- Form for add inventory -->
-                <form action="{{ route('inventory.store') }}" method="POST" class="mt-5">
+                <form action="{{ route("inventory.store") }}" method="POST" class="mt-5">
                   @csrf
                   <input type="hidden" name="project_type" value="{{ $project->project_type }}">
                   <input type="hidden" name="project_id" value="{{ $project->id }}">
@@ -157,108 +151,110 @@
                   <div class="form-group" id="inventoryForm">
                     <div class="row">
                       <div class="col-6">
-                      <label for="item_combined"><strong>Item</strong></label>
+                        <label for="item_combined"><strong>Item</strong></label>
                         <select id="item_combined" class="form-control">
-        <option value="">-- Select Item --</option>
-        <option value="SL01|Module">SL01 - Module</option>
-        <option value="SL02|Luminary">SL02 - Luminary</option>
-        <option value="SL03|Battery">SL03 - Battery</option>
-        <option value="SL04|Structure">SL04 - Structure</option>
-      </select>
+                          <option value="">-- Select Item --</option>
+                          <option value="SL01|Module">SL01 - Module</option>
+                          <option value="SL02|Luminary">SL02 - Luminary</option>
+                          <option value="SL03|Battery">SL03 - Battery</option>
+                          <option value="SL04|Structure">SL04 - Structure</option>
+                        </select>
                       </div>
                       <!-- Hidden inputs to hold separate values -->
-    <input type="hidden" name="code" id="item_code">
-    <input type="hidden" name="dropdown" id="item_name">
-    <div class="col-6">
-    <label for="quantity"><strong>Quantity</strong></label>
-<input type="number" id="number" name="number" class="form-control" value="1" readonly required>
-    </div>
-                  </div>
-                  <div class="form-group">
-                    <div class="row">
+                      <input type="hidden" name="code" id="item_code">
+                      <input type="hidden" name="dropdown" id="item_name">
                       <div class="col-6">
-                        <label for="manufacturer"><strong>Manufacturer</strong></label>
-                        <input type="text" id="manufacturer" name="manufacturer" class="form-control"
-                          value="" required>
-                      </div>
-                      <div class="col-6">
-                        <label for="heading"><strong>Model</strong></label>
-                        <input type="text" id="model" name="model" class="form-control" value=""
-                          required>
+                        <label for="quantity"><strong>Quantity</strong></label>
+                        <input type="number" id="number" name="number" class="form-control" value="1"
+                          readonly required>
                       </div>
                     </div>
-                  </div>
-                  <!-- Form group 3 -->
-                  <div class="form-group">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="serialNumber"><strong>Serial Number</strong></label>
-                        <input type="text" id="serialnumber" name="serialnumber" class="form-control"
-                          value="" required>
-                      </div>
-                      <div class="col-6">
-                        <label for="make"><strong>Make</strong></label>
-                        <input type="text" id="make" name="make" class="form-control" value=""
-                          required>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Form group 4 -->
-                  <div class="form-group">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="rate"><strong>Rate</strong></label>
-                        <input type="number" id="rate" name="rate" class="form-control" value=""
-                          required>
-                      </div>
-                      <div class="col-6">
-                        <label for="receiveddate"><strong>Received Date</strong></label>
-                        <input type="date" id="receiveddate" name="receiveddate" class="form-control"
-                          value="" required>
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="manufacturer"><strong>Manufacturer</strong></label>
+                          <input type="text" id="manufacturer" name="manufacturer" class="form-control"
+                            value="" required>
+                        </div>
+                        <div class="col-6">
+                          <label for="heading"><strong>Model</strong></label>
+                          <input type="text" id="model" name="model" class="form-control" value=""
+                            required>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <!-- Form group 5 -->
-                  <div class="form-group">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="totalvalue"><strong>Total Value</strong></label>
-                        <input type="number" id="totalvalue" name="totalvalue" class="form-control" value=""
-                          required>
-                      </div>
-                      <div class="col-6">
-                        <label for="hsncode"><strong>HSN Code</strong></label>
-                        <input type="text" id="hsncode" name="hsncode" class="form-control" value=""
-                          required>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Form group 6 -->
-                  <div class="form-group">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="description"><strong>Description</strong></label>
-                        <input type="text" id="description" name="description" class="form-control"
-                          value="" required>
-                      </div>
-                      <div class="col-6">
-                        <label for="unit"><strong>Unit</strong></label>
-                        <input type="number" id="unit" name="unit" class="form-control" value=""
-                          required>
+                    <!-- Form group 3 -->
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="serialNumber"><strong>Serial Number</strong></label>
+                          <input type="text" id="serialnumber" name="serialnumber" class="form-control"
+                            value="" required>
+                        </div>
+                        <div class="col-6">
+                          <label for="make"><strong>Make</strong></label>
+                          <input type="text" id="make" name="make" class="form-control" value=""
+                            required>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  <!-- Form group 7 -->
-                  <div class="form-group">
-                    <div class="row">
-                      
+                    <!-- Form group 4 -->
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="rate"><strong>Rate</strong></label>
+                          <input type="number" id="rate" name="rate" class="form-control" value=""
+                            required>
+                        </div>
+                        <div class="col-6">
+                          <label for="receiveddate"><strong>Received Date</strong></label>
+                          <input type="date" id="receiveddate" name="receiveddate" class="form-control"
+                            value="" required>
+                        </div>
+                      </div>
                     </div>
-                  </div>
+                    <!-- Form group 5 -->
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="totalvalue"><strong>Total Value</strong></label>
+                          <input type="number" id="totalvalue" name="totalvalue" class="form-control"
+                            value="" required>
+                        </div>
+                        <div class="col-6">
+                          <label for="hsncode"><strong>HSN Code</strong></label>
+                          <input type="text" id="hsncode" name="hsncode" class="form-control" value=""
+                            required>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Form group 6 -->
+                    <div class="form-group">
+                      <div class="row">
+                        <div class="col-6">
+                          <label for="description"><strong>Description</strong></label>
+                          <input type="text" id="description" name="description" class="form-control"
+                            value="" required>
+                        </div>
+                        <div class="col-6">
+                          <label for="unit"><strong>Unit</strong></label>
+                          <input type="number" id="unit" name="unit" class="form-control" value=""
+                            required>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Form group 7 -->
+                    <div class="form-group">
+                      <div class="row">
 
-                  <div class="form-group" style="float:right">
-                  <a href="javascript:void(0);" class="btn btn-secondary" onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                  </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group" style="float:right">
+                      <a href="javascript:void(0);" class="btn btn-secondary"
+                        onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
+                      <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
                 </form>
                 <!-- end form -->
               @else
@@ -276,16 +272,14 @@
               @endif
 
             </div>
-          <!-- </div> -->
           </li>
         @endforeach
       </ul>
     @endif
   </div>
-
   @include("projects.dispatchInventory")
-
 </div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const addStoreButton = document.getElementById("addStoreButton");
@@ -294,10 +288,10 @@
 
     // Add inventory
     document.getElementById('item_combined').addEventListener('change', function() {
-    const [code, name] = this.value.split('|');
-    document.getElementById('item_code').value = code || '';
-    document.getElementById('item_name').value = name || '';
-  });
+      const [code, name] = this.value.split('|');
+      document.getElementById('item_code').value = code || '';
+      document.getElementById('item_name').value = name || '';
+    });
 
     addStoreButton.addEventListener("click", () => {
       storeFormContainer.style.display = "block";
@@ -332,11 +326,11 @@
   }
   // Closing the add inventory form
   function closeInventoryForm(storeId) {
-  var form = document.getElementById("addInventoryForm-" + storeId);
-  if (form) {
-    form.style.display = "none";
+    var form = document.getElementById("addInventoryForm-" + storeId);
+    if (form) {
+      form.style.display = "none";
+    }
   }
-}
 
 
   function addInventory(storeId) {
