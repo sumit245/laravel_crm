@@ -204,6 +204,8 @@ class ProjectsController extends Controller
             $data['targets'] = StreetlightTask::where('project_id', $project->id)
                 ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
                 ->with('site', 'engineer')
+                // Added order by Desc 'Y'
+                ->orderBy('created_at', 'desc')
                 ->get();
 
             // Replace these lines in the show method
