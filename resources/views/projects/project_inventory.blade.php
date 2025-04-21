@@ -90,15 +90,14 @@
     @else
       <ul class="list-group">
         @foreach ($stores as $store)
-        <li class="list-group-item">
-          <!-- <div class="list-group-item"> -->
+          <li class="list-group-item">
             <div class="d-flex justify-content-between">
-              <div class="d-block mt-2">
+              <div class="d-block mt-2" style="max-width: 60%;">
                 <strong>{{ $store->store_name }}</strong><br>
                 Address: {{ $store->address }}<br>
                 Incharge: {{ $store->store_incharge_id }}
               </div>
-              <div class="d-flex mt-2">
+              <div class="d-flex mt-2" style="max-width: 40%;">
                 <button class="btn btn-success m-2" style="max-height: 3.4rem;" id="addInventoryBtn"
                   onclick="toggleAddInventory({{ $store->id }})">
                Add Inventory
@@ -144,7 +143,7 @@
                   </div>
                 </form>
                 <!-- Form for add inventory -->
-                <form action="{{ route('inventory.store') }}" method="POST" class="mt-5">
+                <form action="{{ route("inventory.store") }}" method="POST" class="mt-5">
                   @csrf
                   <input type="hidden" name="project_type" value="{{ $project->project_type }}">
                   <input type="hidden" name="project_id" value="{{ $project->id }}">
@@ -152,14 +151,14 @@
                   <div class="form-group" id="inventoryForm">
                     <div class="row">
                       <div class="col-6">
-                      <label for="item_combined"><strong>Item</strong></label>
+                        <label for="item_combined"><strong>Item</strong></label>
                         <select id="item_combined" class="form-control">
-        <option value="">-- Select Item --</option>
-        <option value="SL01|Module">SL01 - Module</option>
-        <option value="SL02|Luminary">SL02 - Luminary</option>
-        <option value="SL03|Battery">SL03 - Battery</option>
-        <option value="SL04|Structure">SL04 - Structure</option>
-      </select>
+                          <option value="">-- Select Item --</option>
+                          <option value="SL01|Module">SL01 - Module</option>
+                          <option value="SL02|Luminary">SL02 - Luminary</option>
+                          <option value="SL03|Battery">SL03 - Battery</option>
+                          <option value="SL04|Structure">SL04 - Structure</option>
+                        </select>
                       </div>
                       <!-- Hidden inputs to hold separate values -->
     <input type="hidden" name="code" id="item_code">
@@ -269,16 +268,14 @@
             </form>
             @endif
             </div>
-          <!-- </div> -->
           </li>
         @endforeach
       </ul>
     @endif
   </div>
-
   @include("projects.dispatchInventory")
-
 </div>
+
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const addStoreButton = document.getElementById("addStoreButton");
@@ -287,10 +284,10 @@
 
     // Add inventory
     document.getElementById('item_combined').addEventListener('change', function() {
-    const [code, name] = this.value.split('|');
-    document.getElementById('item_code').value = code || '';
-    document.getElementById('item_name').value = name || '';
-  });
+      const [code, name] = this.value.split('|');
+      document.getElementById('item_code').value = code || '';
+      document.getElementById('item_name').value = name || '';
+    });
 
     addStoreButton.addEventListener("click", () => {
       storeFormContainer.style.display = "block";
@@ -325,11 +322,11 @@
   }
   // Closing the add inventory form
   function closeInventoryForm(storeId) {
-  var form = document.getElementById("addInventoryForm-" + storeId);
-  if (form) {
-    form.style.display = "none";
+    var form = document.getElementById("addInventoryForm-" + storeId);
+    if (form) {
+      form.style.display = "none";
+    }
   }
-}
 
 
   function addInventory(storeId) {
