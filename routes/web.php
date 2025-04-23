@@ -58,11 +58,14 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/convenience', function () {
         return view('billing.convenience');
     })->name('billing.convenience');
-        //Convenience Details
+    //Convenience Details
     Route::get('/convenience-details', function () {
-        return view('convenienceDetails');
+        return view('billing.convenienceDetails');
     })->name('convenience.details');
-
+    // View Bills Details
+    Route::get('/view-bills', function () {
+    return view('billing.viewBills');
+    })->name('view.bills');
 
 
     // Inventory router

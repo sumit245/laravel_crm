@@ -43,7 +43,7 @@ Route::post('streetlight/tasks/update', [TaskController::class, 'submitStreetlig
 Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEngineerTasks']);
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
 Route::apiResource('streetlight', StreetlightController::class);
-Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
+
 
 Route::apiResource('inventories', InventoryController::class);
 Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
@@ -57,3 +57,6 @@ Route::get('/export-poles/vendor/{id}', [TaskController::class, 'exportPoles'])-
 
 Route::post('fetch-states', [DropdownController::class, 'fetchState']);
 Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
+
+// Route to send all data to RMS at once
+Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
