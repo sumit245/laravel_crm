@@ -9,6 +9,7 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
+      
       <form id="dispatchForm">
         @csrf
         <input type="hidden" id="dispatchStoreId" name="store_id">
