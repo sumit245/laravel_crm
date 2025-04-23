@@ -16,7 +16,53 @@
             </ul>
           </div>
         @endif
+        @if($projectId==11)
+        
+        <form action="{{route('sites.update', $streetlight->id)}}" method="POST">
+    @csrf
+    @method('PUT') {{-- For update requests --}}
+     <!-- Hidden input for project_id -->
+     <input type="hidden" name="project_id" value="{{ $projectId }}">
 
+    <div class="form-group">
+        <label for="task_id">Task ID</label>
+        <input type="text" class="form-control" id="task_id" name="task_id" value="{{ $streetlight->task_id ?? '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="state">State</label>
+        <input type="text" class="form-control" id="state" name="state" value="{{ $streetlight->state ?? '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="district">District</label>
+        <input type="text" class="form-control" id="district" name="district" value="{{ $streetlight->district ?? '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="block">Block</label>
+        <input type="text" class="form-control" id="block" name="block" value="{{ $streetlight->block ?? '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="panchayat">Panchayat</label>
+        <input type="text" class="form-control" id="panchayat" name="panchayat" value="{{ $streetlight->panchayat ?? '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="ward">Ward</label>
+        <input type="text" class="form-control" id="ward" name="ward" value="{{ $streetlight->ward ?? '' }}">
+    </div>
+
+    <div class="form-group">
+        <label for="mukhiya_contact">Mukhiya Contact</label>
+        <input type="text" class="form-control" id="mukhiya_contact" name="mukhiya_contact" value="{{ $streetlight->mukhiya_contact ?? '' }}">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
+
+        @else
         <form action="{{ route("sites.update", $site->id) }}" method="POST">
           @csrf
           @method("PUT")
@@ -157,7 +203,7 @@
 
           <button type="submit" class="btn btn-primary">Update Site</button>
         </form>
-
+        @endif
       </div>
     </div>
   </div>
