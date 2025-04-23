@@ -31,15 +31,22 @@
         <div class="card-body py-4 px-4">
             <div class="row g-3">
                 @php
+                    use Illuminate\Support\Str;
+
                     $bills = [
-                        ['title' => 'Train Ticket', 'file' => 'sample-bill1.pdf', 'category' => 'Train', 'date' => '2025-04-10'],
-                        ['title' => 'Hotel Receipt', 'file' => 'sample-bill2.pdf', 'category' => 'Hotel', 'date' => '2025-04-11'],
-                        ['title' => 'Food', 'file' => 'sample-bill3.pdf', 'category' => 'Food', 'date' => '2025-04-15'],
-                        ['title' => 'Food', 'file' => 'sample-bill3.pdf', 'category' => 'Food', 'date' => '2025-04-16']
+                        ['title' => 'Train Ticket', 'file' => 'bills/sample.pdf', 'category' => 'Train', 'date' => '2025-04-10'],
+                        ['title' => 'Hotel Receipt', 'file' => 'bills/sample.pdf', 'category' => 'Hotel', 'date' => '2025-04-11'],
+                        ['title' => 'Food', 'file' => 'bills/sample.pdf', 'category' => 'Food', 'date' => '2025-04-15'],
+                        ['title' => 'Food', 'file' => 'bills/sample.pdf', 'category' => 'Food', 'date' => '2025-04-16']
                     ];
                 @endphp
 
                 @forelse ($bills as $bill)
+                @php
+                    $filePath = Str::startsWith($bill['file'], 'bills/') 
+                        ? asset($bill['file']) 
+                        : asset('storage/bills/' . $bill['file']);
+                @endphp
                 <div class="col-md-4">
                     <div class="bill-card border rounded shadow-sm p-3 h-100 d-flex flex-column justify-content-between">
                         <div class="mb-2">
@@ -60,11 +67,11 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="d-flex justify-content-end mt-auto">
-                            <a href="{{ asset('storage/bills/' . $bill['file']) }}" target="_blank" class="btn btn-sm btn-outline-info me-2">
+                        <div class="d-flex justify-content-end mt-auto gap-2">
+                            <a href="{{ $filePath }}" target="_blank" class="btn btn-sm btn-outline-info">
                                 <i class="bi bi-eye"></i> View
                             </a>
-                            <a href="{{ asset('storage/bills/' . $bill['file']) }}" download class="btn btn-sm btn-outline-primary">
+                            <a href="{{ $filePath }}" download class="btn btn-sm btn-outline-primary">
                                 <i class="bi bi-download"></i> Download
                             </a>
                         </div>
