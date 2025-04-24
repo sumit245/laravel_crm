@@ -71,14 +71,15 @@
       <x-slot:tbody>
         @foreach ($poles as $pole)
           <tr>
-          <td>
-    <input type="checkbox" name="selected_tasks[]" value="{{ $pole->id }}" class="task-checkbox" />
-  </td>
-            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;"> <span class="text-primary"> {{ $pole->complete_pole_number ?? "N/A" }} </span> </td>
+            <td>
+              <input type="checkbox" name="selected_tasks[]" value="{{ $pole->id }}" class="task-checkbox" />
+            </td>
+            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;"> <span
+                class="text-primary"> {{ $pole->complete_pole_number ?? "N/A" }} </span> </td>
             <td>{{ $pole->beneficiary ?? "N/A" }}</td>
             <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
             <!-- <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;"> -->
-            
+
             <td>
               <!-- View Button -->
               <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"

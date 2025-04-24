@@ -16,26 +16,26 @@
 
     <!-- Project Selection Dropdown -->
     <div class="form-group mb-4">
-    <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="team_lead" class="form-label"> </label>
-                <select name="team_lead_id" class="form-select" id="team_lead">
-                  <option value="">-- Select Project --</option>
-                  @foreach ($projects as $category)
-                    <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
-                  @endforeach
-                </select>
-              </div>
-            </div>
-</div>
-      
+      <div class="row">
+        <div class="col-md-12">
+          <div class="form-group">
+            <label for="team_lead" class="form-label"> </label>
+            <select name="team_lead_id" class="form-select" id="team_lead">
+              <option value="">-- Select Project --</option>
+              @foreach ($projects as $category)
+                <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <form action="{{ route("staff.update", $staff->id) }}" method="POST">
       @csrf
       @method("PUT")
-      
+
       <div class="form-group">
         <label for="name">Name</label>
         <input type="text" id="name" name="name" class="form-control" value="{{ old("name", $staff->name) }}"
@@ -102,7 +102,7 @@
           sessionStorage.setItem("project_id", projectId);
         })
       });
-      
+
       // Load stored project if available
       let storedProjectName = sessionStorage.getItem("project_name");
       let storedProjectId = sessionStorage.getItem("project_id");

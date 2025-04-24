@@ -30,7 +30,7 @@
           <div class="form-group">
             <label for="state" class="form-label" style="padding: 0px;">Select State</label>
             <select name="project_in_state" class="form-select select2" id="state" style="width: 100%;">
-              <option value="" disabled {{ old("project_in_state", $project->project_in_state) ? '' : 'selected' }}>
+              <option value="" disabled {{ old("project_in_state", $project->project_in_state) ? "" : "selected" }}>
                 -- Select State --
               </option>
               @foreach ($states as $state)
@@ -80,8 +80,8 @@
 
           <div class="form-group">
             <label for="description" class="form-label text-capitalize">Description</label>
-            <textarea class="form-control" style="height:100px;" id="description" placeholder="Briefly describe"
-              name="description" rows="20" cols="50">{{ old("description", $project->description) }}</textarea>
+            <textarea class="form-control" style="height:100px;" id="description" placeholder="Briefly describe" name="description"
+              rows="20" cols="50">{{ old("description", $project->description) }}</textarea>
           </div>
 
           <button type="submit" class="btn btn-primary">Update Project</button>
@@ -103,9 +103,10 @@
       display: flex;
       align-items: center;
     }
-    .select2-container--default .select2-selection--single .select2-selection__clear{
-    cursor: pointer;
-    display: none;
+
+    .select2-container--default .select2-selection--single .select2-selection__clear {
+      cursor: pointer;
+      display: none;
     }
   </style>
 @endpush
@@ -115,7 +116,7 @@
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", function() {
       const startDateInput = document.getElementById('start_date');
       const endDateInput = document.getElementById('end_date');
       const rateInput = document.getElementById('rate');
@@ -126,7 +127,7 @@
       startDateInput.placeholder = today;
       endDateInput.placeholder = today;
 
-      startDateInput.addEventListener('change', function () {
+      startDateInput.addEventListener('change', function() {
         endDateInput.min = startDateInput.value;
       });
 
@@ -142,7 +143,7 @@
       endDateInput.min = startDateInput.value;
     });
 
-    $(document).ready(function () {
+    $(document).ready(function() {
       $('#state').select2({
         placeholder: '-- Select State --',
         allowClear: true
