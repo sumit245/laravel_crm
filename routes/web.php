@@ -12,8 +12,6 @@ use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\JICRController;
-use App\Models\InventroyStreetLightModel;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -78,11 +76,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     // adding inventory data
+    // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
 
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
+
 
     // Dispatch Inventory
     Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
@@ -91,7 +91,7 @@ Route::middleware(['auth'])->group(function () {
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
-    
+
     // Projects Controller
     // Deleting target
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');

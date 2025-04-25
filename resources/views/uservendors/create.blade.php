@@ -6,8 +6,8 @@
       <div class="card-body">
         <h4 class="card-title">Add Vendor</h4>
         <!-- Project Selection Dropdown -->
-    <div class="form-group mb-4">
-    <div class="row">
+        <div class="form-group mb-4">
+          <div class="row">
             <div class="col-md-12">
               <div class="form-group">
                 <label for="team_lead" class="form-label"> </label>
@@ -19,9 +19,9 @@
                 </select>
               </div>
             </div>
-</div>
-      
-    </div>
+          </div>
+
+        </div>
         <form class="forms-sample" action="{{ route("uservendors.store") }}" method="POST">
           @csrf
           <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
