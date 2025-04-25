@@ -108,7 +108,9 @@ class JICRController extends Controller
                         'longitude' => $pole->lng,
                         'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
                     ];
-                });
+                })
+                ->sortBy('ward_no') // Sorting by ward_no in ascending order
+                ->values(); // Reindex the collection
             $data['showReport'] = true; // Flag to show the report
 
             // If it's a download request, generate PDF
