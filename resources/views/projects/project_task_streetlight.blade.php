@@ -62,9 +62,8 @@
             <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
               <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select" style="width: 100%;">
-                <select id="panchayatSearch" name="panchayats" class="form-select" style="width: 100%;">
-                  <option value="">Select a Panchayat</option>
-                </select>
+                <option value="">Select a Panchayat</option>
+              </select>
             </div>
 
             <div class="mb-3">
@@ -138,7 +137,8 @@
               <a href="{{ route("tasks.show", [$light->id, "any" => ""]) }}?project_type=1"
                 class="btn btn-info btn-sm">View</a>
 
-              <a href="{{ route("tasks.edit", $light->id) }}" class="btn btn-warning btn-sm">Edit</a>
+              <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}"
+                class="btn btn-warning btn-sm">Edit</a>
               <form action="{{ route("tasks.destroy", $light->id) }}" method="POST" style="display: inline-block;">
                 @csrf
                 @method("DELETE")
@@ -154,6 +154,109 @@
 
 @push("scripts")
   <script>
+    // Data tables script begins
+    window.onload = function() {
+      const table = $('#targetTable').DataTable({
+        dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
+          "<'row'<'col-sm-12'tr>>" +
+          "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+        buttons: [{
+            extend: 'collection',
+            text: '<i class="mdi mdi-menu"></i> Actions',
+            className: 'btn btn-sm btn-secondary',
+            buttons: [{
+              text: 'Delete Selected',
+              action: function() {
+                performBulkAction('delete');
+              }
+            }]
+          },
+          {
+            extend: 'excel',
+            text: '<i class="mdi mdi-file-excel"></i>',
+            className: 'btn btn-sm btn-success',
+            titleAttr: 'Export to Excel'
+          },
+          {
+            extend: 'print',
+            text: '<i class="mdi mdi-printer"></i>',
+            className: 'btn btn-sm btn-info',
+            titleAttr: 'Print Table'
+          }
+        ],
+        order: [],
+        paging: true,
+        pageLength: {{ $pageLength ?? 25 }},
+        searching: true,
+        responsive: true,
+        language: {
+          search: '',
+          searchPlaceholder: 'Search...'
+        },
+        columnDefs: [{
+          orderable: false,
+          targets: [0, -1] // Targets the first column for select-checkbox
+        }],
+        ordering: true,
+        select: {
+          style: 'multi',
+          selector: 'td:first-child'
+        },
+
+      });
+
+      $('#selectAll').on('click', function() {
+        const isChecked = $(this).is(':checked');
+        table.rows().nodes().to$().find('input[type="checkbox"]').prop('checked', isChecked);
+        if (isChecked) {
+          table.rows().select();
+        } else {
+          table.rows().deselect();
+        }
+      });
+      // Track individual row selection to update "Select All" state
+      $('#targetTable tbody').on('click', 'input[type="checkbox"]', function() {
+        const allChecked = $('#targetTable tbody input[type="checkbox"]:checked').length === table
+          .rows()
+          .count();
+        $('#selectAll').prop('checked', allChecked);
+      });
+      // Bulk action function
+      function performBulkAction(action) {
+        const selectedIds = [];
+        table.rows({
+          selected: true
+        }).data().each(function(rowData) {
+          selectedIds.push(rowData[0]); // Assuming the ID is in the first column
+        });
+
+        if (selectedIds.length === 0) {
+          alert('Please select at least one row.');
+          return;
+        }
+
+        // Example: Show selected IDs in the console
+        console.log(`Performing "${action}" on IDs: `, selectedIds);
+
+        // Perform the actual action here
+        // Example:
+        // $.ajax({
+        //   url: `/bulk/${action}`,
+        //   method: 'POST',
+        //   data: { ids: selectedIds },
+        //   success: function(response) {
+        //     alert(`${action} successful!`);
+        //     table.ajax.reload();
+        //   },
+        //   error: function() {
+        //     alert(`Failed to perform ${action}.`);
+        //   }
+        // });
+      }
+    }
+
+    // Data table script ends
+
     function confirmDelete() {
       const confirmed = confirm("Are you sure you want to delete this task?");
       if (confirmed) {
@@ -164,128 +267,85 @@
       return confirmed;
     }
     $(document).ready(function() {
-          $('#panchayatSearch').select2({
-                placeholder: "Select a Panchayat",
-                allowClear: true,
-                dropdownParent: $('#addTargetModal'),
-                ajax: {
-                  url: "{{ route("streetlights.search") }}", // Laravel route
-                  dataType: 'json',
-                  method: "GET",
-                  delay: 250,
-                  data: function(params) {
-                    return {
-                      search: params.term
-                    };
-                  },
-                  processResults: function(data) {
-                    console.log(data)
-                    return {
-                      results: data.map(item => ({
-                        id: item.id,
-                        text: item.text
-                      }))
-                    };
-                  }
-                } ===
-                ===
-                =
-                $(document).ready(function() {
-                    $('#panchayatSearch').select2({
-                      placeholder: "Select a Panchayat",
-                      allowClear: true >>>
-                        >>>
-                        >
-                        65 b6a1227613ac80be3ab536bbdcf730579b9485
-                    });
-                    // Fetch Blocks Based on Selected District
-                    $('#districtSearch').change(function() {
-                      let district = $(this).val();
-                      $('#blockSearch').prop('disabled', false).empty().append(
-                        '<option value="">Select a Block</option>');
-                      $('#panchayatSearch').prop('disabled', true).empty().append(
-                        '<option value="">Select a Panchayat</option>');
+      $('#panchayatSearch').select2({
+        placeholder: "Select a Panchayat",
+        allowClear: true,
+        dropdownParent: $('#addTargetModal'),
+        ajax: {
+          url: "{{ route("streetlights.search") }}", // Laravel route
+          dataType: 'json',
+          method: "GET",
+          delay: 250,
+          data: function(params) {
+            return {
+              search: params.term
+            };
+          },
+          processResults: function(data) {
+            console.log(data)
+            return {
+              results: data.map(item => ({
+                id: item.id,
+                text: item.text
+              }))
+            };
+          }
+        }
+      });
+      // Fetch Blocks Based on Selected District
+      $('#districtSearch').change(function() {
+        let district = $(this).val();
+        $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
+        $('#panchayatSearch').prop('disabled', true).empty().append(
+          '<option value="">Select a Panchayat</option>');
 
-                      if (district) {
-                        $.ajax({
-                          url: '/blocks-by-district/' + district,
-                          type: 'GET',
-                          dataType: 'json',
-                          success: function(data) {
-                            console.log(data)
-                            $.each(data, function(index, block) {
-                              $('#blockSearch').append('<option value="' + block + '">' + block +
-                                '</option>');
-                            });
+        if (district) {
+          $.ajax({
+            url: '/blocks-by-district/' + district,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+              console.log(data)
+              $.each(data, function(index, block) {
+                $('#blockSearch').append('<option value="' + block + '">' + block + '</option>');
+              });
 
-                          },
-                          error: function(xhr, status, error) {
-                            console.error("AJAX Error:", status, error);
-                            console.log("Response:", xhr.responseText);
-                          }
-                        });
-                      }
-                    });
+            },
+            error: function(xhr, status, error) {
+              console.error("AJAX Error:", status, error);
+              console.log("Response:", xhr.responseText);
+            }
+          });
+        }
+      });
 
-                    // Fetch Panchayats Based on Selected Block
-                    $('#blockSearch').change(function() {
-                          let block = $(this).val();
-                          $('#panchayatSearch').prop('disabled', false).empty().append(
-                            '<option value="">Select a Panchayat</option>');
+      // Fetch Panchayats Based on Selected Block
+      $('#blockSearch').change(function() {
+        let block = $(this).val();
+        $('#panchayatSearch').prop('disabled', false).empty().append(
+          '<option value="">Select a Panchayat</option>');
 
-                          if (block) { // You're checking 'district' instead of 'block'
-                            $.ajax({
-                                <<
-                                <<
-                                <<
-                                <
-                                HEAD
-                                url: '/jicr/panchayats/' + block,
-                                type: 'GET',
-                                dataType: 'json',
-                                success: function(data) {
-                                  console.log(data);
-                                  $.each(data, function(index, panchayat) {
-                                      $('#panchayatSearch').append('<option value="' + panchayat.panchayat + '">' +
-                                        panchayat
-                                        .panchayat +
-                                        ===
-                                        ===
-                                        =
-                                        url: '/panchayats-by-block/' + block,
-                                        type: 'GET',
-                                        dataType: 'json',
-                                        success: function(data) {
-                                          $.each(data, function(index, panchayat) {
-                                            $('#panchayatSearch').append('<option value="' + panchayat +
-                                              '">' + panchayat +
-                                              >>>
-                                              >>>
-                                              >
-                                              65 b6a1227613ac80be3ab536bbdcf730579b9485 '</option>');
-                                          });
-                                        },
-                                        error: function(xhr, status, error) {
-                                          console.error("AJAX Error:", status, error);
-                                          console.log("Response:", xhr.responseText);
-                                        }
-                                      });
-                                  }
-                                }); <<
-                              <<
-                              <<
-                              <
-                              HEAD
-                              // Panchayat search begins
-                              ===
-                              ===
-                              =
-                              // Panachayat search begins
-                              >>>
-                              >>>
-                              >
-                              65 b6a1227613ac80be3ab536bbdcf730579b9485
-                            });
+        if (block) { // You're checking 'district' instead of 'block'
+          $.ajax({
+            url: '/jicr/panchayats/' + block,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+              console.log(data);
+              $.each(data, function(index, panchayat) {
+                $('#panchayatSearch').append('<option value="' + panchayat.panchayat + '">' + panchayat
+                  .panchayat +
+                  '</option>');
+              });
+            },
+            error: function(xhr, status, error) {
+              console.error("AJAX Error:", status, error);
+              console.log("Response:", xhr.responseText);
+            }
+          });
+        }
+      });
+    });
   </script>
 @endpush
 
