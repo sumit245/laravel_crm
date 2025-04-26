@@ -6,11 +6,10 @@
         <!-- Vertical Tab Navigation -->
         <div class="col-md-3 col-lg-2 bg-light" style="min-height: calc(100vh - 60px);">
             <div class="settings-sidebar">
-                
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical" style="border-bottom: 0px;">
                 <div class="p-3">
                     <h5 class="mb-0 fw-bold">Settings</h5>
                 </div>
+                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
                     <button class="nav-link active text-start py-3 px-4" id="v-pills-vehicle-tab" data-bs-toggle="pill" data-bs-target="#v-pills-vehicle" type="button" role="tab" aria-controls="v-pills-vehicle" aria-selected="true">
                         <i class="bi bi-car-front me-2"></i> Vehicle Settings
                     </button>
@@ -39,13 +38,6 @@
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <div class="mb-3">
-                                <div class="dataTables_filter">
-                                    <label>
-                                        <input type="search" class="form-control form-control-sm" placeholder="Search Vehicles" aria-controls="vehicleTable">
-                                    </label>
-                                </div>
-                            </div>
                             <div class="table-responsive">
                                 <table id="vehicleTable" class="table table-bordered table-striped table-sm">
                                     <thead class="table-light">
@@ -115,21 +107,18 @@
                 <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
                     <div class="d-flex justify-content-between align-items-center mb-4">
                         <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
+                        <button class="btn btn-primary" id="assignCategoryBtn">
+                            <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
+                        </button>
                     </div>
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <div class="mb-3">
-                                <div class="dataTables_filter">
-                                    <label>
-                                        <input type="search" class="form-control form-control-sm" placeholder="Search Users" aria-controls="userTable">
-                                    </label>
-                                </div>
-                            </div>
                             <div class="table-responsive">
                                 <table id="userTable" class="table table-bordered table-striped table-sm">
                                     <thead class="table-light">
                                         <tr>
+                                            <th><input type="checkbox" id="selectAllUsers"></th>
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Role</th>
@@ -140,6 +129,7 @@
                                     </thead>
                                     <tbody>
                                         <tr>
+                                            <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
                                             <td>1</td>
                                             <td>John Doe</td>
                                             <td>Site Engineer</td>
@@ -152,6 +142,7 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td><input type="checkbox" class="user-checkbox" data-id="2"></td>
                                             <td>2</td>
                                             <td>Jane Smith</td>
                                             <td>Project Manager</td>
@@ -164,6 +155,7 @@
                                             </td>
                                         </tr>
                                         <tr>
+                                            <td><input type="checkbox" class="user-checkbox" data-id="3"></td>
                                             <td>3</td>
                                             <td>Robert Johnson</td>
                                             <td>Store Incharge</td>
@@ -193,13 +185,6 @@
 
                     <div class="card shadow-sm">
                         <div class="card-body">
-                            <div class="mb-3">
-                                <div class="dataTables_filter">
-                                    <label>
-                                        <input type="search" class="form-control form-control-sm" placeholder="Search Categories" aria-controls="categoryTable">
-                                    </label>
-                                </div>
-                            </div>
                             <div class="table-responsive">
                                 <table id="categoryTable" class="table table-bordered table-striped table-sm">
                                     <thead class="table-light">
@@ -275,18 +260,15 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="vehicleName" class="form-label fw-bold">Vehicle Name</label>
-                                <select class="form-select" id="vehicleName" required>
-                                    <option value="" selected disabled>Select vehicle type</option>
-                                    <option value="Two Wheelers">Two Wheelers</option>
-                                    <option value="Four Wheelers">Four Wheelers</option>
-                                    <option value="Public Transport">Public Transport</option>
-                                </select>
+                                <input type="text" class="form-control" id="vehicleName" placeholder="Enter vehicle name" required>
+                                <div class="invalid-feedback">Please enter a vehicle name.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="ratePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
                                 <input type="number" class="form-control" id="ratePerKm" placeholder="Enter rate per km" step="0.01" required>
+                                <div class="invalid-feedback">Please enter a valid rate.</div>
                             </div>
                         </div>
                     </div>
@@ -301,6 +283,7 @@
                                     <option value="Taxi">Taxi</option>
                                     <option value="Bus">Bus</option>
                                 </select>
+                                <div class="invalid-feedback">Please select a category.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -313,6 +296,7 @@
                                     <option value="Electric">Electric</option>
                                     <option value="CNG">CNG</option>
                                 </select>
+                                <div class="invalid-feedback">Please select a sub category.</div>
                             </div>
                         </div>
                     </div>
@@ -344,17 +328,15 @@
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="editVehicleName" class="form-label fw-bold">Vehicle Name</label>
-                                <select class="form-select" id="editVehicleName" required>
-                                    <option value="Two Wheelers" selected>Two Wheelers</option>
-                                    <option value="Four Wheelers">Four Wheelers</option>
-                                    <option value="Public Transport">Public Transport</option>
-                                </select>
+                                <input type="text" class="form-control" id="editVehicleName" value="Two Wheelers" required>
+                                <div class="invalid-feedback">Please enter a vehicle name.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <label for="editRatePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
                                 <input type="number" class="form-control" id="editRatePerKm" value="5.00" step="0.01" required>
+                                <div class="invalid-feedback">Please enter a valid rate.</div>
                             </div>
                         </div>
                     </div>
@@ -368,6 +350,7 @@
                                     <option value="Taxi">Taxi</option>
                                     <option value="Bus">Bus</option>
                                 </select>
+                                <div class="invalid-feedback">Please select a category.</div>
                             </div>
                         </div>
                         <div class="col-md-6">
@@ -379,6 +362,7 @@
                                     <option value="Electric">Electric</option>
                                     <option value="CNG">CNG</option>
                                 </select>
+                                <div class="invalid-feedback">Please select a sub category.</div>
                             </div>
                         </div>
                     </div>
@@ -409,27 +393,16 @@
                     <div class="mb-3">
                         <label for="categoryName" class="form-label fw-bold">Category Name</label>
                         <input type="text" class="form-control" id="categoryName" placeholder="Enter category name" required>
+                        <div class="invalid-feedback">Please enter a category name.</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Vehicles Allowed</label>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="vehicleTwoWheelers" name="vehiclesAllowed[]" value="Two Wheelers">
-                            <label class="form-check-label" for="vehicleTwoWheelers">
-                                Two Wheelers
-                            </label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="vehicleFourWheelers" name="vehiclesAllowed[]" value="Four Wheelers">
-                            <label class="form-check-label" for="vehicleFourWheelers">
-                                Four Wheelers
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="vehiclePublicTransport" name="vehiclesAllowed[]" value="Public Transport">
-                            <label class="form-check-label" for="vehiclePublicTransport">
-                                Public Transport
-                            </label>
-                        </div>
+                        <label for="vehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                        <select id="vehiclesAllowed" name="vehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                            <option value="Two Wheelers">Two Wheelers</option>
+                            <option value="Four Wheelers">Four Wheelers</option>
+                            <option value="Public Transport">Public Transport</option>
+                        </select>
+                        <div class="invalid-feedback">Please select at least one vehicle.</div>
                     </div>
                 </form>
             </div>
@@ -458,27 +431,16 @@
                     <div class="mb-3">
                         <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
                         <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
+                        <div class="invalid-feedback">Please enter a category name.</div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Vehicles Allowed</label>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="editVehicleTwoWheelers" name="editVehiclesAllowed[]" value="Two Wheelers" checked>
-                            <label class="form-check-label" for="editVehicleTwoWheelers">
-                                Two Wheelers
-                            </label>
-                        </div>
-                        <div class="form-check mb-2">
-                            <input class="form-check-input" type="checkbox" id="editVehicleFourWheelers" name="editVehiclesAllowed[]" value="Four Wheelers" checked>
-                            <label class="form-check-label" for="editVehicleFourWheelers">
-                                Four Wheelers
-                            </label>
-                        </div>
-                        <div class="form-check">
-                            <input class="form-check-input" type="checkbox" id="editVehiclePublicTransport" name="editVehiclesAllowed[]" value="Public Transport">
-                            <label class="form-check-label" for="editVehiclePublicTransport">
-                                Public Transport
-                            </label>
-                        </div>
+                        <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                        <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                            <option value="Two Wheelers" selected>Two Wheelers</option>
+                            <option value="Four Wheelers" selected>Four Wheelers</option>
+                            <option value="Public Transport">Public Transport</option>
+                        </select>
+                        <div class="invalid-feedback">Please select at least one vehicle.</div>
                     </div>
                 </form>
             </div>
@@ -517,6 +479,7 @@
                             <option value="Store Staff">Store Staff</option>
                             <option value="Admin">Admin</option>
                         </select>
+                        <div class="invalid-feedback">Please select a category.</div>
                     </div>
                 </form>
             </div>
@@ -526,6 +489,44 @@
                 </button>
                 <button type="button" class="btn btn-primary" id="updateUserCategoryBtn">
                     <i class="bi bi-save me-1"></i> Update Category
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Assign Category Modal -->
+<div class="modal fade" id="assignCategoryModal" tabindex="-1" aria-labelledby="assignCategoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="assignCategoryModalLabel"><i class="bi bi-tag-multiple me-2"></i> Assign Category to Users</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="assignCategoryForm">
+                    <div class="mb-3">
+                        <label for="bulkUserCategory" class="form-label fw-bold">Select Category</label>
+                        <select class="form-select" id="bulkUserCategory" required>
+                            <option value="" selected disabled>Select category</option>
+                            <option value="Field Staff">Field Staff</option>
+                            <option value="Management">Management</option>
+                            <option value="Store Staff">Store Staff</option>
+                            <option value="Admin">Admin</option>
+                        </select>
+                        <div class="invalid-feedback">Please select a category.</div>
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i> This will assign the selected category to all checked users.
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="saveBulkCategoryBtn">
+                    <i class="bi bi-save me-1"></i> Assign Category
                 </button>
             </div>
         </div>
@@ -559,6 +560,20 @@
 @push('scripts')
 <script>
     $(document).ready(function() {
+        // Initialize Select2 for vehicles allowed dropdowns
+        $('#vehiclesAllowed').select2({
+            placeholder: "Select vehicles",
+            allowClear: true,
+            dropdownParent: $('#addCategoryModal')
+        });
+
+        $('#editVehiclesAllowed').select2({
+            placeholder: "Select vehicles",
+            allowClear: true,
+            dropdownParent: $('#editCategoryModal')
+        });
+
+        // Initialize DataTables
         $('#vehicleTable').DataTable({
             dom: "<'row'<'col-sm-12'f>>" +
                 "<'row'<'col-sm-12'tr>>" +
@@ -661,9 +676,91 @@
             }
         });
 
-        $('.dataTables_filter').addClass('d-none');
-        $('[data-toggle="tooltip"]').tooltip();
+        // Form validation function
+        function validateForm(formId) {
+            const form = document.getElementById(formId);
+            let isValid = true;
+            
+            // Check all required fields
+            $(form).find('[required]').each(function() {
+                if ($(this).val() === '' || $(this).val() === null) {
+                    $(this).addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $(this).removeClass('is-invalid');
+                }
+            });
+            
+            // Special check for select2 fields
+            if (formId === 'addCategoryForm' || formId === 'editCategoryForm') {
+                const selectId = formId === 'addCategoryForm' ? 'vehiclesAllowed' : 'editVehiclesAllowed';
+                if ($('#' + selectId).val() === null || $('#' + selectId).val().length === 0) {
+                    $('#' + selectId).next('.select2-container').css('border', '1px solid #dc3545');
+                    isValid = false;
+                } else {
+                    $('#' + selectId).next('.select2-container').css('border', '');
+                }
+            }
+            
+            return isValid;
+        }
 
+        // Select all users checkbox
+        $('#selectAllUsers').on('click', function() {
+            $('.user-checkbox').prop('checked', $(this).prop('checked'));
+        });
+
+        // Individual user checkbox change
+        $('.user-checkbox').on('change', function() {
+            if ($('.user-checkbox:checked').length === $('.user-checkbox').length) {
+                $('#selectAllUsers').prop('checked', true);
+            } else {
+                $('#selectAllUsers').prop('checked', false);
+            }
+        });
+
+        // Assign Category button click - Check if users are selected before opening modal
+        $('#assignCategoryBtn').on('click', function() {
+            if ($('.user-checkbox:checked').length === 0) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'No Users Selected',
+                    text: 'Please select at least one user to assign a category.',
+                    confirmButtonColor: '#0d6efd'
+                });
+                return false;
+            } else {
+                $('#assignCategoryModal').modal('show');
+            }
+        });
+
+        // Save bulk category assignment
+        $('#saveBulkCategoryBtn').on('click', function() {
+            if (!validateForm('assignCategoryForm')) {
+                return;
+            }
+            
+            let selectedCategory = $('#bulkUserCategory').val();
+            let selectedUsers = [];
+            $('.user-checkbox:checked').each(function() {
+                selectedUsers.push($(this).data('id'));
+            });
+
+            // Here you would typically make an AJAX call to update the users
+            console.log('Assigning category:', selectedCategory, 'to users:', selectedUsers);
+
+            $('#assignCategoryModal').modal('hide');
+            
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Category has been assigned to selected users.',
+                confirmButtonColor: '#0d6efd'
+            });
+        });
+
+        // Delete vehicle button click
         $('.delete-vehicle').on('click', function() {
             let vehicleId = $(this).data('id');
             let vehicleName = $(this).data('name');
@@ -672,19 +769,21 @@
             $('#deleteConfirmModal').modal('show');
             
             $('#confirmDeleteBtn').off('click').on('click', function() {
-
+                // Add your delete logic here
                 $(button[data-id="${vehicleId}"].delete-vehicle).closest('tr').remove();
                 $('#deleteConfirmModal').modal('hide');
-            
-                Swal.fire(
-                    'Deleted!',
-                    Vehicle "${vehicleName}" has been deleted.,
-                    'success'
-                );
+                
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: Vehicle "${vehicleName}" has been deleted.,
+                    confirmButtonColor: '#0d6efd'
+                });
             });
         });
 
-  
+        // Delete category button click
         $('.delete-category').on('click', function() {
             let categoryId = $(this).data('id');
             let categoryName = $(this).data('name');
@@ -693,74 +792,118 @@
             $('#deleteConfirmModal').modal('show');
             
             $('#confirmDeleteBtn').off('click').on('click', function() {
-          
+                // Add your delete logic here
                 $(button[data-id="${categoryId}"].delete-category).closest('tr').remove();
                 $('#deleteConfirmModal').modal('hide');
                 
-        
-                Swal.fire(
-                    'Deleted!',
-                    Category "${categoryName}" has been deleted.,
-                    'success'
-                );
+                // Show success message
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: Category "${categoryName}" has been deleted.,
+                    confirmButtonColor: '#0d6efd'
+                });
             });
         });
 
+        // Save vehicle button
         $('#saveVehicleBtn').on('click', function() {
+            if (!validateForm('addVehicleForm')) {
+                return;
+            }
+            
+            // Add your save logic here
             $('#addVehicleModal').modal('hide');
             
-            Swal.fire(
-                'Success!',
-                'Vehicle has been added successfully.',
-                'success'
-            );
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Vehicle has been added successfully.',
+                confirmButtonColor: '#0d6efd'
+            });
         });
 
+        // Update vehicle button
         $('#updateVehicleBtn').on('click', function() {
-          
+            if (!validateForm('editVehicleForm')) {
+                return;
+            }
+            
+            // Add your update logic here
             $('#editVehicleModal').modal('hide');
-        
-            Swal.fire(
-                'Success!',
-                'Vehicle has been updated successfully.',
-                'success'
-            );
+            
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Vehicle has been updated successfully.',
+                confirmButtonColor: '#0d6efd'
+            });
         });
 
+        // Save category button
         $('#saveCategoryBtn').on('click', function() {
-
+            if (!validateForm('addCategoryForm')) {
+                return;
+            }
+            
+            // Add your save logic here
             $('#addCategoryModal').modal('hide');
             
-
-            Swal.fire(
-                'Success!',
-                'Category has been added successfully.',
-                'success'
-            );
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Category has been added successfully.',
+                confirmButtonColor: '#0d6efd'
+            });
         });
 
-
+        // Update category button
         $('#updateCategoryBtn').on('click', function() {
- 
+            if (!validateForm('editCategoryForm')) {
+                return;
+            }
+            
+            // Add your update logic here
             $('#editCategoryModal').modal('hide');
             
-            Swal.fire(
-                'Success!',
-                'Category has been updated successfully.',
-                'success'
-            );
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'Category has been updated successfully.',
+                confirmButtonColor: '#0d6efd'
+            });
         });
 
+        // Update user category button
         $('#updateUserCategoryBtn').on('click', function() {
+            if (!validateForm('editUserCategoryForm')) {
+                return;
+            }
             
+            // Add your update logic here
             $('#editUserCategoryModal').modal('hide');
             
-           
-            Swal.fire(
-                'Success!',
-                'User category has been updated successfully.',
-                'success'
-            );
+            // Show success message
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: 'User category has been updated successfully.',
+                confirmButtonColor: '#0d6efd'
+            });
+        });
+
+        // Clear validation on input change
+        $('input, select').on('change', function() {
+            $(this).removeClass('is-invalid');
+        });
+
+        // Clear select2 validation on change
+        $('#vehiclesAllowed, #editVehiclesAllowed').on('change', function() {
+            $(this).next('.select2-container').css('border', '');
         });
     });
 </script>
@@ -768,7 +911,7 @@
 
 @push('styles')
 <style>
-    
+    /* Settings sidebar styles */
     .settings-sidebar {
         height: 100%;
         background: #ffffff;
@@ -791,14 +934,16 @@
     }
 
    
+
+    /* Table styles */
     .table-responsive {
         overflow-x: auto;
-        scrollbar-width: none;
-        -ms-overflow-style: none; 
+        scrollbar-width: none; /* Firefox */
+        -ms-overflow-style: none; /* IE and Edge */
     }
 
     .table-responsive::-webkit-scrollbar {
-        display: none; 
+        display: none; /* Chrome, Safari, Opera */
     }
 
     .btn-icon {
@@ -811,7 +956,7 @@
         margin-right: 0.25rem;
     }
 
-   
+    /* Form styles */
     .form-label {
         font-size: 0.875rem;
     }
@@ -820,23 +965,38 @@
         padding: 1.5rem;
     }
 
+    /* Tab content area min-height */
+   
     #v-pills-tabContent {
         min-height: 500px;
         border:0px;
     }
+    .nav-pills {
+    border-bottom: 0;
 
-    .dataTables_filter {
-        margin-bottom: 15px;
-        text-align: left;
+}
+    /* Select2 styling */
+    .select2-container--default .select2-selection--multiple {
+        border: 1px solid #ced4da;
+        border-radius: 0.25rem;
+        min-height: 38px;
     }
 
-    .dataTables_filter input {
-        width: 300px;
-        border-radius: 4px;
-        padding: 6px 12px;
+    .select2-container--default .select2-selection--multiple .select2-selection__choice {
+        background-color: #0d6efd;
+        border: 1px solid #0d6efd;
+        color: white;
+        border-radius: 0.2rem;
+        padding: 2px 8px;
     }
-    .form-check .form-check-input {
-        margin-left: 0;
+
+    .select2-container--default .select2-selection--multiple .select2-selection_choice_remove {
+        color: white;
+        margin-right: 5px;
+    }
+
+    .select2-container--default .select2-selection--multiple .select2-selection_choice_remove:hover {
+        color: #f8f9fa;
     }
 </style>
 @endpush
