@@ -59,7 +59,20 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
+        //Add Vehicle
+    Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
+        // Edit Vehicle
+    Route::get('/settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('billing.editvehicle');
+        // Update Vehicle
+    Route::post('/settings/update', [ConvenienceController::class, 'updateVehicle'])->name('billing.updatevehicle');
+        // Delete Vehicle
+    Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
 
+    // Billing Edit User
+    Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
+    // Billing Update User
+    Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
+    
 
     //Convenience Details
     Route::get('/convenience-details', function () {
