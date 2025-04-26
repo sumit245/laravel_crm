@@ -51,12 +51,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @foreach ($vehicles as $vehicle)
                                         <tr>
-                                            <td>1</td>
-                                            <td>Two Wheelers</td>
-                                            <td>Personal</td>
-                                            <td>Petrol</td>
-                                            <td>₹5.00</td>
+                                            <td>{{ $vehicle->vehicle_id }}</td>
+                                            <td>{{ $vehicle->name ?? "N/A" }}</td>
+                                            <td>{{ $vehicle->category ?? "N/A" }}</td>
+                                            <td>{{ $vehicle->sub_category }}</td>
+                                            <td>{{ $vehicle->rate }}</td>
                                             <td>
                                                 <a href="#" class="btn btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#editVehicleModal" title="Edit Vehicle">
                                                     <i class="mdi mdi-pencil"></i>
@@ -66,36 +67,7 @@
                                                 </button>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td>Four Wheelers</td>
-                                            <td>Taxi</td>
-                                            <td>Diesel</td>
-                                            <td>₹12.00</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#editVehicleModal" title="Edit Vehicle">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-vehicle" title="Delete Vehicle" data-id="2" data-name="Four Wheelers">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>3</td>
-                                            <td>Public Transport</td>
-                                            <td>Bus</td>
-                                            <td>CNG</td>
-                                            <td>₹8.50</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#editVehicleModal" title="Edit Vehicle">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-vehicle" title="Delete Vehicle" data-id="3" data-name="Public Transport">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -122,51 +94,27 @@
                                             <th>#</th>
                                             <th>Name</th>
                                             <th>Role</th>
-                                            <th>Phone</th>
+                                            <th>Email</th>
                                             <th>Category</th>
                                             <th>Actions</th>
                                         </tr>
                                     </thead>
                                     <tbody>
+                                        @foreach ($users as $user)
                                         <tr>
                                             <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
-                                            <td>1</td>
-                                            <td>John Doe</td>
-                                            <td>Site Engineer</td>
-                                            <td>9876543210</td>
-                                            <td>Field Staff</td>
+                                            <td>{{ $user->id }}</td>
+                                            <td>{{ $user->firstName }} {{ $user->lastName }}</td>
+                                            <td>{{ $user->role }}</td>
+                                            <td>{{ $user->email }}</td>
+                                            <td></td>
                                             <td>
                                                 <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editUserCategoryModal" title="Edit Category">
                                                     <i class="mdi mdi-pencil"></i>
                                                 </a>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td><input type="checkbox" class="user-checkbox" data-id="2"></td>
-                                            <td>2</td>
-                                            <td>Jane Smith</td>
-                                            <td>Project Manager</td>
-                                            <td>8765432109</td>
-                                            <td>Management</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editUserCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><input type="checkbox" class="user-checkbox" data-id="3"></td>
-                                            <td>3</td>
-                                            <td>Robert Johnson</td>
-                                            <td>Store Incharge</td>
-                                            <td>7654321098</td>
-                                            <td>Store Staff</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editUserCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -196,10 +144,11 @@
                                         </tr>
                                     </thead>
                                     <tbody>
+                                    @foreach ($categories as $cat)
                                         <tr>
-                                            <td>1</td>
-                                            <td>Personal</td>
-                                            <td>Two Wheelers, Four Wheelers</td>
+                                            <td>{{ $cat->id }}</td>
+                                            <td>{{ $cat->category_code }}</td>
+                                            <td>{{ $cat->allowed_vehicles }}</td>
                                             <td>
                                                 <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
                                                     <i class="mdi mdi-pencil"></i>
@@ -209,32 +158,7 @@
                                                 </button>
                                             </td>
                                         </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td>Taxi</td>
-                                            <td>Four Wheelers</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-category" title="Delete Category" data-id="2" data-name="Taxi">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>3</td>
-                                            <td>Bus</td>
-                                            <td>Public Transport</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-category" title="Delete Category" data-id="3" data-name="Bus">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
+                                        @endforeach
                                     </tbody>
                                 </table>
                             </div>
@@ -474,7 +398,7 @@
                         <label for="userCategory" class="form-label fw-bold">Category</label>
                         <select class="form-select" id="userCategory" required>
                             <option value="" disabled>Select category</option>
-                            <option value="Field Staff" selected>Field Staff</option>
+                            <option value="Field Staff" selected>{{  }}</option>
                             <option value="Management">Management</option>
                             <option value="Store Staff">Store Staff</option>
                             <option value="Admin">Admin</option>

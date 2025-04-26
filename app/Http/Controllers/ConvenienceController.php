@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
+use App\Models\UserCategory;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
 class ConvenienceController extends Controller
@@ -27,7 +30,11 @@ class ConvenienceController extends Controller
 
     public function settings()
     {
-        return view('billing.settings');
+        $vehicles = Vehicle::get();
+        $users = User::where('role', '!=', 3)->get();
+        $categories = UserCategory::get();
+
+        return view('billing.settings', compact('vehicles', 'users', 'categories'));
     }
 
     /**
