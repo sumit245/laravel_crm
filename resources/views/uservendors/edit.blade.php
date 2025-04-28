@@ -188,9 +188,9 @@
             @error("email")
               <small class="text-danger">{{ $message }}</small>
             @enderror
-          </div>
+          
 
-          <div class="row d-none" id="passwordSection">
+          <!-- <div class="row d-none" id="passwordSection">
             <div class="col-sm-6 col-md-6">
               <div class="form-group position-relative">
                 <label for="password" class="form-label">Password</label>
@@ -204,8 +204,8 @@
                   <small class="text-danger">{{ $message }}</small>
                 @enderror
               </div>
-            </div>
-            <div class="col-sm-6 col-md-6">
+            </div> -->
+            <!-- <div class="col-sm-6 col-md-6">
               <div class="form-group position-relative">
                 <label for="password_confirmation" class="form-label">Confirm Password</label>
                 <input type="password" name="password_confirmation" class="form-control form-control-lg"
@@ -219,7 +219,8 @@
                 @enderror
               </div>
             </div>
-          </div>
+          </div> -->
+
           <div class="d-flex justify-content-between">
             {{-- <div class="col-md-7"></div> --}}
             <div></div>
@@ -232,6 +233,7 @@
               </button>
               {{-- </div> --}}
               <div>
+              </div>
               </div>
         </form>
       </div>
@@ -250,19 +252,30 @@
       });
     });
 
-    function togglePasswordVisibility(fieldId, iconId) {
-      const passwordField = document.getElementById(fieldId);
-      const toggleIcon = document.getElementById(iconId);
+    document.querySelector('.forms-sample').addEventListener('submit', function (e) {
+        const formData = new FormData(this);
+        const data = {};
+        formData.forEach((value, key) => {
+            data[key] = value;
+        });
 
-      if (passwordField.type === 'password') {
-        passwordField.type = 'text';
-        toggleIcon.classList.remove('mdi-eye');
-        toggleIcon.classList.add('mdi-eye-off');
-      } else {
-        passwordField.type = 'password';
-        toggleIcon.classList.remove('mdi-eye-off');
-        toggleIcon.classList.add('mdi-eye');
-      }
-    }
+        console.log("Submitting Vendor Form Data:");
+        console.log(data);
+    });
+
+    // function togglePasswordVisibility(fieldId, iconId) {
+    //   const passwordField = document.getElementById(fieldId);
+    //   const toggleIcon = document.getElementById(iconId);
+
+    //   if (passwordField.type === 'password') {
+    //     passwordField.type = 'text';
+    //     toggleIcon.classList.remove('mdi-eye');
+    //     toggleIcon.classList.add('mdi-eye-off');
+    //   } else {
+    //     passwordField.type = 'password';
+    //     toggleIcon.classList.remove('mdi-eye-off');
+    //     toggleIcon.classList.add('mdi-eye');
+    //   }
+    // }
   </script>
 @endpush
