@@ -36,12 +36,9 @@
     <div class="mb-3">
         <label for="category" class="form-label fw-bold">Category</label>
         <select class="form-select" id="category" name="category" required>
-            <option value="" disabled {{ !$ue->category ? 'selected' : '' }}>Select Category</option>
-            <option value="M1" {{ $ue->category == 'M1' ? 'selected' : '' }}>M1</option>
-            <option value="M2" {{ $ue->category == 'M2' ? 'selected' : '' }}>M2</option>
-            <option value="M3" {{ $ue->category == 'M3' ? 'selected' : '' }}>M3</option>
-            <option value="M4" {{ $ue->category == 'M4' ? 'selected' : '' }}>M4</option>
-            <option value="M5" {{ $ue->category == 'M5' ? 'selected' : '' }}>M5</option>
+            @foreach ($uc as $u)
+            <option value="{{$u->category_code}}">{{ $u->category_code }}</option>
+            @endforeach
         </select>
     </div>
 

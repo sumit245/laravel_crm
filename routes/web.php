@@ -73,7 +73,11 @@ Route::middleware(['auth'])->group(function () {
     // Billing Update User
     Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
     
-
+    // Add Categories
+    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    // Delete Categories
+    Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');  
+    
     //Convenience Details
     Route::get('/convenience-details', function () {
         return view('billing.convenienceDetails');
