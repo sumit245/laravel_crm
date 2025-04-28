@@ -64,38 +64,50 @@ class ConvenienceController extends Controller
         return view('billing.editVehicle', compact('ev'));
     } 
 
-public function updateVehicle(Request $request)
+    public function updateVehicle(Request $request)
 {
     \Log::info('Request Data: Edit vehicle', $request->all());
 
-    $allowedCategories = ['Car', 'Bike', 'Public Transport'];
-    $id = $request->input('vehicle_id'); // <-- your hidden input field name is 'vehicle_id', not 'id'
+    $id = $request->input('user_id'); // Vehicle ID from the hidden input field
 
+    // Validate the required fields: 'category' and 'rate'
     $validatedData = $request->validate([
-        'vehicle_name' => 'required|string|max:100',
-         // <-- validate category properly
-        'sub_category' => 'nullable|string|max:50',
-        'rate' => 'required|numeric',
+        'vehicle_name' => 'nullable|string|max:100',  // Optional field
+        'category' => 'required|string',  // Category is required as a string
+        'subcategory' => 'nullable|string|max:50',  // Optional field
+        'rate' => 'required|numeric',  // Rate is required and must be numeric
     ]);
 
-    // Find the vehicle
-    $vehicle = Vehicle::findOrFail($id);
+    try {
+        // Find the vehicle by its ID
+        $vehicle = Vehicle::findOrFail($id);
 
-    // Update the fields
-    $vehicle->vehicle_name = $validatedData['vehicle_name'];
-    // <-- update category now
-    $vehicle->sub_category = $validatedData['sub_category'] ?? null; // sub_category might be null
-    $vehicle->rate = $validatedData['rate'];
+        // Update the fields using the update method
+        $vehicle->update([
+            'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
+            'category' => $validatedData['category'],  // Directly assign the incoming category value
+            'sub_category' => $validatedData['subcategory'],  // Nullable field
+            'rate' => $validatedData['rate'],  // Required field
+        ]);
 
-    $vehicle->save();
+        // Redirect to the settings page with a success message
+        return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
+    } catch (\Exception $e) {
+        // Log the error message
+        \Log::error('Error updating vehicle: ' . $e->getMessage());
 
-    return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
+        // Return to the same page with an error message
+        return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
+    }
 }
+
+    
 
     // User Edit
     public function editUser(Request $request){
         $ue = User::find($request->id);
-        return view('billing.editUser', compact('ue'));
+        $uc = UserCategory::get();
+        return view('billing.editUser', compact('ue', 'uc'));
     }
 
     // Delete Vehicle
@@ -119,6 +131,31 @@ public function updateVehicle(Request $request)
 
     return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
 }
+// Add Category
+public function addCategory(Request $request)
+{
+    \Log::info('Request Data: Add category', $request->all());
+    $validatedData = $request->validate([
+        'category' => 'required|string|max:255', // category_code
+        'vehicle_id' => 'required|integer', // single vehicle ID
+    ]);
+
+    // Save the new category
+    $category = new UserCategory(); // Assuming your model is UserCategory
+    $category->category_code = $validatedData['category'];
+    $category->allowed_vehicles = $validatedData['vehicle_id']; // Directly save single vehicle id
+    $category->save();
+
+    return redirect()->back()->with('success', 'Category added successfully.');
+}
+
+// Delete Category
+public function deleteCategory(Request $request){
+    $dc = UserCategory::find($request->id);
+    $dc->delete();
+    return redirect()->back()->with('success', 'Category deleted successfully!');
+}
+
 
 
     /**

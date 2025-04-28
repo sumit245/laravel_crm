@@ -11,7 +11,7 @@
             @method('POST') <!-- Assuming this is an update form -->
 
             <!-- Hidden ID field -->
-            <input type="hidden" name="user_id" value="{{ $ue->id }}">
+            <input type="hidden" name="user_id" value="{{ $ev->id }}">
 
             <!-- Vehicle Name -->
             <div class="mb-3">
