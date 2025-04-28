@@ -175,6 +175,7 @@ class VendorController extends Controller
      */
     public function update(Request $request, string $id)
     {
+        
         try {
             $validated = $request->validate([
                 'name'          => 'required|string|max:255',
@@ -195,7 +196,7 @@ class VendorController extends Controller
             ]);
             $vendor = User::find($id)->update($validated);
             Log::info($vendor);
-            return redirect()->route('uservendors.show', compact('vendor'))->with('success', 'Vendor updated successfully.');
+            return redirect()->route('uservendors.show')->with('success', 'Vendor updated successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
             $errorMessage = $e->getMessage();
