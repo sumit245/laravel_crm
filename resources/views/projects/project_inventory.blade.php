@@ -1,37 +1,37 @@
 <div>
-  @if (session("success") || session("error"))
-    <div id="flash-message" style="display: none;">
-      @if (session("success"))
-        <div class="alert alert-success">
-          {{ session("success") }}
-        </div>
-      @endif
-      @if (session("error"))
-        <div class="alert alert-danger">
-          {{ session("error") }}
-        </div>
-      @endif
-    </div>
-  @endif
-  <div class="d-flex justify-content-between mb-4">
-    <div class="d-flex mx-2">
+@if (session("success") || session("error"))
+<div id="flash-message" style="display: none;">
+   @if (session("success"))
+   <div class="alert alert-success">
+      {{ session("success") }}
+   </div>
+   @endif
+   @if (session("error"))
+   <div class="alert alert-danger">
+      {{ session("error") }}
+   </div>
+   @endif
+</div>
+@endif
+<div class="d-flex justify-content-between mb-4">
+   <div class="d-flex mx-2">
       <div class="card bg-info mx-2">
-        <div class="card-body">
-          <h5 class="card-title">{{ $initialStockValue }}</h5>
-          <p class="card-text">Initial Stock Value</p>
-        </div>
+         <div class="card-body">
+            <h5 class="card-title">{{ $initialStockValue }}</h5>
+            <p class="card-text">Initial Stock Value</p>
+         </div>
       </div>
       <div class="card bg-success mx-2">
-        <div class="card-body">
-          <h5 class="card-title">{{ number_format($inStoreStockValue, 2) }}</h5>
-          <p class="card-text">In Store Stock Value</p>
-        </div>
+         <div class="card-body">
+            <h5 class="card-title">{{ number_format($inStoreStockValue, 2) }}</h5>
+            <p class="card-text">In Store Stock Value</p>
+         </div>
       </div>
       <div class="card bg-warning mx-2">
-        <div class="card-body">
-          <h5 class="card-title">{{ $dispatchedStockValue }}</h5>
-          <p class="card-text">Dispatched Stock Value</p>
-        </div>
+         <div class="card-body">
+            <h5 class="card-title">{{ $dispatchedStockValue }}</h5>
+            <p class="card-text">Dispatched Stock Value</p>
+         </div>
       </div>
     </div>
     <button id="addStoreButton" class="btn btn-primary" style="max-height: 2.8rem;">
@@ -100,17 +100,17 @@
               <div class="d-flex mt-2" style="max-width: 40%;">
                 <button class="btn btn-success m-2" style="max-height: 3.4rem;" id="addInventoryBtn"
                   onclick="toggleAddInventory({{ $store->id }})">
-                  Add Inventory
-                </button>
-                <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_id" => $store->id]) }}"
-                  class="btn btn-primary m-2" style="max-height: 3.4rem;">
-                  View Inventory
-                </a>
-                <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
+               Add Inventory
+               </button>
+               <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_id" => $store->id]) }}"
+               class="btn btn-primary m-2" style="max-height: 3.4rem;">
+               View Inventory
+               </a>
+               <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
                   onclick="openDispatchModal({{ $store->id }})">
-                  Material Issue
-                </button>
-                {{-- <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
+               Material Issue
+               </button>
+               {{-- <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
                   onclick="deleteStore({{ $store->id }})">
                   Delete Store
                 </button> --}}
@@ -161,114 +161,112 @@
                         </select>
                       </div>
                       <!-- Hidden inputs to hold separate values -->
-                      <input type="hidden" name="code" id="item_code">
-                      <input type="hidden" name="dropdown" id="item_name">
-                      <div class="col-6">
-                        <label for="quantity"><strong>Quantity</strong></label>
-                        <input type="number" id="number" name="number" class="form-control" value="1"
-                          readonly required>
-                      </div>
-                    </div>
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-6">
-                          <label for="manufacturer"><strong>Manufacturer</strong></label>
-                          <input type="text" id="manufacturer" name="manufacturer" class="form-control"
-                            value="" required>
-                        </div>
-                        <div class="col-6">
-                          <label for="heading"><strong>Model</strong></label>
-                          <input type="text" id="model" name="model" class="form-control" value=""
-                            required>
-                        </div>
-                      </div>
-                    </div>
-                    <!-- Form group 3 -->
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-6">
-                          <label for="serialNumber"><strong>Serial Number</strong></label>
-                          <input type="text" id="serialnumber" name="serialnumber" class="form-control"
-                            value="" required>
-                        </div>
-                        <div class="col-6">
-                          <label for="make"><strong>Make</strong></label>
-                          <input type="text" id="make" name="make" class="form-control" value=""
-                            required>
-                        </div>
-                      </div>
-                    </div>
-                    <!-- Form group 4 -->
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-6">
-                          <label for="rate"><strong>Rate</strong></label>
-                          <input type="number" id="rate" name="rate" class="form-control" value=""
-                            required>
-                        </div>
-                        <div class="col-6">
-                          <label for="receiveddate"><strong>Received Date</strong></label>
-                          <input type="date" id="receiveddate" name="receiveddate" class="form-control"
-                            value="" required>
-                        </div>
-                      </div>
-                    </div>
-                    <!-- Form group 5 -->
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-6">
-                          <label for="totalvalue"><strong>Total Value</strong></label>
-                          <input type="number" id="totalvalue" name="totalvalue" class="form-control"
-                            value="" required>
-                        </div>
-                        <div class="col-6">
-                          <label for="hsncode"><strong>HSN Code</strong></label>
-                          <input type="text" id="hsncode" name="hsncode" class="form-control" value=""
-                            required>
-                        </div>
-                      </div>
-                    </div>
-                    <!-- Form group 6 -->
-                    <div class="form-group">
-                      <div class="row">
-                        <div class="col-6">
-                          <label for="description"><strong>Description</strong></label>
-                          <input type="text" id="description" name="description" class="form-control"
-                            value="" required>
-                        </div>
-                        <div class="col-6">
-                          <label for="unit"><strong>Unit</strong></label>
-                          <input type="number" id="unit" name="unit" class="form-control" value=""
-                            required>
-                        </div>
-                      </div>
-                    </div>
-                    <!-- Form group 7 -->
-                    <div class="form-group">
-                      <div class="row">
-
-                      </div>
-                    </div>
-                    <div class="form-group" style="float:right">
-                      <a href="javascript:void(0);" class="btn btn-secondary"
-                        onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
-                      <button type="submit" class="btn btn-primary">Save</button>
-                    </div>
-                </form>
-                <!-- end form -->
-              @else
-                <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
-                  method="POST" enctype="multipart/form-data">
-                  @csrf
-                  <div class="input-group">
-                    <input type="file" name="file" class="form-control form-control-sm" required>
-                    <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
-                      title="Import Inventory">
-                      <i class="mdi mdi-upload"></i> Import
-                    </button>
+    <input type="hidden" name="code" id="item_code">
+    <input type="hidden" name="dropdown" id="item_name">
+    <div class="col-6">
+    <label for="quantity"><strong>Quantity</strong></label>
+<input type="number" id="number" name="number" class="form-control" value="1" readonly required>
+    </div>
                   </div>
-                </form>
-              @endif
+                  <div class="form-group">
+                     <div class="row">
+                        <div class="col-6">
+                           <label for="manufacturer"><strong>Manufacturer</strong></label>
+                           <input type="text" id="manufacturer" name="manufacturer" class="form-control"
+                              value="" required>
+                        </div>
+                        <div class="col-6">
+                           <label for="heading"><strong>Model</strong></label>
+                           <input type="text" id="model" name="model" class="form-control" value=""
+                              required>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- Form group 3 -->
+                  <div class="form-group">
+                     <div class="row">
+                        <div class="col-6">
+                           <label for="serialNumber"><strong>Serial Number</strong></label>
+                           <input type="text" id="serialnumber" name="serialnumber" class="form-control"
+                              value="" required>
+                        </div>
+                        <div class="col-6">
+                           <label for="make"><strong>Make</strong></label>
+                           <input type="text" id="make" name="make" class="form-control" value=""
+                              required>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- Form group 4 -->
+                  <div class="form-group">
+                    <div class="row">
+                      <div class="col-6">
+                        <label for="rate"><strong>Rate</strong></label>
+                        <input type="number" id="rate" name="rate" class="form-control" value=""
+                          required>
+                      </div>
+                      <div class="col-6">
+                        <label for="receiveddate"><strong>Received Date</strong></label>
+                        <input type="date" id="receiveddate" name="receiveddate" class="form-control"
+                          value="" required>
+                      </div>
+                    </div>
+                  </div>
+                  <!-- Form group 5 -->
+                  <div class="form-group">
+                     <div class="row">
+                        <div class="col-6">
+                           <label for="totalvalue"><strong>Total Value</strong></label>
+                           <input type="number" id="totalvalue" name="totalvalue" class="form-control" value=""
+                              required>
+                        </div>
+                        <div class="col-6">
+                           <label for="hsncode"><strong>HSN Code</strong></label>
+                           <input type="text" id="hsncode" name="hsncode" class="form-control" value=""
+                              required>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- Form group 6 -->
+                  <div class="form-group">
+                     <div class="row">
+                        <div class="col-6">
+                           <label for="description"><strong>Description</strong></label>
+                           <input type="text" id="description" name="description" class="form-control"
+                              value="" required>
+                        </div>
+                        <div class="col-6">
+                           <label for="unit"><strong>Unit</strong></label>
+                           <input type="number" id="unit" name="unit" class="form-control" value=""
+                              required>
+                        </div>
+                     </div>
+                  </div>
+                  <!-- Form group 7 -->
+                  <div class="form-group">
+                    <div class="row">
+                      
+                    </div>
+                  </div>
+                  <div class="form-group" style="float:right">
+                  <a href="javascript:void(0);" class="btn btn-secondary" onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
+                    <button type="submit" class="btn btn-primary">Save</button>
+                  </div>
+            </form>
+            <!-- end form -->
+            @else
+            <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
+            method="POST" enctype="multipart/form-data">
+            @csrf
+            <div class="input-group">
+            <input type="file" name="file" class="form-control form-control-sm" required>
+            <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
+               title="Import Inventory">
+            <i class="mdi mdi-upload"></i> Import
+            </button>
+            </div>
+            </form>
+            @endif
             </div>
           </li>
         @endforeach
