@@ -1,0 +1,31 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Imports\StreetlightPoleImport;
+use Illuminate\Http\Request;
+use App\Models\Streetlight;
+use App\Models\Project;
+use Maatwebsite\Excel\Facades\Excel;
+
+class DeviceController extends Controller
+{
+    public function index()
+    {
+        $districts = Streetlight::select('district')->distinct()->get();
+        $project = Project::where('id', 11)->first(); // Changed from 11 to 1 and using first() to get a single project
+        return view('poles.index', compact('districts', 'project'));
+    }
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+        try {
+            Excel::import(new StreetlightPoleImport, $request->file('file'));
+            return back()->with('success', 'Pole data imported successfully.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error importing file: ' . $e->getMessage());
+        }
+    }
+}
