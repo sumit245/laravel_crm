@@ -132,22 +132,57 @@ class ConvenienceController extends Controller
     return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
 }
 // Add Category
-public function addCategory(Request $request)
-{
-    \Log::info('Request Data: Add category', $request->all());
-    $validatedData = $request->validate([
-        'category' => 'required|string|max:255', // category_code
-        'vehicle_id' => 'required|integer', // single vehicle ID
-    ]);
+    public function addCategory(Request $request)
+    {
+        \Log::info('Request Data: Add category', $request->all());
+        $validatedData = $request->validate([
+            'category' => 'required|string|max:255', // category_code
+            'vehicle_id' => 'required|integer', // single vehicle ID
+        ]);
 
-    // Save the new category
-    $category = new UserCategory(); // Assuming your model is UserCategory
-    $category->category_code = $validatedData['category'];
-    $category->allowed_vehicles = $validatedData['vehicle_id']; // Directly save single vehicle id
-    $category->save();
+        // Save the new category
+        $category = new UserCategory(); // Assuming your model is UserCategory
+        $category->category_code = $validatedData['category'];
+        $category->allowed_vehicles = $validatedData['vehicle_id']; // Directly save single vehicle id
+        $category->save();
 
-    return redirect()->back()->with('success', 'Category added successfully.');
-}
+        return redirect()->back()->with('success', 'Category added successfully.');
+    }
+
+    public function editCategory(Request $request){
+        $uc = UserCategory::find($request->id);
+        $uv = Vehicle::get();
+        return view('billing.editCategory', compact('uc', 'uv'));
+    }
+
+    public function updateCategory(Request $request)
+    {
+        try {
+            \Log::info('Request Data: Update category', $request->all());
+
+            $validatedData = $request->validate([
+                'category_code' => 'required|string|max:255',
+                'vehicle_id' => 'required|integer',
+            ]);
+
+            $category = UserCategory::find($request->category_id);
+
+            if (!$category) {
+                return redirect()->back()->with('error', 'Category not found.');
+            }
+
+            $category->category_code = $validatedData['category_code'];
+            $category->allowed_vehicles = $validatedData['vehicle_id'];
+
+            $category->save();
+
+            return redirect()->route('billing.settings')->with('success', 'Category updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Error updating category: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while updating the category.');
+        }
+    }
+
 
 // Delete Category
 public function deleteCategory(Request $request){
