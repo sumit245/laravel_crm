@@ -51,9 +51,9 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 'panel_qr' => $row['panel_qr'],
                 'luminary_qr' => $row['luminary_qr'],
                 'sim_number' => $row['sim_number'],
-                'ward_name' => $row['ward'],
+                'ward_name' => $row['ward_name'],
                 'isInstallationDone' => true,
-                'updated_at' => Carbon::parse($row['date_of_installation']),
+                'updated_at' =>  Carbon::createFromFormat('d/m/y', $row['date_of_installation']),
                 'task_id' => $task->id,
                 'site_id' => $streetlight->id,
             ];
@@ -66,21 +66,24 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 $poleData['panel_qr'] = $row['panel_qr'];
                 $poleData['luminary_qr'] = $row['luminary_qr'];
                 $poleData['sim_number'] = $row['sim_number'];
-                $poleData['ward_name'] = $row['ward'];
+                $poleData['ward_name'] = $row['ward_name'];
                 $poleData['isInstallationDone'] = true;
-                $poleData['updated_at'] = Carbon::parse($row['date_of_installation']);
+                $poleData['updated_at'] =  Carbon::createFromFormat('d/m/y', $row['date_of_installation']);
                 $poleData['task_id'] = $task->id;
                 $poleData['site_id'] = $streetlight->id;
                 Pole::create($poleData);
             }
 
             // Set pole_id in inventory dispatch
-            foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
-                InventoryDispatch::where('serial_number', $row[$item])
+            foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as  $item) {
+                InventoryDispatch::where('serial_number', (string)$row[$item])
                     ->whereNull('streetlight_pole_id')
                     ->where('is_consumed', 0)
                     ->update([
-                        'streetlight_pole_id' => $pole ? $pole->id : Pole::latest()->first()->id
+                        'streetlight_pole_id' => $pole ? $pole->id : Pole::latest()->first()->id,
+                        'is_consumed' => 1,
+                        'updated_at' => Carbon::now()
+
                     ]);
             }
 

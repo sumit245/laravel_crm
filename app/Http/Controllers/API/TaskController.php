@@ -637,7 +637,7 @@ class TaskController extends Controller
     }
 
     // Get Pole Details by ID 'Original'
-    
+
     /*public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
@@ -682,59 +682,59 @@ class TaskController extends Controller
     */
     // Get Pole Details by ID 'Y'
     public function viewPoleDetails($id)
-{
-    // Fetch the pole with the given ID along with its relationships
-    $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
-    Log::info("Pole details", [$pole]);
+    {
+        // Fetch the pole with the given ID along with its relationships
+        $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
+        Log::info("Pole details", [$pole]);
 
-    $surveyImages = $this->processImagesFromJson($pole->survey_image);
-    $submissionImages = $this->processImagesFromJson($pole->submission_image);
+        $surveyImages = $this->processImagesFromJson($pole->survey_image);
+        $submissionImages = $this->processImagesFromJson($pole->submission_image);
 
-    // Fetch related users from the latest task
-    $latestTask = $pole->task()->first(); 
-    Log::info("Latest Task", [$latestTask]);
+        // Fetch related users from the latest task
+        $latestTask = $pole->task()->first();
+        Log::info("Latest Task", [$latestTask]);
 
-    $installer = $latestTask?->vendor;
-    $projectManager = $latestTask?->manager;
-    $siteEngineer = $latestTask?->engineer;
+        $installer = $latestTask?->vendor;
+        $projectManager = $latestTask?->manager;
+        $siteEngineer = $latestTask?->engineer;
 
-    return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
-}
-
-// 👇 Add this helper inside the same controller
-private function processImagesFromJson($json)
-{
-    $imageUrls = [];
-
-    if (empty($json)) {
-        return $imageUrls;
+        return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
     }
 
-    $imagesArray = json_decode($json, true);
+    // 👇 Add this helper inside the same controller
+    private function processImagesFromJson($json)
+    {
+        $imageUrls = [];
 
-    if (!is_array($imagesArray)) {
-        return $imageUrls;
-    }
+        if (empty($json)) {
+            return $imageUrls;
+        }
 
-    // Check S3 config is present before attempting to generate URLs
-    $bucket = config('filesystems.disks.s3.bucket');
-    if (empty($bucket)) {
-        Log::error('S3 bucket is not configured!');
-        return $imageUrls;
-    }
+        $imagesArray = json_decode($json, true);
 
-    foreach ($imagesArray as $image) {
-        if (!empty($image)) {
-            try {
-                $imageUrls[] = Storage::disk('s3')->url($image);
-            } catch (\Exception $e) {
-                Log::error("Failed to generate S3 URL for image: $image", ['exception' => $e->getMessage()]);
+        if (!is_array($imagesArray)) {
+            return $imageUrls;
+        }
+
+        // Check S3 config is present before attempting to generate URLs
+        $bucket = config('filesystems.disks.s3.bucket');
+        if (empty($bucket)) {
+            Log::error('S3 bucket is not configured!');
+            return $imageUrls;
+        }
+
+        foreach ($imagesArray as $image) {
+            if (!empty($image)) {
+                try {
+                    $imageUrls[] = Storage::disk('s3')->url($image);
+                } catch (\Exception $e) {
+                    Log::error("Failed to generate S3 URL for image: $image", ['exception' => $e->getMessage()]);
+                }
             }
         }
-    }
 
-    return $imageUrls;
-}
+        return $imageUrls;
+    }
 
 
     // Api to export poles in excel in vendor/staff app
