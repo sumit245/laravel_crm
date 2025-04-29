@@ -15,7 +15,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-use PhpParser\Node\Stmt\TryCatch;
+
 
 class InventoryController extends Controller
 {
@@ -351,7 +351,7 @@ class InventoryController extends Controller
             //Structure Data
             // $totalStructure = $inventory->where('item_code', 'SL04')->count();
             // $StructureRate = $inventory->where('item_code', 'SL04')
-                // ->value('rate');
+            // ->value('rate');
             // $totalStructureValue = $StructureRate * $totalStructure;
             // $totalStructureValue = number_format($totalStructureValue, 2);
             // Structure Dispatch data
