@@ -1,0 +1,39 @@
+[2025-04-29 14:03:59] local.INFO: []  
+[2025-04-29 14:03:59] local.INFO: []  
+[2025-04-29 14:03:59] local.INFO: []  
+[2025-04-29 14:04:35] local.ERROR: Attempt to read property "id" on null  
+[2025-04-29 14:04:49] local.ERROR: Attempt to read property "id" on null  
+[2025-04-29 14:08:17] local.INFO: Raw ward string: 7,6,4  
+[2025-04-29 14:08:17] local.INFO: array (
+  0 => 
+  array (
+    'ward' => '7',
+  ),
+  1 => 
+  array (
+    'ward' => '6',
+  ),
+  2 => 
+  array (
+    'ward' => '4',
+  ),
+)  
+[2025-04-29 14:08:31] local.INFO: Importing file: Copy of SSL Installation Format(1).xlsx  
+[2025-04-29 14:08:34] local.ERROR: Error importing file: The following items are missing: Material 'battery_qr' with serial 'EEPL/01/2025/1506' not yet dispatched to vendor, Material 'panel_qr' with serial '1341M3225B232932' not yet dispatched to vendor, Material 'luminary_qr' with serial '861268075789371' not yet dispatched to vendor  
+[2025-04-29 14:11:34] local.INFO: Raw ward string: 7,6,4  
+[2025-04-29 14:11:34] local.INFO: array (
+  0 => 
+  array (
+    'ward' => '7',
+  ),
+  1 => 
+  array (
+    'ward' => '6',
+  ),
+  2 => 
+  array (
+    'ward' => '4',
+  ),
+)  
+[2025-04-29 14:11:43] local.INFO: Importing file: Copy of SSL Installation Format(1).xlsx  
+[2025-04-29 14:11:45] local.ERROR: Error importing file: Target not allotted for site ID: 914  
