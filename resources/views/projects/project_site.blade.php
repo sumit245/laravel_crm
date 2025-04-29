@@ -28,8 +28,7 @@
       <form action="{{ route("sites.import", $project->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="input-group">
-          <input type="file" name="file" style="height: 40px !important;" class="form-control form-control-sm"
-            required>
+          <input type="file" name="file" style="height: 40px !important;" class="form-control form-control-sm" required>
           <button type="submit" class="btn btn-sm btn-primary"
             style="height: 40px !important; align-items:center;justify-content:center;" data-toggle="tooltip"
             title="Import Sites">
@@ -37,8 +36,7 @@
           </button>
         </div>
       </form>
-      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1 mb-4"
-        style="height: 40px !important;">Add Site</a>
+      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1 mb-4" style="height: 40px !important;">Add Site</a>
     </div>
   </div>
   <x-data-table id="sitesTable" :pageLength="50">
@@ -98,18 +96,17 @@
           @endif
 
           <td>
-            <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}"
-              class="btn btn-info btn-icon" data-toggle="tooltip" title="View Details">
+            <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon" data-toggle="tooltip"
+              title="View Details">
               <i class="mdi mdi-eye"></i>
             </a>
-            <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}"
-              class="btn btn-warning btn-icon" data-toggle="tooltip" title="Edit Site">
+            <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon" data-toggle="tooltip"
+              title="Edit Site">
               <i class="mdi mdi-pencil"></i>
             </a>
-            <form action="{{ route("sites.destroy", $site->id) }}?project_id={{ $project->id }}" method="POST"
-              style="display:inline;">
+            <form action="{{ route('sites.destroy', $site->id) }}?project_id={{ $project->id }}" method="POST" style="display:inline;">
               @csrf
-              @method("DELETE")
+              @method('DELETE')
               <button type="submit" class="btn btn-danger btn-icon" data-toggle="tooltip" title="Delete Site">
                 <i class="mdi mdi-delete"></i>
               </button>
