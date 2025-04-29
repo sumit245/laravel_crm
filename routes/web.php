@@ -11,6 +11,7 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use App\Models\InventroyStreetLightModel;
 use Illuminate\Http\Request;
@@ -26,8 +27,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/jicr', [JICRController::class, 'index'])->name('jicr.index');
     Route::get('/jicr/blocks/{district}', [JICRController::class, 'getBlocks'])->name('jicr.blocks');
     Route::get('/jicr/panchayats/{block}', [JICRController::class, 'getPanchayats'])->name('jicr.panchayats');
+    Route::get('/jicr/ward/{panchayat}', [JICRController::class, 'getWards'])->name('jicr.wards');
     Route::get('/jicr/generate', [JICRController::class, 'generatePDF'])->name('jicr.generate');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
+    Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
+    Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
     // Staff router
     Route::resource('staff', StaffController::class);
     Route::prefix('staff')->group(function () {

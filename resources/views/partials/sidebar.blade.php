@@ -2,7 +2,6 @@
   $selectedProjectId = session("project_id");
 @endphp
 
-
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav" style="max-height: 80%;">
     <li class="nav-item nav-category">Project</li>
@@ -25,6 +24,14 @@
         <span class="menu-title">Generate JICR</span>
       </a>
     </li>
+    @if (auth()->user()->role == 0)
+      <li class="nav-item">
+        <a class="nav-link" href="{{ route("device.index", ["project_id" => $selectedProjectId]) }}">
+          <i class="menu-icon mdi mdi-file-excel"></i>
+          <span class="menu-title">Import Devices</span>
+        </a>
+      </li>
+    @endif
     {{-- @endif --}}
     <li class="nav-item nav-category">Users</li>
     @if (auth()->user()->role == 0)
@@ -67,8 +74,8 @@
         <span class="menu-title">Target Management</span>
       </a>
     </li>
-<!-- Billing management -->
-<li class="nav-item nav-category">Billing Management</li>
+    <!-- Billing management -->
+    <li class="nav-item nav-category">Billing Management</li>
     <li class="nav-item">
       <a class="nav-link" href="{{ route("billing.tada") }}">
         <i class="menu-icon mdi mdi-store"></i>
@@ -93,7 +100,7 @@
         <span class="menu-title">Settings</span>
       </a>
     </li>
-<!-- Billing management ends -->
+    <!-- Billing management ends -->
 
     <li class="nav-item nav-category">Inventory</li>
     <li class="nav-item">
