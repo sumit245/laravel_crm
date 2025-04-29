@@ -34,7 +34,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
             }
 
             foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
-                $dispatch = InventoryDispatch::where('serial_number', $row[$item])
+                $dispatch = InventoryDispatch::where('serial_number', (string)$row[$item])
                     ->whereNull('streetlight_pole_id')
                     ->where('is_consumed', 0)
                     ->first();
@@ -53,7 +53,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 'sim_number' => $row['sim_number'],
                 'ward_name' => $row['ward_name'],
                 'isInstallationDone' => true,
-                'updated_at' =>  Carbon::createFromFormat('d/m/y', $row['date_of_installation']),
+                'updated_at' =>  Carbon::parse($row['date_of_installation']),
                 'task_id' => $task->id,
                 'site_id' => $streetlight->id,
             ];
@@ -68,7 +68,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 $poleData['sim_number'] = $row['sim_number'];
                 $poleData['ward_name'] = $row['ward_name'];
                 $poleData['isInstallationDone'] = true;
-                $poleData['updated_at'] =  Carbon::createFromFormat('d/m/y', $row['date_of_installation']);
+                $poleData['updated_at'] =  Carbon::parse($row['date_of_installation']);
                 $poleData['task_id'] = $task->id;
                 $poleData['site_id'] = $streetlight->id;
                 Pole::create($poleData);
