@@ -6,10 +6,11 @@
             <!-- Vertical Tab Navigation -->
             <div class="col-md-3 col-lg-2 bg-light" style="min-height: calc(100vh - 60px);">
                 <div class="settings-sidebar">
-                    <div class="p-3">
-                        <h5 class="mb-0 fw-bold">Settings</h5>
-                    </div>
+                    
                     <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <div class="p-3">
+                            <h5 class="mb-0 fw-bold">Settings</h5>
+                        </div>
                         <button class="nav-link active text-start py-3 px-4" id="v-pills-vehicle-tab" data-bs-toggle="pill" data-bs-target="#v-pills-vehicle" type="button" role="tab" aria-controls="v-pills-vehicle" aria-selected="true">
                             <i class="bi bi-car-front me-2"></i> Vehicle Settings
                         </button>
@@ -155,21 +156,15 @@
                                                 <td>{{ $cat->category_code }}</td>
                                                 <td>{{ $cat->allowed_vehicles }}</td>
                                                 <td>
-                                                <a href="#" 
-                                                    class="btn btn-icon btn-primary editCategoryBtn" 
-                                                    data-bs-toggle="modal" 
-                                                    data-bs-target="#editCategoryModal{{ $cat->id }}" 
-                                                    title="Edit Category"
-                                                    data-id="{{ $cat->id }}" 
-                                                    data-name="{{ $cat->category_code }}"
-                                                    data-vehicles="{{ $cat->allowed_vehicles }}">
+                                                <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-primary">
                                                         <i class="mdi mdi-pencil"></i>
                                                 </a>    
-                                                    <form action="{{ route('billing.deletecategory', $cat->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this category?');">
+                                                    <form action="{{ route('billing.deletecategory', $cat->id) }}" method="POST" style="display:inline;">
                                                         @csrf
                                                         @method('DELETE')
 
-                                                        <button type="submit" class="btn btn-icon btn-danger" title="Delete Category">
+                                                        <button type="submit" class="btn btn-icon btn-danger" title="Delete Category"
+                                                        onclick="return confirm('Are you sure you want to delete {{ $cat->category_code }}?')">
                                                             <i class="mdi mdi-delete"></i>
                                                         </button>
                                                     </form>
@@ -399,9 +394,22 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="editCategoryForm">
-                    <!-- your form fields stay same -->
-                </form>
+            <form id="editCategoryForm">
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
+                            <div class="invalid-feedback">Please enter a category name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                                @foreach ($categories as $category)
+                                <option value="{{ $category->category_code }}" selected>{{ $category->category_code }}</option>
+                                @endforeach
+                            </select>
+                            <div class="invalid-feedback">Please select at least one vehicle.</div>
+                        </div>
+                    </form>
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

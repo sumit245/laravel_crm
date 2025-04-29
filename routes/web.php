@@ -79,6 +79,10 @@ Route::middleware(['auth'])->group(function () {
     
     // Add Categories
     Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    // Edit Categories
+    Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
+    // Update Categories
+    Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
     // Delete Categories
     Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');  
     
