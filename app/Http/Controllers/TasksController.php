@@ -146,16 +146,17 @@ class TasksController extends Controller
     {
         // Target in streetlight project is being edited
         $projectId = request()->query('project_id');
-        if ($projectId == 11) {
+        if($projectId==11){
             $tasks = StreetlightTask::with(['site', 'engineer', 'vendor']) // eager load relationships
                 ->findOrFail($id);
             // Get all engineers and vendors from the users table based on role
             $engineers = User::where('role', 1)->get();
             $vendors = User::where('role', 3)->get();
 
-
-            return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
+    
+        return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
         }
+        
     }
 
     /**
@@ -164,23 +165,23 @@ class TasksController extends Controller
     public function update(Request $request, string $id)
     {
         $projectId = $request->input('project_id');
-
+    
         if ($projectId == 11) {
             $request->validate([
                 'engineer_id' => 'required|exists:users,id',
                 'vendor_id' => 'required|exists:users,id',
-
+                
             ]);
-
+    
             try {
                 $task = StreetlightTask::findOrFail($id);
-
+    
                 $task->engineer_id = $request->engineer_id;
                 $task->vendor_id = $request->vendor_id;
-
-
+                
+    
                 $task->save();
-
+    
                 return redirect()->route('projects.show', $projectId)
                     ->with('success', 'Task updated successfully.');
             } catch (\Exception $e) {
@@ -188,7 +189,7 @@ class TasksController extends Controller
             }
         }
     }
-
+    
 
     /**
      * Remove the specified resource from storage.

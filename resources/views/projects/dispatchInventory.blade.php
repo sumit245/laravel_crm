@@ -9,12 +9,11 @@
           <span aria-hidden="true">&times;</span>
         </button>
       </div>
-
       <form id="dispatchForm">
         @csrf
         <input type="hidden" id="dispatchStoreId" name="store_id">
         <input type="hidden" name="project_id" value="{{ $project->id }}">
-        <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? "N/A" }}">
+        <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? "N/A"}}">
         <div class="modal-body">
           <!-- Vendor Selection -->
           <div class="form-group">
@@ -89,6 +88,7 @@
           <button type="button" class="btn btn-primary printbtn" id="printButton">
             <i class="mdi mdi-printer"></i> Print
           </button>
+
           <button type="button" id="issueMaterial" class="btn btn-primary">Issue
             items</button>
         </div>

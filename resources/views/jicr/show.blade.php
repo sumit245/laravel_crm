@@ -367,10 +367,18 @@
       max-width: 100%;
       overflow-x: auto;
     }
-
+    .mt-4 {
+    margin-top: 0rem !important;
+}
+.mt-5 {
+    margin-top: 0rem !important;
+}
+.annexure_table table td {
+  font-size: 6px;
+}
     .form-container {
-      border: 1px solid #000;
-      padding: 20px;
+      /* border: 1px solid #000; */
+      /* padding: 20px; */
       position: relative;
       margin-top: 50px;
       max-width: 100%;
@@ -386,7 +394,7 @@
       text-align: center;
       font-weight: bold;
       margin-bottom: 15px;
-      font-size: 1.2rem;
+      font-size: 1rem;
     }
 
     .intro-text {
@@ -469,7 +477,7 @@
       }
 
       .form-container {
-        border: 2px solid #000 !important;
+        border: none !important;
         margin-top: 0;
         padding: 15px;
         width: 100%;
