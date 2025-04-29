@@ -16,6 +16,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
 {
     public function collection(Collection $rows)
     {
+        $missingItems = [];
         foreach ($rows as $row) {
             $streetlight = Streetlight::where([
                 ['district', $row['district']],
@@ -33,6 +34,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 throw new \Exception("Target not allotted for site ID: {$streetlight->id}");
             }
 
+
             foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
                 $dispatch = InventoryDispatch::where('serial_number', (string)$row[$item])
                     ->whereNull('streetlight_pole_id')
@@ -40,7 +42,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                     ->first();
 
                 if (!$dispatch) {
-                    throw new \Exception("Material '{$item}' with serial '{$row[$item]}' not yet dispatched to vendor");
+                    $missingItems[] = "Material '{$item}' with serial '{$row[$item]}' not yet dispatched to vendor";
                 }
             }
 
@@ -88,6 +90,9 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
             }
 
             $streetlight->increment('number_of_installed_poles');
+        }
+        if (!empty($missingItems)) {
+            throw new \Exception("The following items are missing: " . implode(", ", $missingItems));
         }
     }
 }
