@@ -155,9 +155,16 @@
                                                 <td>{{ $cat->category_code }}</td>
                                                 <td>{{ $cat->allowed_vehicles }}</td>
                                                 <td>
-                                                    <a href="#" class="btn btn-icon btn-primary editVehicleBtn" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
+                                                <a href="#" 
+                                                    class="btn btn-icon btn-primary editCategoryBtn" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#editCategoryModal{{ $cat->id }}" 
+                                                    title="Edit Category"
+                                                    data-id="{{ $cat->id }}" 
+                                                    data-name="{{ $cat->category_code }}"
+                                                    data-vehicles="{{ $cat->allowed_vehicles }}">
                                                         <i class="mdi mdi-pencil"></i>
-                                                    </a>
+                                                </a>    
                                                     <form action="{{ route('billing.deletecategory', $cat->id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Are you sure you want to delete this category?');">
                                                         @csrf
                                                         @method('DELETE')
@@ -384,43 +391,30 @@
     </div>
 
     <!-- Edit User Category Modal -->
-    <div class="modal fade" id="editUserCategoryModal" tabindex="-1" aria-labelledby="editUserCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="editUserCategoryModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit User Category</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form id="editUserCategoryForm">
-                        <div class="mb-3">
-                            <label for="userName" class="form-label fw-bold">User Name</label>
-                            <input type="text" class="form-control" id="userName" value="John Doe" readonly>
-                        </div>
-                        <div class="mb-3">
-                            <label for="userCategory" class="form-label fw-bold">Category</label>
-                            <select class="form-select" id="userCategory" required>
-                                <option value="" disabled>Select category</option>
-                                <option value="Field Staff" selected>{{--  --}}</option>
-                                <option value="Management">Management</option>
-                                <option value="Store Staff">Store Staff</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                            <div class="invalid-feedback">Please select a category.</div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i> Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" id="updateUserCategoryBtn">
-                        <i class="bi bi-save me-1"></i> Update Category
-                    </button>
-                </div>
+    <div class="modal fade" id="editCategoryModal{{ $cat->id }}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{ $cat->id }}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="editCategoryModalLabel{{ $cat->id }}"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="editCategoryForm">
+                    <!-- your form fields stay same -->
+                </form>
+            </div>
+            <div class="modal-footer bg-light">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-1"></i> Cancel
+                </button>
+                <button type="button" class="btn btn-primary" id="updateCategoryBtn">
+                    <i class="bi bi-save me-1"></i> Update Category
+                </button>
             </div>
         </div>
     </div>
+</div>
+
 
     <!-- Assign Category Modal -->
     <div class="modal fade" id="assignCategoryModal" tabindex="-1" aria-labelledby="assignCategoryModalLabel" aria-hidden="true">
