@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Tada;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
@@ -23,9 +24,10 @@ class ConvenienceController extends Controller
         return view('billing.convenience');
     }
 
-    public function tada()
-    {
-        return  view('billing.tada');
+    // Tada view
+    public function tadaView(){
+        $tadas = Tada::get();
+        return view('billing.tada', compact('tadas'));
     }
 
     public function settings()
