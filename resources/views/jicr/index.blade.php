@@ -51,7 +51,7 @@
 
     </div>
     </form>
-    @if (!empty($showReport) && isset($data))
+    @if (!empty($showReport) && isset($data) && !empty($data))
       @include("jicr.show", ["data" => $data])
     @endif
 
