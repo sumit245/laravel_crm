@@ -57,6 +57,7 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
+        \Log::info('Received request staff data:', $request->all());
         // Validate the incoming data without requiring a username
         $validated = $request->validate([
             'manager_id' => 'nullable|exists:users,id',
@@ -76,8 +77,12 @@ class StaffController extends Controller
             // Create the staff user
             $staff = User::create($validated);
 
-            return redirect()->route('staff.show', $staff->id)
-                ->with('success', 'Staff created successfully.');
+            return redirect()->route('staff.index')
+                 ->with('success', 'Staff created successfully.');
+
+            // Previous return statement not working
+            // return redirect()->route('staff.show', $staff->id)
+            //     ->with('success', 'Staff created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
             $errorMessage = $e->getMessage();
@@ -105,6 +110,9 @@ class StaffController extends Controller
 
         $surveyedPolesCount = 0;
         $installedPolesCount = 0;
+        $surveyedPoles = 0; 
+        $installedPoles = 0;
+
         $isStreetlightProject = ($project->project_type == 1) ? true : false;
         // Check if the project type is 1 (indicating a streetlight project)
         if ($isStreetlightProject) {
@@ -196,7 +204,7 @@ class StaffController extends Controller
         $staff = User::findOrFail($id);
         $projects = Project::all();
             
-        return view('staff.edit', compact('staff')); // Form to edit staff
+        return view('staff.edit', compact('staff', 'projects')); // Form to edit staff
     }
 
     /**
