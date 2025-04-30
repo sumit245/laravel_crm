@@ -66,6 +66,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/view-bills', function () {
     return view('billing.viewBills');
     })->name('view.bills');
+// View Settings
+Route::get('convenience-settings', function () {
+    return view('billing.settings');
+})->name('convenience.settings');
 
 
     // Inventory router

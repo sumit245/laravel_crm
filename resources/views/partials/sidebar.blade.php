@@ -88,7 +88,7 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link disabled" href="#">
+      <a class="nav-link" href="{{ route("convenience.settings") }}">
         <i class="menu-icon mdi mdi-store"></i>
         <span class="menu-title">Settings</span>
       </a>
