@@ -1,39 +1,17 @@
-[2025-04-29 14:03:59] local.INFO: []  
-[2025-04-29 14:03:59] local.INFO: []  
-[2025-04-29 14:03:59] local.INFO: []  
-[2025-04-29 14:04:35] local.ERROR: Attempt to read property "id" on null  
-[2025-04-29 14:04:49] local.ERROR: Attempt to read property "id" on null  
-[2025-04-29 14:08:17] local.INFO: Raw ward string: 7,6,4  
-[2025-04-29 14:08:17] local.INFO: array (
-  0 => 
-  array (
-    'ward' => '7',
-  ),
-  1 => 
-  array (
-    'ward' => '6',
-  ),
-  2 => 
-  array (
-    'ward' => '4',
-  ),
+[2025-04-30 11:13:21] local.INFO: array (
+  'district' => 'Lakhisarai',
+  'block' => 'Surajgarha',
+  'panchayat' => 'Rampur',
+  'from_date' => '2025-03-31',
+  'to_date' => '2025-04-30',
 )  
-[2025-04-29 14:08:31] local.INFO: Importing file: Copy of SSL Installation Format(1).xlsx  
-[2025-04-29 14:08:34] local.ERROR: Error importing file: The following items are missing: Material 'battery_qr' with serial 'EEPL/01/2025/1506' not yet dispatched to vendor, Material 'panel_qr' with serial '1341M3225B232932' not yet dispatched to vendor, Material 'luminary_qr' with serial '861268075789371' not yet dispatched to vendor  
-[2025-04-29 14:11:34] local.INFO: Raw ward string: 7,6,4  
-[2025-04-29 14:11:34] local.INFO: array (
-  0 => 
-  array (
-    'ward' => '7',
-  ),
-  1 => 
-  array (
-    'ward' => '6',
-  ),
-  2 => 
-  array (
-    'ward' => '4',
-  ),
-)  
-[2025-04-29 14:11:43] local.INFO: Importing file: Copy of SSL Installation Format(1).xlsx  
-[2025-04-29 14:11:45] local.ERROR: Error importing file: Target not allotted for site ID: 914  
+[2025-04-30 11:15:27] local.INFO: {"id":787,"task_id":"LAK012","state":"Bihar","district":"Lakhisarai","block":"Surajgarha","panchayat":"Abgil Rampur ","ward":"5,6,7,8,9,10","mukhiya_contact":0,"number_of_surveyed_poles":0,"number_of_installed_poles":0,"isSurveyDone":0,"isNetworkAvailable":0,"isInstallationDone":0,"complete_pole_number":null,"uname":null,"district_id":null,"block_id":null,"panchayat_id":null,"ward_id":null,"pole_id":null,"luminary_qr":null,"battery_qr":null,"panel_qr":null,"file":null,"lat":null,"lng":null,"remark":null,"created_at":"2025-02-14T11:51:51.000000Z","updated_at":"2025-02-14T11:51:51.000000Z","project_id":11,"SID":0,"total_poles":"60"}  
+[2025-04-30 11:15:27] local.ERROR: Attempt to read property "id" on null  
+[2025-04-30 11:16:03] local.INFO: []  
+[2025-04-30 11:16:03] local.INFO: []  
+[2025-04-30 11:16:03] local.INFO: []  
+[2025-04-30 11:17:47] local.INFO: {"id":787,"task_id":"LAK012","state":"Bihar","district":"Lakhisarai","block":"Surajgarha","panchayat":"Abgil Rampur ","ward":"5,6,7,8,9,10","mukhiya_contact":0,"number_of_surveyed_poles":0,"number_of_installed_poles":0,"isSurveyDone":0,"isNetworkAvailable":0,"isInstallationDone":0,"complete_pole_number":null,"uname":null,"district_id":null,"block_id":null,"panchayat_id":null,"ward_id":null,"pole_id":null,"luminary_qr":null,"battery_qr":null,"panel_qr":null,"file":null,"lat":null,"lng":null,"remark":null,"created_at":"2025-02-14T11:51:51.000000Z","updated_at":"2025-02-14T11:51:51.000000Z","project_id":11,"SID":0,"total_poles":"60"}  
+[2025-04-30 11:17:47] local.ERROR: Attempt to read property "id" on null  
+[2025-04-30 11:18:01] local.INFO: {"id":787,"task_id":"LAK012","state":"Bihar","district":"Lakhisarai","block":"Surajgarha","panchayat":"Abgil Rampur ","ward":"5,6,7,8,9,10","mukhiya_contact":0,"number_of_surveyed_poles":0,"number_of_installed_poles":0,"isSurveyDone":0,"isNetworkAvailable":0,"isInstallationDone":0,"complete_pole_number":null,"uname":null,"district_id":null,"block_id":null,"panchayat_id":null,"ward_id":null,"pole_id":null,"luminary_qr":null,"battery_qr":null,"panel_qr":null,"file":null,"lat":null,"lng":null,"remark":null,"created_at":"2025-02-14T11:51:51.000000Z","updated_at":"2025-02-14T11:51:51.000000Z","project_id":11,"SID":0,"total_poles":"60"}  
+[2025-04-30 11:18:01] local.ERROR: Attempt to read property "id" on null  
+[2025-04-30 11:22:37] local.INFO: {"id":790,"task_id":"LAK015","state":"Bihar","district":"Lakhisarai","block":"Surajgarha","panchayat":"Rampur ","ward":"5,6,7,8,9,10","mukhiya_contact":0,"number_of_surveyed_poles":54,"number_of_installed_poles":0,"isSurveyDone":0,"isNetworkAvailable":0,"isInstallationDone":0,"complete_pole_number":null,"uname":null,"district_id":null,"block_id":null,"panchayat_id":null,"ward_id":null,"pole_id":null,"luminary_qr":null,"battery_qr":null,"panel_qr":null,"file":null,"lat":null,"lng":null,"remark":null,"created_at":"2025-02-14T11:51:51.000000Z","updated_at":"2025-03-08T22:58:18.000000Z","project_id":11,"SID":0,"total_poles":"60"}  
