@@ -216,9 +216,9 @@
                     <label for="category" class="form-label fw-bold">Category</label>
                     <select class="form-select" name="category" id="category" required>
                         <option value="" selected disabled>Select category</option>
-                        @foreach($vehicles as $vehicle)
-                            <option value="{{ $vehicle->category }}">{{ $vehicle->category }}</option>
-                        @endforeach
+                            <option value="Bike">Bike</option>
+                            <option value="Car">Car</option>
+                            <option value="Public Transport">Public Transport</option>
                     </select>
                     <div class="invalid-feedback">Please select a category.</div>
                 </div>
