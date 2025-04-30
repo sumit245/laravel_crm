@@ -66,12 +66,21 @@ class JICRController extends Controller
                 'from_date' => 'required|date',
                 'to_date' => 'required|date|after_or_equal:from_date',
             ]);
+            $normalizedDistrict = strtolower(trim($request->district));
+            $normalizedBlock = strtolower(trim($request->block));
+            $normalizedPanchayat = strtolower(trim($request->panchayat));
+
+            $streetlight = Streetlight::whereRaw("TRIM(LOWER(district)) = ?", [$normalizedDistrict])
+                ->whereRaw("TRIM(LOWER(block)) = ?", [$normalizedBlock])
+                ->whereRaw("TRIM(LOWER(panchayat)) = ?", [$normalizedPanchayat])
+                ->first();
 
             // Get streetlights based on the selected criteria
-            $streetlight = Streetlight::whereRaw('LOWER(district) LIKE ?', ['%' . strtolower($request->district) . '%'])
-                ->whereRaw('LOWER(block) LIKE ?', ['%' . strtolower($request->block) . '%'])
-                ->whereRaw('LOWER(panchayat) LIKE ?', ['%' . strtolower($request->panchayat) . '%'])
-                ->first();
+            // $streetlight = Streetlight::whereRaw('LOWER(district) LIKE ?', ['%' . strtolower($request->district) . '%'])
+            //     ->whereRaw('LOWER(block) LIKE ?', ['%' . strtolower($request->block) . '%'])
+            //     ->whereRaw('LOWER(panchayat) LIKE ?', ['%' . strtolower($request->panchayat) . '%'])
+            //     ->first();
+            Log::info($streetlight);
             $project = Project::where('id', $streetlight->project_id)->first();
             // Error check condition if streetlight is null
             
