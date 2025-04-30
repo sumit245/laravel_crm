@@ -55,7 +55,8 @@ class JICRController extends Controller
     }
 
     public function generatePDF(Request $request)
-    {
+    {  
+        \Log::info('Request data of JICR:', $request->all());
         try {
             // Validate the request
             $validated = $request->validate([
@@ -72,11 +73,17 @@ class JICRController extends Controller
                 ->whereRaw('LOWER(panchayat) LIKE ?', ['%' . strtolower($request->panchayat) . '%'])
                 ->first();
             $project = Project::where('id', $streetlight->project_id)->first();
-
+            // Error check condition if streetlight is null
+            
 
             $assignedTasks = StreetlightTask::where('site_id', $streetlight->id)
                 ->with(['engineer', 'vendor', 'manager'])
                 ->first();
+                // Check if assignedTasks is null
+                if (!$assignedTasks) {
+                    \Log::error('No task found for the selected site. Site ID: ' . $streetlight->id );
+                    return back()->with('error', 'No task found for the selected site.');
+                }
             $data = [
                 'task_id' => $assignedTasks->id,
                 'state' => $streetlight->state,
@@ -149,7 +156,7 @@ class JICRController extends Controller
                 'data' => $data, // Make sure this is either an object or associative array
             ]);
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
+            Log::error('JICR error'. $e->getMessage());
         }
     }
 }

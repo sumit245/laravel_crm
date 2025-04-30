@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Conveyance;
 use App\Models\Tada;
 use App\Models\User;
 use App\Models\UserCategory;
@@ -21,7 +22,8 @@ class ConvenienceController extends Controller
     public function convenience()
     {
         //
-        return view('billing.convenience');
+        $cons = Conveyance::get();
+        return view('billing.convenience', compact('cons'));
     }
 
     // Tada view

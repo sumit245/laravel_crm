@@ -54,7 +54,7 @@
               {{-- <form action="{{ route("import.device") }}" method="POST" enctype="multipart/form-data"> --}}
               {{-- @csrf --}}
               <div class="input-group">
-                <input type="file" name="file" class="form-control form-control-sm" required>
+                <input type="file" name="file" class="form-control form-control-sm" style="height: 2.4rem; background-color: transparent" required>
                 <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Devices">
                   <i class="mdi mdi-upload"></i> Import
                 </button>
