@@ -52,12 +52,14 @@
                     <thead class="table-white">
                         <tr>
                             <th><input type="checkbox" id="selectAll" /></th>
+                            <th>User</th>
                             <th>From</th>
                             <th>To</th>
                             <th>Kilometer</th>
                             <th>Date</th>
                             <th>Time</th>
-                            <th>Trip Price</th>
+                            <th>Vehicle</th>
+                            <th>Rate</th>
                             <th>Total</th>
                             <th>Bills</th>
                             <th>Status</th>
@@ -66,14 +68,19 @@
                     </thead>
                     <tbody>
                         <tr>
+                            @foreach ($tadas as $tada)
+                            
+                            
                             <td><input type="checkbox" class="checkboxItem" /></td>
-                            <td>Madhepura</td>
-                            <td>Delhi</td>
-                            <td>986</td>
-                            <td>05-04-2025</td>
-                            <td>18:00</td>
-                            <td>₹1980</td>
-                            <td>₹2785</td>
+                            <td>{{ $tada->user->name ?? "N/A" }}</td>
+                            <td>{{ $tada->from ?? "N/A" }}</td>
+                            <td>{{ $tada->to ?? "N/A" }}</td>
+                            <td>{{ $tada->kilometer ?? "N/A" }}</td>
+                            <td>{{ $tada->created_at ?? "N/A" }}</td>
+                            <td>{{ $tada->time ?? "N/A" }}</td>
+                            <td></td>
+                            <td>{{ $tada->from ?? "N/A" }}</td>
+                            <td>{{ $tada->from ?? "N/A" }}</td>
                             <td>
                             <a href="{{ route('view.bills') }}" class="btn btn-sm btn-outline-primary" >
                                <i class="bi bi-eye"></i> View Bills
@@ -88,6 +95,7 @@
                                     <i class="mdi mdi-eye"></i>
                                 </a>
                             </td>
+                            @endforeach
                         </tr>
                     </tbody>
                 </table>
