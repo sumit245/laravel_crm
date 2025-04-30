@@ -159,6 +159,7 @@ class JICRController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error($e->getMessage());
+            return back()->with('error');
         }
     }
 }
