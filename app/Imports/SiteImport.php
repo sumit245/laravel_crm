@@ -43,17 +43,20 @@ class SiteImport implements ToModel, WithHeadingRow
         }
 
         return new Site([
-            'project_id'       => $this->projectId,
-            'site_name'        => $row['site_name'],
-            'breda_sl_no'      => $row['breda_sl_no'],
-            'state'            => $stateId,
-            'district'         => $districtId,
-            'location'         => $row['location'],
-            'project_capacity' => $row['project_capacity'],
-            'ca_number'        => $row['ca_number'],
-            'contact_no'       => $row['contact_no'],
-            'sanction_load'    => $row['sanction_load_in_kwp'],
-            'meter_number'     => $row['meter_no'],
+            'project_id'         => $this->projectId,
+            'breda_sl_no'        => $row['breda_sl_no'],
+            'site_name'          => $row['site_name'],
+            'state'              => $stateId,
+            'district'           => $districtId,
+            'location'           => $row['location'],
+            'project_capacity'   => $row['project_capacity'],
+            'ca_number'          => $row['ca_number'],
+            'shadow_free_area'   => $row['shadow_free_area'],
+            'division'           => $row['division'],
+            'block'              => $row['block'],
+            'department_name'    => $row['department_name'],
+            'sanction_load'      => $row['sanction_load_in_kwp'],
+            'meter_number'       => $row['meter_no'],
         ]);
     }
 
