@@ -162,4 +162,4 @@ class JICRController extends Controller
             return back()->with('error: ' , $e->getMessage());
         }
     }
-,
+}
