@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\Api\ConveyanceController;
+use App\Http\Controllers\API\ConveyanceController;
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\InventoryController;
 use App\Http\Controllers\InventoryController as InventoryControllers;
