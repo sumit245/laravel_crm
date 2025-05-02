@@ -34,18 +34,6 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 throw new \Exception("Target not allotted for site ID: {$streetlight->id}");
             }
 
-
-            foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
-                $dispatch = InventoryDispatch::where('serial_number', (string)$row[$item])
-                    ->whereNull('streetlight_pole_id')
-                    ->where('is_consumed', 0)
-                    ->first();
-
-                if (!$dispatch) {
-                    $missingItems[] = "Material '{$item}' with serial '{$row[$item]}' not yet dispatched to vendor";
-                }
-            }
-
             $pole = Pole::where('complete_pole_number', $row['complete_pole_number'])->first();
 
             $poleData = [
@@ -69,6 +57,17 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
             if ($pole) {
                 $pole->update($poleData);
             } else {
+                foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
+                    $dispatch = InventoryDispatch::where('serial_number', (string)$row[$item])
+                        ->whereNull('streetlight_pole_id')
+                        ->where('is_consumed', 0)
+                        ->first();
+
+                    if (!$dispatch) {
+                        $missingItems[] = "Material '{$item}' with serial '{$row[$item]}' not yet dispatched to vendor";
+                    }
+                }
+
                 $creatingNewPole = true;
                 $poleData['complete_pole_number'] = $row['complete_pole_number'];
                 Pole::create($poleData);
