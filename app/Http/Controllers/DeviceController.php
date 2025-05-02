@@ -6,6 +6,7 @@ use App\Imports\StreetlightPoleImport;
 use Illuminate\Http\Request;
 use App\Models\Streetlight;
 use App\Models\Project;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class DeviceController extends Controller
@@ -22,13 +23,13 @@ class DeviceController extends Controller
             'file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
         try {
-            \Log::info('Importing file: ' . $request->file('file')->getClientOriginalName());
+            Log::info('Importing file: ' . $request->file('file')->getClientOriginalName());
             Excel::import(new StreetlightPoleImport, $request->file('file'));
-            \Log::info('Imported file: ' . $request->file('file')->getClientOriginalName());
+            Log::info('Imported file: ' . $request->file('file')->getClientOriginalName());
             return back()->with('success', 'Pole data imported successfully.');
         } catch (\Exception $e) {
-            \Log::error('Error importing file: ' . $e->getMessage());
-            return redirect()->back()->with('error', 'Error importing file: ' . $e->getMessage());
+            Log::error('Error importing file: ' . $e->getMessage());
+            return back()->with('error', 'Error importing file: ' . $e->getMessage());
         }
     }
 }
