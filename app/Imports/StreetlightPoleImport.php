@@ -49,30 +49,41 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
             $pole = Pole::where('complete_pole_number', $row['complete_pole_number'])->first();
 
             $poleData = [
-                'battery_qr' => $row['battery_qr'],
-                'panel_qr' => $row['panel_qr'],
+                'task_id' => $task->id,
+                'isSurveyDone' => true,
+                'beneficiary' => $row['beneficiary'] ?? null,
+                'beneficiary_contact' => $row['beneficiary_contact'] ?? null,
+                'ward_name' => $row['ward_name'],
+                'isNetworkAvailable' => true,
+                'isInstallationDone' => true,
                 'luminary_qr' => $row['luminary_qr'],
                 'sim_number' => $row['sim_number'],
-                'ward_name' => $row['ward_name'],
-                'isInstallationDone' => true,
+                'battery_qr' => $row['battery_qr'],
+                'panel_qr' => $row['panel_qr'],
+                'lat' => $row['lat'],
+                'lng' => $row['long'],
                 'updated_at' =>  Carbon::parse($row['date_of_installation']),
-                'task_id' => $task->id,
-                'site_id' => $streetlight->id,
             ];
 
             if ($pole) {
                 $pole->update($poleData);
             } else {
+                $poleData['task_id'] = $task->id;
+                $poleData['isSurveyDone'] = true;
+                $poleData['beneficiary'] = $row['beneficiary'] ?? null;
+                $poleData['beneficiary_contact'] = $row['beneficiary_contact'] ?? null;
+                $poleData['remarks'] = $row['remarks'] ?? null;
+                $poleData['ward_name'] = $row['ward_name'];
+                $poleData['isNetworkAvailable'] = true;
+                $poleData['isInstallationDone'] = true;
                 $poleData['complete_pole_number'] = $row['complete_pole_number'];
-                $poleData['battery_qr'] = $row['battery_qr'];
-                $poleData['panel_qr'] = $row['panel_qr'];
                 $poleData['luminary_qr'] = $row['luminary_qr'];
                 $poleData['sim_number'] = $row['sim_number'];
-                $poleData['ward_name'] = $row['ward_name'];
-                $poleData['isInstallationDone'] = true;
+                $poleData['battery_qr'] = $row['battery_qr'];
+                $poleData['panel_qr'] = $row['panel_qr'];
+                $poleData['lat'] = $row['lat'];
+                $poleData['lng'] = $row['long'];
                 $poleData['updated_at'] =  Carbon::parse($row['date_of_installation']);
-                $poleData['task_id'] = $task->id;
-                $poleData['site_id'] = $streetlight->id;
                 Pole::create($poleData);
             }
 
@@ -84,6 +95,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                     ->update([
                         'streetlight_pole_id' => $pole ? $pole->id : Pole::latest()->first()->id,
                         'is_consumed' => 1,
+                        'total_quantity' => 0,
                         'updated_at' => Carbon::now()
 
                     ]);

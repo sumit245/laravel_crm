@@ -43,17 +43,23 @@ class SiteImport implements ToModel, WithHeadingRow
         }
 
         return new Site([
-            'project_id'       => $this->projectId,
-            'site_name'        => $row['site_name'],
-            'breda_sl_no'      => $row['breda_sl_no'],
-            'state'            => $stateId,
-            'district'         => $districtId,
-            'location'         => $row['location'],
-            'project_capacity' => $row['project_capacity'],
-            'ca_number'        => $row['ca_number'],
-            'contact_no'       => $row['contact_no'],
-            'sanction_load'    => $row['sanction_load_in_kwp'],
-            'meter_number'     => $row['meter_no'],
+            'project_id'            => $this->projectId,
+            'state'                 => $stateId,
+            'district'              => $districtId,
+            'breda_sl_no'           => $row['breda_sl_no'] ?? null,
+            'division'              => $row['division'] ?? null,
+            'site_name'             => $row['site_name'] ?? null,
+            'location'              => $row['location'] ?? null,
+            'sanction_load'         => $row['sanction_load_in_kwp'] ?? null,
+            'ca_number'             => $row['ca_number'] ?? null,
+            'meter_number'          => $row['meter_no'] ?? null,
+            'bts_department_name'   => $row['bts_department_name'] ?? null,
+            'contact_no'            => $row['contact_no'] ?? null,
+            'installation_status' => isset($row['installation_status'])
+                ? (strtolower(trim($row['installation_status'])) === 'yes' ? 1 : 0)
+                : null,
+
+            // 'project_capacity'   => $row['project_capacity'] ?? null,
         ]);
     }
 
