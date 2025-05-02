@@ -64,44 +64,33 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 'lng' => $row['long'],
                 'updated_at' =>  Carbon::parse($row['date_of_installation']),
             ];
+            $creatingNewPole = false; // Track if we're creating a new pole
 
             if ($pole) {
                 $pole->update($poleData);
             } else {
-                $poleData['task_id'] = $task->id;
-                $poleData['isSurveyDone'] = true;
-                $poleData['beneficiary'] = $row['beneficiary'] ?? null;
-                $poleData['beneficiary_contact'] = $row['beneficiary_contact'] ?? null;
-                $poleData['remarks'] = $row['remarks'] ?? null;
-                $poleData['ward_name'] = $row['ward_name'];
-                $poleData['isNetworkAvailable'] = true;
-                $poleData['isInstallationDone'] = true;
+                $creatingNewPole = true;
                 $poleData['complete_pole_number'] = $row['complete_pole_number'];
-                $poleData['luminary_qr'] = $row['luminary_qr'];
-                $poleData['sim_number'] = $row['sim_number'];
-                $poleData['battery_qr'] = $row['battery_qr'];
-                $poleData['panel_qr'] = $row['panel_qr'];
-                $poleData['lat'] = $row['lat'];
-                $poleData['lng'] = $row['long'];
-                $poleData['updated_at'] =  Carbon::parse($row['date_of_installation']);
                 Pole::create($poleData);
             }
 
-            // Set pole_id in inventory dispatch
-            foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as  $item) {
-                InventoryDispatch::where('serial_number', (string)$row[$item])
-                    ->whereNull('streetlight_pole_id')
-                    ->where('is_consumed', 0)
-                    ->update([
-                        'streetlight_pole_id' => $pole ? $pole->id : Pole::latest()->first()->id,
-                        'is_consumed' => 1,
-                        'total_quantity' => 0,
-                        'updated_at' => Carbon::now()
-
-                    ]);
+            // Update inventory dispatch **only if new pole created**
+            if ($creatingNewPole) {
+                $latestPoleId = Pole::where('complete_pole_number', $row['complete_pole_number'])->value('id');
+                foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
+                    InventoryDispatch::where('serial_number', (string)$row[$item])
+                        ->whereNull('streetlight_pole_id')
+                        ->where('is_consumed', 0)
+                        ->update([
+                            'streetlight_pole_id' => $latestPoleId,
+                            'is_consumed' => 1,
+                            'total_quantity' => 0,
+                            'updated_at' => Carbon::now()
+                        ]);
+                }
+                $streetlight->increment('number_of_surveyed_poles');
+                $streetlight->increment('number_of_installed_poles');
             }
-
-            $streetlight->increment('number_of_installed_poles');
         }
         if (!empty($missingItems)) {
             throw new \Exception("The following items are missing: " . implode(", ", $missingItems));
