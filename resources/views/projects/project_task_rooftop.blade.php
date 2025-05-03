@@ -87,8 +87,8 @@
 
   <!-- Table to display targets -->
   <div class="table-responsive">
-    <table class="table-striped table">
-      <thead>
+    <x-data-table id="bredaTargetTable" class="table-striped table">
+      <x-slot:thead>
         <tr>
           <th>Site Name</th>
           <th>Activity</th>
@@ -97,8 +97,8 @@
           <th>End Date</th>
           <th>Actions</th>
         </tr>
-      </thead>
-      <tbody>
+      </x-slot:thead>
+      <x-slot:tbody>
         @forelse ($targets as $target)
           <tr>
             <td>{{ $target->site->site_name }}</td>
@@ -127,8 +127,8 @@
             <td colspan="7">No targets found.</td>
           </tr>
         @endforelse
-      </tbody>
-    </table>
+      </x-slot-tbody>
+    </x-data-table>
   </div>
 </div>
 
@@ -179,5 +179,33 @@
         }
       });
     });
+    // Select 2
+    $(document).ready(function() {
+    $('#addTargetModal').on('shown.bs.modal', function () {
+      $('#activity').select2({
+        width: '100%',
+        dropdownParent: $('#addTargetModal')
+      });
+
+      $('#selectEngineer').select2({
+        width: '100%',
+        dropdownParent: $('#addTargetModal')
+      });
+
+      
+    });
+  });
+
   </script>
+@endpush
+
+@push("styles")
+  <style>
+    .select2-container--default .select2-selection--single {
+      height: 38px;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+  </style>
 @endpush
