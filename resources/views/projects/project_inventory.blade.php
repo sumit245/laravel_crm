@@ -275,7 +275,7 @@
   </div>
   @include("projects.dispatchInventory")
 </div>
-
+@push('scripts')
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const addStoreButton = document.getElementById("addStoreButton");
@@ -283,21 +283,28 @@
     const storeFormContainer = document.getElementById("storeFormContainer");
 
     // Add inventory
-    document.getElementById('item_combined').addEventListener('change', function() {
-      const [code, name] = this.value.split('|');
-      document.getElementById('item_code').value = code || '';
-      document.getElementById('item_name').value = name || '';
-    });
+    const itemCombined = document.getElementById('item_combined');
+    if (itemCombined) {
+      itemCombined.addEventListener('change', function() {
+        const [code, name] = this.value.split('|');
+        document.getElementById('item_code').value = code || '';
+        document.getElementById('item_name').value = name || '';
+      });
+    }
 
-    addStoreButton.addEventListener("click", () => {
-      storeFormContainer.style.display = "block";
-      addStoreButton.style.display = "none";
-    });
+    if (addStoreButton && storeFormContainer) {
+      addStoreButton.addEventListener("click", () => {
+        storeFormContainer.style.display = "block";
+        addStoreButton.style.display = "none";
+      });
+    }
 
-    cancelStoreButton.addEventListener("click", () => {
-      storeFormContainer.style.display = "none";
-      addStoreButton.style.display = "block";
-    });
+    if (cancelStoreButton && storeFormContainer && addStoreButton) {
+      cancelStoreButton.addEventListener("click", () => {
+        storeFormContainer.style.display = "none";
+        addStoreButton.style.display = "block";
+      });
+    }
   });
 
   function toggleAddInventory(storeId) {
@@ -320,6 +327,7 @@
       form.style.display = "none";
     }
   }
+
   // Closing the add inventory form
   function closeInventoryForm(storeId) {
     var form = document.getElementById("addInventoryForm-" + storeId);
@@ -327,7 +335,6 @@
       form.style.display = "none";
     }
   }
-
 
   function addInventory(storeId) {
     // Redirect to the inventory import route with the store ID
@@ -372,7 +379,6 @@
     }
   }
 
-
   // Show the modal to dispatch inventory
   function openDispatchModal(storeId) {
     document.getElementById("dispatchStoreId").value = storeId;
@@ -389,3 +395,4 @@
     window.location.href = `/store/${storeId}/inventory/view`;
   }
 </script>
+@endpush

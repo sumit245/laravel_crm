@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
 use App\Models\Conveyance;
+use App\Models\Tada;
 use Illuminate\Http\Request;
 
 class ConveyanceController extends Controller
@@ -13,36 +14,77 @@ class ConveyanceController extends Controller
      */
     public function index()
     {
-        $conveyances = Conveyance::select([
-            'name',
-            'employee_id as Employee Id',
-            'meeting_visit',
-            'department',
-            'start_journey as start_date',
-            'end_journey as end_date',
-            'start_journey_pnr',
-            'end_journey_pnr',
-            'visit_approve',
-            'transport',
-            'objective_tour',
-            'meeting_visit',
-            'outcome_achieve',
-            'from_city as source',
-            'to_city as destination',
-            'category as categories',
-            'description_category as descriptions',
-            'total_km',
-            'rate_per_km as km_rate',
-            'Rent as rent',
-            'vehicle_no as vehicle_number',
-        ])->get();
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Conveyance data fetched successfully',
-            'data' => $conveyances
-        ]);
+        try {
+            //code...
+            $tadas = Tada::select([
+                // 'name',
+                // 'employee_id as Employee Id',
+                'meeting_visit',
+                // 'department',
+                'user_id',
+                'start_journey as start_date',
+                'end_journey as end_date',
+                'start_journey_pnr',
+                'end_journey_pnr',
+                'visit_approve',
+                'transport',
+                'objective_tour',
+                'meeting_visit',
+                'outcome_achieve',
+                'from_city as source',
+                'to_city as destination',
+                'category as categories',
+                'description_category as descriptions',
+                'total_km',
+                'rate_per_km as km_rate',
+                'Rent as rent',
+                'vehicle_no as vehicle_number',
+            ])->get();
+    
+            return response()->json([
+                'status' => true,
+                'message' => 'Tada data fetched successfully',
+                'data' => $tadas
+            ]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch tada data',
+                'error' => $th->getMessage()
+            ]);
+        }
+       
     }
+
+    // Conveyance Index
+    public function indexConveyance()
+    {
+        try {
+            $conveyances = Conveyance::select([
+                'from',
+                'to',
+                'kilometer',
+                'created_at',
+                'time',
+                'vehicle_category',
+                'user_id',
+            ])->get();
+            return response()->json([
+                'status' => true,
+                'message' => 'Conveyance data fetched successfully',
+                'data' => $conveyances
+            ]);
+        }catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch conveyance data',
+                'error' => $e->getMessage()
+            ]);
+        }
+        
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -57,14 +99,15 @@ class ConveyanceController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'department' => 'required|string|max:100',
-            'employee_id' => 'required|string|max:100',
+            // 'name' => 'required|string|max:100',
+            // 'department' => 'required|string|max:100',
+            // 'employee_id' => 'required|string|max:100',
+            'user_id' => 'required|integer',
             'visit_approve' => 'nullable|string|max:50',
             'objective_tour' => 'nullable|string|max:255',
             'meeting_visit' => 'nullable|string|max:255',
             'outcome_achieve' => 'nullable|string|max:255',
-            'Desgination' => 'required|string|max:100',
+            // 'Desgination' => 'required|string|max:100',
             'start_journey' => 'required|date',
             'end_journey' => 'required|date',
             'transport' => 'required|string|max:50',
@@ -101,9 +144,36 @@ class ConveyanceController extends Controller
         //     $data['end_journey_pnr'] = $endFiles;
         // }
 
-        $conveyance = Conveyance::create($data);
+        $tada = Tada::create($data);
 
-        return response()->json($conveyance, 201);
+        return response()->json($tada, 201);
+    }
+
+    public function storeConveyance(Request $request)
+    {
+        try {
+            //code...
+            $data = $request->validate([
+                'from' => 'required|string|max:100',
+                'to' => 'required|string|max:100',
+                'kilometer' => 'required|integer',
+                'created_at' => 'required|date',
+                'time' => 'required|string|max:50',
+                'vehicle_category' => 'required|integer',
+                'user_id' => 'required|integer'
+            ]);
+            $conveyance = Conveyance::create($data);
+    
+            return response()->json($conveyance, 201);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to create conveyance',
+                'error' => $th->getMessage()
+            ]);
+        }
+        
     }
 
     /**

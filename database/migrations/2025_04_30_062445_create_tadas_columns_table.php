@@ -11,18 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conveyances', function (Blueprint $table) {
+        Schema::create('tadas', function (Blueprint $table) {
             $table->id();
 
             // New fields
-            $table->string('name', 100);
-            $table->string('department', 100);
-            $table->string('employee_id', 100);
+            // $table->string('name', 100);
+            // $table->string('department', 100);
+            // $table->string('employee_id', 100);
+            $table->unsignedBigInteger('user_id');
             $table->string('visit_approve', 50);
             $table->string('objective_tour', 255);
             $table->string('meeting_visit', 255);
             $table->string('outcome_achieve', 255);
-            $table->string('Desgination', 100); // consider renaming to 'designation'
+            // consider renaming to 'designation'
             $table->date('start_journey');
             $table->date('end_journey');
             $table->string('transport', 50);
@@ -37,7 +38,10 @@ return new class extends Migration
             $table->string('category', 100);
             $table->text('description_category');
             $table->date('pickup_date');
-
+            
+            // Foreign key constraint
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            
             $table->timestamps(); // created_at and updated_at
         });
     }

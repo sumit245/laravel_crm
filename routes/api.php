@@ -63,4 +63,6 @@ Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
 Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
 
 // Conveyance
-Route::apiResource('conveyances',ConveyanceController::class);
+Route::apiResource('tadas',ConveyanceController::class);
+Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
+Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);

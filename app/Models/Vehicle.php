@@ -16,6 +16,11 @@ class Vehicle extends Model
         'rate',
     ];
 
+    public function conveyances()
+    {
+        return $this->hasMany(Conveyance::class);
+    }
+
     public $timestamps = true;
 
 }
