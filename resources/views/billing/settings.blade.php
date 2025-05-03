@@ -1,242 +1,179 @@
 @extends('layouts.main')
 
 @section('content')
-<div class="container-fluid p-0">
-    <div class="row g-0">
-        <!-- Vertical Tab Navigation -->
-        <div class="col-md-3 col-lg-2 bg-light" style="min-height: calc(100vh - 60px);">
-            <div class="settings-sidebar">
-                <div class="p-3">
-                    <h5 class="mb-0 fw-bold">Settings</h5>
-                </div>
-                <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
-                    <button class="nav-link active text-start py-3 px-4" id="v-pills-vehicle-tab" data-bs-toggle="pill" data-bs-target="#v-pills-vehicle" type="button" role="tab" aria-controls="v-pills-vehicle" aria-selected="true">
-                        <i class="bi bi-car-front me-2"></i> Vehicle Settings
-                    </button>
-                    <button class="nav-link text-start py-3 px-4" id="v-pills-user-tab" data-bs-toggle="pill" data-bs-target="#v-pills-user" type="button" role="tab" aria-controls="v-pills-user" aria-selected="false">
-                        <i class="bi bi-people me-2"></i> User Settings
-                    </button>
-                    <button class="nav-link text-start py-3 px-4" id="v-pills-category-tab" data-bs-toggle="pill" data-bs-target="#v-pills-category" type="button" role="tab" aria-controls="v-pills-category" aria-selected="false">
-                        <i class="bi bi-tags me-2"></i> Category Settings
-                    </button>
+    <div class="container-fluid p-0">
+        <div class="row g-0">
+            <!-- Vertical Tab Navigation -->
+            <div class="col-md-3 col-lg-2 bg-light" style="min-height: calc(100vh - 60px);">
+                <div class="settings-sidebar">
+                    
+                    <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
+                        <div class="p-3">
+                            <h5 class="mb-0 fw-bold">Settings</h5>
+                        </div>
+                        <button class="nav-link active text-start py-3 px-4" id="v-pills-vehicle-tab" data-bs-toggle="pill" data-bs-target="#v-pills-vehicle" type="button" role="tab" aria-controls="v-pills-vehicle" aria-selected="true">
+                            <i class="bi bi-car-front me-2"></i> Vehicle Settings
+                        </button>
+                        <button class="nav-link text-start py-3 px-4" id="v-pills-user-tab" data-bs-toggle="pill" data-bs-target="#v-pills-user" type="button" role="tab" aria-controls="v-pills-user" aria-selected="false">
+                            <i class="bi bi-people me-2"></i> User Settings
+                        </button>
+                        <button class="nav-link text-start py-3 px-4" id="v-pills-category-tab" data-bs-toggle="pill" data-bs-target="#v-pills-category" type="button" role="tab" aria-controls="v-pills-category" aria-selected="false">
+                            <i class="bi bi-tags me-2"></i> Category Settings
+                        </button>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <!-- Tab Content Area -->
-        <div class="col-md-9 col-lg-10">
-            <div class="tab-content p-3" id="v-pills-tabContent">
-                
-                <!-- Vehicle Settings Tab -->
-                <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel" aria-labelledby="v-pills-vehicle-tab">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0"><i class="bi bi-car-front me-2"></i>Vehicle Settings</h4>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
-                            <i class="mdi mdi-plus-circle me-1"></i> Add Vehicle
-                        </button>
-                    </div>
+            <!-- Tab Content Area -->
+            <div class="col-md-9 col-lg-10">
+                <div class="tab-content p-3" id="v-pills-tabContent">
 
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="vehicleTable" class="table table-bordered table-striped table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Vehicle Name</th>
-                                            <th>Category</th>
-                                            <th>Sub Category</th>
-                                            <th>Rate/KM</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>1</td>
-                                            <td>Two Wheelers</td>
-                                            <td>Personal</td>
-                                            <td>Petrol</td>
-                                            <td>₹5.00</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#editVehicleModal" title="Edit Vehicle">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-vehicle" title="Delete Vehicle" data-id="1" data-name="Two Wheelers">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td>Four Wheelers</td>
-                                            <td>Taxi</td>
-                                            <td>Diesel</td>
-                                            <td>₹12.00</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#editVehicleModal" title="Edit Vehicle">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-vehicle" title="Delete Vehicle" data-id="2" data-name="Four Wheelers">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>3</td>
-                                            <td>Public Transport</td>
-                                            <td>Bus</td>
-                                            <td>CNG</td>
-                                            <td>₹8.50</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-warning" data-bs-toggle="modal" data-bs-target="#editVehicleModal" title="Edit Vehicle">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-vehicle" title="Delete Vehicle" data-id="3" data-name="Public Transport">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    <!-- Vehicle Settings Tab -->
+                    <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel" aria-labelledby="v-pills-vehicle-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0"><i class="bi bi-car-front me-2"></i>Vehicle Settings</h4>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                                <i class="mdi mdi-plus-circle me-1"></i> Add Vehicle
+                            </button>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="vehicleTable" class="table table-bordered table-striped table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Vehicle Name</th>
+                                                <th>Category</th>
+                                                <th>Sub Category</th>
+                                                <th>Rate/KM</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($vehicles as $vehicle)
+                                            <tr>
+                                                <td>{{ $vehicle->id }}</td>
+                                                <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
+                                                <td>{{ $vehicle->category ?? "N/A" }}</td>
+                                                <td>{{ $vehicle->sub_category }}</td>
+                                                <td>{{ $vehicle->rate }}</td>
+                                                <td>
+                                                    <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
+                                                        <i class="mdi mdi-pencil"></i>
+                                                    </a>
+                                                    <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
+                                                            onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
+                                                            <i class="mdi mdi-delete"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- User Settings Tab -->
-                <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
-                        <button class="btn btn-primary" id="assignCategoryBtn">
-                            <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
-                        </button>
-                    </div>
 
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="userTable" class="table table-bordered table-striped table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th><input type="checkbox" id="selectAllUsers"></th>
-                                            <th>#</th>
-                                            <th>Name</th>
-                                            <th>Role</th>
-                                            <th>Phone</th>
-                                            <th>Category</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
-                                            <td>1</td>
-                                            <td>John Doe</td>
-                                            <td>Site Engineer</td>
-                                            <td>9876543210</td>
-                                            <td>Field Staff</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editUserCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><input type="checkbox" class="user-checkbox" data-id="2"></td>
-                                            <td>2</td>
-                                            <td>Jane Smith</td>
-                                            <td>Project Manager</td>
-                                            <td>8765432109</td>
-                                            <td>Management</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editUserCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td><input type="checkbox" class="user-checkbox" data-id="3"></td>
-                                            <td>3</td>
-                                            <td>Robert Johnson</td>
-                                            <td>Store Incharge</td>
-                                            <td>7654321098</td>
-                                            <td>Store Staff</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editUserCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    <!-- User Settings Tab -->
+                    <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
+                            <button class="btn btn-primary" id="assignCategoryBtn">
+                                <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
+                            </button>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="userTable" class="table table-bordered table-striped table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th><input type="checkbox" id="selectAllUsers"></th>
+                                                <th>#</th>
+                                                <th>Name</th>
+                                                <th>Role</th>
+                                                <th>Email</th>
+                                                <th>Category</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach ($users as $user)
+                                            <tr>
+                                                <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
+                                                <td>{{ $user->id }}</td>
+                                                <td>{{ $user->firstName }} {{ $user->lastName }}</td>
+                                                <td>{{ $user->role }}</td>
+                                                <td>{{ $user->email }}</td>
+                                                <td>{{ $user->category }}</td>
+                                                <td>
+                                                    <a href="{{ route('billing.edituser', $user->id) }}" class="btn btn-icon btn-primary" title="Edit Category">
+                                                        <i class="mdi mdi-pencil"></i>
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <!-- Category Settings Tab -->
-                <div class="tab-pane fade" id="v-pills-category" role="tabpanel" aria-labelledby="v-pills-category-tab">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="mb-0"><i class="bi bi-tags me-2"></i>Category Settings</h4>
-                        <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
-                            <i class="mdi mdi-plus-circle me-1"></i> Add Category
-                        </button>
-                    </div>
 
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-                            <div class="table-responsive">
-                                <table id="categoryTable" class="table table-bordered table-striped table-sm">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>Category Name</th>
-                                            <th>Vehicles Allowed</th>
-                                            <th>Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>1</td>
-                                            <td>Personal</td>
-                                            <td>Two Wheelers, Four Wheelers</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-category" title="Delete Category" data-id="1" data-name="Personal">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>2</td>
-                                            <td>Taxi</td>
-                                            <td>Four Wheelers</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-category" title="Delete Category" data-id="2" data-name="Taxi">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>3</td>
-                                            <td>Bus</td>
-                                            <td>Public Transport</td>
-                                            <td>
-                                                <a href="#" class="btn btn-icon btn-primary" data-bs-toggle="modal" data-bs-target="#editCategoryModal" title="Edit Category">
-                                                    <i class="mdi mdi-pencil"></i>
-                                                </a>
-                                                <button type="button" class="btn btn-icon btn-danger delete-category" title="Delete Category" data-id="3" data-name="Bus">
-                                                    <i class="mdi mdi-delete"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                    <!-- Category Settings Tab -->
+                    <div class="tab-pane fade" id="v-pills-category" role="tabpanel" aria-labelledby="v-pills-category-tab">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h4 class="mb-0"><i class="bi bi-tags me-2"></i>Category Settings</h4>
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                                <i class="mdi mdi-plus-circle me-1"></i> Add Category
+                            </button>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table id="categoryTable" class="table table-bordered table-striped table-sm">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>#</th>
+                                                <th>Category Name</th>
+                                                <th>Vehicles Allowed</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        @foreach ($categories as $cat)
+                                            <tr>
+                                                <td>{{ $cat->id }}</td>
+                                                <td>{{ $cat->category_code }}</td>
+                                                <td>{{ $cat->allowed_vehicles }}</td>
+                                                <td>
+                                                <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-primary">
+                                                        <i class="mdi mdi-pencil"></i>
+                                                </a>    
+                                                    <form action="{{ route('billing.deletecategory', $cat->id) }}" method="POST" style="display:inline;">
+                                                        @csrf
+                                                        @method('DELETE')
+
+                                                        <button type="submit" class="btn btn-icon btn-danger" title="Delete Category"
+                                                        onclick="return confirm('Are you sure you want to delete {{ $cat->category_code }}?')">
+                                                            <i class="mdi mdi-delete"></i>
+                                                        </button>
+                                                    </form>
+                                                </td>
+                                            </tr>
+                                            @endforeach
+                                        </tbody>
+                                    </table>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -244,205 +181,235 @@
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add Vehicle Modal -->
-<div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="addVehicleModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New Vehicle</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Add Vehicle Modal -->
+    <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="addVehicleModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New Vehicle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                <form id="addVehicleForm" action="{{ route('billing.addvehicle') }}" method="POST">
+        @csrf
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="vehicleName" class="form-label fw-bold">Vehicle Name</label>
+                    <input type="text" class="form-control" name="vehicle_name" id="vehicleName" placeholder="Enter vehicle name" required>
+                    <div class="invalid-feedback">Please enter a vehicle name.</div>
+                </div>
             </div>
-            <div class="modal-body p-4">
-                <form id="addVehicleForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="vehicleName" class="form-label fw-bold">Vehicle Name</label>
-                                <input type="text" class="form-control" id="vehicleName" placeholder="Enter vehicle name" required>
-                                <div class="invalid-feedback">Please enter a vehicle name.</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="ratePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
-                                <input type="number" class="form-control" id="ratePerKm" placeholder="Enter rate per km" step="0.01" required>
-                                <div class="invalid-feedback">Please enter a valid rate.</div>
-                            </div>
-                        </div>
-                    </div>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="ratePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
+                    <input type="number" class="form-control" name="rate" id="ratePerKm" placeholder="Eg. 14" step="0.01" required>
+                    <div class="invalid-feedback">Please enter a valid rate.</div>
+                </div>
+            </div>
+        </div>
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="category" class="form-label fw-bold">Category</label>
-                                <select class="form-select" id="category" required>
-                                    <option value="" selected disabled>Select category</option>
-                                    <option value="Personal">Personal</option>
-                                    <option value="Taxi">Taxi</option>
-                                    <option value="Bus">Bus</option>
-                                </select>
-                                <div class="invalid-feedback">Please select a category.</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="subCategory" class="form-label fw-bold">Sub Category</label>
-                                <select class="form-select" id="subCategory" required>
-                                    <option value="" selected disabled>Select sub category</option>
-                                    <option value="Petrol">Petrol</option>
-                                    <option value="Diesel">Diesel</option>
-                                    <option value="Electric">Electric</option>
-                                    <option value="CNG">CNG</option>
-                                </select>
-                                <div class="invalid-feedback">Please select a sub category.</div>
-                            </div>
-                        </div>
-                    </div>
-                </form>
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="category" class="form-label fw-bold">Category</label>
+                    <select class="form-select" name="category" id="category" required>
+                        <option value="" selected disabled>Select category</option>
+                            <option value="Bike">Bike</option>
+                            <option value="Car">Car</option>
+                            <option value="Public Transport">Public Transport</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a category.</div>
+                </div>
             </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="saveVehicleBtn">
-                    <i class="bi bi-save me-1"></i> Save Vehicle
-                </button>
+            <div class="col-md-6">
+                <div class="mb-3">
+                    <label for="subCategory" class="form-label fw-bold">Sub Category</label>
+                    <input type="text" class="form-control" name="sub_category" id="subCategory" placeholder="Optional">
+                    <div class="invalid-feedback">Please enter a sub category.</div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveVehicleBtn">
+                        <i class="bi bi-save me-1"></i> Save Vehicle
+                    </button>
+                </div>
+    </form>
+                </div>
+
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Edit Vehicle Modal -->
-<div class="modal fade" id="editVehicleModal" tabindex="-1" aria-labelledby="editVehicleModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="editVehicleModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Vehicle</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="editVehicleForm">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editVehicleName" class="form-label fw-bold">Vehicle Name</label>
-                                <input type="text" class="form-control" id="editVehicleName" value="Two Wheelers" required>
-                                <div class="invalid-feedback">Please enter a vehicle name.</div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editRatePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
-                                <input type="number" class="form-control" id="editRatePerKm" value="5.00" step="0.01" required>
-                                <div class="invalid-feedback">Please enter a valid rate.</div>
-                            </div>
-                        </div>
-                    </div>
+    <!-- Edit Vehicle Modal Not in use here made an different page -->
+    <div class="modal fade" id="editVehicleModal" tabindex="-1" aria-labelledby="editVehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="editVehicleModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Vehicle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editVehicleForm" action="{{ route('billing.updatevehicle') }}" method="POST">
+                        @csrf
+                        @method('POST')
 
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editCategory" class="form-label fw-bold">Category</label>
-                                <select class="form-select" id="editCategory" required>
-                                    <option value="Personal" selected>Personal</option>
-                                    <option value="Taxi">Taxi</option>
-                                    <option value="Bus">Bus</option>
-                                </select>
-                                <div class="invalid-feedback">Please select a category.</div>
+                        <!-- Dynamic values will be inserted here directly from data attributes -->
+                        <input type="hidden" id="editVehicleId" name="vehicle_id" data-value-from="data-id">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editVehicleName" class="form-label fw-bold">Vehicle Name</label>
+                                    <input type="text" class="form-control" id="editVehicleName" name="vehicle_name" required data-value-from="data-name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editRatePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
+                                    <input type="number" class="form-control" id="editRatePerKm" name="rate" step="0.01" required data-value-from="data-rate">
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label for="editSubCategory" class="form-label fw-bold">Sub Category</label>
-                                <select class="form-select" id="editSubCategory" required>
-                                    <option value="Petrol" selected>Petrol</option>
-                                    <option value="Diesel">Diesel</option>
-                                    <option value="Electric">Electric</option>
-                                    <option value="CNG">CNG</option>
-                                </select>
-                                <div class="invalid-feedback">Please select a sub category.</div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editCategory" class="form-label fw-bold">Category</label>
+                                    <input type="text" class="form-control" id="editCategory" name="category" data-value-from="data-category">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSubCategory" class="form-label fw-bold">Sub Category</label>
+                                    <input type="text" class="form-control" id="editSubCategory" name="sub_category" required data-value-from="data-sub-category">
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="updateVehicleBtn">
-                    <i class="bi bi-save me-1"></i> Update Vehicle
-                </button>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="updateVehicleBtn">
+                                <i class="bi bi-save me-1"></i> Update Vehicle
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Add Category Modal -->
-<div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="addCategoryModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="addCategoryForm">
-                    <div class="mb-3">
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addCategoryForm" action="{{ route('billing.addcategory') }}" method="POST">
+                        @csrf
+                        @method('POST')
+                        <div class="mb-3">
                         <label for="categoryName" class="form-label fw-bold">Category Name</label>
-                        <input type="text" class="form-control" id="categoryName" placeholder="Enter category name" required>
-                        <div class="invalid-feedback">Please enter a category name.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="vehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
-                        <select id="vehiclesAllowed" name="vehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
-                            <option value="Two Wheelers">Two Wheelers</option>
-                            <option value="Four Wheelers">Four Wheelers</option>
-                            <option value="Public Transport">Public Transport</option>
-                        </select>
-                        <div class="invalid-feedback">Please select at least one vehicle.</div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="saveCategoryBtn">
-                    <i class="bi bi-save me-1"></i> Save Category
-                </button>
+                        <input class="form-control" id="categoryName" name="category" required>
+                        </input>
+                        </div>
+                        <div class="mb-3">
+                        <label for="vehicle" class="form-label fw-bold">Allowed Vehicles</label>
+                        <select class="form-control" id="vehicle" name="vehicle_id" required>
+                            <option value="" disabled>Select Allowed Vehicle</option>
+                            @foreach ($vehicles as $vehicle)
+                            <option value="{{ $vehicle->id }}">
+                                    {{ $vehicle->id }}
+                                </option>
+                            @endforeach
+                        </select> 
+                        </div>
+                        <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
+                        <i class="bi bi-save me-1"></i> Save Category
+                    </button>
+                </div>
+                    </form>
+                </div>
+                
             </div>
         </div>
     </div>
-</div>
 
-<!-- Edit Category Modal -->
-<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="editCategoryModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editCategoryForm">
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
+                            <div class="invalid-feedback">Please enter a category name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                                <option value="Two Wheelers" selected>Two Wheelers</option>
+                                <option value="Four Wheelers" selected>Four Wheelers</option>
+                                <option value="Public Transport">Public Transport</option>
+                            </select>
+                            <div class="invalid-feedback">Please select at least one vehicle.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="updateCategoryBtn">
+                        <i class="bi bi-save me-1"></i> Update Category
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Category Modal -->
+<div class="modal fade" id="editCategoryModal{{ $cat->id }}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{ $cat->id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content shadow">
             <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="editCategoryModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
+                <h5 class="modal-title fw-bold" id="editCategoryModalLabel{{ $cat->id }}"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <form id="editCategoryForm">
-                    <div class="mb-3">
-                        <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
-                        <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
-                        <div class="invalid-feedback">Please enter a category name.</div>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
-                        <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
-                            <option value="Two Wheelers" selected>Two Wheelers</option>
-                            <option value="Four Wheelers" selected>Four Wheelers</option>
-                            <option value="Public Transport">Public Transport</option>
-                        </select>
-                        <div class="invalid-feedback">Please select at least one vehicle.</div>
-                    </div>
-                </form>
+            <form id="editCategoryForm">
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
+                            <div class="invalid-feedback">Please enter a category name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                                @foreach ($categories as $category)
+                                <option value="{{ $category->category_code }}" selected>{{ $category->category_code }}</option>
+                                @endforeach
+                            </select>
+                            <div class="invalid-feedback">Please select at least one vehicle.</div>
+                        </div>
+                    </form>
             </div>
             <div class="modal-footer bg-light">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -454,111 +421,76 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 
-<!-- Edit User Category Modal -->
-<div class="modal fade" id="editUserCategoryModal" tabindex="-1" aria-labelledby="editUserCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="editUserCategoryModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit User Category</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="editUserCategoryForm">
-                    <div class="mb-3">
-                        <label for="userName" class="form-label fw-bold">User Name</label>
-                        <input type="text" class="form-control" id="userName" value="John Doe" readonly>
-                    </div>
-                    <div class="mb-3">
-                        <label for="userCategory" class="form-label fw-bold">Category</label>
-                        <select class="form-select" id="userCategory" required>
-                            <option value="" disabled>Select category</option>
-                            <option value="Field Staff" selected>Field Staff</option>
-                            <option value="Management">Management</option>
-                            <option value="Store Staff">Store Staff</option>
-                            <option value="Admin">Admin</option>
-                        </select>
-                        <div class="invalid-feedback">Please select a category.</div>
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="updateUserCategoryBtn">
-                    <i class="bi bi-save me-1"></i> Update Category
-                </button>
+
+    <!-- Assign Category Modal -->
+    <div class="modal fade" id="assignCategoryModal" tabindex="-1" aria-labelledby="assignCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="assignCategoryModalLabel"><i class="bi bi-tag-multiple me-2"></i> Assign Category to Users</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="assignCategoryForm">
+                        <div class="mb-3">
+                            <label for="bulkUserCategory" class="form-label fw-bold">Select Category</label>
+                            <select class="form-select" id="bulkUserCategory" required>
+                                <option value="" selected disabled>Select category</option>
+                                <option value="Field Staff">Field Staff</option>
+                                <option value="Management">Management</option>
+                                <option value="Store Staff">Store Staff</option>
+                                <option value="Admin">Admin</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a category.</div>
+                        </div>
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i> This will assign the selected category to all checked users.
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="saveBulkCategoryBtn">
+                        <i class="bi bi-save me-1"></i> Assign Category
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Assign Category Modal -->
-<div class="modal fade" id="assignCategoryModal" tabindex="-1" aria-labelledby="assignCategoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="assignCategoryModalLabel"><i class="bi bi-tag-multiple me-2"></i> Assign Category to Users</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <form id="assignCategoryForm">
-                    <div class="mb-3">
-                        <label for="bulkUserCategory" class="form-label fw-bold">Select Category</label>
-                        <select class="form-select" id="bulkUserCategory" required>
-                            <option value="" selected disabled>Select category</option>
-                            <option value="Field Staff">Field Staff</option>
-                            <option value="Management">Management</option>
-                            <option value="Store Staff">Store Staff</option>
-                            <option value="Admin">Admin</option>
-                        </select>
-                        <div class="invalid-feedback">Please select a category.</div>
-                    </div>
-                    <div class="alert alert-info">
-                        <i class="bi bi-info-circle me-2"></i> This will assign the selected category to all checked users.
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="saveBulkCategoryBtn">
-                    <i class="bi bi-save me-1"></i> Assign Category
-                </button>
+    <!-- Delete Confirmation Modal -->
+    <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title fw-bold" id="deleteConfirmModalLabel"><i class="bi bi-exclamation-triangle me-2"></i> Delete Confirmation</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p id="deleteConfirmText">Are you sure you want to delete this item? This action cannot be undone.</p>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
+                        <i class="bi bi-trash me-1"></i> Delete
+                    </button>
+                </div>
             </div>
         </div>
     </div>
-</div>
-
-<!-- Delete Confirmation Modal -->
-<div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title fw-bold" id="deleteConfirmModalLabel"><i class="bi bi-exclamation-triangle me-2"></i> Delete Confirmation</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-                <p id="deleteConfirmText">Are you sure you want to delete this item? This action cannot be undone.</p>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-danger" id="confirmDeleteBtn">
-                    <i class="bi bi-trash me-1"></i> Delete
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('scripts')
 <script>
+
+    
+
     $(document).ready(function() {
         // Initialize Select2 for vehicles allowed dropdowns
         $('#vehiclesAllowed').select2({
@@ -915,6 +847,8 @@
     .settings-sidebar {
         height: 100%;
         background: #ffffff;
+        margin-left: 1rem;
+        margin-top: 0.9rem;
     }
 
     .settings-sidebar .nav-link {
@@ -973,7 +907,6 @@
     }
     .nav-pills {
     border-bottom: 0;
-    margin-left: 1rem;
 
 }
     /* Select2 styling */

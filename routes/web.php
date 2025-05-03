@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
+use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
@@ -11,9 +12,8 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
+use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
-use App\Models\InventroyStreetLightModel;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -26,8 +26,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/jicr', [JICRController::class, 'index'])->name('jicr.index');
     Route::get('/jicr/blocks/{district}', [JICRController::class, 'getBlocks'])->name('jicr.blocks');
     Route::get('/jicr/panchayats/{block}', [JICRController::class, 'getPanchayats'])->name('jicr.panchayats');
+    Route::get('/jicr/ward/{panchayat}', [JICRController::class, 'getWards'])->name('jicr.wards');
     Route::get('/jicr/generate', [JICRController::class, 'generatePDF'])->name('jicr.generate');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
+    Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
+    Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
+        Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
     // Staff router
     Route::resource('staff', StaffController::class);
     Route::prefix('staff')->group(function () {
@@ -51,13 +55,38 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('sites', SiteController::class);
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
 
-    // Billing management
-    Route::get('/billing/tada', function () {
-        return view('billing.tada');
-    })->name('billing.tada');
-    Route::get('/billing/convenience', function () {
-        return view('billing.convenience');
-    })->name('billing.convenience');
+    // Convenience Routes
+    // Route::resource('convenience', ConvenienceController::class);
+
+    // TADA route fixed
+    Route::get('/billing/tada', [ConvenienceController::class, 'tada'])->name('billing.tada');
+    // Conveience route fixed
+    Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    // Settings Route
+    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
+        //Add Vehicle
+    Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
+        // Edit Vehicle
+    Route::get('/settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('billing.editvehicle');
+        // Update Vehicle
+    Route::post('/settings/update', [ConvenienceController::class, 'updateVehicle'])->name('billing.updatevehicle');
+        // Delete Vehicle
+    Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
+
+    // Billing Edit User
+    Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
+    // Billing Update User
+    Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
+    
+    // Add Categories
+    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    // Edit Categories
+    Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
+    // Update Categories
+    Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
+    // Delete Categories
+    Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');  
+    
     //Convenience Details
     Route::get('/convenience-details', function () {
         return view('billing.convenienceDetails');
@@ -71,6 +100,12 @@ Route::get('convenience-settings', function () {
     return view('billing.settings');
 })->name('convenience.settings');
 
+// apply now
+Route::get('apply-now', function () {
+    return view('hrm.applyNow');
+})->name('apply-now');
+
+
 
     // Inventory router
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
@@ -82,11 +117,13 @@ Route::get('convenience-settings', function () {
     Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     // adding inventory data
+    // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
 
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
+
 
     // Dispatch Inventory
     Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
@@ -95,6 +132,12 @@ Route::get('convenience-settings', function () {
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
+
+    // Projects Controller
+    // Deleting target
+    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
+
+
 
     // Route for Surveyed Poles
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');

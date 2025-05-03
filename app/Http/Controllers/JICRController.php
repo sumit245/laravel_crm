@@ -32,6 +32,27 @@ class JICRController extends Controller
         $panchayats = Streetlight::where('block', $block)->select('panchayat')->distinct()->get();
         return response()->json($panchayats);
     }
+    public function getWards($panchayat)
+    {
+        $wardString = Streetlight::where('panchayat', $panchayat)
+            ->pluck('ward')
+            ->first(); // Assuming one row per panchayat
+
+        Log::info("Raw ward string: " . $wardString);
+
+        $wardArray = [];
+
+        if ($wardString) {
+            $wards = explode(',', $wardString); // Split the string into an array
+            foreach ($wards as $ward) {
+                $wardArray[] = ['ward' => trim($ward)]; // Clean whitespace
+            }
+        }
+
+        Log::info($wardArray);
+
+        return response()->json($wardArray);
+    }
 
     public function generatePDF(Request $request)
     {
@@ -108,7 +129,9 @@ class JICRController extends Controller
                         'longitude' => $pole->lng,
                         'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
                     ];
-                });
+                })
+                ->sortBy('ward_no') // Sorting by ward_no in ascending order
+                ->values(); // Reindex the collection
             $data['showReport'] = true; // Flag to show the report
 
             // If it's a download request, generate PDF
