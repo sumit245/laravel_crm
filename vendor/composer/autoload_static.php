@@ -4,7 +4,7 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit979dbe3c21355010a634ecad2cca395a
+class ComposerStaticInit1921c7b45a740a04b74cacf5c5987935
 {
     public static $files = array (
         '6e3fae29631ef280660b3cdad06f25a8' => __DIR__ . '/..' . '/symfony/deprecation-contracts/function.php',
@@ -765,6 +765,8 @@ class ComposerStaticInit979dbe3c21355010a634ecad2cca395a
         'App\\Http\\Controllers\\Auth\\VerificationController' => __DIR__ . '/../..' . '/app/Http/Controllers/Auth/VerificationController.php',
         'App\\Http\\Controllers\\CandidateController' => __DIR__ . '/../..' . '/app/Http/Controllers/CandidateController.php',
         'App\\Http\\Controllers\\Controller' => __DIR__ . '/../..' . '/app/Http/Controllers/Controller.php',
+        'App\\Http\\Controllers\\ConvenienceController' => __DIR__ . '/../..' . '/app/Http/Controllers/ConvenienceController.php',
+        'App\\Http\\Controllers\\DeviceController' => __DIR__ . '/../..' . '/app/Http/Controllers/DeviceController.php',
         'App\\Http\\Controllers\\HomeController' => __DIR__ . '/../..' . '/app/Http/Controllers/HomeController.php',
         'App\\Http\\Controllers\\InventoryController' => __DIR__ . '/../..' . '/app/Http/Controllers/InventoryController.php',
         'App\\Http\\Controllers\\JICRController' => __DIR__ . '/../..' . '/app/Http/Controllers/JICRController.php',
@@ -790,10 +792,12 @@ class ComposerStaticInit979dbe3c21355010a634ecad2cca395a
         'App\\Imports\\InventroyStreetLight' => __DIR__ . '/../..' . '/app/Imports/InventroyStreetLight.php',
         'App\\Imports\\SiteImport' => __DIR__ . '/../..' . '/app/Imports/SiteImport.php',
         'App\\Imports\\StreetlightImport' => __DIR__ . '/../..' . '/app/Imports/StreetlightImport.php',
+        'App\\Imports\\StreetlightPoleImport' => __DIR__ . '/../..' . '/app/Imports/StreetlightPoleImport.php',
         'App\\Imports\\VendorImport' => __DIR__ . '/../..' . '/app/Imports/VendorImport.php',
         'App\\Mail\\CandidateMail' => __DIR__ . '/../..' . '/app/Mail/CandidateMail.php',
         'App\\Models\\Candidate' => __DIR__ . '/../..' . '/app/Models/Candidate.php',
         'App\\Models\\City' => __DIR__ . '/../..' . '/app/Models/City.php',
+        'App\\Models\\Conveyance' => __DIR__ . '/../..' . '/app/Models/Conveyance.php',
         'App\\Models\\Inventory' => __DIR__ . '/../..' . '/app/Models/Inventory.php',
         'App\\Models\\InventoryDispatch' => __DIR__ . '/../..' . '/app/Models/InventoryDispatch.php',
         'App\\Models\\InventroyStreetLightModel' => __DIR__ . '/../..' . '/app/Models/InventroyStreetLightModel.php',
@@ -809,6 +813,8 @@ class ComposerStaticInit979dbe3c21355010a634ecad2cca395a
         'App\\Models\\StreetlightTask' => __DIR__ . '/../..' . '/app/Models/StreetlightTask.php',
         'App\\Models\\Task' => __DIR__ . '/../..' . '/app/Models/Task.php',
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
+        'App\\Models\\UserCategory' => __DIR__ . '/../..' . '/app/Models/UserCategory.php',
+        'App\\Models\\Vehicle' => __DIR__ . '/../..' . '/app/Models/Vehicle.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\AuthServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AuthServiceProvider.php',
         'App\\Providers\\BroadcastServiceProvider' => __DIR__ . '/../..' . '/app/Providers/BroadcastServiceProvider.php',
@@ -9976,10 +9982,10 @@ class ComposerStaticInit979dbe3c21355010a634ecad2cca395a
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit979dbe3c21355010a634ecad2cca395a::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit979dbe3c21355010a634ecad2cca395a::$prefixDirsPsr4;
-            $loader->prefixesPsr0 = ComposerStaticInit979dbe3c21355010a634ecad2cca395a::$prefixesPsr0;
-            $loader->classMap = ComposerStaticInit979dbe3c21355010a634ecad2cca395a::$classMap;
+            $loader->prefixLengthsPsr4 = ComposerStaticInit1921c7b45a740a04b74cacf5c5987935::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInit1921c7b45a740a04b74cacf5c5987935::$prefixDirsPsr4;
+            $loader->prefixesPsr0 = ComposerStaticInit1921c7b45a740a04b74cacf5c5987935::$prefixesPsr0;
+            $loader->classMap = ComposerStaticInit1921c7b45a740a04b74cacf5c5987935::$classMap;
 
         }, null, ClassLoader::class);
     }

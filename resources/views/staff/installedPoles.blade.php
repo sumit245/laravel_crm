@@ -1,4 +1,4 @@
-<table id="installedPolesTable" class="table-striped table-bordered table-sm table mt-4">
+<table id="installedPolesTable" class="table-striped table-bordered table-sm mt-4 table">
   <thead>
     <tr>
       <th data-select="true">
@@ -9,7 +9,8 @@
       <th>Sim Number</th>
       <th>Battery</th>
       <th>Panel</th>
-      <th>Location</th>
+      <th>Bill Raised</th>
+      <!-- <th>Location</th> -->
       <th>RMS</th>
       <th>Actions</th>
     </tr>
@@ -17,20 +18,24 @@
   <tbody>
     @foreach ($installedPoles as $survey)
       <tr>
-      <td>
-    <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />
-  </td>
-        <td>{{ $survey->complete_pole_number ?? "N/A" }}</td>
+        <td>
+          <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />
+        </td>
+        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+          <span class="text-primary">{{ $survey->complete_pole_number ?? "N/A" }}</span>
+        </td>
         <td>{{ $survey->luminary_qr ?? "N/A" }}</td>
         <td>{{ $survey->sim_number ?? "N/A" }}</td>
         <td>{{ $survey->battery_qr ?? "N/A" }}</td>
         <td>{{ $survey->module_qr ?? "N/A" }}</td>
-        <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
-            <span class="text-primary">View Location</span> </td>
-            <td>{{ $survey->rms_status ?? "N/A" }}</td>
+        <td>0</td>
+        <!-- <td onclick="locateOnMap({{ $survey->lat }}, {{ $survey->lng }})" style="cursor:pointer;">
+            <span class="text-primary">View Location</span> </td> -->
+        <td>{{ $survey->rms_status ?? "N/A" }}</td>
         <td>
           <!-- View Button -->
-          <a href="{{ route("poles.show", $survey->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+          <a href="{{ route("poles.show", $survey->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+            title="View Details">
             <i class="mdi mdi-eye"></i>
           </a>
 
