@@ -55,10 +55,10 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
 
 
-    // TADA route fixed
-    Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
-    // Conveience route fixed
-    Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    // Conveyance route fixed
+    Route::get('/billing/tada', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    // Tada route fixed
+    Route::get('/billing/convenience', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle

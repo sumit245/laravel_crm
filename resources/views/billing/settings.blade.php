@@ -93,8 +93,8 @@
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table id="userTable" class="table table-bordered table-striped table-sm">
-                                        <thead class="table-light">
+                                    <x-data-table id="userTable" class="table table-bordered table-striped table-sm">
+                                        <x-slot:thead class="table-light">
                                             <tr>
                                                 <th><input type="checkbox" id="selectAllUsers"></th>
                                                 <th>#</th>
@@ -104,8 +104,8 @@
                                                 <th>Category</th>
                                                 <th>Actions</th>
                                             </tr>
-                                        </thead>
-                                        <tbody>
+                                        </x-slot:thead>
+                                        <x-slot:tbody>
                                             @foreach ($users as $user)
                                             <tr>
                                                 <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
@@ -121,8 +121,8 @@
                                                 </td>
                                             </tr>
                                             @endforeach
-                                        </tbody>
-                                    </table>
+                                        </x-slot:tbody>
+                                    </x-data-table>
                                 </div>
                             </div>
                         </div>
@@ -140,23 +140,23 @@
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <table id="categoryTable" class="table table-bordered table-striped table-sm">
-                                        <thead class="table-light">
+                                    <x-data-table id="categoryTable" class="table table-bordered table-striped table-sm">
+                                        <x-slot:thead class="table-light">
                                             <tr>
                                                 <th>#</th>
                                                 <th>Category Name</th>
                                                 <th>Vehicles Allowed</th>
                                                 <th>Actions</th>
                                             </tr>
-                                        </thead>
-                                        <tbody>
+                                        </x-slot:thead>
+                                        <x-slot:tbody>
                                         @foreach ($categories as $cat)
                                             <tr>
                                                 <td>{{ $cat->id }}</td>
                                                 <td>{{ $cat->category_code }}</td>
                                                 <td>{{ $cat->allowed_vehicles }}</td>
                                                 <td>
-                                                <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-primary">
+                                                <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-warning">
                                                         <i class="mdi mdi-pencil"></i>
                                                 </a>    
                                                     <form action="{{ route('billing.deletecategory', $cat->id) }}" method="POST" style="display:inline;">
@@ -171,8 +171,8 @@
                                                 </td>
                                             </tr>
                                             @endforeach
-                                        </tbody>
-                                    </table>
+                                        </x-slot:tbody>
+                                    </x-data-table>
                                 </div>
                             </div>
                         </div>
@@ -386,7 +386,7 @@
     </div>
 
     <!-- Edit User Category Modal -->
-    <div class="modal fade" id="editCategoryModal{{ $cat->id }}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{ $cat->id }}" aria-hidden="true">
+<div class="modal fade" id="editCategoryModal{{ $cat->id }}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{ $cat->id }}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content shadow">
             <div class="modal-header bg-primary text-white">
@@ -421,7 +421,7 @@
             </div>
         </div>
     </div>
-</div>
+    </div>
 
 
     <!-- Assign Category Modal -->
@@ -847,6 +847,8 @@
     .settings-sidebar {
         height: 100%;
         background: #ffffff;
+        margin-left: 1rem;
+        margin-top: 0.9rem;
     }
 
     .settings-sidebar .nav-link {
