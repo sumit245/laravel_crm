@@ -10,14 +10,15 @@ class Tada extends Model
     use HasFactory;
 
     protected $fillable = [
-        'name',
-        'department',
-        'employee_id',
+        // 'name',
+        // 'department',
+        // 'employee_id',
+        'user_id',
         'visit_approve',
         'objective_tour',
         'meeting_visit',
         'outcome_achieve',
-        'Desgination', // Consider correcting to 'designation' for consistency
+        // 'Desgination', // Consider correcting to 'designation' for consistency
         'start_journey',
         'end_journey',
         'transport',
@@ -41,4 +42,11 @@ class Tada extends Model
         'end_journey' => 'date',
         'pickup_date' => 'date',
     ];
+
+    // Relationship to user
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
 }

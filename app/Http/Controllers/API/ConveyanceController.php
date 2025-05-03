@@ -17,10 +17,11 @@ class ConveyanceController extends Controller
         try {
             //code...
             $tadas = Tada::select([
-                'name',
-                'employee_id as Employee Id',
+                // 'name',
+                // 'employee_id as Employee Id',
                 'meeting_visit',
-                'department',
+                // 'department',
+                'user_id',
                 'start_journey as start_date',
                 'end_journey as end_date',
                 'start_journey_pnr',
@@ -98,14 +99,15 @@ class ConveyanceController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'name' => 'required|string|max:100',
-            'department' => 'required|string|max:100',
-            'employee_id' => 'required|string|max:100',
+            // 'name' => 'required|string|max:100',
+            // 'department' => 'required|string|max:100',
+            // 'employee_id' => 'required|string|max:100',
+            'user_id' => 'required|integer',
             'visit_approve' => 'nullable|string|max:50',
             'objective_tour' => 'nullable|string|max:255',
             'meeting_visit' => 'nullable|string|max:255',
             'outcome_achieve' => 'nullable|string|max:255',
-            'Desgination' => 'required|string|max:100',
+            // 'Desgination' => 'required|string|max:100',
             'start_journey' => 'required|date',
             'end_journey' => 'required|date',
             'transport' => 'required|string|max:50',
