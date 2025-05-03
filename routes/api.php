@@ -64,5 +64,5 @@ Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
 
 // Conveyance
 Route::apiResource('tadas',ConveyanceController::class);
-Route::post('conveyance', [ConveyanceController::class, 'storeConveyance']);
-Route::get('conveyance', [ConveyanceController::class, 'indexConveyance']);
+Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
+Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
