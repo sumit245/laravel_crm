@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tadas', function (Blueprint $table) {
+        Schema::create('conveyances', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->text('from');
@@ -22,7 +22,7 @@ return new class extends Migration
 
         // Foreign key constraint
             $table->foreign('vehicle_category')->references('id')->on('vehicles')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->timestamps();
         });
     }

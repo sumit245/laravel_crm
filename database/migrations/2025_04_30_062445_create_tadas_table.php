@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('conveyances', function (Blueprint $table) {
+        Schema::create('tadas', function (Blueprint $table) {
             $table->id();
 
             // New fields
