@@ -102,7 +102,7 @@
                         <th>Name</th>
                         <th>Employee Id</th>
                         <th>Department</th>
-                        <th>Objective</th>
+                        <th>Distance</th>
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Actions</th>
@@ -112,11 +112,11 @@
                     @foreach ($cons as $row)
                     <tr>
                         <td><input type="checkbox" class="checkboxItem" /></td>
-                        <td>{{ $row->name }}</td>
-                        <td>{{ $row->employee_id }}</td>
-                        <td>{{ $row->department }}</td>
-                        <td>{{ $row->objective_tour }}</td>
-                        <td>{{ $row->rate_per_km * $row->total_km }}</td>
+                        <td>{{ $row->user->name ?? "N/A" }}</td>
+                        <td>{{ $row->user->id ?? "N/A" }}</td>
+                        <td>{{ $row->department ?? "N/A" }}</td>
+                        <td>{{ $row->kilometer ?? "N/A" }}</td>
+                        <td>{{ ($row->vehicle->rate ?? 0 ) * ( $row->kilometer ?? 0) }}</td>
                         <td><span class="badge bg-warning text-dark">Pending</span></td>
                         <td>
                             <a href="{{ route('convenience.details') }}" class="btn btn-sm btn-info" data-toggle="tooltip" title="View Details">

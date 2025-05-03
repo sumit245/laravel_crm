@@ -27,7 +27,7 @@ class Conveyance extends Model
 
     // Relationship to vehicle
     public function vehicle(){
-        return $this->belongsTo(Vehicle::class);
+        return $this->belongsTo(Vehicle::class, 'id', 'category');
     }
 
 
