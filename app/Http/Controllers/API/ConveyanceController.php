@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Conveyance;
 use App\Models\Tada;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
 class ConveyanceController extends Controller
@@ -83,6 +84,11 @@ class ConveyanceController extends Controller
             ]);
         }
         
+    }
+
+    public function getVehicles(){
+        $vehicles = Vehicle::get();
+        return response()->json($vehicles);
     }
 
     /**

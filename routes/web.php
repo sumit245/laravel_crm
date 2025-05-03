@@ -145,4 +145,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/upload-documents/{id}', [CandidateController::class, 'showUploadForm']);
     Route::post('/upload-documents/{id}', [CandidateController::class, 'uploadDocuments'])->name('upload.documents');
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
+
+    // Route for hiring software
+    Route::get('apply-now', function () {
+        return view('hrm.applyNow');
+    })->name('apply-now');
+
 });
