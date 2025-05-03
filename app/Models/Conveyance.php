@@ -10,26 +10,25 @@ class Conveyance extends Model
     use HasFactory;
 
     protected $fillable = [
-        'user_id',
-        'vehicle_id',
-        'distance',
-        'route',
+        'from',
+        'to',
+        'kilometer',
+        'created_at',
+        'time',
+        'vehicle_category',
+        'user_id', // add this
     ];
-
-    /**
-     * Get the user associated with the conveyance.
-     */
+    
+    // Relationship to user
     public function user()
     {
-        return $this->belongsTo(User::class, 'user_id', 'id');
+        return $this->belongsTo(User::class);
     }
 
-    /**
-     * Get the vehicle associated with the conveyance.
-     */
-    public function vehicle()
-    {
-        return $this->belongsTo(Vehicle::class, 'vehicle_id', 'vehicle_id');
+    // Relationship to vehicle
+    public function vehicle(){
+        return $this->belongsTo(Vehicle::class, 'id', 'category');
     }
+
 
 }
