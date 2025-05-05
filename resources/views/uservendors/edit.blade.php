@@ -228,9 +228,9 @@
             <div class="d-flex">
               <button type="submit" class="btn btn-primary mx-2 mb-3">Update Vendor</button>
               <!-- Button to toggle the password change section -->
-              <button type="button" class="btn btn-secondary mx-2 mb-3" id="togglePasswordSection">
-                Change Password
-              </button>
+              <a href="{{ route('vendor.change-password', $vendor->id) }}" class="btn btn-secondary mx-2 mb-3">
+                  Change Password
+              </a>
               {{-- </div> --}}
               <div>
               </div>

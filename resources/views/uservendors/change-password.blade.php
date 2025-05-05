@@ -15,7 +15,7 @@
       </div>
       <div class="form-group">
         <button type="submit" class="btn btn-primary">Update Password</button>
-        <a href="{{ route("vendor.index") }}" class="btn btn-secondary">Cancel</a>
+        <a href="{{ route("uservendors.index") }}" class="btn btn-secondary">Cancel</a>
       </div>
     </form>
   </div>
