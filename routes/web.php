@@ -36,15 +36,16 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('staff')->group(function () {
         Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('staff.profile');
         Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('staff.updateProfilePicture');
-        Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
-        Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
     });
+    
+    Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
+    Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
 
 
     // vendor Router
     Route::resource('uservendors', VendorController::class);
-    Route::post('vendors-updatepassword/{id}', [VendorController::class, 'updatePassword'])->name('vendor.update-password');
-    Route::get('/vendors-change-password/{id}', [VendorController::class, 'changePassword'])->name('vendor.change-password');
+    // Route::post('vendors-updatepassword/{id}', [VendorController::class, 'updatePassword'])->name('vendor.update-password');
+    // Route::get('/vendors-change-password/{id}', [VendorController::class, 'changePassword'])->name('vendor.change-password');
     
     // projects Router
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');

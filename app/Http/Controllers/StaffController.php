@@ -7,11 +7,13 @@ use App\Models\Task;
 use App\Models\StreetlightTask;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\UserCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use function Laravel\Prompts\confirm;
 
 class StaffController extends Controller
 {
@@ -203,8 +205,9 @@ class StaffController extends Controller
         //
         $staff = User::findOrFail($id);
         $projects = Project::all();
+        $usercategory = UserCategory::all(); 
             
-        return view('staff.edit', compact('staff', 'projects')); // Form to edit staff
+        return view('staff.edit', compact('staff', 'projects', 'usercategory')); // Form to edit staff
     }
 
     /**
@@ -215,10 +218,12 @@ class StaffController extends Controller
         //
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
+            'project_id'=> 'nullable|integer',
             'firstName' => 'nullable|string|max:25',
             'lastName'  => 'nullable|string|max:25',
             'email'     => 'required|email|unique:users,email,' . $staff->id,
             'contactNo' => 'string',
+            'category'  => 'nullable|string',
             'address'   => 'string|max:255',
             'password'  => 'nullable|string|min:6|confirmed',
             'role'      => 'nullable|string',
