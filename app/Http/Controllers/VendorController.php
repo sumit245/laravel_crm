@@ -170,6 +170,25 @@ class VendorController extends Controller
         return view('uservendors.edit', compact('vendor','projects'));
     }
 
+    // This is only for viewing the page
+    public function changePassword(Request $request, $id){
+        $vendor = User::findOrFail($id);
+        return view('uservendors.change-password', compact('vendor'));
+    }
+    // Update the vendor's password
+    public function updatePassword(Request $request, $id)
+    {
+        $request->validate([
+            'password' => 'required|min:8|confirmed',
+        ]);
+
+        User::where('id', $id)->update([
+            'password' => bcrypt($request->password),
+        ]);
+
+        return redirect()->route('uservendors.index')->with('success', 'Password updated successfully.');
+    }
+
     /**
      * Update the specified resource in storage.
      */

@@ -43,7 +43,9 @@ Route::middleware(['auth'])->group(function () {
 
     // vendor Router
     Route::resource('uservendors', VendorController::class);
-
+    Route::post('vendors-updatepassword/{id}', [VendorController::class, 'updatePassword'])->name('vendor.update-password');
+    Route::get('/vendors-change-password/{id}', [VendorController::class, 'changePassword'])->name('vendor.change-password');
+    
     // projects Router
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::resource('projects', ProjectsController::class);

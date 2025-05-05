@@ -291,9 +291,15 @@ class StaffController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $staff           = User::findOrFail($id);
-        $staff->password = bcrypt($request->password);
-        $staff->save();
+        User::where('id', $id)->update([
+            'password' => bcrypt($request->password)
+        ]);
+        
+
+        // $staff           = User::findOrFail($id);
+        // $staff->password = $request->password;
+        // Log::info('Update staff password ' . $request->password);
+        // $staff->save();
 
         return redirect()->route('staff.index')->with('success', 'Password updated successfully.');
     }
