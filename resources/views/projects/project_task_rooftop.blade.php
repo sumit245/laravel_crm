@@ -40,9 +40,17 @@
           </div>
           <div class="modal-body">
             <div class="form-group mb-3">
-              <label for="siteSearch" class="form-label">Search Site</label>
+              <!-- <label for="siteSearch" class="form-label">Search Site</label>
               <input type="text" id="siteSearch" placeholder="Search Site..." class="form-control">
-              <div id="siteList"></div>
+              <div id="siteList"></div> -->
+
+              <label for="siteSearch" class="form-label">Search Site</label>
+                <select id="siteSearch" class="form-control" style="width: 100%;">
+                    <option value="">Search Site...</option>
+                    @foreach ($sites as $site)
+                        <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                    @endforeach
+                </select>
 
               <!-- Selected Sites -->
               <ul id="selectedSites"></ul>
@@ -57,6 +65,7 @@
                 <option value="RMS">RMS</option>
                 <option value="Billing">Billing</option>
                 <option value="Add Team">Add Team</option>
+                <option value="Survey">Survey</option>
               </select>
             </div>
             <div class="mb-3">
@@ -190,6 +199,11 @@
       $('#selectEngineer').select2({
         width: '100%',
         dropdownParent: $('#addTargetModal')
+      });
+
+      $('#siteSearch').select2({ 
+          allowClear: true,
+          dropdownParent: $('#addTargetModal')
       });
 
       
