@@ -97,39 +97,26 @@
             <table id="convenienceTable" class="table table-bordered table-striped table-sm table mt-4">
                 <thead class="table-white">
                     <tr>
+                        
                         <th><input type="checkbox" id="selectAll" /></th>
                         <th>Name</th>
                         <th>Employee Id</th>
                         <th>Department</th>
-                        <th>Objective</th>
+                        <th>Distance</th>
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @php
-                        $data = [
-                            ['name' => 'John Doe', 'id' => 'EMP123', 'dept' => 'Sales', 'obj' => 'Client Acquisition', 'amt' => '₹2,500'],
-                            ['name' => 'Ava Martinez', 'id' => 'EMP124', 'dept' => 'Marketing', 'obj' => 'Product Launch', 'amt' => '₹3,200'],
-                            ['name' => 'Ethan Clark', 'id' => 'EMP125', 'dept' => 'Engineering', 'obj' => 'Tech Conference', 'amt' => '₹4,000'],
-                            ['name' => 'Sophia Chen', 'id' => 'EMP126', 'dept' => 'Operations', 'obj' => 'Logistics Planning', 'amt' => '₹1,800'],
-                            ['name' => 'David Lee', 'id' => 'EMP127', 'dept' => 'Sales', 'obj' => 'Client Follow-up', 'amt' => '₹2,200'],
-                            ['name' => 'Michael Johnson', 'id' => 'EMP128', 'dept' => 'HR', 'obj' => 'Employee Wellness', 'amt' => '₹2,700'],
-                            ['name' => 'Olivia Brown', 'id' => 'EMP129', 'dept' => 'Finance', 'obj' => 'Budget Review', 'amt' => '₹3,000'],
-                            ['name' => 'Lucas White', 'id' => 'EMP130', 'dept' => 'Marketing', 'obj' => 'Ad Campaign', 'amt' => '₹4,900'],
-                            ['name' => 'Emma Davis', 'id' => 'EMP131', 'dept' => 'Operations', 'obj' => 'Inventory Management', 'amt' => '₹1,950'],
-                        ];
-                    @endphp
-
-                    @foreach ($data as $row)
+                    @foreach ($cons as $row)
                     <tr>
                         <td><input type="checkbox" class="checkboxItem" /></td>
-                        <td>{{ $row['name'] }}</td>
-                        <td>{{ $row['id'] }}</td>
-                        <td>{{ $row['dept'] }}</td>
-                        <td>{{ $row['obj'] }}</td>
-                        <td>{{ $row['amt'] }}</td>
+                        <td>{{ $row->user->name ?? "N/A" }}</td>
+                        <td>{{ $row->user->id ?? "N/A" }}</td>
+                        <td>{{ $row->department ?? "N/A" }}</td>
+                        <td>{{ $row->kilometer ?? "N/A" }}</td>
+                        <td>{{ ($row->vehicle->rate ?? 0 ) * ( $row->kilometer ?? 0) }}</td>
                         <td><span class="badge bg-warning text-dark">Pending</span></td>
                         <td>
                             <a href="{{ route('convenience.details') }}" class="btn btn-sm btn-info" data-toggle="tooltip" title="View Details">
