@@ -13,25 +13,44 @@
     {{-- Dashboard Cards --}}
     <div class="col-lg-12">
         <div class="row ms-0">
-            @php
-                $cards = [
-                    ['title' => 'Applied Amount', 'amount' => '₹125,000', 'bg' => 'bg-primary'],
-                    ['title' => 'Disbursed Amount', 'amount' => '₹100,000', 'bg' => 'bg-success'],
-                    ['title' => 'Rejected Amount', 'amount' => '₹25,000', 'bg' => 'bg-danger'],
-                    ['title' => 'Due Claim Amount', 'amount' => '₹10,000', 'bg' => 'bg-warning'],
-                ];
-            @endphp
-
-            @foreach ($cards as $card)
+           
+            <!-- Applied Amount -->
             <div class="col-md-3 mb-3">
-                <div class="card text-white {{ $card['bg'] }} shadow-sm h-100">
+                <div class="card text-white bg-primary shadow-sm h-100">
                     <div class="card-body d-flex flex-column justify-content-between">
-                        <h6 class="card-title text-white fw-semibold mb-2">{{ $card['title'] }}</h6>
-                        <h4 class="mb-0">{{ $card['amount'] }}</h4>
+                        <h6 class="card-title text-white fw-semibold mb-2">Applied Amount</h6>
+                        <h4 class="mb-0">{{ $appliedAmount }}</h4>
                     </div>
                 </div>
             </div>
-            @endforeach
+            <!-- Disbursed Amount -->
+            <div class="col-md-3 mb-3">
+                <div class="card text-white bg-success shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h6 class="card-title text-white fw-semibold mb-2">Disbursed Amount</h6>
+                        <h4 class="mb-0">{{ $disbursedAmount }}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- Rejected Amount -->
+            <div class="col-md-3 mb-3">
+                <div class="card text-white bg-danger shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h6 class="card-title text-white fw-semibold mb-2">Rejected Amount</h6>
+                        <h4 class="mb-0">{{ $rejectedAmount}}</h4>
+                    </div>
+                </div>
+            </div>
+            <!-- Due Claim Amount -->
+            <div class="col-md-3 mb-3">
+                <div class="card text-white bg-warning shadow-sm h-100">
+                    <div class="card-body d-flex flex-column justify-content-between">
+                        <h6 class="card-title text-white fw-semibold mb-2">Due Claim Amount</h6>
+                        <h4 class="mb-0">{{ $dueclaimAmount }}</h4>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </div>
 
@@ -41,11 +60,17 @@
         <a>
             <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
                 <!-- Placeholder Image -->
-                <img src="https://via.placeholder.com/60" alt="Placeholder" class="rounded-circle" width="60" height="60">
+                <img src="{{ asset($details->first()->user->image ?? 'images/default.png') }}" alt="Placeholder" class="rounded-circle" width="60" height="60">
                 <div class="ms-3">
-                    <h5 class="mb-0">{{ $vendor->name ?? 'Yashvir Singh' }}</h5>
-                    <small class="text-muted">Vendor</small>
-                    <p class="mb-0">{{ $vendor->email ?? 'example@gmail.com' }}</p>
+                    <h5 class="mb-0">{{ $details->first()->user->name ?? "N/A" }}</h5>
+                    @if ($details->first()->user->role==0)
+                        <small class="text-muted">Admin</small>
+                    @elseif ($details->first()->user->role==1)
+                        <small class="text-muted">Employee</small>
+                    @elseif ($details->first()->user->role==3)
+                        <small class="text-muted">Vendor</small>
+                    @endif
+                    <p class="mb-0">{{ $details->first()->user->email ?? "N/A" }}</p>
                 </div>
             </div>
         </a>
@@ -85,20 +110,17 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @for ($i = 0; $i < 10; $i++)
+                        @foreach ($details as $detail)
                         <tr>
                             <td><input type="checkbox" class="checkboxItem" /></td>
-                            <td>
-                                @php $date = $details['start_date'] ?? null; @endphp
-                                {{ $date ? \Carbon\Carbon::parse($date)->format('d-m-Y h:i A') : 'N/A' }}
-                            </td>
-                            <td>{{ $details['vehicle_number'] ?? 'N/A' }}</td>
-                            <td>{{ $details['to'] ?? 'N/A' }}</td>
-                            <td>{{ $details['from'] ?? 'N/A' }}</td>
-                            <td>{{ $details['total_km'] ?? 'N/A' }}</td>
-                            <td>{{ $details['amount'] ?? 'N/A' }}</td>
+                            <td>{{ $detail->time }}</td>
+                            <td>{{ $detail->vehicle->category ?? 'N/A' }}</td>
+                            <td>{{ $detail->to ?? 'N/A' }}</td>
+                            <td>{{ $detail->from ?? 'N/A' }}</td>
+                            <td>{{ $detail->kilometer ?? 'N/A' }}</td>
+                            <td>{{ $detail->vehicle->rate ?? 'N/A' }}</td>
                         </tr>
-                        @endfor
+                        @endforeach
                     </tbody>
                 </table>
             </div>

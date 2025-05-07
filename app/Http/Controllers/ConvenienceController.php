@@ -23,7 +23,35 @@ class ConvenienceController extends Controller
     {
         //
         $cons = Conveyance::get();
-        return view('billing.convenience', compact('cons'));
+        $appliedAmount = Conveyance::sum('amount');
+        $disbursedAmount = Conveyance::where('status', 1)->sum('amount');
+        $rejectedAmount = Conveyance::where('status', 0)->sum('amount');
+        
+
+        return view('billing.convenience', compact('cons', 'appliedAmount', 'disbursedAmount', 'rejectedAmount'));
+    }
+
+    public function showdetailsconveyance($id){
+        
+        $details = Conveyance::with(['user', 'vehicle'])->where('user_id', $id)->get();
+        $appliedAmount = Conveyance::where('user_id', $id)->sum('amount');
+        $disbursedAmount = Conveyance::where('user_id', $id)->where('status', 1)->sum('amount');
+        $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount'); 
+        $dueclaimAmount = $appliedAmount-$disbursedAmount;
+        // dd($details);
+        return view('billing.conveyanceDetails', compact('details', 'appliedAmount', 'disbursedAmount', 'rejectedAmount', 'dueclaimAmount'));
+    }
+
+    public function accept($id){
+        Conveyance::where('id', $id)->update(['status' => 1]);
+
+        return back()->with('success', 'Status updated to Accepted.');
+    }
+
+    public function reject($id){
+        Conveyance::where('id', $id)->update(['status' => 0]);
+
+        return back()->with('success', 'Status updated to Accepted.');
     }
 
     // Tada view

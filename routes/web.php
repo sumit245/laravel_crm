@@ -74,6 +74,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/update', [ConvenienceController::class, 'updateVehicle'])->name('billing.updatevehicle');
         // Delete Vehicle
     Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
+    // Accept and Reject Conveyance
+    Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
+    Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
+    
+    // Conveyance details
+    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
+
 
     // Billing Edit User
     Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
@@ -90,9 +97,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');  
     
     //Convenience Details
-    Route::get('/convenience-details', function () {
-        return view('billing.convenienceDetails');
-    })->name('convenience.details');
+    
     // View Bills Details
     Route::get('/view-bills', function () {
     return view('billing.viewBills');
