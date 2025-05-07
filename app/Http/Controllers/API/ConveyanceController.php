@@ -190,6 +190,29 @@ class ConveyanceController extends Controller
         //
     }
 
+    public function showConveyance(string $id){
+        try {
+            $conveyance = Conveyance::where('user_id', $id)->get();
+            if (!$conveyance) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Conveyance not found'
+                ], 404);
+            }
+            return response()->json([
+                'status' => true,
+                'message' => 'Conveyance fetched successfully',
+                'data' => $conveyance
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch conveyance',
+                'error' => $th->getMessage()
+            ]);
+        }
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
