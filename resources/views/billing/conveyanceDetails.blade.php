@@ -118,7 +118,7 @@
                             <td>{{ $detail->to ?? 'N/A' }}</td>
                             <td>{{ $detail->from ?? 'N/A' }}</td>
                             <td>{{ $detail->kilometer ?? 'N/A' }}</td>
-                            <td>{{ $detail->vehicle->rate ?? 'N/A' }}</td>
+                            <td>{{ $detail->amount ?? 'N/A' }}</td>
                         </tr>
                         @endforeach
                     </tbody>
