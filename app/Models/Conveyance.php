@@ -13,6 +13,7 @@ class Conveyance extends Model
         'from',
         'to',
         'kilometer',
+        'amount',
         'created_at',
         'time',
         'status',
