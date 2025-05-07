@@ -41,6 +41,7 @@ class User extends Authenticatable
         'status',
         'disableLogin',
         'lastOnline',
+        'project_id',
         'manager_id',
         'site_engineer_id',
         'image'

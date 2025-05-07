@@ -158,8 +158,8 @@ class JICRController extends Controller
                 'data' => $data, // Make sure this is either an object or associative array
             ]);
         } catch (\Exception $e) {
-            
-            return back()->with('error: ' , $e->getMessage());
+            Log::error($e->getMessage());
+            return back()->with('error');
         }
     }
 }
