@@ -51,13 +51,12 @@
                 <table id="tadaTable" class="table table-bordered table-striped table-sm mt-4">
                     <thead class="table-white">
                         <tr>
-                            
                             <th>User</th>
                             <th>From</th>
                             <th>To</th>
                             <th>Kilometer</th>
                             <th>Date</th>
-                            <!-- <th>Time</th> -->
+                            <th>Time</th>
                             <th>Vehicle</th>
                             <th>Rate</th>
                             <th>Total</th>
@@ -67,25 +66,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            @foreach ($tadas as $tada)
+                    @foreach ($tadas as $tada)
+                    <tr>
                             <td>{{ $tada->user->name ?? "N/A" }}</td>
                             <td>{{ $tada->from ?? "N/A" }}</td>
                             <td>{{ $tada->to ?? "N/A" }}</td>
                             <td>{{ $tada->total_km ?? "N/A" }}</td>
                             <td>{{ $tada->created_at ?? "N/A" }}</td>
-                            <!-- <td>{{ $tada->time ?? "N/A" }}</td> -->
+                            <td>{{ $tada->time ?? "N/A" }}</td>
                             <td>{{ $tada->category }}</td>
                             <td>{{ $tada->rate_per_km }}</td>
                             <td>{{ $tada->rate_per_km * $tada->total_km ?? "N/A" }}</td>
                             <td>{{ $tada->from ?? "N/A" }}</td>
-                            <td>Pending</td>
+                             <!-- <td>Pending</td>
                             <td>
                             <a href="{{ route('view.bills') }}" class="btn btn-sm btn-outline-primary" >
                                <i class="bi bi-eye"></i> View Bills
                             </a>
-
-                            </td>
+                            </td>  -->
                             <td>
                                 <span class="badge badge-status badge-pending">Pending</span>
                             </td>
@@ -94,8 +92,8 @@
                                     <i class="mdi mdi-eye"></i>
                                 </a>
                             </td>
-                            @endforeach
                         </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
