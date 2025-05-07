@@ -166,7 +166,8 @@ class ConveyanceController extends Controller
                 'created_at' => 'required|date',
                 'time' => 'required|string|max:50',
                 'vehicle_category' => 'required|integer',
-                'user_id' => 'required|integer'
+                'user_id' => 'required|integer',
+                'amount' => 'nullable|decimal'
             ]);
             $conveyance = Conveyance::create($data);
     

@@ -97,9 +97,8 @@ class ConvenienceController extends Controller
     } 
 
     public function updateVehicle(Request $request)
-{
-    \Log::info('Request Data: Edit vehicle', $request->all());
-
+    {
+    
     $id = $request->input('user_id'); // Vehicle ID from the hidden input field
 
     // Validate the required fields: 'category' and 'rate'
@@ -126,8 +125,6 @@ class ConvenienceController extends Controller
         return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
     } catch (\Exception $e) {
         // Log the error message
-        \Log::error('Error updating vehicle: ' . $e->getMessage());
-
         // Return to the same page with an error message
         return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
     }
@@ -151,7 +148,7 @@ class ConvenienceController extends Controller
 
     public function updateUser(Request $request)
 {
-    \Log::info('Request Data: Update user', $request->all());
+    
     $request->validate([
         'user_id' => 'required|exists:users,id',
         'category' => 'required|in:M1,M2,M3,M4,M5',
