@@ -28,9 +28,6 @@ class SiteController extends Controller
         Log::info('Uploaded file:', ['file' => $request->file('file')]);
 
         $project = Project::find($request->project_id);
-        if (!$project) {
-            return back()->with('error', 'Project not found.');
-        }
 
         if (!$project) {
             Log::error('Project not found for ID: ' . $projectId);
@@ -44,8 +41,9 @@ class SiteController extends Controller
                 Log::info('Streetlight Import Completed.');
                 return back()->with('success', 'Streetlight data imported successfully.');
             } else {
+                Log::info('Importing Streetlight Data...');
                 Excel::import(new SiteImport($projectId), $request->file('file'));
-                return redirect()->route('sites.index')->with('success', 'Sites imported successfully!');
+                return back()->with('success', 'Sites imported successfully!');
             }
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
@@ -102,23 +100,21 @@ class SiteController extends Controller
     {
         // dd('Show method hit');
         $projectId = $request->query('project_id');
-        // \Log::info('Showing site with ID: ' . $projectId);
-        // \Log::info('Showing site with ID: ' . $id);
-        if($projectId==11){
+
+        if ($projectId == 11) {
             $streetlight = Streetlight::findOrFail($id);
             $states = $streetlight->state;
             $districts = $streetlight->district;
-            
+
             return view('sites.show', compact('streetlight', 'states', 'districts', 'projectId'));
-
         }
-            $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
-            $states    = State::all();
-            $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
-            $projects  = Project::all();
-            $users     = User::all(); // For vendor and engineer names
-
-        return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users'));
+        $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
+        $states    = State::all();
+        $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
+        $projects  = Project::all();
+        $users     = User::all(); // For vendor and engineer names
+        Log::info($site);
+        return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectId'));
     }
 
     public function search(Request $request)
@@ -155,7 +151,7 @@ class SiteController extends Controller
     {
         //
         $projectId = $request->query('project_id');
-        if($projectId==11){
+        if ($projectId == 11) {
             $streetlight = Streetlight::findOrFail($id);
             return view('sites.edit', compact('streetlight', 'projectId'));
         }
@@ -165,51 +161,50 @@ class SiteController extends Controller
     }
 
     public function update(Request $request, string $id)
-{
-    try {
-        // If project_id == 11, use Streetlight instead
-        if ($request->project_id == 11) {
-            $streetlight = Streetlight::findOrFail($id);
+    {
+        try {
+            // If project_id == 11, use Streetlight instead
+            if ($request->project_id == 11) {
+                $streetlight = Streetlight::findOrFail($id);
 
-            // Update only specific fields relevant to the Streetlight model
-            $streetlight->update($request->only([
-                'task_id',
-                'state',
-                'district',
-                'block',
-                'panchayat',
-                'ward',
-                'mukhiya_contact'
-            ]));
+                // Update only specific fields relevant to the Streetlight model
+                $streetlight->update($request->only([
+                    'task_id',
+                    'state',
+                    'district',
+                    'block',
+                    'panchayat',
+                    'ward',
+                    'mukhiya_contact'
+                ]));
+
+                return redirect()->back()
+                    ->with('success', 'Streetlight site updated successfully.');
+            } else {
+                // Normal Site model update
+                $site = Site::findOrFail($id);
+                $site->update($request->only([
+                    'task_id',
+                    'state',
+                    'district',
+                    'block',
+                    'panchayat',
+                    'ward',
+                    'mukhiya_contact',
+                    // Include any other columns you allow updating
+                ]));
+
+                return redirect()->route('sites.show', $site->id)
+                    ->with('success', 'Site updated successfully.');
+            }
+        } catch (\Exception $e) {
+            $errorMessage = $e->getMessage();
 
             return redirect()->back()
-                ->with('success', 'Streetlight site updated successfully.');
-        } else {
-            // Normal Site model update
-            $site = Site::findOrFail($id);
-            $site->update($request->only([
-                'task_id',
-                'state',
-                'district',
-                'block',
-                'panchayat',
-                'ward',
-                'mukhiya_contact',
-                // Include any other columns you allow updating
-            ]));
-
-            return redirect()->route('sites.show', $site->id)
-                ->with('success', 'Site updated successfully.');
+                ->withErrors(['error' => $errorMessage])
+                ->withInput();
         }
-
-    } catch (\Exception $e) {
-        $errorMessage = $e->getMessage();
-
-        return redirect()->back()
-            ->withErrors(['error' => $errorMessage])
-            ->withInput();
     }
-}
 
 
     /**
@@ -234,29 +229,28 @@ class SiteController extends Controller
 
 
     public function destroy(string $id, Request $request)
-{
-    // \Log::info('Request received for delete site with id: ' . $id);
-    try {
-        // Check if project_id is 11 (from the site record)
-        
+    {
+        // \Log::info('Request received for delete site with id: ' . $id);
+        try {
+            // Check if project_id is 11 (from the site record)
 
-        if ($request->project_id == 11) {
-            // Delete from streetlights table instead
-            $streetlight = Streetlight::findOrFail($id); // assumes same id is used
-            $streetlight->delete();
-            return redirect()->back()
-            ->with('success', 'Streetlight site deleted successfully.');
-        } else {
-            $site = Site::findOrFail($id);
-            // Default delete from sites table
-            $site->delete();
-            return response()->json(['message' => 'Site deleted']);
+
+            if ($request->project_id == 11) {
+                // Delete from streetlights table instead
+                $streetlight = Streetlight::findOrFail($id); // assumes same id is used
+                $streetlight->delete();
+                return redirect()->back()
+                    ->with('success', 'Streetlight site deleted successfully.');
+            } else {
+                $site = Site::findOrFail($id);
+                // Default delete from sites table
+                $site->delete();
+                return response()->json(['message' => 'Site deleted']);
+            }
+        } catch (\Exception $e) {
+            return response()->json(['message' => $e->getMessage()], 500);
         }
-
-    } catch (\Exception $e) {
-        return response()->json(['message' => $e->getMessage()], 500);
     }
-}
 
 
     /**

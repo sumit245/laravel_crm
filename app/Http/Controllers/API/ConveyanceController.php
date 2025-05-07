@@ -133,22 +133,22 @@ class ConveyanceController extends Controller
         ]);
 
         // Handle start_journey_pnr files
-    // if ($request->hasFile('start_journey_pnr')) {
-    //     $startFiles = [];
-    //     foreach ($request->file('start_journey_pnr') as $file) {
-    //         $startFiles[] = $file->store('pnrs/start', 'public');
-    //     }
-    //     $data['start_journey_pnr'] = $startFiles;
-    // }
+        // if ($request->hasFile('start_journey_pnr')) {
+        //     $startFiles = [];
+        //     foreach ($request->file('start_journey_pnr') as $file) {
+        //         $startFiles[] = $file->store('pnrs/start', 'public');
+        //     }
+        //     $data['start_journey_pnr'] = $startFiles;
+        // }
 
-    // Handle end_journey_pnr files
-    // if ($request->hasFile('end_journey_pnr')) {
-    //     $endFiles = [];
-    //     foreach ($request->file('end_journey_pnr') as $file) {
-    //         $endFiles[] = $file->store('pnrs/end', 'public');
-    //     }
-    //     $data['end_journey_pnr'] = $endFiles;
-    // }
+        // Handle end_journey_pnr files
+        // if ($request->hasFile('end_journey_pnr')) {
+        //     $endFiles = [];
+        //     foreach ($request->file('end_journey_pnr') as $file) {
+        //         $endFiles[] = $file->store('pnrs/end', 'public');
+        //     }
+        //     $data['end_journey_pnr'] = $endFiles;
+        // }
 
         $tada = Tada::create($data);
 
