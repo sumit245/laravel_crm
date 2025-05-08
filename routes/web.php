@@ -156,5 +156,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('apply-now', function () {
         return view('hrm.applyNow');
     })->name('apply-now');
+    Route::get('preview', function () {
+        return view('hrm.preview');
+    })->name('preview');
+    Route::get('admin-preview', function () {
+        return view('hrm.adminPreview');
+    })->name('admin-preview');
 
 });
