@@ -37,7 +37,7 @@
               <div class="form-group">
                 <label for="team_lead" class="form-label">Team Lead</label>
                 <select name="team_lead_id" class="form-select" id="team_lead">
-                  <option value="">-- Select Site Engineer --</option>
+                  <option value="">-- Select Project Manager --</option>
                   @foreach ($siteEngineers as $teamLead)
                     <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
                   @endforeach

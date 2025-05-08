@@ -26,7 +26,7 @@ class VendorController extends Controller
      */
     public function create()
     {
-        $siteEngineers = User::where('role', 1)->get();
+        $siteEngineers = User::where('role', 2)->get();
         $projects = Project::all();
         return view('uservendors.create', compact('siteEngineers','projects'));
     }
@@ -85,7 +85,7 @@ class VendorController extends Controller
             $validated['role']     = 3;
             // Create the staff user
             $vendor = User::create($validated);
-            return redirect()->route('uservendors.show', $vendor->id)
+            return redirect()->route('uservendors.index', $vendor->id)
                 ->with('success', 'Vendor created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors

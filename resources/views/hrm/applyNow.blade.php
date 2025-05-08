@@ -1,3 +1,6 @@
+hrm/applyNow
+
+
 @extends("layouts.main")
 
 @section("content")
@@ -271,47 +274,28 @@
                     
                     <!-- Educational Background Section -->
                     <div class="form-section" id="education">
-                        <div class="card mb-4">
-                            <div class="card-header d-flex justify-content-between align-items-center">
-                                <span class="fw-bold">3. Educational Background</span>
-                                <span class="section-indicator">Section 3 of 8</span>
-                            </div>
-                            <div class="card-body row g-3">
-                                <div class="col-md-4">
-                                    <label class="form-label">Highest Qualification</label>
-                                    <select name="highest_qualification" class="form-control" required>
-                                        <option value="">Select Qualification</option>
-                                        <option value="Bachelors">Bachelors</option>
-                                        <option value="Masters">Masters</option>
-                                        <option value="PhD">PhD</option>
-                                        <option value="Other">Other</option>
-                                    </select>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Institution Name</label>
-                                    <input type="text" name="institution_name" class="form-control" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Year of Graduation</label>
-                                    <input type="text" name="year_of_graduation" class="form-control" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Specialization</label>
-                                    <input type="text" name="specialization" class="form-control" required>
-                                </div>
-                                <div class="col-md-4">
-                                    <label class="form-label">Additional Certifications</label>
-                                    <input type="text" name="certifications" class="form-control">
-                                </div>
-                            </div>
-                            <div class="card-footer">
-                                <div class="d-flex justify-content-between">
-                                    <button type="button" class="btn btn-outline-secondary prev-section" data-prev="contact-info">Previous</button>
-                                    <button type="button" class="btn btn-primary next-section" data-next="employment">Next Section</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span class="fw-bold">3. Educational Background</span>
+            <span class="section-indicator">Section 3 of 8</span>
+        </div>
+
+        <div id="education-entries">
+            <!-- Education entry will be added here dynamically -->
+        </div>
+
+        <div class="card-body">
+            <button type="button" class="btn btn-success" onclick="addEducationEntry()">+ Add More Education</button>
+        </div>
+
+        <div class="card-footer">
+            <div class="d-flex justify-content-between">
+                <button type="button" class="btn btn-outline-secondary prev-section" data-prev="contact-info">Previous</button>
+                <button type="button" class="btn btn-primary next-section" data-next="employment">Next Section</button>
+            </div>
+        </div>
+    </div>
+</div>
                     
                     <!-- Employment Details Section -->
                     <div class="form-section" id="employment">
@@ -505,8 +489,8 @@
                             <div class="card-footer">
                                 <div class="d-flex justify-content-between">
                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="photo">Previous</button>
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fas fa-check-circle"></i> Submit Application
+                                    <button type="submit" onclick="window.location='{{ route('preview') }}'"  class="btn btn-success">
+                                        <i class="fas fa-check-circle"></i> Submit & Preview
                                     </button>
                                 </div>
                             </div>
@@ -895,5 +879,53 @@
             }
         });
     });
+
+    let educationCount = 0;
+
+function addEducationEntry() {
+    educationCount++;
+    const container = document.getElementById('education-entries');
+    const entryHTML = `
+        <div class="card-body row g-3 mb-3 border p-3" id="education-entry-${educationCount}">
+            <div class="col-md-4">
+                <label class="form-label">Highest Qualification</label>
+                <select name="education[${educationCount}][qualification]" class="form-control" required>
+                    <option value="">Select Qualification</option>
+                    <option value="Bachelors">Bachelors</option>
+                    <option value="Masters">Masters</option>
+                    <option value="PhD">PhD</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Institution Name</label>
+                <input type="text" name="education[${educationCount}][institution]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Year of Graduation</label>
+                <input type="text" name="education[${educationCount}][year]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Specialization</label>
+                <input type="text" name="education[${educationCount}][specialization]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Additional Certifications</label>
+                <input type="text" name="education[${educationCount}][certifications]" class="form-control">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="button" class="btn btn-danger" onclick="removeEducationEntry(${educationCount})">Remove</button>
+            </div>
+        </div>`;
+    container.insertAdjacentHTML('beforeend', entryHTML);
+}
+
+function removeEducationEntry(id) {
+    const entry = document.getElementById(education-entry-${id});
+    if (entry) entry.remove();
+}
+
+// Add initial entry by default
+window.onload = addEducationEntry;
 </script>
 @endpush
