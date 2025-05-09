@@ -4,6 +4,7 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\HRMController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
@@ -152,13 +153,13 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload-documents/{id}', [CandidateController::class, 'uploadDocuments'])->name('upload.documents');
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
-    // Route for hiring software
+    // Route for hiring software HRM
+    Route::Resource('/hrm', HRMController::class);
+    Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
     Route::get('apply-now', function () {
         return view('hrm.applyNow');
     })->name('apply-now');
-    Route::get('preview', function () {
-        return view('hrm.preview');
-    })->name('preview');
+    
     Route::get('admin-preview', function () {
         return view('hrm.adminPreview');
     })->name('admin-preview');
