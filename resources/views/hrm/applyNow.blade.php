@@ -489,7 +489,7 @@ hrm/applyNow
                             <div class="card-footer">
                                 <div class="d-flex justify-content-between">
                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="photo">Previous</button>
-                                    <button type="submit" onclick="window.location='{{ route('preview') }}'"  class="btn btn-success">
+                                    <button type="submit" class="btn btn-success">
                                         <i class="fas fa-check-circle"></i> Submit & Preview
                                     </button>
                                 </div>
@@ -749,18 +749,32 @@ hrm/applyNow
             window.scrollTo(0, 0);
         }
         
+        
         // Next section button click handler
         document.querySelectorAll('.next-section').forEach(button => {
             button.addEventListener('click', function() {
                 const currentSection = this.closest('.form-section').id;
                 const nextSection = this.getAttribute('data-next');
                 
-                if (validateSection(currentSection)) {
-                    markSectionCompleted(currentSection);
-                    switchSection(currentSection, nextSection);
-                } else {
-                    alert('Please fill in all required fields before proceeding.');
-                }
+                // Validate current section if needed
+                // const isValid = validateSection(currentSection);
+                // if (isValid) {
+                    
+                // Switch to next section
+                document.getElementById(currentSection).classList.remove('active');
+                document.getElementById(nextSection).classList.add('active');
+                
+                // Update active tab
+                document.querySelector(`.nav-link[data-section="${currentSection}"]`).classList.remove('active');
+                document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.add('active');
+                document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.remove('disabled');
+                
+                // Mark current section as completed if needed
+                // markSectionCompleted(currentSection);
+                
+                // Scroll to top
+                window.scrollTo(0, 0);
+                // }
             });
         });
         

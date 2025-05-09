@@ -12,28 +12,28 @@
         </p>
     </div>
 
-    @php
-        $personal = $data['personalInfo'] ?? [];
+    <!-- @php
+        $data = $data['dataInfo'] ?? [];
         $contact = $data['contactInfo'] ?? [];
         $employment = $data['employment'] ?? [];
         $additional = $data['additionalInfo'] ?? [];
         $declaration = $data['declaration'] ?? [];
-    @endphp
+    @endphp -->
 
-    {{-- Personal Information --}}
+    {{-- data Information --}}
     <div class="bg-gray-50 p-5 rounded-lg shadow-md mb-6 border border-gray-200">
         <div class="flex justify-between items-center mb-3">
-            <h2 class="text-xl font-semibold text-gray-800">Personal Information</h2>
+            <h2 class="text-xl font-semibold text-gray-800">data Information</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            <p><strong>Full Name:</strong> {{ $personal['name'] ?? 'N/A' }}</p>
-            <p><strong>Email:</strong> {{ $personal['email'] ?? 'N/A' }}</p>
-            <p><strong>Phone:</strong> {{ $personal['phone'] ?? 'N/A' }}</p>
-            <p><strong>DOB:</strong> {{ $personal['dob'] ?? 'N/A' }}</p>
-            <p><strong>Gender:</strong> {{ $personal['gender'] ?? 'N/A' }}</p>
-            <p><strong>Marital Status:</strong> {{ $personal['maritalStatus'] ?? 'N/A' }}</p>
-            <p><strong>Nationality:</strong> {{ $personal['nationality'] ?? 'N/A' }}</p>
-            <p><strong>Language:</strong> {{ $personal['language'] ?? 'N/A' }}</p>
+            <p><strong>Full Name:</strong> {{ $data['name'] ?? 'N/A' }}</p>
+            <p><strong>Email:</strong> {{ $data['email'] ?? 'N/A' }}</p>
+            <p><strong>Phone:</strong> {{ $data['phone'] ?? 'N/A' }}</p>
+            <p><strong>DOB:</strong> {{ $data['dob'] ?? 'N/A' }}</p>
+            <p><strong>Gender:</strong> {{ $data['gender'] ?? 'N/A' }}</p>
+            <p><strong>Marital Status:</strong> {{ $data['marital_status'] ?? 'N/A' }}</p>
+            <p><strong>Nationality:</strong> {{ $data['nationality'] ?? 'N/A' }}</p>
+            <p><strong>Language:</strong> {{ $data['language'] ?? 'N/A' }}</p>
         </div>
         <div class="edit-btn flex justify-start w-full">
             <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
