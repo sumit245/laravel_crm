@@ -45,7 +45,7 @@
               <div id="siteList"></div> -->
 
               <label for="siteSearch" class="form-label">Search Site</label>
-                <select id="siteSearch" class="form-control" style="width: 100%;">
+                <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
                     <option value="">Search Site...</option>
                     @foreach ($sites as $site)
                         <option value="{{ $site->id }}">{{ $site->site_name }}</option>
@@ -53,10 +53,10 @@
                 </select>
 
               <!-- Selected Sites -->
-              <ul id="selectedSites"></ul>
+              <!-- <ul id="selectedSites"></ul> -->
               <!-- Hidden Select to Store Selected Sites -->
-              <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
-              </select>
+              <!-- <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
+              </select> -->
             </div>
             <div class="mb-3">
               <label for="activity" class="form-label">Activity</label>
@@ -110,7 +110,7 @@
       <x-slot:tbody>
         @forelse ($targets as $target)
           <tr>
-            <td>{{ $target->site->site_name }}</td>
+            <td>{{ $target->site->site_name ?? "N/A" }}</td>
             <td>{{ $target->activity }}</td>
             <td>
               @if ($target && $target->engineer)
@@ -123,7 +123,7 @@
             <td>{{ $target->end_date }}</td>
             <td>
               <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
-              <a href="{{ route("tasks.edit", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
+              <a href="{{ route("tasks.editRooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
               <form action="{{ route("tasks.destroy", $target->id) }}" method="POST" style="display: inline-block;">
                 @csrf
                 @method("DELETE")

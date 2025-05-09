@@ -81,6 +81,7 @@ class TasksController extends Controller
                 ]);
             }
         } else {
+            // Log::info('Target added' , $request->all());
             foreach ($request->sites as $siteId) {
                 Task::create([
                     'project_id'  => $request->project_id,
@@ -157,6 +158,13 @@ class TasksController extends Controller
         return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
         }
         
+    }
+
+    public function editRooftop(string $id){
+       $tasks = Task::where('project_id', 10)
+                ->where('id',$id)
+                ->get();
+        return view('tasks.editRooftop', compact('tasks'));
     }
 
     /**
