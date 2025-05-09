@@ -9,7 +9,7 @@
         <div class="card text-white bg-primary shadow-sm">
             <div class="card-body">
                 <h5 class="card-title text-white">Applied Amount</h5>
-                <h3>₹125,000</h3>
+                <h3>{{ $appliedAmount }}</h3>
             </div>
         </div>
     </div>
@@ -17,7 +17,7 @@
         <div class="card text-white bg-success shadow-sm">
             <div class="card-body">
                 <h5 class="card-title text-white">Disbursed Amount</h5>
-                <h3>₹100,000</h3>
+                <h3>{{ $disbursedAmount }}</h3>
             </div>
         </div>
     </div>
@@ -25,7 +25,7 @@
         <div class="card text-white bg-danger shadow-sm">
             <div class="card-body">
                 <h5 class="card-title text-white">Rejected Amount</h5>
-                <h3>₹25,000</h3>
+                <h3>{{ $rejectedAmount }}</h3>
             </div>
         </div>
     </div>
@@ -46,31 +46,34 @@
 
 <!-- Filters and Search -->
 <div class="row mb-4 me-0 ms-0">
-    <div class="col-md-3">
+
+    <!-- <div class="col-md-3">
         <input type="text" class="form-control shadow-sm" placeholder="Search by Request ID, User, or Date">
-    </div>
-    <div class="col-md-3">
+    </div> -->
+    <!-- <div class="col-md-3">
         <select class="form-select shadow-sm" aria-label="Filter by Users">
             <option selected>Users</option>
             <option value="1">Ava Martinez</option>
             <option value="2">Ethan Clark</option>
             <option value="3">Sophia Chen</option>
         </select>
-    </div>
-    <div class="col-md-3">
+    </div> -->
+    <!-- <div class="col-md-3">
         <select class="form-select shadow-sm" aria-label="Filter by Locations">
             <option selected>Most Frequent Locations</option>
             <option value="1">New York, NY</option>
             <option value="2">San Francisco, CA</option>
             <option value="3">Chicago, IL</option>
         </select>
-    </div>
+    </div> -->
     <div class="col-md-3">
-        <select class="form-select shadow-sm" aria-label="Filter by Dates">
-            <option selected>Dates</option>
-            <option value="1">This Month</option>
-            <option value="2">Last Month</option>
-            <option value="3">Custom Range</option>
+    <h3 class="fw-bold">Performance Overview</h3>
+        <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
+            <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
+            <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
+            <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
+            <option value="all_time" {{ request("date_filter") == "all_time" ? "selected" : "" }}>All Time</option>
+            <option value="custom" {{ request("date_filter") == "custom" ? "selected" : "" }}>Custom Range</option>
         </select>
     </div>
 </div>
@@ -94,52 +97,64 @@
     </div>
     <div class="card-body">
         <div class="table-responsive">
-            <table id="convenienceTable" class="table table-bordered table-striped table-sm table mt-4">
-                <thead class="table-white">
+            <x-data-table id="convenienceTable" class="table table-bordered table-striped table-sm table mt-4">
+                <x-slot:thead class="table-white">
                     <tr>
+                        
                         <th><input type="checkbox" id="selectAll" /></th>
                         <th>Name</th>
                         <th>Employee Id</th>
                         <th>Department</th>
-                        <th>Objective</th>
+                        <th>Distance</th>
                         <th>Amount</th>
                         <th>Status</th>
                         <th>Actions</th>
                     </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $data = [
-                            ['name' => 'John Doe', 'id' => 'EMP123', 'dept' => 'Sales', 'obj' => 'Client Acquisition', 'amt' => '₹2,500'],
-                            ['name' => 'Ava Martinez', 'id' => 'EMP124', 'dept' => 'Marketing', 'obj' => 'Product Launch', 'amt' => '₹3,200'],
-                            ['name' => 'Ethan Clark', 'id' => 'EMP125', 'dept' => 'Engineering', 'obj' => 'Tech Conference', 'amt' => '₹4,000'],
-                            ['name' => 'Sophia Chen', 'id' => 'EMP126', 'dept' => 'Operations', 'obj' => 'Logistics Planning', 'amt' => '₹1,800'],
-                            ['name' => 'David Lee', 'id' => 'EMP127', 'dept' => 'Sales', 'obj' => 'Client Follow-up', 'amt' => '₹2,200'],
-                            ['name' => 'Michael Johnson', 'id' => 'EMP128', 'dept' => 'HR', 'obj' => 'Employee Wellness', 'amt' => '₹2,700'],
-                            ['name' => 'Olivia Brown', 'id' => 'EMP129', 'dept' => 'Finance', 'obj' => 'Budget Review', 'amt' => '₹3,000'],
-                            ['name' => 'Lucas White', 'id' => 'EMP130', 'dept' => 'Marketing', 'obj' => 'Ad Campaign', 'amt' => '₹4,900'],
-                            ['name' => 'Emma Davis', 'id' => 'EMP131', 'dept' => 'Operations', 'obj' => 'Inventory Management', 'amt' => '₹1,950'],
-                        ];
-                    @endphp
-
-                    @foreach ($data as $row)
+                </x-slot:thead>
+                <x-slot:tbody>
+                    @foreach ($cons as $row)
                     <tr>
                         <td><input type="checkbox" class="checkboxItem" /></td>
-                        <td>{{ $row['name'] }}</td>
-                        <td>{{ $row['id'] }}</td>
-                        <td>{{ $row['dept'] }}</td>
-                        <td>{{ $row['obj'] }}</td>
-                        <td>{{ $row['amt'] }}</td>
-                        <td><span class="badge bg-warning text-dark">Pending</span></td>
+                        <td>{{ $row->user->name ?? "N/A" }}</td>
+                        <td>{{ $row->user->id ?? "N/A" }}</td>
+                        <td>{{ $row->department ?? "N/A" }}</td>
+                        <td>{{ $row->kilometer ?? "N/A" }}</td>
+                        <td>{{ ($row->amount ?? 0) }}</td>
                         <td>
-                            <a href="{{ route('convenience.details') }}" class="btn btn-sm btn-info" data-toggle="tooltip" title="View Details">
+                            @if ($row->status === null)
+                                <span class="badge bg-warning text-dark">Pending</span>
+                            @elseif ($row->status == 1)
+                                <span class="badge bg-success">Accepted</span>
+                            @elseif ($row->status == 0)
+                                <span class="badge bg-danger">Rejected</span>
+                            @endif
+                        </td>
+                        <td>
+                            <a href="{{ route('convenience.details', $row->user_id) }}" class="btn btn-sm btn-info" data-toggle="tooltip" title="View Details">
                                 <i class="mdi mdi-eye"></i>
                             </a>
+                            @if ($row->status === null)
+                                <form action="{{ route('conveyance.accept', $row->id) }}" method="POST" style="display: inline-block;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning" data-toggle="tooltip" title="Accept">
+                                        <i class="mdi mdi-check"></i>
+                                    </button>
+                                </form>
+
+                                <form action="{{ route('conveyance.reject', $row->id) }}" method="POST" style="display: inline-block;">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Reject">
+                                        <i class="mdi mdi-close"></i>
+                                    </button>
+                                </form>
+                            @endif
+                            
+
                         </td>
                     </tr>
                     @endforeach
-                </tbody>
-            </table>
+                </x-slot:tbody>
+            </x-data-table>
         </div>
     </div>
 </div>
@@ -165,68 +180,9 @@
 @endsection
 
 @push('scripts')
-<script>
-    $(document).ready(function () {
-        $('#convenienceTable').DataTable({
-            dom: "<'row d-flex align-items-center justify-content-between'" +
-                "<'col-md-6 d-flex align-items-center' f>" +
-                "<'col-md-6 d-flex justify-content-end' B>" +
-                ">" +
-                "<'row'<'col-sm-12'tr>>" +
-                "<'row'<'col-sm-5 d-flex align-items-center' i><'col-sm-7 d-flex justify-content-start' p>>",
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="mdi mdi-file-excel"></i>',
-                    className: 'btn btn-sm btn-success',
-                    titleAttr: 'Export to Excel'
-                },
-                {
-                    extend: 'pdf',
-                    text: '<i class="mdi mdi-file-pdf"></i>',
-                    className: 'btn btn-sm btn-danger',
-                    titleAttr: 'Export to PDF'
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="mdi mdi-printer"></i>',
-                    className: 'btn btn-sm btn-info',
-                    titleAttr: 'Print Table'
-                }
-            ],
-            paging: true,
-            pageLength: 50,
-            searching: true,
-            ordering: true,
-            responsive: true,
-            order: [[1, 'asc']],
-            language: {
-                search: '',
-                searchPlaceholder: 'Search Requests'
-            }
-        });
 
-        $('.dataTables_filter input').addClass('form-control form-control-sm');
-        $('[data-toggle="tooltip"]').tooltip();
-    });
-
-    // Approve/Reject checkbox logic
-    document.getElementById('selectAll').addEventListener('change', function(e) {
-        document.querySelectorAll('.checkboxItem').forEach(cb => cb.checked = e.target.checked);
-        toggleApproveRejectButtons();
-    });
-
-    document.querySelectorAll('.checkboxItem').forEach(cb => {
-        cb.addEventListener('change', toggleApproveRejectButtons);
-    });
-
-    function toggleApproveRejectButtons() {
-        const selected = document.querySelectorAll('.checkboxItem:checked').length;
-        document.getElementById('approveBtn').style.display = selected ? 'inline-block' : 'none';
-        document.getElementById('rejectBtn').style.display = selected ? 'inline-block' : 'none';
-    }
-</script>
 @endpush
+
 
 @push('styles')
 <style>

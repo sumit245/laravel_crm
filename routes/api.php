@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\ConveyanceController;
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\InventoryController;
 use App\Http\Controllers\InventoryController as InventoryControllers;
@@ -60,3 +61,10 @@ Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
 
 // Route to send all data to RMS at once
 Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
+
+// Conveyance
+Route::apiResource('tadas',ConveyanceController::class);
+Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
+Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
+Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
+Route::get('all-vehicles', [ConveyanceController::class, 'getVehicles']);

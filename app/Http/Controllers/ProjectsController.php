@@ -324,5 +324,4 @@ class ProjectsController extends Controller
 
         return redirect()->back()->with('success', 'Task permanently deleted.');
     }
-
 }

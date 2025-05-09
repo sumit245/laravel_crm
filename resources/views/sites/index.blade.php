@@ -123,7 +123,7 @@
             // Perform deletion via AJAX
             $.ajax({
               url: deleteUrl,
-              type: 'POST',
+              type: 'DELETE',
               data: {
                 _method: 'DELETE', // Laravel requires this for delete requests
                 _token: "{{ csrf_token() }}", // CSRF token for security

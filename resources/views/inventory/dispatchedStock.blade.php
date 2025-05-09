@@ -37,14 +37,14 @@
                   {{ $item->streetlightPole->complete_pole_number }}
                 </a>
               @else
-              @php
-                $daysInCustody = \Carbon\Carbon::parse($item->dispatch_date)->diffInDays(\Carbon\Carbon::now());
-              @endphp
+                @php
+                  $daysInCustody = \Carbon\Carbon::parse($item->dispatch_date)->diffInDays(\Carbon\Carbon::now());
+                @endphp
                 In Vendor Custody
-              <span style="color: {{ $daysInCustody > 5 ? 'red' : 'inherit' }}">
-                ({{ $daysInCustody }} days)
-              </span>
-            @endif
+                <span style="color: {{ $daysInCustody > 5 ? "red" : "inherit" }}">
+                  ({{ $daysInCustody }} days)
+                </span>
+              @endif
             </td>
           </tr>
         @endforeach

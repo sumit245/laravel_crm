@@ -15,23 +15,6 @@
             </ul>
           </div>
         @endif
-        <!-- Project Selection Dropdown -->
-    <div class="form-group mb-4">
-    <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="team_lead" class="form-label"> </label>
-                <select name="team_lead_id" class="form-select" id="team_lead">
-                  <option value="">-- Select Project --</option>
-                  @foreach ($projects as $category)
-                    <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
-                  @endforeach
-                </select>
-              </div>
-            </div>
-</div>
-      
-    </div>  
         <form class="forms-sample" action="{{ route("staff.store") }}" method="POST">
           @csrf
           <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
@@ -40,10 +23,23 @@
           </div>
 
           <div class="row">
+            <!-- Project Selection Dropdown -->
+            {{-- <div class="form-group mb-4"> --}}
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="select_project" class="form-label">Select Project</label>
+                <select name="project_id" class="form-select" id="select_project">
+                  <option value="">-- Select Project --</option>
+                  @foreach ($projects as $project)
+                    <option value="{{ $project->id }}">{{ $project->project_name }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
             <div class="col-md-12">
               <div class="form-group">
                 <label for="team_lead" class="form-label">Team Lead</label>
-                <select name="team_lead_id" class="form-select" id="team_lead">
+                <select name="manager_id" class="form-select" id="team_lead">
                   <option value="">-- Select Team Lead --</option>
                   @foreach ($teamLeads as $teamLead)
                     <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
