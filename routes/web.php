@@ -14,6 +14,7 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
+use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -104,6 +105,9 @@ Route::get('convenience-settings', function () {
 Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
+Route::get('preview', function () {
+    return view('hrm.preview');
+})->name('preview');
 
 
 
