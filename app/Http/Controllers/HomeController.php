@@ -11,6 +11,7 @@ use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -104,18 +105,6 @@ class HomeController extends Controller
             // Custom sorting logic based on the conditions provided
             if ($isStreetLightProject) {
                 $users = $users->sortByDesc('surveyedPoles');
-                // function ($user) {
-                //     // Check if surveyedPoles is not 0
-                //     if ($user->installedPoles > 0) {
-                //         return $user->installedPoles;
-                //     }
-                //     // Check if installedPoles is not 0
-                //     elseif ($user->surveyedPoles > 0) {
-                //         return $user->surveyedPoles;
-                //     }
-                //     // Fallback to totalTasks
-                //     return $user->totalTasks;
-                // }
             } else {
                 // Default sorting for non-streetlight projects
                 $users = $users->sortByDesc('completedTasks');
@@ -138,19 +127,34 @@ class HomeController extends Controller
                 $q->where($this->getRoleColumn($user->role), $user->id)
                     ->whereBetween('created_at', $dateRange);
             })->sum('total_poles');
+            Log::info('Now: ' . now());
+            Log::info('SubDay: ' . now()->subDay());
+
+
+            $poleSurveyd = Pole::whereHas('task', function ($q) use ($projectId, $user) {
+                $q->where('project_id', $projectId)
+                    ->where($this->getRoleColumn($user->role), $user->id);
+            })
+                ->where('isSurveyDone', true)
+                ->whereBetween('updated_at', $dateRange) // Pole updated in last 24 hours
+                ->get();
+
+            Log::info($poleSurveyd);
+
 
             // Get surveyed and installed poles by this user in date range
-            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
+            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user,) {
                 $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
-            })->where('isSurveyDone', true)->count();
+                    ->where($this->getRoleColumn($user->role), $user->id);
+            })->where('isSurveyDone', true)
+                ->whereBetween('updated_at', $dateRange)->count();
+
 
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
-            })->where('isInstallationDone', true)->count();
+                    ->where($this->getRoleColumn($user->role), $user->id);
+            })->where('isInstallationDone', true)
+                ->whereBetween('updated_at', $dateRange)->count();
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
 
@@ -169,7 +173,7 @@ class HomeController extends Controller
         } else {
             $tasksQuery = $taskModel::where('project_id', $projectId)
                 ->where($this->getRoleColumn($user->role), $user->id)
-                ->whereBetween('created_at', $dateRange);
+                ->whereBetween('updated_at', $dateRange);
 
             $totalTasks = $tasksQuery->count();
             if ($totalTasks == 0) return null;
@@ -359,18 +363,34 @@ class HomeController extends Controller
     {
         switch ($filter) {
             case 'today':
-                return [now()->startOfDay(), now()->endOfDay()];
+                return [now()->subDay(), now()]; // Last 24 hours
             case 'this_week':
                 return [now()->startOfWeek(), now()->endOfWeek()];
             case 'this_month':
                 return [now()->startOfMonth(), now()->endOfMonth()];
+            case 'all_time':
+                return [Carbon::createFromTimestamp(0), now()];
             case 'custom':
-                return [request()->start_date, request()->end_date];
+                $start = request()->start_date;
+                $end = request()->end_date;
+        
+                // Optional: fallback if missing
+                if (!$start || !$end) {
+                    return [now()->subDay(), now()];
+                }
+        
+                return [
+                    \Carbon\Carbon::parse($start)->startOfDay(),
+                    \Carbon\Carbon::parse($end)->endOfDay()
+                ];
+            // case 'custom':
+            //     return [request()->start_date, request()->end_date];
             default:
                 // Return all time data
-                return ['1970-01-01 00:00:00', now()]; // From the Unix epoch to now
+                return [now()->subDay(), now()]; // Last 24 hours
         }
     }
+
 
     public function exportToExcel()
     {
