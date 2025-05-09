@@ -116,18 +116,18 @@ Route::middleware(['auth'])->group(function () {
     // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
-
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
 
-
     // Dispatch Inventory
     Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
-
+    // Return Dispatch Inventory
+    Route::post('/inventory/return', [InventoryController::class, 'returnInventory'])->name('inventory.return');
 
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
+    Route::get('/tasks/editrooftop/{id}', [TasksController::class, 'editRooftop'])->name('tasks.editRooftop');
 
     // Projects Controller
     // Deleting target

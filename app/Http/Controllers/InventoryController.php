@@ -315,11 +315,14 @@ class InventoryController extends Controller
             // Query inventory based on store_name and store_id
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId) // Filter by store_id directly
+                ->with('dispatch')
                 ->get();
             // Dispatch Inventory
             $dispatch = InventoryDispatch::where('isDispatched', true)
                 ->where('store_id', $storeId)
                 ->get();
+            
+            
 
             // Battery Data
             $totalBattery = $inventory->where('item_code', 'SL03')
@@ -378,6 +381,8 @@ class InventoryController extends Controller
 
             $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
             $dispatchAmountModule = number_format($dispatchAmountModule, 2);
+
+
 
             return view('inventory.view', compact(
                 'inventory',
@@ -606,8 +611,12 @@ class InventoryController extends Controller
     public function checkQR(Request $request)
     {
         try {
+            $validated = $request->validate([
+                'qr_code'   => 'required|array',
+                'qr_code.*'   => 'required|string|distinct'
+            ]);
             Log::info($request->all());
-            $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)
+            $exists = InventroyStreetLightModel::where('serial_number', $validated)
                 ->where('store_id', $request->store_id) // Ensure it belongs to the same store
                 ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
                 ->where('quantity', '>', 0) // Ensure quantity is greater than 0
@@ -639,4 +648,36 @@ class InventoryController extends Controller
             echo ($e->getMessage());
         }
     }
+
+    public function returnInventory(Request $request){
+        $serial_number = $request->input('serial_number');
+        Log::info('Return inventory',['serial_number'=> $serial_number]);
+        try{
+            $inventory = InventroyStreetLightModel::where('serial_number', $serial_number)->first();
+            $dispatch = InventoryDispatch::where('serial_number', $serial_number)->whereNull('streetlight_pole_id')->first();
+            if (!$inventory) {
+                Log::warning('Inventory not found for serial_number', ['serial_number' => $serial_number]);
+                return redirect()->back()->with('error', 'Inventory item not found.');
+            }
+            $inventory->quantity = 1;
+            $inventory->save();      
+            // Find and delete the corresponding dispatch record by serial number
+            
+            if ($dispatch) {
+                $dispatch->delete();
+            }
+            
+            return redirect()->back()->with('success', 'Inventory item returned successfully');
+    
+        }
+        catch(\Exception $e){
+            Log::error('Failed to return inventory item', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to return inventory item');
+        }
+
+        
+    }
+        
+    
+
 }
