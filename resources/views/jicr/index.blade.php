@@ -16,7 +16,7 @@
                 @endforeach
               </select>
             </div>
-          </div>
+          </div> 
           <div class="col-sm-4">
             <div class="mb-3">
               <label for="blockSelect" class="form-label">Block</label>
