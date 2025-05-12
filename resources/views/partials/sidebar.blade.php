@@ -85,7 +85,7 @@
     <li class="nav-item">
       <a class="nav-link" href="{{ route("billing.convenience") }}">
         <i class="menu-icon mdi mdi-store"></i>
-        <span class="menu-title">Convenience</span>
+        <span class="menu-title">Conveyance</span>
       </a>
     </li>
     <li class="nav-item">

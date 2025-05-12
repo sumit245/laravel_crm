@@ -104,7 +104,7 @@ class TasksController extends Controller
     public function show(Request $request, string $id)
     {
         //
-        Log::info("Project type is " . $request->project_type);
+        Log::info("Project type " . $request->project_type);
         if ($request->project_type != 1) {
             $task        = Task::findOrFail($id);
             $engineer_id = $task->engineer_id;
@@ -160,12 +160,20 @@ class TasksController extends Controller
         
     }
 
-    public function editRooftop(string $id){
-       $tasks = Task::where('project_id', 10)
-                ->where('id',$id)
-                ->get();
-        return view('tasks.editRooftop', compact('tasks'));
-    }
+    public function rooftop(string $id){
+       
+        
+        //code...
+           $taskId = (int) $id;
+        
+        $task = Task::where('id', $taskId)
+                ->first();
+        $engineers = User::where('role', 1)->get();
+        $sites = Site::all();
+        Log::error($task);
+            return view('tasks.editRooftop', compact('task', 'engineers', 'sites'));
+       
+     }
 
     /**
      * Update the specified resource in storage.
