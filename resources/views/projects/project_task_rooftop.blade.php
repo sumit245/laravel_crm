@@ -123,7 +123,7 @@
             <td>{{ $target->end_date }}</td>
             <td>
               <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
-              <a href="{{ route("tasks.editRooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
+              <a href="{{ route("tasks.rooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
               <form action="{{ route("tasks.destroy", $target->id) }}" method="POST" style="display: inline-block;">
                 @csrf
                 @method("DELETE")

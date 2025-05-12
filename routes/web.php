@@ -126,9 +126,10 @@ Route::middleware(['auth'])->group(function () {
 
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
+    Route::get('/tasks/rooftop/{id}', [TasksController::class, 'rooftop'])->name('tasks.rooftop');
+    // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
-    Route::get('/tasks/editrooftop/{id}', [TasksController::class, 'editRooftop'])->name('tasks.editRooftop');
-
+    
     // Projects Controller
     // Deleting target
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
