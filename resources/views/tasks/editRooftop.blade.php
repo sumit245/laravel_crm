@@ -7,9 +7,9 @@
       <div class="card">
         <div class="card-body">
           <h4 class="card-title">Edit Rooftop Task</h4>
-          <form action="{{-- route('tasks.update', $task->id) --}}" method="POST">
+          <form action="{{ route('tasks.updaterooftop', $task->id) }}" method="POST">
             @csrf
-            @method('PUT')
+            @method('POST')
             
             <div class="mb-3">
   <label for="site_id" class="form-label">Site Name</label>
@@ -26,11 +26,11 @@
             <div class="mb-3">
               <label for="activity" class="form-label">Activity</label>
               <select id="activity" name="activity" class="form-select" required>
-                <option value="Installation" {{-- $task->activity == 'Installation' ? 'selected' : '' --}}>Installation</option>
-                <option value="RMS" {{-- $task->activity == 'RMS' ? 'selected' : '' --}}>RMS</option>
-                <option value="Billing" {{-- $task->activity == 'Billing' ? 'selected' : '' --}}>Billing</option>
-                <option value="Add Team" {{-- $task->activity == 'Add Team' ? 'selected' : '' --}}>Add Team</option>
-                <option value="Survey" {{-- $task->activity == 'Survey' ? 'selected' : '' --}}>Survey</option>
+                <option value="Installation" {{ $task->activity == 'Installation' ? 'selected' : '' }}>Installation</option>
+                <option value="RMS" {{ $task->activity == 'RMS' ? 'selected' : '' }}>RMS</option>
+                <option value="Billing" {{ $task->activity == 'Billing' ? 'selected' : '' }}>Billing</option>
+                <option value="Add Team" {{ $task->activity == 'Add Team' ? 'selected' : '' }}>Add Team</option>
+                <option value="Survey" {{ $task->activity == 'Survey' ? 'selected' : '' }}>Survey</option>
               </select>
             </div>
             

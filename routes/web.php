@@ -127,6 +127,7 @@ Route::middleware(['auth'])->group(function () {
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/rooftop/{id}', [TasksController::class, 'rooftop'])->name('tasks.rooftop');
+    Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
     // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
     
