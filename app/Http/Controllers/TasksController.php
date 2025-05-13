@@ -12,6 +12,7 @@ use App\Models\StreetlightTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Response;
 
 class TasksController extends Controller
 {
@@ -174,6 +175,48 @@ class TasksController extends Controller
             return view('tasks.editRooftop', compact('task', 'engineers', 'sites'));
        
      }
+
+     /**
+ * Update the specified rooftop task in storage.
+ *
+ * @param  \Illuminate\Http\Request  $request
+ * @param  string  $id
+ * @return \Illuminate\Http\Response
+ */
+public function updateRooftop(Request $request, string $id)
+{
+    try {
+        // Convert string ID to integer
+        $taskId = (int) $id;
+        
+        // Validate the request data
+        $validatedData = $request->validate([
+            'site_id' => 'required|exists:sites,id',
+            'activity' => 'required|string',
+            'engineer_id' => 'required|exists:users,id',
+        ]);
+        
+        // Find the task
+        $task = Task::findOrFail($taskId);
+        
+        // Update the task with validated data
+        $task->update($validatedData);
+        
+        // Redirect with success message
+        return redirect()->route('projects.show', $task->project_id=10)
+                         ->with('success', 'Task updated successfully');
+                         
+    } catch (\Exception $e) {
+        // Log the error
+        \Log::error('Error updating rooftop task: ' . $e->getMessage());
+        
+        // Redirect with error message
+        return redirect()->back()
+                         ->withInput()
+                         ->with('error', 'Failed to update task: ' . $e->getMessage());
+    }
+}
+
 
     /**
      * Update the specified resource in storage.
