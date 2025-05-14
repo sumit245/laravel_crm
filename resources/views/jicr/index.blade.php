@@ -51,10 +51,10 @@
 
     </div>
     </form>
-    @if(session('error'))
-    <div class="alert alert-danger">
-        {{ session('error') }}
-    </div>
+    @if (session("error"))
+      <div class="alert alert-danger">
+        {{ session("error") }}
+      </div>
     @endif
     @if (!empty($showReport) && isset($data))
       @include("jicr.show", ["data" => $data])

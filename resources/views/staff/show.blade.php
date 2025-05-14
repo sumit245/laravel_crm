@@ -33,7 +33,7 @@
                               ? "Store Incharge"
                               : "Coordinator"))) }}
             </p>
-            <p>{{ $staff->project_type ?? "N/A" }}</p>
+            <p><strong>Project: </strong>{{ $project->project_name ?? "N/A" }}</p>
             @if ($staff->role != 2 && isset($staff->projectManager))
               <p><strong>Manager: </strong> {{ $staff->projectManager->firstName ?? "N/A" }}
                 {{ $staff->projectManager->lastName ?? "N/A" }}</p>

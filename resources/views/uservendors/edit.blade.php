@@ -15,7 +15,7 @@
         @endif
         <h4 class="card-title">Add Vendor</h4>
         <!-- Project Selection Dropdown -->
-        <div class="form-group mb-4">
+         <div class="form-group mb-4">
           <div class="row">
             <div class="col-md-12">
               <div class="form-group">
@@ -28,12 +28,13 @@
                 </select>
               </div>
             </div>
-          </div>
+          </div> 
 
         </div>
         <form class="forms-sample" action="{{ route("uservendors.update", $vendor->id) }}" method="POST">
           @csrf
           @method("PUT")
+
           <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
             <label for="username" class="form-label">Username</label>
             <input type="text" name="username" id="username" class="form-control" value="{{ old("username") }}">
@@ -227,10 +228,10 @@
             {{-- <div classs="col-md-5"> --}}
             <div class="d-flex">
               <button type="submit" class="btn btn-primary mx-2 mb-3">Update Vendor</button>
-              <!-- Button to toggle the password change section -->
-              <button type="button" class="btn btn-secondary mx-2 mb-3" id="togglePasswordSection">
-                Change Password
-              </button>
+              <!-- Editting password for the vendor made a common method for all to change the password -->
+              <a href="{{ route('staff.change-password', $vendor->id) }}" class="btn btn-secondary mx-2 mb-3">
+                  Change Password
+              </a>
               {{-- </div> --}}
               <div>
               </div>

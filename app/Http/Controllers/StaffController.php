@@ -7,11 +7,14 @@ use App\Models\Task;
 use App\Models\StreetlightTask;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\UserCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use function Laravel\Prompts\confirm;
 
 class StaffController extends Controller
 {
@@ -48,7 +51,7 @@ class StaffController extends Controller
     {
         $teamLeads = User::where('role', 2)->get();
         $projects = Project::all();
-        return view('staff.create', compact('teamLeads' , 'projects'));
+        return view('staff.create', compact('teamLeads', 'projects'));
     }
 
 
@@ -68,6 +71,7 @@ class StaffController extends Controller
             'role'      => 'string',
             'address'   => 'string|max:255',
             'password'  => 'required|string|min:6|confirmed',
+            'project_id' => 'required|exists:projects,id', // validate project_id
         ]);
 
         try {
@@ -76,13 +80,17 @@ class StaffController extends Controller
             $validated['password'] = bcrypt($validated['password']); // Hash password
             // Create the staff user
             $staff = User::create($validated);
+            // Save to pivot table `project_user`
+            DB::table('project_user')->insert([
+                'user_id'    => $staff->id,
+                'project_id' => $validated['project_id'],
+                'role'       => $validated['role'],
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
 
             return redirect()->route('staff.index')
-                 ->with('success', 'Staff created successfully.');
-
-            // Previous return statement not working
-            // return redirect()->route('staff.show', $staff->id)
-            //     ->with('success', 'Staff created successfully.');
+                ->with('success', 'Staff created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
             $errorMessage = $e->getMessage();
@@ -98,100 +106,106 @@ class StaffController extends Controller
      */
     public function show($id)
     {
-        // Fetch the staff details along with relationships
-        $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
-        $userId = $staff->id;
+        try {
+            // Fetch the staff details along with relationships
+            $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
+            $userId = $staff->id;
 
-        // Get the project_id of the staff
-        $projectId = $staff->project_id;
+            // Get the project_id of the staff
+            $projectId = $staff->project_id;
 
-        // Get the project and its type
-        $project = Project::findOrFail($projectId);
+            // Get the project and its type
+            $project = Project::findOrFail($projectId);
 
-        $surveyedPolesCount = 0;
-        $installedPolesCount = 0;
-        $surveyedPoles = 0; 
-        $installedPoles = 0;
+            $surveyedPolesCount = 0;
+            $installedPolesCount = 0;
+            $surveyedPoles = 0;
+            $installedPoles = 0;
 
-        $isStreetlightProject = ($project->project_type == 1) ? true : false;
-        // Check if the project type is 1 (indicating a streetlight project)
-        if ($isStreetlightProject) {
-            // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
-            $tasks = StreetlightTask::with(['site', 'poles'])
-                ->whereDate('created_at', Carbon::today())
-                ->where(function ($query) use ($staff) {
-                    $query->where('engineer_id', $staff->id)
-                        ->orWhere('manager_id', $staff->id)
-                        ->orWhere('vendor_id', $staff->id);
-                })
-                ->get();
-            $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($userId) {
-                $query->where(function ($q) use ($userId) {
-                    $q->where('manager_id', $userId)
-                        ->orWhere('engineer_id', $userId)
-                        ->orWhere('vendor_id', $userId);
-                });
-            })->where('isSurveyDone', 1)->count();
-            $installedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
-                $query->where(function ($q) use ($userId) {
-                    $q->where('manager_id', $userId)
-                        ->orWhere('engineer_id', $userId)
-                        ->orWhere('vendor_id', $userId);
-                });
-            })->where('isInstallationDone', 1)->count();
-            $surveyedPoles = Pole::where('isSurveyDone', 1)
-                ->whereDate('created_at', Carbon::today())
-                ->whereHas('task', function ($query) use ($userId) {
-                    $query->where('manager_id', $userId);
-                })
-                ->get();
-            // TODO: modify the m
-            $installedPoles = Pole::where('isInstallationDone', 1)
-                ->whereDate('created_at', Carbon::today())
-                ->whereHas('task', function ($query) use ($userId) {
-                    $query->where('manager_id', $userId);
-                })
-                ->get();
-        } else {
-            // Fetch regular Tasks
-            $tasks = Task::with('site')
-                ->where(function ($query) use ($staff) {
-                    $query->where('engineer_id', $staff->id)
-                        ->orWhere('manager_id', $staff->id)
-                        ->orWhere('vendor_id', $staff->id);
-                })
-                ->get();
+            $isStreetlightProject = ($project->project_type == 1) ? true : false;
+            // Check if the project type is 1 (indicating a streetlight project)
+            if ($isStreetlightProject) {
+                // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
+                $tasks = StreetlightTask::with(['site', 'poles'])
+                    ->whereDate('created_at', Carbon::today())
+                    ->where(function ($query) use ($staff) {
+                        $query->where('engineer_id', $staff->id)
+                            ->orWhere('manager_id', $staff->id)
+                            ->orWhere('vendor_id', $staff->id);
+                    })
+                    ->get();
+                $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($userId) {
+                    $query->where(function ($q) use ($userId) {
+                        $q->where('manager_id', $userId)
+                            ->orWhere('engineer_id', $userId)
+                            ->orWhere('vendor_id', $userId);
+                    });
+                })->where('isSurveyDone', 1)->count();
+                $installedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
+                    $query->where(function ($q) use ($userId) {
+                        $q->where('manager_id', $userId)
+                            ->orWhere('engineer_id', $userId)
+                            ->orWhere('vendor_id', $userId);
+                    });
+                })->where('isInstallationDone', 1)->count();
+                $surveyedPoles = Pole::where('isSurveyDone', 1)
+                    ->whereDate('created_at', Carbon::today())
+                    ->whereHas('task', function ($query) use ($userId) {
+                        $query->where('manager_id', $userId);
+                    })
+                    ->get();
+                // TODO: modify the m
+                $installedPoles = Pole::where('isInstallationDone', 1)
+                    ->whereDate('created_at', Carbon::today())
+                    ->whereHas('task', function ($query) use ($userId) {
+                        $query->where('manager_id', $userId);
+                    })
+                    ->get();
+            } else {
+                // Fetch regular Tasks
+                $tasks = Task::with('site')
+                    ->where(function ($query) use ($staff) {
+                        $query->where('engineer_id', $staff->id)
+                            ->orWhere('manager_id', $staff->id)
+                            ->orWhere('vendor_id', $staff->id);
+                    })
+                    ->get();
+            }
+
+            // Categorize tasks
+            $assignedTasks = $tasks;
+            $assignedTasksCount = $tasks->count();
+            Log::info($assignedTasks);
+            $completedTasks = $tasks->where('status', 'Completed');
+            $completedTasksCount = $completedTasks->count();
+            $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
+            $pendingTasksCount = $pendingTasks->count();
+            $rejectedTasks = $tasks->where('status', 'Rejected');
+            $rejectedTasksCount = $rejectedTasks->count();
+
+            // Return the view with necessary data
+            return view('staff.show', compact(
+                'project',
+                'staff',
+                'assignedTasks',
+                'completedTasks',
+                'pendingTasks',
+                'rejectedTasks',
+                'surveyedPolesCount',
+                'surveyedPoles',
+                'isStreetlightProject',
+                'installedPoles',
+                'installedPolesCount',
+                'assignedTasksCount',
+                'completedTasksCount',
+                'pendingTasksCount',
+                'rejectedTasksCount'
+            ));
+        } catch (\Exception $e) {
+            //throw $th;
+            Log::info($e->getMessage());
+            return back()->with('error');
         }
-
-        // Categorize tasks
-        $assignedTasks = $tasks;
-        $assignedTasksCount = $tasks->count();
-        Log::info($assignedTasks);
-        $completedTasks = $tasks->where('status', 'Completed');
-        $completedTasksCount = $completedTasks->count();
-        $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
-        $pendingTasksCount = $pendingTasks->count();
-        $rejectedTasks = $tasks->where('status', 'Rejected');
-        $rejectedTasksCount = $rejectedTasks->count();
-
-        // Return the view with necessary data
-        return view('staff.show', compact(
-            'project',
-            'staff',
-            'assignedTasks',
-            'completedTasks',
-            'pendingTasks',
-            'rejectedTasks',
-            'surveyedPolesCount',
-            'surveyedPoles',
-            'isStreetlightProject',
-            'installedPoles',
-            'installedPolesCount',
-            'assignedTasksCount',
-            'completedTasksCount',
-            'pendingTasksCount',
-            'rejectedTasksCount'
-        ));
     }
 
 
@@ -203,8 +217,9 @@ class StaffController extends Controller
         //
         $staff = User::findOrFail($id);
         $projects = Project::all();
+        $usercategory = UserCategory::all(); 
             
-        return view('staff.edit', compact('staff', 'projects')); // Form to edit staff
+        return view('staff.edit', compact('staff', 'projects', 'usercategory')); // Form to edit staff
     }
 
     /**
@@ -215,10 +230,12 @@ class StaffController extends Controller
         //
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
+            'project_id'=> 'nullable|integer',
             'firstName' => 'nullable|string|max:25',
             'lastName'  => 'nullable|string|max:25',
             'email'     => 'required|email|unique:users,email,' . $staff->id,
             'contactNo' => 'string',
+            'category'  => 'nullable|string',
             'address'   => 'string|max:255',
             'password'  => 'nullable|string|min:6|confirmed',
             'role'      => 'nullable|string',
@@ -291,9 +308,15 @@ class StaffController extends Controller
             'password' => 'required|min:8|confirmed',
         ]);
 
-        $staff           = User::findOrFail($id);
-        $staff->password = bcrypt($request->password);
-        $staff->save();
+        User::where('id', $id)->update([
+            'password' => bcrypt($request->password)
+        ]);
+        
+
+        // $staff           = User::findOrFail($id);
+        // $staff->password = $request->password;
+        // Log::info('Update staff password ' . $request->password);
+        // $staff->save();
 
         return redirect()->route('staff.index')->with('success', 'Password updated successfully.');
     }
@@ -324,5 +347,4 @@ class StaffController extends Controller
         $surveyedPoles = Pole::all();
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
-
 }

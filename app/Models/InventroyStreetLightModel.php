@@ -41,4 +41,7 @@ class InventroyStreetLightModel extends Model
     {
         return $this->belongsTo(Stores::class);
     }
+    public function dispatch(){
+        return $this->hasOne(InventoryDispatch::class, 'serial_number', 'serial_number');     
+    }
 }

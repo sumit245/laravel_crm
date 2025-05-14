@@ -161,12 +161,12 @@
                         </select>
                       </div>
                       <!-- Hidden inputs to hold separate values -->
-    <input type="hidden" name="code" id="item_code">
-    <input type="hidden" name="dropdown" id="item_name">
-    <div class="col-6">
-    <label for="quantity"><strong>Quantity</strong></label>
-<input type="number" id="number" name="number" class="form-control" value="1" readonly required>
-    </div>
+                      <input type="hidden" name="code" id="item_code">
+                      <input type="hidden" name="dropdown" id="item_name">
+                      <div class="col-6">
+                      <label for="quantity"><strong>Quantity</strong></label>
+                        <input type="number" id="number" name="number" class="form-control" value="1" readonly required>
+                      </div>
                   </div>
                   <div class="form-group">
                      <div class="row">
