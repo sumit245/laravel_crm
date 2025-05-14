@@ -13,6 +13,7 @@ class Vehicle extends Model
         'vehicle_name',
         'category',
         'sub_category',
+        'icon',
         'rate',
     ];
 
@@ -22,5 +23,4 @@ class Vehicle extends Model
     }
 
     public $timestamps = true;
-
 }
