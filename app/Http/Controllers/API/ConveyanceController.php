@@ -40,7 +40,7 @@ class ConveyanceController extends Controller
                 'Rent as rent',
                 'vehicle_no as vehicle_number',
             ])->get();
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Tada data fetched successfully',
@@ -54,7 +54,6 @@ class ConveyanceController extends Controller
                 'error' => $th->getMessage()
             ]);
         }
-       
     }
 
     // Conveyance Index
@@ -75,14 +74,13 @@ class ConveyanceController extends Controller
                 'message' => 'Conveyance data fetched successfully',
                 'data' => $conveyances
             ]);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to fetch conveyance data',
                 'error' => $e->getMessage()
             ]);
         }
-        
     }
 
     /**
@@ -163,7 +161,7 @@ class ConveyanceController extends Controller
                 'user_id' => 'required|integer'
             ]);
             $conveyance = Conveyance::create($data);
-    
+
             return response()->json($conveyance, 201);
         } catch (\Throwable $th) {
             //throw $th;
@@ -173,7 +171,6 @@ class ConveyanceController extends Controller
                 'error' => $th->getMessage()
             ]);
         }
-        
     }
 
     /**

@@ -7,9 +7,11 @@ use App\Models\Tada;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
+use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
-class ConvenienceController extends Controller
+class ConveyanceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -27,7 +29,8 @@ class ConvenienceController extends Controller
     }
 
     // Tada view
-    public function tadaView(){
+    public function tadaView()
+    {
         $tadas = Tada::get();
         return view('billing.tada', compact('tadas'));
     }
@@ -41,10 +44,38 @@ class ConvenienceController extends Controller
         return view('billing.settings', compact('vehicles', 'users', 'categories'));
     }
 
+    public function getAllVehicles(Request $request)
+    {
+        try {
+            //code...
+            $vehicles = Vehicle::get();
+            return response()->json($vehicles, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'msg' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getVehicleDetail($id)
+    {
+        try {
+            //code...
+            $vehicle = Vehicle::find($id);
+            return response()->json($vehicle, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'msg' => $e->getMessage()
+            ], 500);
+        }
+    }
+
     // Add vehicle function
     public function addVehicle(Request $request)
     {
-    
+
         $validatedData = $request->validate([
             'vehicle_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
@@ -52,93 +83,92 @@ class ConvenienceController extends Controller
             'rate' => 'required|numeric',
         ]);
 
-    // Create a new vehicle record
-    $vehicle = new Vehicle();
-    $vehicle->vehicle_name = $validatedData['vehicle_name'];
-    $vehicle->category = $validatedData['category'];
-    $vehicle->sub_category = $validatedData['sub_category'] ?? null; // in case it's not filled
-    $vehicle->rate = $validatedData['rate'];
-    $vehicle->save();
+        // Create a new vehicle record
+        $vehicle = new Vehicle();
+        $vehicle->vehicle_name = $validatedData['vehicle_name'];
+        $vehicle->category = $validatedData['category'];
+        $vehicle->sub_category = $validatedData['sub_category'] ?? null; // in case it's not filled
+        $vehicle->rate = $validatedData['rate'];
+        $vehicle->save();
 
-    return redirect()->back()->with('success', 'Vehicle added successfully!');
-}
+        return redirect()->back()->with('success', 'Vehicle added successfully!');
+    }
 
-    public function editVehicle(Request $request){
+    public function editVehicle(Request $request)
+    {
         $ev = Vehicle::find($request->id);
         return view('billing.editVehicle', compact('ev'));
-    } 
+    }
 
     public function updateVehicle(Request $request)
-{
-    \Log::info('Request Data: Edit vehicle', $request->all());
+    {
+        Log::info('Request Data: Edit vehicle', $request->all());
 
-    $id = $request->input('user_id'); // Vehicle ID from the hidden input field
+        $id = $request->input('user_id'); // Vehicle ID from the hidden input field
 
-    // Validate the required fields: 'category' and 'rate'
-    $validatedData = $request->validate([
-        'vehicle_name' => 'nullable|string|max:100',  // Optional field
-        'category' => 'required|string',  // Category is required as a string
-        'subcategory' => 'nullable|string|max:50',  // Optional field
-        'rate' => 'required|numeric',  // Rate is required and must be numeric
-    ]);
-
-    try {
-        // Find the vehicle by its ID
-        $vehicle = Vehicle::findOrFail($id);
-
-        // Update the fields using the update method
-        $vehicle->update([
-            'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
-            'category' => $validatedData['category'],  // Directly assign the incoming category value
-            'sub_category' => $validatedData['subcategory'],  // Nullable field
-            'rate' => $validatedData['rate'],  // Required field
+        // Validate the required fields: 'category' and 'rate'
+        $validatedData = $request->validate([
+            'vehicle_name' => 'nullable|string|max:100',  // Optional field
+            'category' => 'required|string',  // Category is required as a string
+            'subcategory' => 'nullable|string|max:50',  // Optional field
+            'icon' => 'nullable|string|max:50',  // Optional field
+            'rate' => 'required|numeric',  // Rate is required and must be numeric
         ]);
 
-        // Redirect to the settings page with a success message
-        return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
-    } catch (\Exception $e) {
-        // Log the error message
-        \Log::error('Error updating vehicle: ' . $e->getMessage());
+        try {
+            // Find the vehicle by its ID
+            $vehicle = Vehicle::findOrFail($id);
 
-        // Return to the same page with an error message
-        return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
+            // Update the fields using the update method
+            $vehicle->update($validatedData);
+
+            // Redirect to the settings page with a success message
+            return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
+        } catch (\Exception $e) {
+            // Log the error message
+            Log::error('Error updating vehicle: ' . $e->getMessage());
+
+            // Return to the same page with an error message
+            return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
+        }
     }
-}
 
-    
+
 
     // User Edit
-    public function editUser(Request $request){
+    public function editUser(Request $request)
+    {
         $ue = User::find($request->id);
         $uc = UserCategory::get();
         return view('billing.editUser', compact('ue', 'uc'));
     }
 
     // Delete Vehicle
-    public function deleteVehicle(Request $request){
+    public function deleteVehicle(Request $request)
+    {
         $dv = Vehicle::find($request->id);
         $dv->delete();
         return redirect()->back()->with('success', 'Vehicle deleted successfully!');
     }
 
     public function updateUser(Request $request)
-{
-    \Log::info('Request Data: Update user', $request->all());
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'category' => 'required|in:M1,M2,M3,M4,M5',
-    ]);
+    {
+        Log::info('Request Data: Update user', $request->all());
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'category' => 'required|in:M1,M2,M3,M4,M5',
+        ]);
 
-    $user = User::findOrFail($request->input('user_id'));
-    $user->category = $request->input('category');
-    $user->save();
+        $user = User::findOrFail($request->input('user_id'));
+        $user->category = $request->input('category');
+        $user->save();
 
-    return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
-}
-// Add Category
+        return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
+    }
+    // Add Category
     public function addCategory(Request $request)
     {
-        \Log::info('Request Data: Add category', $request->all());
+        Log::info('Request Data: Add category', $request->all());
         $validatedData = $request->validate([
             'category' => 'required|string|max:255', // category_code
             'vehicle_id' => 'required|integer', // single vehicle ID
@@ -153,7 +183,8 @@ class ConvenienceController extends Controller
         return redirect()->back()->with('success', 'Category added successfully.');
     }
 
-    public function editCategory(Request $request){
+    public function editCategory(Request $request)
+    {
         $uc = UserCategory::find($request->id);
         $uv = Vehicle::get();
         return view('billing.editCategory', compact('uc', 'uv'));
@@ -162,7 +193,7 @@ class ConvenienceController extends Controller
     public function updateCategory(Request $request)
     {
         try {
-            \Log::info('Request Data: Update category', $request->all());
+            Log::info('Request Data: Update category', $request->all());
 
             $validatedData = $request->validate([
                 'category_code' => 'required|string|max:255',
@@ -182,18 +213,19 @@ class ConvenienceController extends Controller
 
             return redirect()->route('billing.settings')->with('success', 'Category updated successfully!');
         } catch (\Exception $e) {
-            \Log::error('Error updating category: ' . $e->getMessage());
+            Log::error('Error updating category: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while updating the category.');
         }
     }
 
 
-// Delete Category
-public function deleteCategory(Request $request){
-    $dc = UserCategory::find($request->id);
-    $dc->delete();
-    return redirect()->back()->with('success', 'Category deleted successfully!');
-}
+    // Delete Category
+    public function deleteCategory(Request $request)
+    {
+        $dc = UserCategory::find($request->id);
+        $dc->delete();
+        return redirect()->back()->with('success', 'Category deleted successfully!');
+    }
 
 
 
