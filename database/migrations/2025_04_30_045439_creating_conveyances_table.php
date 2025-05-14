@@ -18,7 +18,7 @@ return new class extends Migration
             $table->text('to');
             $table->integer('kilometer');
             $table->time('time');
-            $table->integer('vehicle_category');
+            $table->unsignedBigInteger('vehicle_category');
 
         // Foreign key constraint
             $table->foreign('vehicle_category')->references('id')->on('vehicles')->onDelete('cascade');
