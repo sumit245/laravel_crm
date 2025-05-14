@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::table('conveyances', function (Blueprint $table) {
             //
             $table->string('image')->nullable()->after('vehicle_category'); // or place after any existing column
-            $table->date('date')->nullable()->after('time');
+            $table->string('date')->nullable()->after('time');
         });
     }
 

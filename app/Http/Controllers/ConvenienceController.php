@@ -151,12 +151,12 @@ class ConvenienceController extends Controller
     
     $request->validate([
         'user_id' => 'required|exists:users,id',
-        'category' => 'required|in:M1,M2,M3,M4,M5',
+        'category' => 'string|max:50',
     ]);
 
     $user = User::findOrFail($request->input('user_id'));
     $user->category = $request->input('category');
-    $user->save();
+    $user->update();
 
     return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
 }

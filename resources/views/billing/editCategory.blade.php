@@ -29,4 +29,15 @@
         </form>
     </div>
 </div>
+@if (session('error'))
+    <div class="alert alert-danger">
+        {{ session('error') }}
+    </div>
+@endif
 @endsection
+
+@push('scripts')
+<script>
+    
+</script>
+@endpush

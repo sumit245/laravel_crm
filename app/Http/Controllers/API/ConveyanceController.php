@@ -7,6 +7,7 @@ use App\Models\Conveyance;
 use App\Models\Tada;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Storage;
 
 class ConveyanceController extends Controller
 {
@@ -156,32 +157,50 @@ class ConveyanceController extends Controller
     }
 
     public function storeConveyance(Request $request)
-    {
-        try {
-            //code...
-            $data = $request->validate([
-                'from' => 'required|string|max:100',
-                'to' => 'required|string|max:100',
-                'kilometer' => 'required|integer',
-                'created_at' => 'required|date',
-                'time' => 'required|string|max:50',
-                'vehicle_category' => 'required|integer',
-                'user_id' => 'required|integer',
-                'amount' => 'nullable|decimal'
-            ]);
-            $conveyance = Conveyance::create($data);
-    
-            return response()->json($conveyance, 201);
-        } catch (\Throwable $th) {
-            //throw $th;
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to create conveyance',
-                'error' => $th->getMessage()
-            ]);
-        }
-        
+{
+    try {
+        $data = $request->validate([
+            'from'             => 'string|max:100',
+            'to'               => 'string|max:100',
+            'kilometer'        => 'integer',
+            'date'             => 'string|max:100',
+            'time'             => 'string|max:50',
+            'vehicle_category' => 'integer',
+            'user_id'          => 'integer',
+            'amount'           => 'nullable|numeric',
+            // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
+        ]);
+
+        // Upload image to S3 if present
+        // if ($request->hasFile('image') && $request->file('image')->isValid()) {
+        //     $file = $request->file('image');
+
+        //     $uploadedImage = $this->uploadToS3($file); // No folder override
+
+        //     if (!$uploadedImage) {
+        //         throw new \Exception('Failed to upload image to S3');
+        //     }
+
+        //     $data['image'] = $uploadedImage;
+        // }
+
+        $conveyance = Conveyance::create($data);
+
+        return response()->json($conveyance, 201);
+
+    } catch (\Throwable $th) {
+        \Log::error('Conveyance creation error: ' . $th->getMessage());
+
+        return response()->json([
+            'status'  => false,
+            'message' => 'Failed to create conveyance',
+            'error'   => $th->getMessage()
+        ], 500);
     }
+}
+
+
+
 
     /**
      * Display the specified resource.
