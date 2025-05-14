@@ -13,12 +13,14 @@ class Conveyance extends Model
         'from',
         'to',
         'kilometer',
+        'amount',
         'created_at',
         'time',
+        'status',
         'vehicle_category',
         'user_id', // add this
     ];
-    
+
     // Relationship to user
     public function user()
     {
@@ -26,9 +28,8 @@ class Conveyance extends Model
     }
 
     // Relationship to vehicle
-    public function vehicle(){
+    public function vehicle()
+    {
         return $this->belongsTo(Vehicle::class, 'id', 'category');
     }
-
-
 }
