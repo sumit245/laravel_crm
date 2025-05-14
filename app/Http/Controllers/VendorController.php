@@ -26,7 +26,7 @@ class VendorController extends Controller
      */
     public function create()
     {
-        $siteEngineers = User::where('role', 1)->get();
+        $siteEngineers = User::where('role', 2)->get();
         $projects = Project::all();
         return view('uservendors.create', compact('siteEngineers','projects'));
     }
@@ -85,7 +85,7 @@ class VendorController extends Controller
             $validated['role']     = 3;
             // Create the staff user
             $vendor = User::create($validated);
-            return redirect()->route('uservendors.show', $vendor->id)
+            return redirect()->route('uservendors.index', $vendor->id)
                 ->with('success', 'Vendor created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
@@ -169,6 +169,26 @@ class VendorController extends Controller
         $projects = Project::all();
         return view('uservendors.edit', compact('vendor','projects'));
     }
+
+    // This is only for viewing the page both these method are not in use made a common method
+    // in staff controller app
+    // public function changePassword(Request $request, $id){
+    //     $vendor = User::findOrFail($id);
+    //     return view('uservendors.change-password', compact('vendor'));
+    // }
+    // Update the vendor's password
+    // public function updatePassword(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'password' => 'required|min:8|confirmed',
+    //     ]);
+
+    //     User::where('id', $id)->update([
+    //         'password' => bcrypt($request->password),
+    //     ]);
+
+    //     return redirect()->route('uservendors.index')->with('success', 'Password updated successfully.');
+    // }
 
     /**
      * Update the specified resource in storage.

@@ -23,7 +23,35 @@ class ConvenienceController extends Controller
     {
         //
         $cons = Conveyance::get();
-        return view('billing.convenience', compact('cons'));
+        $appliedAmount = Conveyance::sum('amount');
+        $disbursedAmount = Conveyance::where('status', 1)->sum('amount');
+        $rejectedAmount = Conveyance::where('status', 0)->sum('amount');
+        
+
+        return view('billing.convenience', compact('cons', 'appliedAmount', 'disbursedAmount', 'rejectedAmount'));
+    }
+
+    public function showdetailsconveyance($id){
+        
+        $details = Conveyance::with(['user', 'vehicle'])->where('user_id', $id)->get();
+        $appliedAmount = Conveyance::where('user_id', $id)->sum('amount');
+        $disbursedAmount = Conveyance::where('user_id', $id)->where('status', 1)->sum('amount');
+        $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount'); 
+        $dueclaimAmount = $appliedAmount-$disbursedAmount;
+        // dd($details);
+        return view('billing.conveyanceDetails', compact('details', 'appliedAmount', 'disbursedAmount', 'rejectedAmount', 'dueclaimAmount'));
+    }
+
+    public function accept($id){
+        Conveyance::where('id', $id)->update(['status' => 1]);
+
+        return back()->with('success', 'Status updated to Accepted.');
+    }
+
+    public function reject($id){
+        Conveyance::where('id', $id)->update(['status' => 0]);
+
+        return back()->with('success', 'Status updated to Accepted.');
     }
 
     // Tada view
@@ -69,9 +97,8 @@ class ConvenienceController extends Controller
     } 
 
     public function updateVehicle(Request $request)
-{
-    \Log::info('Request Data: Edit vehicle', $request->all());
-
+    {
+    
     $id = $request->input('user_id'); // Vehicle ID from the hidden input field
 
     // Validate the required fields: 'category' and 'rate'
@@ -98,8 +125,6 @@ class ConvenienceController extends Controller
         return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
     } catch (\Exception $e) {
         // Log the error message
-        \Log::error('Error updating vehicle: ' . $e->getMessage());
-
         // Return to the same page with an error message
         return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
     }
@@ -123,7 +148,7 @@ class ConvenienceController extends Controller
 
     public function updateUser(Request $request)
 {
-    \Log::info('Request Data: Update user', $request->all());
+    
     $request->validate([
         'user_id' => 'required|exists:users,id',
         'category' => 'required|in:M1,M2,M3,M4,M5',

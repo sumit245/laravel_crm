@@ -1,59 +1,54 @@
 @extends("layouts.main")
 
 @section("content")
-<div class="content-wrapper p-2">
-  <div class="card">
-    <div class="card-body">
-      <h4 class="card-title">Add Staff</h4>
+  <div class="content-wrapper p-2">
+    <div class="card">
+      <div class="card-body">
+        <h4 class="card-title">Add Staff</h4>
+        <!-- Display validation errors -->
+        @if ($errors->any())
+          <div class="alert alert-danger">
+            <ul>
+              @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+              @endforeach
+            </ul>
+          </div>
+        @endif
 
-      @if ($errors->any())
-      <div class="alert alert-danger">
-        <ul>
-          @foreach ($errors->all() as $error)
-          <li>{{ $error }}</li>
-          @endforeach
-        </ul>
-      </div>
-      @endif
+        <form class="forms-sample" action="{{ route("staff.store") }}" method="POST">
+          @csrf
+          <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
+            <label for="username" class="form-label">Username</label>
+            <input type="text" name="username" id="username" class="form-control" value="{{ old("username") }}">
+          </div>
 
-      <!-- Project Selection Dropdown -->
-      <div class="form-group mb-4">
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="project" class="form-label">Project</label>
-              <select name="project_id" class="form-select" id="project">
-                <option value="">-- Select Project --</option>
-                @foreach ($projects as $category)
-                <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
-                @endforeach
-              </select>
+          <div class="row">
+            <!-- Project Selection Dropdown -->
+            {{-- <div class="form-group mb-4"> --}}
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="select_project" class="form-label">Select Project</label>
+                <select name="project_id" class="form-select" id="select_project">
+                  <option value="">-- Select Project --</option>
+                  @foreach ($projects as $project)
+                    <option value="{{ $project->id }}">{{ $project->project_name }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="team_lead" class="form-label">Team Lead</label>
+                <select name="manager_id" class="form-select" id="team_lead">
+                  <option value="">-- Select Team Lead --</option>
+                  @foreach ($teamLeads as $teamLead)
+                    <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
+                  @endforeach
+                </select>
+              </div>
             </div>
           </div>
-        </div>
-      </div>
-
-      <form class="forms-sample" action="{{ route("staff.store") }}" method="POST">
-        @csrf
-
-        <div class="d-none mb-3 hidden">
-          <label for="username" class="form-label">Username</label>
-          <input type="text" name="username" id="username" class="form-control" value="{{ old("username") }}">
-        </div>
-
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="team_lead" class="form-label">Team Lead</label>
-              <select name="team_lead_id" class="form-select" id="team_lead">
-                <option value="">-- Select Team Lead --</option>
-                @foreach ($teamLeads as $teamLead)
-                <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
-                @endforeach
-              </select>
-            </div>
-          </div>
-        </div>
 
         <div class="row">
           <div class="col-sm-6 col-md-6">

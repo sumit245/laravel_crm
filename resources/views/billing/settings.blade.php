@@ -386,7 +386,7 @@
     </div>
 
     <!-- Edit User Category Modal -->
-<div class="modal fade" id="editCategoryModal{{ $cat->id }}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{ $cat->id }}" aria-hidden="true">
+<div class="modal fade" id="editCategoryModal{{-- $cat->id --}}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{-- $cat->id --}}" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content shadow">
             <div class="modal-header bg-primary text-white">

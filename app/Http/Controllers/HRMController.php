@@ -14,23 +14,17 @@ class HRMController extends Controller
         //
     }
 
-    public function preview(Request $request)
-{
-    $data = $request->except(['file_field_name']); // replace with actual file input name
-    \Log::info('Storing form data in session:', $data);
-
-    session(['formData' => $data]);
-
-    // If you need the file temporarily, you can store its path or name separately
-    $file = $request->file('file_field_name'); // get the file
-    if ($file) {
-        $filename = $file->getClientOriginalName();
-        session(['uploaded_filename' => $filename]); // or move and store the path
+    // Preview
+    public function preview(Request $request){
+        $data = $request->all();
+        session(['data' => $data]);
+        return view('hrm.preview', compact('data'));
     }
 
-    return view('hrm.preview', compact('data'));
-}
-
+    // Admin Preview
+    public function adminPreview(){
+        return view('hrm.adminPreview');
+    }
 
     /**
      * Show the form for creating a new resource.
