@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Conveyance;
 use App\Models\Tada;
+use App\Models\User;
+use App\Models\UserCategory;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
 use Storage;
@@ -163,11 +165,10 @@ class ConveyanceController extends Controller
             'from'             => 'string|max:100',
             'to'               => 'string|max:100',
             'kilometer'        => 'integer',
-            'date'             => 'string|max:100',
             'time'             => 'string|max:50',
             'vehicle_category' => 'integer',
             'user_id'          => 'integer',
-            'amount'           => 'nullable|numeric',
+            'amount'           => 'nullable|numeric'
             // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
         ]);
 
@@ -233,6 +234,45 @@ class ConveyanceController extends Controller
         }
     }
 
+    public function getUserCategoryVehicle(){
+        try {
+            //code...
+            $usercategory = UserCategory::all();
+            return response()->json([
+                'status' => true,
+                'message' => 'User Category fetched successfully',
+                'data' => $usercategory
+            ]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch user category',
+                'error' => $th->getMessage()
+            ]);
+        }
+        
+    }
+
+    public function getUserCategory(Int $id){
+        try {
+            //code...
+            $usercategory = User::where('id', $id)->pluck('category');
+            return response()->json([
+                'status' => true,
+                'message' => 'User Category fetched successfully',
+                'data' => $usercategory
+            ]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch user category',
+                'error' => $th->getMessage()
+            ]);
+        }
+    }
+
     /**
      * Show the form for editing the specified resource.
      */
@@ -246,7 +286,7 @@ class ConveyanceController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        
     }
 
     /**
