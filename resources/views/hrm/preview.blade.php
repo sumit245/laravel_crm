@@ -3,23 +3,22 @@
 @section("content")
 <div class="container mx-auto p-6 max-w-5xl bg-white shadow-lg rounded-lg relative">
 
-    {{-- Logo + Heading --}}
+{{-- Logo + Heading --}}
     <div class="flex flex-col items-center justify-center text-center mb-6">
         <img src="{{ asset('images/logo.png') }}" alt="Company Logo" class="h-20 w-auto mb-2">
-        <h1 class="text-xl font-semibold text-emerald-700">Application Details</h1>
+        <h1 class="text-xl font-semibold text-emerald-700">Review & Confirm Your Details</h1>
         <p class="mt-2 text-gray-600 max-w-2xl">
-            Below are the details submitted by the applicant.
+            Please review your information. Use the <span class="font-semibold">Edit</span> buttons to make changes before final submission.
         </p>
     </div>
 
-    @php
-        $data = session('submittedData');
-        $documents = [
-            'Resume' => 'bills/sample.pdf',
-            'Profile Picture' => 'bills/sample.pdf',
-            'Contract' => 'bills/sample.pdf',
-        ];
-    @endphp
+    <!-- @php
+        $personal = $data['personalInfo'] ?? [];
+        $contact = $data['contactInfo'] ?? [];
+        $employment = $data['employment'] ?? [];
+        $additional = $data['additionalInfo'] ?? [];
+        $declaration = $data['declaration'] ?? [];
+    @endphp -->
 
     {{-- Personal Information --}}
     <div class="bg-gray-50 p-5 rounded-lg shadow-md mb-6 border border-gray-200">
@@ -27,14 +26,19 @@
             <h2 class="text-xl font-semibold text-gray-800">Personal Information</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            <p><strong>Full Name:</strong> {{ $data['personalInfo']['name'] ?? 'N/A' }}</p>
-            <p><strong>Email:</strong> {{ $data['personalInfo']['email'] ?? 'N/A' }}</p>
-            <p><strong>Phone:</strong> {{ $data['personalInfo']['phone'] ?? 'N/A' }}</p>
-            <p><strong>DOB:</strong> {{ $data['personalInfo']['dob'] ?? 'N/A' }}</p>
-            <p><strong>Gender:</strong> {{ $data['personalInfo']['gender'] ?? 'N/A' }}</p>
-            <p><strong>Marital Status:</strong> {{ $data['personalInfo']['maritalStatus'] ?? 'N/A' }}</p>
-            <p><strong>Nationality:</strong> {{ $data['personalInfo']['nationality'] ?? 'N/A' }}</p>
-            <p><strong>Language:</strong> {{ $data['personalInfo']['language'] ?? 'N/A' }}</p>
+            <p><strong>Full Name:</strong> {{ $data['name'] ?? 'N/A' }}</p>
+            <p><strong>Email:</strong> {{ $data['email'] ?? 'N/A' }}</p>
+            <p><strong>Phone:</strong> {{ $data['phone'] ?? 'N/A' }}</p>
+            <p><strong>DOB:</strong> {{ $data['dob'] ?? 'N/A' }}</p>
+            <p><strong>Gender:</strong> {{ $data['gender'] ?? 'N/A' }}</p>
+            <p><strong>Marital Status:</strong> {{ $data['marital_status'] ?? 'N/A' }}</p>
+            <p><strong>Nationality:</strong> {{ $data['nationality'] ?? 'N/A' }}</p>
+            <p><strong>Language:</strong> {{ $data['language'] ?? 'N/A' }}</p>
+        </div>
+        <div class="edit-btn flex justify-start w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
         </div>
     </div>
 
@@ -44,9 +48,14 @@
             <h2 class="text-xl font-semibold text-gray-800">Contact Information</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            <p><strong>Permanent Address:</strong> {{ isset($data['contactInfo']['permanentAddress']) ? implode(', ', array_filter($data['contactInfo']['permanentAddress'])) : 'N/A' }}</p>
-            <p><strong>Current Address:</strong> {{ isset($data['contactInfo']['currentAddress']) ? implode(', ', array_filter($data['contactInfo']['currentAddress'])) : 'N/A' }}</p>
-            <p><strong>Emergency Contact:</strong> {{ $data['contactInfo']['emergencyContact']['name'] ?? 'N/A' }} ({{ $data['contactInfo']['emergencyContact']['phone'] ?? 'N/A' }})</p>
+            <p><strong>Permanent Address:</strong> {{ $data['permanent_address']?? 'N/A'}}</p>
+            <p><strong>Current Address:</strong> {{ $data['currentAddress']?? 'N/A'}}</p>
+            <p><strong>Emergency Contact:</strong> {{ $data['emergency_contact_name']?? 'N/A'}}</p>
+        </div>
+        <div class="edit-btn flex justify-start w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
         </div>
     </div>
 
@@ -58,55 +67,76 @@
         @forelse ($data['education'] ?? [] as $edu)
             <div class="mb-4 text-gray-700">
                 <p><strong>Qualification:</strong> {{ $edu['qualification'] ?? 'N/A' }}</p>
-                <p><strong>Institution:</strong> {{ $edu['institution'] ?? 'N/A' }} ({{ $edu['year'] ?? 'N/A' }})</p>
-                <p><strong>Specialization:</strong> {{ $edu['specialization'] ?? 'N/A' }}</p>
-                <p><strong>Certifications:</strong> {{ $edu['certifications'] ?? 'N/A' }}</p>
+                <p><strong>Institution:</strong> {{ $data['institution'] ?? 'N/A' }} ({{ $edu['year'] ?? 'N/A' }})</p>
+                <p><strong>Specialization:</strong> {{ $data['specialization'] ?? 'N/A' }}</p>
+                <p><strong>Certifications:</strong> {{$data['certifications'] ?? 'N/A' }}</p>
                 <hr class="my-2">
             </div>
         @empty
             <p class="text-gray-500">No education records provided.</p>
         @endforelse
+        <div class="edit-btn flex justify-start w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
+        </div>
     </div>
 
     {{-- Documents --}}
+<div class="bg-gray-50 p-5 rounded-lg shadow-md mb-6 border border-gray-200">
+    <div class="flex justify-between items-center mb-3">
+        <h2 class="text-xl font-semibold text-gray-800">Uploaded Documents</h2>
+    </div>
+
+    @php
+        $documents = $data['documents'] ?? [];
+    @endphp
+
+    @if (!empty($documents))
+        <ul class="list-disc list-inside space-y-2 text-gray-700">
+            @foreach ($documents as $docName => $docPath)
+                <li>
+                    <span class="font-semibold">{{ ucfirst(str_replace('_', ' ', $docName)) }}:</span>
+                    @if ($docPath)
+                        <a href="{{ asset($docPath) }}" target="_blank" class="text-emerald-600 hover:underline ml-2">
+                            View Document
+                        </a>
+                    @else
+                        <span class="text-gray-500">Not uploaded</span>
+                    @endif
+                </li>
+            @endforeach
+        </ul>
+    @else
+        <p class="text-gray-500">No documents uploaded.</p>
+    @endif
+
+    <div class="edit-btn flex justify-start w-full mt-4">
+        <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+            Edit
+        </a>
+    </div>
+</div>
+
+
+    {{-- Employment Details --}}
     <div class="bg-gray-50 p-5 rounded-lg shadow-md mb-6 border border-gray-200">
         <div class="flex justify-between items-center mb-3">
-            <h2 class="text-xl font-semibold text-gray-800">Uploaded Documents</h2>
+            <h2 class="text-xl font-semibold text-gray-800">Employment Details</h2>
         </div>
-        @if (!empty($documents))
-            <ul class="list-disc list-inside space-y-2 text-gray-700">
-                @foreach ($documents as $docName => $docPath)
-                    <li>
-                        <span class="font-semibold">{{ ucfirst(str_replace('_', ' ', $docName)) }}:</span>
-                        @if ($docPath)
-                            <div class="mt-2">
-                                @php $fileExtension = pathinfo($docPath, PATHINFO_EXTENSION); @endphp
-
-                                @if (in_array(strtolower($fileExtension), ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp']))
-                                    <img src="{{ asset($docPath) }}" alt="{{ $docName }}" class="w-32 h-32 object-cover rounded shadow-md">
-                                @elseif (strtolower($fileExtension) === 'pdf')
-                                    <a href="{{ asset($docPath) }}" target="_blank" class="text-emerald-600 hover:underline ml-2">
-                                        <i class="fas fa-file-pdf"></i> View PDF
-                                    </a>
-                                @elseif (in_array(strtolower($fileExtension), ['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx']))
-                                    <a href="{{ asset($docPath) }}" target="_blank" class="text-emerald-600 hover:underline ml-2">
-                                        <i class="fas fa-file-word"></i> View Document
-                                    </a>
-                                @else
-                                    <a href="{{ asset($docPath) }}" target="_blank" class="text-emerald-600 hover:underline ml-2">
-                                        <i class="fas fa-file"></i> View Document
-                                    </a>
-                                @endif
-                            </div>
-                        @else
-                            <span class="text-gray-500">Not uploaded</span>
-                        @endif
-                    </li>
-                @endforeach
-            </ul>
-        @else
-            <p class="text-gray-500">No documents uploaded.</p>
-        @endif
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
+            <p><strong>Position:</strong> {{ $data['position_applied_for'] ?? 'N/A' }}</p>
+            <p><strong>Department:</strong> {{ $data['department'] ?? 'N/A' }}</p>
+            <p><strong>Joining Date:</strong> {{ $data['date_of_joining'] ?? 'N/A' }}</p>
+            <p><strong>Previous Employer:</strong> {{ $data['previous_employer'] ?? 'N/A' }}</p>
+            <p><strong>Experience:</strong> {{ $data['experience'] ?? 'N/A' }} years</p>
+            <p><strong>Notice Period:</strong> {{ $data['notice_period'] ?? 'N/A' }}</p>
+        </div>
+        <div class="edit-btn flex justify-start w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
+        </div>
     </div>
 
     {{-- Additional Information --}}
@@ -115,15 +145,20 @@
             <h2 class="text-xl font-semibold text-gray-800">Additional Information</h2>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
-            <p><strong>Disabilities:</strong> {{ $data['additionalInfo']['disabilities'] ?? 'N/A' }}</p>
-            <p><strong>Currently Employed:</strong> {{ $data['additionalInfo']['currentlyEmployed'] ?? 'N/A' }}</p>
-            <p><strong>Reason for Leaving:</strong> {{ $data['additionalInfo']['reasonForLeaving'] ?? 'N/A' }}</p>
-            <p><strong>Other Info:</strong> {{ $data['additionalInfo']['otherInfo'] ?? 'N/A' }}</p>
+            <p><strong>Disabilities:</strong> {{$data['disabilities'] ?? 'N/A' }}</p>
+            <p><strong>Currently Employed:</strong> {{ $data['currently_employed'] ?? 'N/A' }}</p>
+            <p><strong>Reason for Leaving:</strong> {{ $data['reason_for_leaving'] ?? 'N/A' }}</p>
+            <p><strong>Other Info:</strong> {{ $data['other_info'] ?? 'N/A' }}</p>
+        </div>
+        <div class="edit-btn flex justify-start w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
         </div>
     </div>
 
-    {{-- Passport Size Photo --}}
-    <div class="bg-gray-50 p-5 rounded-lg shadow-md mb-6 border border-gray-200">
+    {{-- Photo Upload --}}
+    <div class="bg-gray-50 p-5 rounded-lg shadow-md mb-8 border border-gray-200">
         <div class="flex justify-between items-center mb-3">
             <h2 class="text-xl font-semibold text-gray-800">Passport Size Photo</h2>
         </div>
@@ -132,6 +167,12 @@
         @else
             <p class="text-gray-500">No photo uploaded.</p>
         @endif
+
+        <div class="edit-btn flex justify-end w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
+        </div>
     </div>
 
     {{-- Declaration --}}
@@ -141,30 +182,44 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-gray-700">
             <p>I declare the above information is true.</p>
-            <p><strong>Signature:</strong> {{ $data['declaration']['signature'] ?? 'N/A' }}</p>
-            <p><strong>Date:</strong> {{ $data['declaration']['date'] ?? 'N/A' }}</p>
+            <p><strong>Signature:</strong> {{ $data['signature'] ?? 'N/A' }}</p>
+            <p><strong>Date:</strong> {{ $data['date'] ?? 'N/A' }}</p>
+        </div>
+        <div class="edit-btn flex justify-start w-full">
+            <a href="#" class="text-sm text-emerald-600 hover:bg-emerald-100 px-3 py-1 rounded-md transition duration-200 ease-in-out border border-emerald-600 hover:text-white hover:border-emerald-600">
+                Edit
+            </a>
         </div>
     </div>
 
-    {{-- Approve and Reject Buttons --}}
-    <div class="sticky bottom-0 left-0 bg-white py-4 mt-6 border-t border-gray-200 shadow-inner">
-        <div class="flex justify-end gap-4 px-6">
-            {{-- Approve Form --}}
-                @csrf
-                <button type="submit"
-                class="px-6 py-2 border border-green-500 badge bg-danger text-green-800 font-semibold rounded-md hover:bg-green-200 hover:border-green-600 transition duration-200 shadow-md">
-                Approve
-                </button>
-            </form>
+   
 
-            {{-- Reject Form --}}
-                @csrf
-                <button type="submit"
-                    class="px-6 py-2 badge bg-success  border">
-                    Reject
-                </button>
-            </form>
+    {{-- Submit Form --}}
+    @csrf
+    <div class="sticky bottom-0 left-0 bg-white py-4 mt-6">
+        <div class="edit-btn flex justify-end">
+            <button type="submit" class="px-6 py-2 bg-emerald-600 text-black font-semibold rounded hover:bg-emerald-700 transition duration-200 shadow">
+                Confirm & Submit
+            </button>
         </div>
     </div>
 </div>
 @endsection
+
+@push('styles')
+<style>
+    .edit-btn {
+        display: flex;
+        justify-content: end;
+    }
+    .edit-btn a {
+        text-decoration: none;
+        color: black;
+        border-radius: 5px;
+        background-color: #f4f5f7;
+    }
+    .logo{
+        display:flex;
+    }
+</style>
+@endpush

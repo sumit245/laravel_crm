@@ -94,7 +94,7 @@
                     <p class="text-muted">Please fill out all the details below carefully. All fields are mandatory.</p>
                 </div>
                 
-                <form id="onboarding-form" method="POST" action="#" enctype="multipart/form-data">
+                <form id="onboarding-form" method="POST" action="{{ route('hrm.preview') }}" enctype="multipart/form-data">
                     @csrf
                     
                     <!-- Personal Information Section -->
@@ -353,10 +353,10 @@
                                             <label class="form-label">Document Name</label>
                                             <input type="text" name="document_name[]" class="form-control" placeholder="e.g. Resume" required>
                                         </div>
-                                        <div class="col-md-5">
+                                        <!-- <div class="col-md-5">
                                             <label class="form-label">Upload File</label>
-                                            <input type="file" name="document_file[]" class="form-control" required>
-                                        </div>
+                                            <input type="file" name="document_file[]" class="form-control">
+                                        </div> -->
                                         <div class="col-md-2 d-flex align-items-end">
                                             <button type="button" class="btn btn-outline-danger remove-document d-none">×</button>
                                         </div>
@@ -437,10 +437,10 @@
                             <div class="card-body">
                                 <p class="text-muted mb-3">Upload a recent passport size photo (JPG, PNG, max 2MB).</p>
                                 <div class="row g-3">
-                                    <div class="col-md-6">
+                                    <!-- <div class="col-md-6">
                                         <label class="form-label">Upload Photo</label>
                                         <input type="file" id="passportPhotoInput" name="passport_photo" accept="image/jpeg,image/png" class="form-control" required>
-                                    </div>
+                                    </div> -->
                                     <div class="col-md-6 d-flex align-items-end">
                                         <div class="position-relative d-inline-block">
                                             <label class="form-label d-block">Preview</label>
@@ -486,7 +486,7 @@
                             <div class="card-footer">
                                 <div class="d-flex justify-content-between">
                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="photo">Previous</button>
-                                    <button type="submit" onclick="window.location='{{ route('preview') }}'"  class="btn btn-success">
+                                    <button type="submit" onclick="window.location='{{ route('hrm.preview') }}'"  class="btn btn-success">
                                         <i class="fas fa-check-circle"></i> Submit & Preview
                                     </button>
                                 </div>

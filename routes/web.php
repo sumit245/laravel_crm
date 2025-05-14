@@ -15,6 +15,7 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\HRMController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -105,9 +106,15 @@ Route::get('convenience-settings', function () {
 Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
-Route::get('preview', function () {
-    return view('hrm.preview');
-})->name('preview');
+
+Route::get('admin-preview', function () {
+    return view('hrm.adminPreview');
+})->name('admin-preview');
+
+
+
+Route::Resource('/hrm', HRMController::class);
+Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
 
 
 
