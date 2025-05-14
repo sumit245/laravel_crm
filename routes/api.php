@@ -68,3 +68,5 @@ Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
 Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
 Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
 Route::get('all-vehicles', [ConveyanceController::class, 'getVehicles']);
+Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicle']);
+Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
