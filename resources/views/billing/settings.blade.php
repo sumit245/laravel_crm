@@ -246,7 +246,191 @@
                     placeholder="motorcycle">
                   <div class="invalid-feedback">Please enter a sub category.</div>
                 </div>
+<<<<<<< HEAD
+            </div>
+        </div>
+        <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveVehicleBtn">
+                        <i class="bi bi-save me-1"></i> Save Vehicle
+                    </button>
+                </div>
+    </form>
+                </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Vehicle Modal Not in use here made an different page -->
+    <div class="modal fade" id="editVehicleModal" tabindex="-1" aria-labelledby="editVehicleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="editVehicleModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Vehicle</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editVehicleForm" action="{{ route('billing.updatevehicle') }}" method="POST">
+                        @csrf
+                        @method('POST')
+
+                        <!-- Dynamic values will be inserted here directly from data attributes -->
+                        <input type="hidden" id="editVehicleId" name="vehicle_id" data-value-from="data-id">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editVehicleName" class="form-label fw-bold">Vehicle Name</label>
+                                    <input type="text" class="form-control" id="editVehicleName" name="vehicle_name" required data-value-from="data-name">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editRatePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
+                                    <input type="number" class="form-control" id="editRatePerKm" name="rate" step="0.01" required data-value-from="data-rate">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editCategory" class="form-label fw-bold">Category</label>
+                                    <input type="text" class="form-control" id="editCategory" name="category" data-value-from="data-category">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label for="editSubCategory" class="form-label fw-bold">Sub Category</label>
+                                    <input type="text" class="form-control" id="editSubCategory" name="sub_category" required data-value-from="data-sub-category">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer bg-light">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle me-1"></i> Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary" id="updateVehicleBtn">
+                                <i class="bi bi-save me-1"></i> Update Vehicle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Category Modal -->
+    <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="addCategoryModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="addCategoryForm" action="{{ route('billing.addcategory') }}" method="POST">
+                        @csrf
+                        @method('POST')
+                        <div class="mb-3">
+                        <label for="categoryName" class="form-label fw-bold">Category Name</label>
+                        <input class="form-control" id="categoryName" name="category" required>
+                        </input>
+                        </div>
+                        <div class="mb-3">
+                        <label for="vehicle" class="form-label fw-bold">Allowed Vehicles</label>
+                        <select class="form-control" id="vehicle" name="vehicle_id" required>
+                            <option value="" disabled>Select Allowed Vehicle</option>
+                            @foreach ($vehicles as $vehicle)
+                            <option value="{{ $vehicle->id }}">
+                                    {{ $vehicle->id }}
+                                </option>
+                            @endforeach
+                        </select> 
+                        </div>
+                        <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
+                        <i class="bi bi-save me-1"></i> Save Category
+                    </button>
+                </div>
+                    </form>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Category Modal -->
+    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title fw-bold" id="editCategoryModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <form id="editCategoryForm">
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
+                            <div class="invalid-feedback">Please enter a category name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                                <option value="Two Wheelers" selected>Two Wheelers</option>
+                                <option value="Four Wheelers" selected>Four Wheelers</option>
+                                <option value="Public Transport">Public Transport</option>
+                            </select>
+                            <div class="invalid-feedback">Please select at least one vehicle.</div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer bg-light">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="updateCategoryBtn">
+                        <i class="bi bi-save me-1"></i> Update Category
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit User Category Modal -->
+<div class="modal fade" id="editCategoryModal{{-- $cat->id --}}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{-- $cat->id --}}" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content shadow">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="editCategoryModalLabel{{ $cat->id }}"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+            <form id="editCategoryForm">
+                        <div class="mb-3">
+                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
+                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
+                            <div class="invalid-feedback">Please enter a category name.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
+                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
+                                @foreach ($categories as $category)
+                                <option value="{{ $category->category_code }}" selected>{{ $category->category_code }}</option>
+                                @endforeach
+                            </select>
+                            <div class="invalid-feedback">Please select at least one vehicle.</div>
+                        </div>
+                    </form>
+=======
               </div>
+>>>>>>> 89c3125ce5a81b57e9efbba12838dae88d21b5cf
             </div>
             <div class="modal-footer bg-light">
               <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">

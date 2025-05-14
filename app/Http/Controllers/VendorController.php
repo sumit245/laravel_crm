@@ -28,7 +28,7 @@ class VendorController extends Controller
     {
         $siteEngineers = User::where('role', 1)->get();
         $projects = Project::all();
-        return view('uservendors.create', compact('siteEngineers','projects'));
+        return view('uservendors.create', compact('siteEngineers', 'projects'));
     }
 
     /**
@@ -167,15 +167,35 @@ class VendorController extends Controller
         //
         $vendor = User::find($id);
         $projects = Project::all();
-        return view('uservendors.edit', compact('vendor','projects'));
+        return view('uservendors.edit', compact('vendor', 'projects'));
     }
+
+    // This is only for viewing the page both these method are not in use made a common method
+    // in staff controller app
+    // public function changePassword(Request $request, $id){
+    //     $vendor = User::findOrFail($id);
+    //     return view('uservendors.change-password', compact('vendor'));
+    // }
+    // Update the vendor's password
+    // public function updatePassword(Request $request, $id)
+    // {
+    //     $request->validate([
+    //         'password' => 'required|min:8|confirmed',
+    //     ]);
+
+    //     User::where('id', $id)->update([
+    //         'password' => bcrypt($request->password),
+    //     ]);
+
+    //     return redirect()->route('uservendors.index')->with('success', 'Password updated successfully.');
+    // }
 
     /**
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
     {
-        
+
         try {
             $validated = $request->validate([
                 'name'          => 'required|string|max:255',
@@ -195,8 +215,8 @@ class VendorController extends Controller
                 'email'         => 'required|email',
             ]);
             $vendor = User::find($id)->update($validated);
-            Log::info($vendor);
-            return redirect()->route('uservendors.show')->with('success', 'Vendor updated successfully.');
+            Log::info('Vendor Edit' . $vendor);
+            return redirect()->route('uservendors.show', $id)->with('success', 'Vendor updated successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
             $errorMessage = $e->getMessage();

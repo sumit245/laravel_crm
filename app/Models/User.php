@@ -28,6 +28,8 @@ class User extends Authenticatable
         'contactNo',
         'address',
         'role',
+        'category',
+        'project_id',
         'accountName',
         'accountNumber',
         'ifsc',

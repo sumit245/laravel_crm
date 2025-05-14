@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Conveyance;
 use App\Models\Tada;
+use App\Models\Vehicle;
 use Illuminate\Http\Request;
 
 class ConveyanceController extends Controller
@@ -83,6 +84,12 @@ class ConveyanceController extends Controller
         }
     }
 
+    public function getVehicles()
+    {
+        $vehicles = Vehicle::get();
+        return response()->json($vehicles);
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -158,7 +165,8 @@ class ConveyanceController extends Controller
                 'created_at' => 'required|date',
                 'time' => 'required|string|max:50',
                 'vehicle_category' => 'required|integer',
-                'user_id' => 'required|integer'
+                'user_id' => 'required|integer',
+                'amount' => 'nullable|decimal'
             ]);
             $conveyance = Conveyance::create($data);
 
@@ -179,6 +187,30 @@ class ConveyanceController extends Controller
     public function show(string $id)
     {
         //
+    }
+
+    public function showConveyance(string $id)
+    {
+        try {
+            $conveyance = Conveyance::where('user_id', $id)->get();
+            if (!$conveyance) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Conveyance not found'
+                ], 404);
+            }
+            return response()->json([
+                'status' => true,
+                'message' => 'Conveyance fetched successfully',
+                'data' => $conveyance
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch conveyance',
+                'error' => $th->getMessage()
+            ]);
+        }
     }
 
     /**
