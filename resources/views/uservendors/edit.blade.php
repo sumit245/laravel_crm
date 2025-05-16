@@ -15,7 +15,7 @@
         @endif
         <h4 class="card-title">Add Vendor</h4>
         <!-- Project Selection Dropdown -->
-         <div class="form-group mb-4">
+        <div class="form-group mb-4">
           <div class="row">
             <div class="col-md-12">
               <div class="form-group">
@@ -28,7 +28,7 @@
                 </select>
               </div>
             </div>
-          </div> 
+          </div>
 
         </div>
         <form class="forms-sample" action="{{ route("uservendors.update", $vendor->id) }}" method="POST">
@@ -189,52 +189,51 @@
             @error("email")
               <small class="text-danger">{{ $message }}</small>
             @enderror
-          
 
-          <!-- <div class="row d-none" id="passwordSection">
-            <div class="col-sm-6 col-md-6">
-              <div class="form-group position-relative">
-                <label for="password" class="form-label">Password</label>
-                <input type="password" name="password" class="form-control form-control-lg" id="password"
-                  placeholder="Password" autocomplete="current-password" required>
-                <span class="position-absolute translate-middle-y end-0 me-3" style="cursor: pointer; top:3.6rem;"
-                  onclick="togglePasswordVisibility('password','password-toggle-icon')">
-                  <i id="password-toggle-icon" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
-                </span>
-                @error("password")
-                  <small class="text-danger">{{ $message }}</small>
-                @enderror
-              </div>
-            </div> -->
+            <!-- <div class="row d-none" id="passwordSection">
+                <div class="col-sm-6 col-md-6">
+                  <div class="form-group position-relative">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" name="password" class="form-control form-control-lg" id="password"
+                      placeholder="Password" autocomplete="current-password" required>
+                    <span class="position-absolute translate-middle-y end-0 me-3" style="cursor: pointer; top:3.6rem;"
+                      onclick="togglePasswordVisibility('password','password-toggle-icon')">
+                      <i id="password-toggle-icon" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
+                    </span>
+                    @error("password")
+    <small class="text-danger">{{ $message }}</small>
+  @enderror
+                  </div>
+                </div> -->
             <!-- <div class="col-sm-6 col-md-6">
-              <div class="form-group position-relative">
-                <label for="password_confirmation" class="form-label">Confirm Password</label>
-                <input type="password" name="password_confirmation" class="form-control form-control-lg"
-                  id="password_confirmation" placeholder="Password" autocomplete="current-password" required>
-                <span class="position-absolute translate-middle-y end-0 me-3" style="cursor: pointer; top:3.6rem;"
-                  onclick="togglePasswordVisibility('password_confirmation','password-toggle-icon-2')">
-                  <i id="password-toggle-icon-2" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
-                </span>
-                @error("confirmed")
-                  <small class="text-danger">{{ $message }}</small>
-                @enderror
-              </div>
-            </div>
-          </div> -->
+                  <div class="form-group position-relative">
+                    <label for="password_confirmation" class="form-label">Confirm Password</label>
+                    <input type="password" name="password_confirmation" class="form-control form-control-lg"
+                      id="password_confirmation" placeholder="Password" autocomplete="current-password" required>
+                    <span class="position-absolute translate-middle-y end-0 me-3" style="cursor: pointer; top:3.6rem;"
+                      onclick="togglePasswordVisibility('password_confirmation','password-toggle-icon-2')">
+                      <i id="password-toggle-icon-2" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
+                    </span>
+                    @error("confirmed")
+    <small class="text-danger">{{ $message }}</small>
+  @enderror
+                  </div>
+                </div>
+              </div> -->
 
-          <div class="d-flex justify-content-between">
-            {{-- <div class="col-md-7"></div> --}}
-            <div></div>
-            {{-- <div classs="col-md-5"> --}}
-            <div class="d-flex">
-              <button type="submit" class="btn btn-primary mx-2 mb-3">Update Vendor</button>
-              <!-- Editting password for the vendor made a common method for all to change the password -->
-              <a href="{{ route('staff.change-password', $vendor->id) }}" class="btn btn-secondary mx-2 mb-3">
+            <div class="d-flex justify-content-between">
+              {{-- <div class="col-md-7"></div> --}}
+              <div></div>
+              {{-- <div classs="col-md-5"> --}}
+              <div class="d-flex">
+                <button type="submit" class="btn btn-primary mx-2 mb-3">Update Vendor</button>
+                <!-- Editting password for the vendor made a common method for all to change the password -->
+                <a href="{{ route("staff.change-password", $vendor->id) }}" class="btn btn-secondary mx-2 mb-3">
                   Change Password
-              </a>
-              {{-- </div> --}}
-              <div>
-              </div>
+                </a>
+                {{-- </div> --}}
+                <div>
+                </div>
               </div>
         </form>
       </div>
@@ -253,15 +252,15 @@
       });
     });
 
-    document.querySelector('.forms-sample').addEventListener('submit', function (e) {
-        const formData = new FormData(this);
-        const data = {};
-        formData.forEach((value, key) => {
-            data[key] = value;
-        });
+    document.querySelector('.forms-sample').addEventListener('submit', function(e) {
+      const formData = new FormData(this);
+      const data = {};
+      formData.forEach((value, key) => {
+        data[key] = value;
+      });
 
-        console.log("Submitting Vendor Form Data:");
-        console.log(data);
+      console.log("Submitting Vendor Form Data:");
+      console.log(data);
     });
 
     // function togglePasswordVisibility(fieldId, iconId) {

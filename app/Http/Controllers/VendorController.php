@@ -28,7 +28,7 @@ class VendorController extends Controller
     {
         $siteEngineers = User::where('role', 2)->get();
         $projects = Project::all();
-        return view('uservendors.create', compact('siteEngineers','projects'));
+        return view('uservendors.create', compact('siteEngineers', 'projects'));
     }
 
     /**
@@ -167,7 +167,7 @@ class VendorController extends Controller
         //
         $vendor = User::find($id);
         $projects = Project::all();
-        return view('uservendors.edit', compact('vendor','projects'));
+        return view('uservendors.edit', compact('vendor', 'projects'));
     }
 
     // This is only for viewing the page both these method are not in use made a common method
@@ -195,7 +195,7 @@ class VendorController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        
+
         try {
             $validated = $request->validate([
                 'name'          => 'required|string|max:255',
