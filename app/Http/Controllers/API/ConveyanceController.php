@@ -44,7 +44,7 @@ class ConveyanceController extends Controller
                 'Rent as rent',
                 'vehicle_no as vehicle_number',
             ])->get();
-    
+
             return response()->json([
                 'status' => true,
                 'message' => 'Tada data fetched successfully',
@@ -58,7 +58,6 @@ class ConveyanceController extends Controller
                 'error' => $th->getMessage()
             ]);
         }
-       
     }
 
     // Conveyance Index
@@ -79,17 +78,17 @@ class ConveyanceController extends Controller
                 'message' => 'Conveyance data fetched successfully',
                 'data' => $conveyances
             ]);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'status' => false,
                 'message' => 'Failed to fetch conveyance data',
                 'error' => $e->getMessage()
             ]);
         }
-        
     }
 
-    public function getVehicles(){
+    public function getVehicles()
+    {
         $vehicles = Vehicle::get();
         return response()->json($vehicles);
     }
@@ -159,46 +158,45 @@ class ConveyanceController extends Controller
     }
 
     public function storeConveyance(Request $request)
-{
-    try {
-        $data = $request->validate([
-            'from'             => 'string|max:100',
-            'to'               => 'string|max:100',
-            'kilometer'        => 'integer',
-            'time'             => 'string|max:50',
-            'vehicle_category' => 'integer',
-            'user_id'          => 'integer',
-            'amount'           => 'nullable|numeric'
-            // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
-        ]);
+    {
+        try {
+            $data = $request->validate([
+                'from'             => 'string|max:100',
+                'to'               => 'string|max:100',
+                'kilometer'        => 'integer',
+                'time'             => 'string|max:50',
+                'vehicle_category' => 'integer',
+                'user_id'          => 'integer',
+                'amount'           => 'nullable|numeric'
+                // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
+            ]);
 
-        // Upload image to S3 if present
-        // if ($request->hasFile('image') && $request->file('image')->isValid()) {
-        //     $file = $request->file('image');
+            // Upload image to S3 if present
+            // if ($request->hasFile('image') && $request->file('image')->isValid()) {
+            //     $file = $request->file('image');
 
-        //     $uploadedImage = $this->uploadToS3($file); // No folder override
+            //     $uploadedImage = $this->uploadToS3($file); // No folder override
 
-        //     if (!$uploadedImage) {
-        //         throw new \Exception('Failed to upload image to S3');
-        //     }
+            //     if (!$uploadedImage) {
+            //         throw new \Exception('Failed to upload image to S3');
+            //     }
 
-        //     $data['image'] = $uploadedImage;
-        // }
+            //     $data['image'] = $uploadedImage;
+            // }
 
-        $conveyance = Conveyance::create($data);
+            $conveyance = Conveyance::create($data);
 
-        return response()->json($conveyance, 201);
+            return response()->json($conveyance, 201);
+        } catch (\Throwable $th) {
+            \Log::error('Conveyance creation error: ' . $th->getMessage());
 
-    } catch (\Throwable $th) {
-        \Log::error('Conveyance creation error: ' . $th->getMessage());
-
-        return response()->json([
-            'status'  => false,
-            'message' => 'Failed to create conveyance',
-            'error'   => $th->getMessage()
-        ], 500);
+            return response()->json([
+                'status'  => false,
+                'message' => 'Failed to create conveyance',
+                'error'   => $th->getMessage()
+            ], 500);
+        }
     }
-}
 
 
 
@@ -211,7 +209,8 @@ class ConveyanceController extends Controller
         //
     }
 
-    public function showConveyance(string $id){
+    public function showConveyance(string $id)
+    {
         try {
             $conveyance = Conveyance::where('user_id', $id)->get();
             if (!$conveyance) {
@@ -234,7 +233,8 @@ class ConveyanceController extends Controller
         }
     }
 
-    public function getUserCategoryVehicle(){
+    public function getUserCategoryVehicle()
+    {
         try {
             //code...
             $usercategory = UserCategory::all();
@@ -251,10 +251,10 @@ class ConveyanceController extends Controller
                 'error' => $th->getMessage()
             ]);
         }
-        
     }
 
-    public function getUserCategory(Int $id){
+    public function getUserCategory(Int $id)
+    {
         try {
             //code...
             $usercategory = User::where('id', $id)->pluck('category');
@@ -284,10 +284,7 @@ class ConveyanceController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
-    {
-        
-    }
+    public function update(Request $request, string $id) {}
 
     /**
      * Remove the specified resource from storage.

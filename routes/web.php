@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
-use App\Http\Controllers\ConvenienceController;
+use App\Http\Controllers\ConveyanceController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\HRMController;
 use App\Http\Controllers\InventoryController;
@@ -38,7 +38,7 @@ Route::middleware(['auth'])->group(function () {
         Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('staff.profile');
         Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('staff.updateProfilePicture');
     });
-    
+
     Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
     Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
 
@@ -47,7 +47,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('uservendors', VendorController::class);
     // Route::post('vendors-updatepassword/{id}', [VendorController::class, 'updatePassword'])->name('vendor.update-password');
     // Route::get('/vendors-change-password/{id}', [VendorController::class, 'changePassword'])->name('vendor.change-password');
-    
+
     // projects Router
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::resource('projects', ProjectsController::class);
@@ -60,43 +60,46 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Conveyance route fixed
-    Route::get('/billing/tada', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    Route::get('/billing/tada', [ConveyanceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
-    Route::get('/billing/convenience', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('/billing/convenience', [ConveyanceController::class, 'tadaView'])->name('billing.tada');
     // Settings Route
-    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
+    Route::get('/settings', [ConveyanceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle
-    Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
+    Route::post('/settings/add', [ConveyanceController::class, 'addVehicle'])->name('billing.addvehicle');
     // Edit Vehicle
-    Route::get('/settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('billing.editvehicle');
+    Route::get('/settings/edit/{id}', [ConveyanceController::class, 'editVehicle'])->name('billing.editvehicle');
     // Update Vehicle
-    Route::post('/settings/update', [ConvenienceController::class, 'updateVehicle'])->name('billing.updatevehicle');
+    Route::post('/settings/update', [ConveyanceController::class, 'updateVehicle'])->name('billing.updatevehicle');
     // Delete Vehicle
     Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Accept and Reject Conveyance
     Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
     Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
-    
+
     // Conveyance details
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
 
 
+    // Conveyance details
+    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
+    Route::delete('/settings/delete/{id}', [ConveyanceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Billing Edit User
-    Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
+    Route::get('/settings/edit-user/{id}', [ConveyanceController::class, 'editUser'])->name('billing.edituser');
     // Billing Update User
-    Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
+    Route::post('/settings/update-user', [ConveyanceController::class, 'updateUser'])->name('billing.updateuser');
 
     // Add Categories
-    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    Route::post('/settings/add-category', [ConveyanceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
-    Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
+    Route::get('/settings/edit-category/{id}', [ConveyanceController::class, 'editCategory'])->name('billing.editcategory');
     // Update Categories
-    Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
+    Route::post('/settings/update-category', [ConveyanceController::class, 'updateCategory'])->name('billing.updatecategory');
     // Delete Categories
-    Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');
+    Route::delete('/settings/delete-category/{id}', [ConveyanceController::class, 'deleteCategory'])->name('billing.deletecategory');
 
     //Convenience Details
-    
+
     // View Bills Details
     Route::get('/view-bills', function () {
         return view('billing.viewBills');
@@ -130,7 +133,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
     // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
-    
+
     // Projects Controller
     // Deleting target
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
@@ -161,9 +164,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('apply-now', function () {
         return view('hrm.applyNow');
     })->name('apply-now');
-    
+
     Route::get('admin-preview', function () {
         return view('hrm.adminPreview');
     })->name('admin-preview');
-
 });

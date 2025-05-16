@@ -12,6 +12,7 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -137,6 +138,7 @@ class HomeController extends Controller
             })
                 ->where('isSurveyDone', true)
                 ->whereBetween('updated_at', $dateRange) // Pole updated in last 24 hours
+                ->whereBetween('updated_at', $dateRange) // Pole updated in last 24 hours
                 ->get();
 
             Log::info($poleSurveyd);
@@ -148,12 +150,14 @@ class HomeController extends Controller
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isSurveyDone', true)
                 ->whereBetween('updated_at', $dateRange)->count();
+                ->whereBetween('updated_at', $dateRange)->count();
 
 
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isInstallationDone', true)
+                ->whereBetween('updated_at', $dateRange)->count();
                 ->whereBetween('updated_at', $dateRange)->count();
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
@@ -368,6 +372,8 @@ class HomeController extends Controller
                 return [now()->startOfWeek(), now()->endOfWeek()];
             case 'this_month':
                 return [now()->startOfMonth(), now()->endOfMonth()];
+            case 'all_time':
+                return [Carbon::createFromTimestamp(0), now()];
             case 'all_time':
                 return [Carbon::createFromTimestamp(0), now()];
             case 'custom':
