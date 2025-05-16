@@ -26,36 +26,39 @@ class ConvenienceController extends Controller
         $appliedAmount = Conveyance::sum('amount');
         $disbursedAmount = Conveyance::where('status', 1)->sum('amount');
         $rejectedAmount = Conveyance::where('status', 0)->sum('amount');
-        
+
 
         return view('billing.convenience', compact('cons', 'appliedAmount', 'disbursedAmount', 'rejectedAmount'));
     }
 
-    public function showdetailsconveyance($id){
-        
+    public function showdetailsconveyance($id)
+    {
+
         $details = Conveyance::with(['user', 'vehicle'])->where('user_id', $id)->get();
         $appliedAmount = Conveyance::where('user_id', $id)->sum('amount');
         $disbursedAmount = Conveyance::where('user_id', $id)->where('status', 1)->sum('amount');
-        $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount'); 
-        $dueclaimAmount = $appliedAmount-$disbursedAmount;
+        $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount');
+        $dueclaimAmount = $appliedAmount - $disbursedAmount;
         // dd($details);
         return view('billing.conveyanceDetails', compact('details', 'appliedAmount', 'disbursedAmount', 'rejectedAmount', 'dueclaimAmount'));
     }
 
-    public function accept($id){
+    public function accept($id)
+    {
         Conveyance::where('id', $id)->update(['status' => 1]);
-
         return back()->with('success', 'Status updated to Accepted.');
     }
 
-    public function reject($id){
+    public function reject($id)
+    {
         Conveyance::where('id', $id)->update(['status' => 0]);
 
         return back()->with('success', 'Status updated to Accepted.');
     }
 
     // Tada view
-    public function tadaView(){
+    public function tadaView()
+    {
         $tadas = Tada::get();
         return view('billing.tada', compact('tadas'));
     }
@@ -72,7 +75,7 @@ class ConvenienceController extends Controller
     // Add vehicle function
     public function addVehicle(Request $request)
     {
-    
+
         $validatedData = $request->validate([
             'vehicle_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
@@ -80,87 +83,90 @@ class ConvenienceController extends Controller
             'rate' => 'required|numeric',
         ]);
 
-    // Create a new vehicle record
-    $vehicle = new Vehicle();
-    $vehicle->vehicle_name = $validatedData['vehicle_name'];
-    $vehicle->category = $validatedData['category'];
-    $vehicle->sub_category = $validatedData['sub_category'] ?? null; // in case it's not filled
-    $vehicle->rate = $validatedData['rate'];
-    $vehicle->save();
+        // Create a new vehicle record
+        $vehicle = new Vehicle();
+        $vehicle->vehicle_name = $validatedData['vehicle_name'];
+        $vehicle->category = $validatedData['category'];
+        $vehicle->sub_category = $validatedData['sub_category'] ?? null; // in case it's not filled
+        $vehicle->rate = $validatedData['rate'];
+        $vehicle->save();
 
-    return redirect()->back()->with('success', 'Vehicle added successfully!');
-}
+        return redirect()->back()->with('success', 'Vehicle added successfully!');
+    }
 
-    public function editVehicle(Request $request){
+    public function editVehicle(Request $request)
+    {
         $ev = Vehicle::find($request->id);
         return view('billing.editVehicle', compact('ev'));
-    } 
+    }
 
     public function updateVehicle(Request $request)
     {
-    
-    $id = $request->input('user_id'); // Vehicle ID from the hidden input field
 
-    // Validate the required fields: 'category' and 'rate'
-    $validatedData = $request->validate([
-        'vehicle_name' => 'nullable|string|max:100',  // Optional field
-        'category' => 'required|string',  // Category is required as a string
-        'subcategory' => 'nullable|string|max:50',  // Optional field
-        'rate' => 'required|numeric',  // Rate is required and must be numeric
-    ]);
+        $id = $request->input('user_id'); // Vehicle ID from the hidden input field
 
-    try {
-        // Find the vehicle by its ID
-        $vehicle = Vehicle::findOrFail($id);
-
-        // Update the fields using the update method
-        $vehicle->update([
-            'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
-            'category' => $validatedData['category'],  // Directly assign the incoming category value
-            'sub_category' => $validatedData['subcategory'],  // Nullable field
-            'rate' => $validatedData['rate'],  // Required field
+        // Validate the required fields: 'category' and 'rate'
+        $validatedData = $request->validate([
+            'vehicle_name' => 'nullable|string|max:100',  // Optional field
+            'category' => 'required|string',  // Category is required as a string
+            'subcategory' => 'nullable|string|max:50',  // Optional field
+            'rate' => 'required|numeric',  // Rate is required and must be numeric
         ]);
 
-        // Redirect to the settings page with a success message
-        return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
-    } catch (\Exception $e) {
-        // Log the error message
-        // Return to the same page with an error message
-        return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
-    }
-}
+        try {
+            // Find the vehicle by its ID
+            $vehicle = Vehicle::findOrFail($id);
 
-    
+            // Update the fields using the update method
+            $vehicle->update([
+                'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
+                'category' => $validatedData['category'],  // Directly assign the incoming category value
+                'sub_category' => $validatedData['subcategory'],  // Nullable field
+                'rate' => $validatedData['rate'],  // Required field
+            ]);
+
+            // Redirect to the settings page with a success message
+            return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
+        } catch (\Exception $e) {
+            // Log the error message
+            // Return to the same page with an error message
+            return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
+        }
+    }
+
+
 
     // User Edit
-    public function editUser(Request $request){
+    public function editUser(Request $request)
+    {
         $ue = User::find($request->id);
         $uc = UserCategory::get();
         return view('billing.editUser', compact('ue', 'uc'));
     }
 
     // Delete Vehicle
-    public function deleteVehicle(Request $request){
+    public function deleteVehicle(Request $request)
+    {
         $dv = Vehicle::find($request->id);
         $dv->delete();
         return redirect()->back()->with('success', 'Vehicle deleted successfully!');
     }
 
     public function updateUser(Request $request)
-{
-    
-    $request->validate([
-        'user_id' => 'required|exists:users,id',
-        'category' => 'string|max:50',
-    ]);
+    {
 
-    $user = User::findOrFail($request->input('user_id'));
-    $user->category = $request->input('category');
-    $user->update();
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'category' => 'string|max:50',
+        ]);
 
-    return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
-}
-// Add Category
+        $user = User::findOrFail($request->input('user_id'));
+        $user->category = $request->input('category');
+        $user->update();
+
+        return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
+    }
+    // Add Category
     public function addCategory(Request $request)
     {
         \Log::info('Request Data: Add category', $request->all());
@@ -178,7 +184,8 @@ class ConvenienceController extends Controller
         return redirect()->back()->with('success', 'Category added successfully.');
     }
 
-    public function editCategory(Request $request){
+    public function editCategory(Request $request)
+    {
         $uc = UserCategory::find($request->id);
         $uv = Vehicle::get();
         return view('billing.editCategory', compact('uc', 'uv'));
@@ -213,12 +220,13 @@ class ConvenienceController extends Controller
     }
 
 
-// Delete Category
-public function deleteCategory(Request $request){
-    $dc = UserCategory::find($request->id);
-    $dc->delete();
-    return redirect()->back()->with('success', 'Category deleted successfully!');
-}
+    // Delete Category
+    public function deleteCategory(Request $request)
+    {
+        $dc = UserCategory::find($request->id);
+        $dc->delete();
+        return redirect()->back()->with('success', 'Category deleted successfully!');
+    }
 
 
 

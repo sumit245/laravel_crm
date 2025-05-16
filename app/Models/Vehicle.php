@@ -22,5 +22,4 @@ class Vehicle extends Model
     }
 
     public $timestamps = true;
-
 }
