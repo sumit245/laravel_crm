@@ -24031,3 +24031,747 @@
 #37 C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\xampp\\\\htdocs...')
 #38 {main}
 "} 
+[2025-05-14 18:43:18] local.ERROR: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'conveyances' already exists (Connection: mysql, SQL: create table `conveyances` (`id` bigint unsigned not null auto_increment primary key, `user_id` bigint unsigned not null, `from` text not null, `to` text not null, `kilometer` int not null, `time` time not null, `vehicle_category` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci') {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S01): SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'conveyances' already exists (Connection: mysql, SQL: create table `conveyances` (`id` bigint unsigned not null auto_increment primary key, `user_id` bigint unsigned not null, `from` text not null, `to` text not null, `kilometer` int not null, `time` time not null, `vehicle_category` bigint unsigned not null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci') at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('create table `c...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('create table `c...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('create table `c...')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(460): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->create('conveyances', Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_04_30_045439_create_conveyances_table.php(27): Illuminate\\Support\\Facades\\Facade::__callStatic('create', Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_04_30_0454...', Object(Closure))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_04_30_0454...', Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S01): SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'conveyances' already exists at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('create table `c...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('create table `c...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('create table `c...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('create table `c...')
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(460): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->create('conveyances', Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_04_30_045439_create_conveyances_table.php(27): Illuminate\\Support\\Facades\\Facade::__callStatic('create', Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_04_30_0454...', Object(Closure))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_04_30_0454...', Object(Closure))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-05-14 18:49:24] local.ERROR: SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'id' (Connection: mysql, SQL: alter table `conveyances` add `id` bigint unsigned not null auto_increment primary key, add `user_id` bigint unsigned not null, add `from` text not null, add `to` text not null, add `kilometer` int not null, add `time` time not null, add `vehicle_category` bigint unsigned not null, add `created_at` timestamp null, add `updated_at` timestamp null) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S21): SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'id' (Connection: mysql, SQL: alter table `conveyances` add `id` bigint unsigned not null auto_increment primary key, add `user_id` bigint unsigned not null, add `from` text not null, add `to` text not null, add `kilometer` int not null, add `time` time not null, add `vehicle_category` bigint unsigned not null, add `created_at` timestamp null, add `updated_at` timestamp null) at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `co...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `co...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `co...')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('conveyances', Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_04_30_045439_create_conveyances_table.php(27): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_04_30_0454...', Object(Closure))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_04_30_0454...', Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S21): SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'id' at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('alter table `co...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `co...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `co...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `co...')
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('conveyances', Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_04_30_045439_create_conveyances_table.php(27): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_04_30_0454...', Object(Closure))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_04_30_0454...', Object(Closure))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-05-14 18:51:33] local.ERROR: SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'division' (Connection: mysql, SQL: alter table `sites` add `division` varchar(255) null, add `block` varchar(255) null, add `department_name` varchar(255) null, add `shadow_free_area` varchar(255) null) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S21): SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'division' (Connection: mysql, SQL: alter table `sites` add `division` varchar(255) null, add `block` varchar(255) null, add `department_name` varchar(255) null, add `shadow_free_area` varchar(255) null) at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `si...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `si...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `si...')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('sites', Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_01_053228_add_columns_to_sites_table.php(20): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_01_0532...', Object(Closure))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_01_0532...', Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S21): SQLSTATE[42S21]: Column already exists: 1060 Duplicate column name 'division' at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('alter table `si...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `si...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `si...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `si...')
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('sites', Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_01_053228_add_columns_to_sites_table.php(20): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_01_0532...', Object(Closure))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_01_0532...', Object(Closure))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-05-14 18:51:56] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'vehicle_category' in 'conveyances' (Connection: mysql, SQL: alter table `conveyances` add `image` varchar(255) null after `vehicle_category`, add `date` varchar(255) null after `time`) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'vehicle_category' in 'conveyances' (Connection: mysql, SQL: alter table `conveyances` add `image` varchar(255) null after `vehicle_category`, add `date` varchar(255) null after `time`) at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `co...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `co...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `co...')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('conveyances', Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_01_103247_add_image_and_dates_to_convyenaces_table.php(18): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_01_1032...', Object(Closure))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_01_1032...', Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'vehicle_category' in 'conveyances' at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('alter table `co...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `co...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `co...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `co...')
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('conveyances', Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_01_103247_add_image_and_dates_to_convyenaces_table.php(18): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_01_1032...', Object(Closure))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_01_1032...', Object(Closure))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 39, false)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-05-14 18:54:17] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'kilometer' in 'conveyances' (Connection: mysql, SQL: alter table `conveyances` add `amount` decimal(10, 2) null after `kilometer`) {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'kilometer' in 'conveyances' (Connection: mysql, SQL: alter table `conveyances` add `amount` decimal(10, 2) null after `kilometer`) at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `co...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `co...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `co...')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('conveyances', Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_07_052442_add_amounts_to_conveyance_table.php(17): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_07_0524...', Object(Closure))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_07_0524...', Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 40, false)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'kilometer' in 'conveyances' at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('alter table `co...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('alter table `co...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('alter table `co...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('alter table `co...')
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(444): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->table('conveyances', Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_07_052442_add_amounts_to_conveyance_table.php(17): Illuminate\\Support\\Facades\\Facade::__callStatic('table', Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_07_0524...', Object(Closure))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_07_0524...', Object(Closure))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 40, false)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-05-14 18:55:05] local.ERROR: SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_categories' already exists (Connection: mysql, SQL: create table `user_categories` (`id` bigint unsigned not null auto_increment primary key, `category_code` varchar(255) null, `name` varchar(100) null, `description` varchar(255) null, `allowed_vehicles` json null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci') {"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S01): SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_categories' already exists (Connection: mysql, SQL: create table `user_categories` (`id` bigint unsigned not null auto_increment primary key, `category_code` varchar(255) null, `name` varchar(100) null, `description` varchar(255) null, `allowed_vehicles` json null, `created_at` timestamp null, `updated_at` timestamp null) default character set utf8mb4 collate 'utf8mb4_unicode_ci') at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('create table `u...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('create table `u...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('create table `u...')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(460): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->create('user_categories', Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_14_064523_create_user_categories_table.php(21): Illuminate\\Support\\Facades\\Facade::__callStatic('create', Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_14_0645...', Object(Closure))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_14_0645...', Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 41, false)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 {main}
+
+[previous exception] [object] (PDOException(code: 42S01): SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'user_categories' already exists at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:587)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(587): PDOStatement->execute()
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('create table `u...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('create table `u...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(588): Illuminate\\Database\\Connection->run('create table `u...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Blueprint.php(110): Illuminate\\Database\\Connection->statement('create table `u...')
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(602): Illuminate\\Database\\Schema\\Blueprint->build(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Schema\\Grammars\\MySqlGrammar))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Schema\\Builder.php(460): Illuminate\\Database\\Schema\\Builder->build(Object(Illuminate\\Database\\Schema\\Blueprint))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Facades\\Facade.php(355): Illuminate\\Database\\Schema\\Builder->create('user_categories', Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\database\\migrations\\2025_05_14_064523_create_user_categories_table.php(21): Illuminate\\Support\\Facades\\Facade::__callStatic('create', Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(501): Illuminate\\Database\\Migrations\\Migration@anonymous->up()
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(418): Illuminate\\Database\\Migrations\\Migrator->runMethod(Object(Illuminate\\Database\\MySqlConnection), Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(427): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->runMigration(Object(Illuminate\\Database\\Migrations\\Migration@anonymous), 'up')
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\View\\Components\\Task.php(37): Illuminate\\Database\\Migrations\\Migrator->Illuminate\\Database\\Migrations\\{closure}()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(783): Illuminate\\Console\\View\\Components\\Task->render('2025_05_14_0645...', Object(Closure))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(224): Illuminate\\Database\\Migrations\\Migrator->write('Illuminate\\\\Cons...', '2025_05_14_0645...', Object(Closure))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(189): Illuminate\\Database\\Migrations\\Migrator->runUp('C:\\\\xampp\\\\htdocs...', 41, false)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(132): Illuminate\\Database\\Migrations\\Migrator->runPending(Array, Array)
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(92): Illuminate\\Database\\Migrations\\Migrator->run(Array, Array)
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Migrations\\Migrator.php(641): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->Illuminate\\Database\\Console\\Migrations\\{closure}()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Console\\Migrations\\MigrateCommand.php(104): Illuminate\\Database\\Migrations\\Migrator->usingConnection(NULL, Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Database\\Console\\Migrations\\MigrateCommand->handle()
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(93): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Array, Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Array, Array, NULL)
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(211): Illuminate\\Container\\Container->call(Array)
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Command\\Command.php(326): Illuminate\\Console\\Command->execute(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Console\\Command.php(181): Symfony\\Component\\Console\\Command\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Illuminate\\Console\\OutputStyle))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(1096): Illuminate\\Console\\Command->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(324): Symfony\\Component\\Console\\Application->doRunCommand(Object(Illuminate\\Database\\Console\\Migrations\\MigrateCommand), Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#34 {main}
+"} 
+[2025-05-14 19:13:29] local.INFO: []  
+[2025-05-14 19:13:29] local.INFO: []  
+[2025-05-14 19:13:29] local.INFO: []  
+[2025-05-14 19:13:41] local.INFO: Now: 2025-05-14 19:13:41  
+[2025-05-14 19:13:41] local.INFO: SubDay: 2025-05-13 19:13:41  
+[2025-05-14 19:13:41] local.INFO: []  
+[2025-05-14 19:13:41] local.INFO: Now: 2025-05-14 19:13:41  
+[2025-05-14 19:13:41] local.INFO: SubDay: 2025-05-13 19:13:41  
+[2025-05-14 19:13:41] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: [{"id":91,"name":"Anand Karan","vendor_name":"Anand","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/anand5168_20250313_034440.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":116,"name":"Rupesh Pratap","vendor_name":"Rupesh","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rupesh2751_20250227_055915.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":117,"name":"Satish Thakur","vendor_name":"Satish Thakur","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/satish7055_20250226_043057.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":150,"name":"Ayush Gautam","vendor_name":"Ayush Gautam","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aayush5083_20250416_153603.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: [{"id":85,"name":"Golu Kumar","vendor_name":"Golu Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/golu7923_20250308_033246.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":87,"name":"Ashutosh Aryan","vendor_name":"Ashutosh Aryan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ashutosh1183_20250226_045307.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":88,"name":"Laljeet Rishi","vendor_name":"Lalijeet Rishi","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":89,"name":"Ujjain kumar chandravanshi","vendor_name":"Ujjain kumar chandravanshi","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ujjain8743_20250305_105027.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":93,"name":"Pritam Kumar","vendor_name":"Pritam Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/pritam6615_20250226_073915.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":94,"name":"Abhishek Raj","vendor_name":"Abhishek Raj","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/abhishek1962_20250226_063624.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":95,"name":"Aashish Ranjan","vendor_name":"Aashish Ranjan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aashish6021_20250404_094409.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":97,"name":"Rahul Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rahul2082_20250226_073835.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":98,"name":"Prabhat Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/prabhat8785_20250226_055851.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":99,"name":"MD Zafar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/md2985_20250226_073146.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":100,"name":"Dharmendra Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/dharmendra1641_20250404_094336.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":102,"name":"Raunak Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/raunak3361_20250418_094206.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":103,"name":"Rohit Kumar","vendor_name":"Rohit Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rohit6719_20250226_062457.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":104,"name":"Aamir Khan","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aamir4108_20250404_101540.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":105,"name":"Sonu Kumar Ray","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/sonu4923_20250226_072139.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":106,"name":"Sohail Ansari","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/sohail5146_20250304_070836.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":108,"name":"Aditya Ranjan","vendor_name":"Aditya Ranjan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aditya1581_20250404_094502.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":109,"name":"Desh Bhushan","vendor_name":"Desh Bhushan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/desh9988_20250226_060954.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":140,"name":"Aman Kumar","vendor_name":"Aman kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aman8460_20250228_064423.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":151,"name":" ","vendor_name":"Demo User","image":null,"role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: Now: 2025-05-14 19:13:42  
+[2025-05-14 19:13:42] local.INFO: SubDay: 2025-05-13 19:13:42  
+[2025-05-14 19:13:42] local.INFO: []  
+[2025-05-14 19:13:42] local.INFO: [{"id":110,"name":"Abhishek Singh","vendor_name":"Abhishek Kumar Singh","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":113,"name":"Nishant Nihal","vendor_name":"LUV & SUN Solution Private Limited","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":114,"name":"Chandan Kumar Singh","vendor_name":"R.A.S Construction","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":115,"name":"Bittu Singh","vendor_name":"BITTU KUMAR SINGH","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":121,"name":"Bablu Kumar","vendor_name":"AAYAT ENTERPRISES","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aayatenterprises9209_20250227_053202.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":122,"name":"Aftab Alam","vendor_name":"DELIGHT POWER PRIVATE LIMITED","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":123,"name":"Manoj Sharma","vendor_name":"Nandani Solar Solution","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":124,"name":"Patan Yadav","vendor_name":"Sharearm Agro & Food Industries","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":125,"name":"Parmila Devi","vendor_name":"Mithilanchal Green energy","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":126,"name":"Prakash Pant","vendor_name":"Evedin Technologies LLP","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":127,"name":"Biren Singh","vendor_name":"Harshita and Raghuraj Pratap Tradors (S)","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":128,"name":"Rajesh Kumar","vendor_name":"SAR Enterprises","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":129,"name":"Rajib Kumar Bhagat","vendor_name":"Ujjwal Solar Solution PVT LIMITED","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":130,"name":"Vikash Kumar Singh","vendor_name":"M\/S DEV TRADERS","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":131,"name":"Ashutosh Kumar","vendor_name":"Shiv Enterprises","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/shiventerprises9535_20250227_073759.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":132,"name":"Amresh Kumar Verma","vendor_name":"AMRESH KUMAR VERMA","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":134,"name":"Rohit Kumar","vendor_name":"Rohit Kumar","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":136,"name":"Subodh Kumar","vendor_name":"Subodh Kumar","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":137,"name":"Basant  kumar Jha","vendor_name":"ASSETS MANAGEMENT SERVICES","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/assetsmanagementservices3290_20250226_113237.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":138,"name":"Nitesh Kumar","vendor_name":"Nitesh Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ajaykumarsahani3522_20250305_104932.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":139,"name":"Rakesh Ranjan","vendor_name":"Ridhi Sidhi Construction","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ridhisidhiconstruction5583_20250305_062350.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":152,"name":"Govind Kumar","vendor_name":"Gagan Enterprises","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":154,"name":"Rakesh Ranjan","vendor_name":"Ridhi Sidhi Construction Lakhisarai","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ridhisidhiconstruction5583_20250305_062350.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-05-14 19:13:49] local.INFO: []  
+[2025-05-14 19:13:49] local.INFO: []  
+[2025-05-14 19:13:49] local.INFO: []  
+[2025-05-14 19:13:59] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'amount' in 'field list' (Connection: mysql, SQL: select sum(`amount`) as aggregate from `conveyances`) {"userId":11,"exception":"[object] (Illuminate\\Database\\QueryException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'amount' in 'field list' (Connection: mysql, SQL: select sum(`amount`) as aggregate from `conveyances`) at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:829)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('select sum(`amo...', Array, Object(Closure))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(431): Illuminate\\Database\\Connection->run('select sum(`amo...', Array, Object(Closure))
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(2914): Illuminate\\Database\\Connection->select('select sum(`amo...', Array, true)
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(2902): Illuminate\\Database\\Query\\Builder->runSelect()
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3456): Illuminate\\Database\\Query\\Builder->Illuminate\\Database\\Query\\{closure}()
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(2903): Illuminate\\Database\\Query\\Builder->onceWithColumns(Array, Object(Closure))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3383): Illuminate\\Database\\Query\\Builder->get(Array)
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3344): Illuminate\\Database\\Query\\Builder->aggregate('sum', Array)
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1982): Illuminate\\Database\\Query\\Builder->sum('amount')
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->__call('sum', Array)
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2335): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'sum', Array)
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2347): Illuminate\\Database\\Eloquent\\Model->__call('sum', Array)
+#12 C:\\xampp\\htdocs\\sugs\\admin\\app\\Http\\Controllers\\ConvenienceController.php(26): Illuminate\\Database\\Eloquent\\Model::__callStatic('sum', Array)
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\ConvenienceController->convenience()
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('convenience', Array)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(260): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ConvenienceController), 'convenience')
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#36 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#37 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#38 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#39 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#40 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#41 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#42 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#43 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#45 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#47 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#48 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#55 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#56 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#57 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#58 C:\\xampp\\htdocs\\sugs\\admin\\public\\index.php(52): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#59 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\xampp\\\\htdocs...')
+#60 {main}
+
+[previous exception] [object] (PDOException(code: 42S22): SQLSTATE[42S22]: Column not found: 1054 Unknown column 'amount' in 'field list' at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php:423)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(423): PDO->prepare('select sum(`amo...')
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(816): Illuminate\\Database\\Connection->Illuminate\\Database\\{closure}('select sum(`amo...', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('select sum(`amo...', Array, Object(Closure))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Connection.php(431): Illuminate\\Database\\Connection->run('select sum(`amo...', Array, Object(Closure))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(2914): Illuminate\\Database\\Connection->select('select sum(`amo...', Array, true)
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(2902): Illuminate\\Database\\Query\\Builder->runSelect()
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3456): Illuminate\\Database\\Query\\Builder->Illuminate\\Database\\Query\\{closure}()
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(2903): Illuminate\\Database\\Query\\Builder->onceWithColumns(Array, Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3383): Illuminate\\Database\\Query\\Builder->get(Array)
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Query\\Builder.php(3344): Illuminate\\Database\\Query\\Builder->aggregate('sum', Array)
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Builder.php(1982): Illuminate\\Database\\Query\\Builder->sum('amount')
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\Traits\\ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->__call('sum', Array)
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2335): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'sum', Array)
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Database\\Eloquent\\Model.php(2347): Illuminate\\Database\\Eloquent\\Model->__call('sum', Array)
+#14 C:\\xampp\\htdocs\\sugs\\admin\\app\\Http\\Controllers\\ConvenienceController.php(26): Illuminate\\Database\\Eloquent\\Model::__callStatic('sum', Array)
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\ConvenienceController->convenience()
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('convenience', Array)
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(260): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\ConvenienceController), 'convenience')
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Auth\\Middleware\\Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\View\\Middleware\\ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(121): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Session\\Middleware\\StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#34 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Cookie\\Middleware\\EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#35 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#37 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#38 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#39 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#40 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#41 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#42 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#43 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#44 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#45 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#46 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#47 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#48 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#49 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#50 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#51 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#52 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#53 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#54 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#55 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#56 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#57 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#58 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#59 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#60 C:\\xampp\\htdocs\\sugs\\admin\\public\\index.php(52): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#61 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\xampp\\\\htdocs...')
+#62 {main}
+"} 
+[2025-05-14 19:57:51] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-15 07:15:01] local.INFO: []  
+[2025-05-15 07:15:01] local.INFO: []  
+[2025-05-15 07:15:01] local.INFO: []  
+[2025-05-15 07:15:19] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"2323","rate":"2094.00","total_value":"4864362.00","make":"2799","model":"Solar penal 120wp"},{"item_code":"SL02","item":"Luminary","total_quantity":"2799","rate":"2500.00","total_value":"6997500.00","make":"2025","model":"SSL20W"},{"item_code":"SL03","item":"Battery ","total_quantity":"2241","rate":"6000.00","total_value":"13446000.00","make":"2025","model":"LiFePO454Ah"}]  
+[2025-05-15 07:21:17] local.INFO: []  
+[2025-05-15 07:21:17] local.INFO: []  
+[2025-05-15 07:21:17] local.INFO: []  
+[2025-05-16 09:32:35] local.ERROR: There are no commands defined in the "backup" namespace. {"exception":"[object] (Symfony\\Component\\Console\\Exception\\NamespaceNotFoundException(code: 0): There are no commands defined in the \"backup\" namespace. at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php:669)
+[stacktrace]
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(720): Symfony\\Component\\Console\\Application->findNamespace('backup')
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(266): Symfony\\Component\\Console\\Application->find('backup:database')
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\console\\Application.php(175): Symfony\\Component\\Console\\Application->doRun(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(201): Symfony\\Component\\Console\\Application->run(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#4 C:\\xampp\\htdocs\\sugs\\admin\\artisan(37): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
+#5 {main}
+"} 

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use app\Models\Vehicle;
 
 class Conveyance extends Model
 {
@@ -22,7 +23,7 @@ class Conveyance extends Model
         'vehicle_category',
         'user_id', // add this
     ];
-    
+
     // Relationship to user
     public function user()
     {
@@ -30,9 +31,8 @@ class Conveyance extends Model
     }
 
     // Relationship to vehicle
-    public function vehicle(){
+    public function vehicle()
+    {
         return $this->belongsTo(Vehicle::class, 'id', 'category');
     }
-
-
 }
