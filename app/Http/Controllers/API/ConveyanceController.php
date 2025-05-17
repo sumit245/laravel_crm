@@ -25,7 +25,6 @@ class ConveyanceController extends Controller
         try {
             //code...
             $tadas = Tada::select([
-                
                 'meeting_visit',
                 'user_id',
                 'start_journey as start_date',
@@ -158,44 +157,97 @@ class ConveyanceController extends Controller
             'otherexpense' => 'nullable|array'
             
         ]);
-        $datatravelfare = $request->validate([
-            'from' => 'required|integer',
-            'to' => 'nullable|string|max:100',
-            'departure_date' => 'nullable|date',
-            'departure_time' => 'nullable|date_format:H:i:s',
-            'arrival_date' => 'nullable|date',
-            'arrival_time' => 'nullable|date_format:H:i:s',
-            'modeoftravel' => 'nullable|string|max:100',
-            'add_total_km' => 'nullable|numeric',
-            'add_rate_per_km' => 'nullable|numeric',
-            'add_rent' => 'nullable|numeric',
-            'add_vehicle_no' => 'nullable|string|max:100',
-            'amount' => 'nullable|numeric',
-        ]);
-        $datadailyfare = $request->validate([
-            'place' => 'nullable|string|max:100',
-            'HotelBillNo' => 'nullable|string|max:150',
-            'date_of_stay' => 'nullable|date',
-            'amount' => 'nullable|numeric',
+        // $datatravelfare = $request->validate([
+        //     'from' => 'required|integer',
+        //     'to' => 'nullable|string|max:100',
+        //     'departure_date' => 'nullable|date',
+        //     'departure_time' => 'nullable|date_format:H:i:s',
+        //     'arrival_date' => 'nullable|date',
+        //     'arrival_time' => 'nullable|date_format:H:i:s',
+        //     'modeoftravel' => 'nullable|string|max:100',
+        //     'add_total_km' => 'nullable|numeric',
+        //     'add_rate_per_km' => 'nullable|numeric',
+        //     'add_rent' => 'nullable|numeric',
+        //     'add_vehicle_no' => 'nullable|string|max:100',
+        //     'amount' => 'nullable|numeric',
+        // ]);
+        // $datadailyfare = $request->validate([
+        //     'place' => 'nullable|string|max:100',
+        //     'HotelBillNo' => 'nullable|string|max:150',
+        //     'date_of_stay' => 'nullable|date',
+        //     'amount' => 'nullable|numeric',
+        // ]);
+        
+        // $tada = Tada::create($dataTada);
+        // if (!$tada) {
+        //     throw new \Exception('Failed to create Tada.');
+        // }
+        // $datatravelfare['tada_id'] = $tada->id;
+        // $datadailyfare['tada_id'] = $tada->id;
+        // $travelfare = travelfare::create($datatravelfare);
+        // $dailyfare = dailyfare::create($datadailyfare);
+        // if (!$travelfare || !$dailyfare) {
+        //     throw new \Exception('Failed to create Travelfare or Dailyfare.');
+        // }
+        // DB::commit();
+        // return response()->json([
+        //     'tada' => $tada,
+        //     'travelfare' => $travelfare,
+        //     'dailyfare' => $dailyfare
+        // ], 201);
+
+        
+        $request->validate([
+            'travelfare' => 'required|array',
+            'travelfare.*.from' => 'required|integer',
+            'travelfare.*.to' => 'nullable|string|max:100',
+            'travelfare.*.departure_date' => 'nullable|date',
+            'travelfare.*.departure_time' => 'nullable|date_format:H:i:s',
+            'travelfare.*.arrival_date' => 'nullable|date',
+            'travelfare.*.arrival_time' => 'nullable|date_format:H:i:s',
+            'travelfare.*.modeoftravel' => 'nullable|string|max:100',
+            'travelfare.*.add_total_km' => 'nullable|numeric',
+            'travelfare.*.add_rate_per_km' => 'nullable|numeric',
+            'travelfare.*.add_rent' => 'nullable|numeric',
+            'travelfare.*.add_vehicle_no' => 'nullable|string|max:100',
+            'travelfare.*.amount' => 'nullable|numeric',
+
+            'dailyfare' => 'required|array',
+            'dailyfare.*.place' => 'nullable|string|max:100',
+            'dailyfare.*.HotelBillNo' => 'nullable|string|max:150',
+            'dailyfare.*.date_of_stay' => 'nullable|date',
+            'dailyfare.*.amount' => 'nullable|numeric',
         ]);
         DB::beginTransaction();
         $tada = Tada::create($dataTada);
+
         if (!$tada) {
             throw new \Exception('Failed to create Tada.');
         }
-        $datatravelfare['tada_id'] = $tada->id;
-        $datadailyfare['tada_id'] = $tada->id;
-        $travelfare = travelfare::create($datatravelfare);
-        $dailyfare = dailyfare::create($datadailyfare);
-        if (!$travelfare || !$dailyfare) {
-            throw new \Exception('Failed to create Travelfare or Dailyfare.');
+
+        foreach ($request->travelfare as $travelData) {
+            $travelData['tada_id'] = $tada->id;
+            if (!Travelfare::create($travelData)) {
+                throw new \Exception('Failed to create Travelfare record.');
+            }
         }
+
+        foreach ($request->dailyfare as $dailyData) {
+            $dailyData['tada_id'] = $tada->id;
+            if (!Dailyfare::create($dailyData)) {
+                throw new \Exception('Failed to create Dailyfare record.');
+            }
+        }
+
         DB::commit();
         return response()->json([
+            'status' => true,
+            'message' => 'TADA and related records created successfully.',
             'tada' => $tada,
-            'travelfare' => $travelfare,
-            'dailyfare' => $dailyfare
+            'travelfare' => $request->travelfare,
+            'dailyfare' => $request->dailyfare,
         ], 201);
+
     } catch (\Throwable $th) {
         //throw $th;
         return response()->json([
@@ -260,6 +312,54 @@ class ConveyanceController extends Controller
     public function show(string $id)
     {
         //
+        try {
+            $tada = Tada::where('user_id', $id)->get(); // or firstOrFail()
+
+            if (!$tada) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No tada record found for this user_id.'
+                ], 404);
+            }
+            foreach ($tada as $tadaItem) {
+                $travelfare = travelfare::where('tada_id', $tadaItem->id)->first();
+                $dailyfare = dailyfare::where('tada_id', $tadaItem->id)->first();
+                
+                    if (!$travelfare) {
+                        \Log::info("Travelfare missing for tada_id: " . $tadaItem->id);
+                    }
+                    if (!$dailyfare) {
+                        \Log::info("Dailyfare missing for tada_id: " . $tadaItem->id);
+                    }
+
+                if (!$travelfare || !$dailyfare) {
+                    continue;
+                }
+                $result[] = [
+                    'tada' => $tadaItem,
+                    'travelfare' => $travelfare,
+                    'dailyfare' => $dailyfare,
+                ];
+            }
+            if (empty($result)) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'No complete TADA records found with both travelfare and dailyfare'
+                ], 404);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'TADA records fetched successfully',
+                'data' => $result
+            ]);
+        } catch (\Throwable $th) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch tada',
+                'error' => $th->getMessage()
+            ]);
+        }
     }
 
     public function showConveyance(string $id){
