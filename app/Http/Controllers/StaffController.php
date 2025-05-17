@@ -275,26 +275,38 @@ class StaffController extends Controller
 
     // Update Profile Picture
     public function updateProfilePicture(Request $request)
-    {
-        $request->validate([
-            'profile_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
-        ]);
+{
+    $request->validate([
+        'profile_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+    Log::info($request->profile_picture());
+    $users = Auth::user(); // Get logged-in user
+    $user = User::findOrFail($users->id);
 
-        $user = Auth::user(); // Get logged-in user
+    try {
+        // Delete old profile picture if exists and is not empty
+        
 
-        // Delete old profile picture if exists
-        if ($user->image) {
-            Storage::disk('s3')->delete($user->image);
-        }
-
-        // Upload new image// Upload new image to S3
+        // Upload new image to S3
         $imagePath = $request->file('profile_picture')->store('profile_pictures', 's3');
 
         // Generate a public URL for accessing the image
         $imageUrl = Storage::disk('s3')->url($imagePath);
+        
+        // Update user record with the new image path
+        // Store either the full URL or just the path, but be consistent
+        $user->image = $imageUrl; // or $imagePath if you prefer to store just the path
+        $user->save();
 
         return redirect()->back()->with('success', 'Profile picture updated successfully!');
+    } catch (\Exception $e) {
+        // Log the error for debugging
+        \Log::error('Profile picture update error: ' . $e->getMessage());
+        
+        return redirect()->back()->with('error', 'Failed to update profile picture. Please try again.');
     }
+}
+    
 
     public function changePassword($id)
     {
