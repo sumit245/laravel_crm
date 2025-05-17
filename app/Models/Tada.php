@@ -20,7 +20,9 @@ class Tada extends Model
         'outcome_achieve',
         // 'Desgination', // Consider correcting to 'designation' for consistency
         'start_journey',
+        'start_journey_time',
         'end_journey',
+        'end_journey_time',
         'transport',
         'start_journey_pnr',
         'from_city',
@@ -31,16 +33,14 @@ class Tada extends Model
         'Rent',
         'vehicle_no',
         'category',
-        'description_category',
-        'pickup_date',
+        'description_category'
     ];
 
     protected $casts = [
         'start_journey_pnr' => 'array',
         'end_journey_pnr' => 'array',
         'start_journey' => 'date',
-        'end_journey' => 'date',
-        'pickup_date' => 'date',
+        'end_journey' => 'date'
     ];
 
     // Relationship to user
