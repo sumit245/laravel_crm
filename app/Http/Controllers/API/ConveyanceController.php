@@ -322,19 +322,17 @@ class ConveyanceController extends Controller
                 ], 404);
             }
             foreach ($tada as $tadaItem) {
-                $travelfare = travelfare::where('tada_id', $tadaItem->id)->first();
-                $dailyfare = dailyfare::where('tada_id', $tadaItem->id)->first();
+                $travelfare = travelfare::where('tada_id', $tadaItem->id)->get();
+                $dailyfare = dailyfare::where('tada_id', $tadaItem->id)->get();
                 
-                    if (!$travelfare) {
+                    if ($travelfare->isEmpty()) {
                         \Log::info("Travelfare missing for tada_id: " . $tadaItem->id);
                     }
-                    if (!$dailyfare) {
+                    if ($dailyfare->isEmpty()) {
                         \Log::info("Dailyfare missing for tada_id: " . $tadaItem->id);
                     }
 
-                if (!$travelfare || !$dailyfare) {
-                    continue;
-                }
+                
                 $result[] = [
                     'tada' => $tadaItem,
                     'travelfare' => $travelfare,
