@@ -40,7 +40,8 @@ class Tada extends Model
         'start_journey_pnr' => 'array',
         'end_journey_pnr' => 'array',
         'start_journey' => 'date',
-        'end_journey' => 'date'
+        'end_journey' => 'date',
+        'other'
     ];
 
     // Relationship to user

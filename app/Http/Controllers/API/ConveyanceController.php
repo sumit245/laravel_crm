@@ -3,11 +3,15 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Models\City;
 use App\Models\Conveyance;
+use App\Models\dailyfare;
 use App\Models\Tada;
+use App\Models\travelfare;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
+use DB;
 use Illuminate\Http\Request;
 use Storage;
 
@@ -21,10 +25,8 @@ class ConveyanceController extends Controller
         try {
             //code...
             $tadas = Tada::select([
-                // 'name',
-                // 'employee_id as Employee Id',
+                
                 'meeting_visit',
-                // 'department',
                 'user_id',
                 'start_journey as start_date',
                 'end_journey as end_date',
@@ -89,6 +91,26 @@ class ConveyanceController extends Controller
         
     }
 
+    public function checkPrice(){
+        try {
+            //code...
+            $tierprice = City::whereNotNull('tier')->get();
+            $userprice = UserCategory::all();
+            return response()->json([
+                'status' => true,
+                'message' => 'Tier price fetched successfully',
+                'data' => $tierprice, $userprice
+            ]);
+        } catch (\Throwable $th) {
+            //throw $th;
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch tier price',
+                'error' => $th->getMessage()
+            ]);
+        }
+    }
+
     public function getVehicles(){
         $vehicles = Vehicle::get();
         return response()->json($vehicles);
@@ -107,55 +129,84 @@ class ConveyanceController extends Controller
      */
     public function store(Request $request)
     {
-        $data = $request->validate([
-            // 'name' => 'required|string|max:100',
-            // 'department' => 'required|string|max:100',
-            // 'employee_id' => 'required|string|max:100',
+    try {
+        //code...
+         $dataTada = $request->validate([
             'user_id' => 'required|integer',
             'visit_approve' => 'nullable|string|max:50',
             'objective_tour' => 'nullable|string|max:255',
             'meeting_visit' => 'nullable|string|max:255',
             'outcome_achieve' => 'nullable|string|max:255',
             // 'Desgination' => 'required|string|max:100',
-            'start_journey' => 'required|date',
-            'end_journey' => 'required|date',
-            'transport' => 'required|string|max:50',
-            'start_journey_pnr' => 'nullable|array',
+            'start_journey_pnr' => 'nullable|string|max:255',
+            'start_journey' => 'date',
+            'start_journey_time' => 'nullable|date_format:H:i:s',
+            'end_journey' => 'nullable|date',
+            'end_journey_time' => 'nullable|date_format:H:i:s',
+            'end_journey_pnr' => 'nullable|string|max:255',
+            'transport' => 'string|max:50',
             // 'start_journey_pnr.*' => 'file|mimes:pdf', // validate each file
-            'from_city' => 'required|string|max:100',
-            'to_city' => 'required|string|max:100',
-            'end_journey_pnr' => 'nullable|array',
+            'from_city' => 'string|max:100',
+            'to_city' => 'string|max:100',
             // 'end_journey_pnr.*' => 'file|mimes:pdf', // validate each file
-            'total_km' => 'required|integer',
-            'rate_per_km' => 'required|integer',
-            'Rent' => 'required|integer',
+            'total_km' => 'integer',
+            'rate_per_km' => 'integer',
+            'Rent' => 'integer',
             'vehicle_no' => 'nullable|string|max:100',
             'category' => 'nullable|string|max:100',
             'description_category' => 'nullable|string',
-            'pickup_date' => 'required|date',
+            'otherexpense' => 'nullable|array'
+            
         ]);
+        $datatravelfare = $request->validate([
+            'from' => 'required|integer',
+            'to' => 'nullable|string|max:100',
+            'departure_date' => 'nullable|date',
+            'departure_time' => 'nullable|date_format:H:i:s',
+            'arrival_date' => 'nullable|date',
+            'arrival_time' => 'nullable|date_format:H:i:s',
+            'modeoftravel' => 'nullable|string|max:100',
+            'add_total_km' => 'nullable|numeric',
+            'add_rate_per_km' => 'nullable|numeric',
+            'add_rent' => 'nullable|numeric',
+            'add_vehicle_no' => 'nullable|string|max:100',
+            'amount' => 'nullable|numeric',
+        ]);
+        $datadailyfare = $request->validate([
+            'place' => 'nullable|string|max:100',
+            'HotelBillNo' => 'nullable|string|max:150',
+            'date_of_stay' => 'nullable|date',
+            'amount' => 'nullable|numeric',
+        ]);
+        DB::beginTransaction();
+        $tada = Tada::create($dataTada);
+        if (!$tada) {
+            throw new \Exception('Failed to create Tada.');
+        }
+        $datatravelfare['tada_id'] = $tada->id;
+        $datadailyfare['tada_id'] = $tada->id;
+        $travelfare = travelfare::create($datatravelfare);
+        $dailyfare = dailyfare::create($datadailyfare);
+        if (!$travelfare || !$dailyfare) {
+            throw new \Exception('Failed to create Travelfare or Dailyfare.');
+        }
+        DB::commit();
+        return response()->json([
+            'tada' => $tada,
+            'travelfare' => $travelfare,
+            'dailyfare' => $dailyfare
+        ], 201);
+    } catch (\Throwable $th) {
+        //throw $th;
+        return response()->json([
+            'status' => false,
+            'message' => 'Failed to create tada data',
+            'error' => $th->getMessage()
+        ]);
+    }
 
-        // Handle start_journey_pnr files
-        // if ($request->hasFile('start_journey_pnr')) {
-        //     $startFiles = [];
-        //     foreach ($request->file('start_journey_pnr') as $file) {
-        //         $startFiles[] = $file->store('pnrs/start', 'public');
-        //     }
-        //     $data['start_journey_pnr'] = $startFiles;
-        // }
-
-        // Handle end_journey_pnr files
-        // if ($request->hasFile('end_journey_pnr')) {
-        //     $endFiles = [];
-        //     foreach ($request->file('end_journey_pnr') as $file) {
-        //         $endFiles[] = $file->store('pnrs/end', 'public');
-        //     }
-        //     $data['end_journey_pnr'] = $endFiles;
-        // }
-
-        $tada = Tada::create($data);
-
-        return response()->json($tada, 201);
+    
+       
     }
 
     public function storeConveyance(Request $request)
