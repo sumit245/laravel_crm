@@ -4,7 +4,7 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\HRMController;
+use App\Http\Controllers\API\HRMController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
