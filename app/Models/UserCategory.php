@@ -14,6 +14,8 @@ class UserCategory extends Model
         'name',
         'description',
         'allowed_vehicles',
+        'room_min_price',
+        'room_max_price',
     ];
 
     public $timestamps = true;

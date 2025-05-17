@@ -27,10 +27,10 @@ return new class extends Migration
             $table->date('start_journey');
             $table->date('end_journey');
             $table->string('transport', 50);
-            $table->json('start_journey_pnr');
+            $table->string('start_journey_pnr', 150);
             $table->string('from_city', 100);
             $table->string('to_city', 100);
-            $table->json('end_journey_pnr');
+            $table->string('end_journey_pnr', 150);
             $table->integer('total_km');
             $table->integer('rate_per_km');
             $table->integer('Rent');
