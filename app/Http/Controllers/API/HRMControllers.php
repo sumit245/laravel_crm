@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\API;
-use App\Http\Controllers\Controller;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
-class HRMController extends Controller
+class HRMControllers extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -13,18 +13,6 @@ class HRMController extends Controller
     public function index()
     {
         //
-    }
-
-    // Preview
-    public function preview(Request $request){
-        $data = $request->all();
-        session(['data' => $data]);
-        return view('hrm.preview', compact('data'));
-    }
-
-    // Admin Preview
-    public function adminPreview(){
-        return view('hrm.adminPreview');
     }
 
     /**
@@ -50,6 +38,18 @@ class HRMController extends Controller
     {
         //
     }
+    public function preview(Request $request){
+        Log::info("Preview Form", $request->all());
+        $data = $request->all();
+        session(['data' => $data]);
+        return view('hrm.preview', compact('data'));
+    }
+
+    // Admin Preview
+    public function adminPreview(){
+        return view('hrm.adminPreview');
+    }
+
 
     /**
      * Show the form for editing the specified resource.
