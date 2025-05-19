@@ -1,6 +1,2 @@
-[2025-05-17 11:00:05] local.INFO: Travelfare missing for tada_id: 1  
-[2025-05-17 11:00:05] local.INFO: Dailyfare missing for tada_id: 1  
-[2025-05-17 11:12:40] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
-[stacktrace]
-#0 {main}
-"} 
+[2025-05-19 08:29:00] local.INFO: Received request to update TADA status {"status":"1","_token":"WozaWAKnz2JzAg3zRpbJRE2KFH6bz1nLuUj4eAeE"} 
+[2025-05-19 08:42:03] local.INFO: Received request to update TADA status {"status":"0","_token":"WozaWAKnz2JzAg3zRpbJRE2KFH6bz1nLuUj4eAeE"} 

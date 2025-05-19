@@ -33,7 +33,8 @@ class Tada extends Model
         'Rent',
         'vehicle_no',
         'category',
-        'description_category'
+        'description_category',
+        'status'
     ];
 
     protected $casts = [

@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
 use Illuminate\Http\Request;
+use Log;
 
 class ConvenienceController extends Controller
 {
@@ -58,6 +59,35 @@ class ConvenienceController extends Controller
     public function tadaView(){
         $tadas = Tada::get();
         return view('billing.tada', compact('tadas'));
+    }
+
+    public function updateTadaStatus(Request $request, $id)
+    {
+        try {
+            // Validate request
+            Log::info('Received request to update TADA status', $request->all());
+            $validated = $request->validate([
+                'status' => 'required|boolean',
+            ]);
+
+            // Find the TADA record
+            $tada = Tada::findOrFail($id);
+            
+            // Update the status
+            $tada->status = $validated['status'];
+            $tada->update();
+            
+            return response()->json([
+                'status' => 'success',
+                'message' => 'TADA status updated successfully',
+                'data' => $tada
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update TADA status: ' . $e->getMessage()
+            ], 500);
+        }
     }
 
     public function settings()
