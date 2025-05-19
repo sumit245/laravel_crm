@@ -4,7 +4,7 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\HRMController;
+use App\Http\Controllers\API\HRMControllers;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
@@ -16,7 +16,6 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use App\Http\Controllers\ApplicationController;
-use App\Http\Controllers\HRMController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -109,22 +108,6 @@ Route::get('convenience-settings', function () {
     return view('billing.settings');
 })->name('convenience.settings');
 
-// apply now
-Route::get('apply-now', function () {
-    return view('hrm.applyNow');
-})->name('apply-now');
-
-Route::get('admin-preview', function () {
-    return view('hrm.adminPreview');
-})->name('admin-preview');
-
-
-
-Route::Resource('/hrm', HRMController::class);
-Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
-
-
-
     // Inventory router
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
@@ -178,14 +161,24 @@ Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.previe
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-    Route::Resource('/hrm', HRMController::class);
-    Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
-    Route::get('apply-now', function () {
-        return view('hrm.applyNow');
-    })->name('apply-now');
+    // Route::Resource('/hrm', HRMController::class);
+    // Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
+    // Route::get('apply-now', function () {
+    //     return view('hrm.applyNow');
+    // })->name('apply-now');
     
-    Route::get('admin-preview', function () {
-        return view('hrm.adminPreview');
-    })->name('admin-preview');
+    // Route::get('admin-preview', function () {
+    //     return view('hrm.adminPreview');
+    // })->name('admin-preview');
 
 });
+
+// apply now
+Route::get('apply-now', function () {
+    return view('hrm.applyNow');
+})->name('apply-now');
+
+Route::get('admin-preview', function () {
+    return view('hrm.adminPreview');
+})->name('admin-preview');
+Route::post('/hrm/preview', [HRMControllers::class, 'preview'])->name('hrm.preview');

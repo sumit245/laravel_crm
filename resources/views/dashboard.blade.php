@@ -46,7 +46,7 @@
         </div>
       </div>
     </div>
-    <div class="row mt-4">
+    <div class="row mt-4 g-2">
       @foreach ($statistics as $statistic)
         <div class="col-md-3">
           <div class="card card-rounded" style="background-color: {{ $statistic["color"] }}">
