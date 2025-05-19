@@ -229,7 +229,7 @@ public function updateRooftop(Request $request, string $id)
             $request->validate([
                 'engineer_id' => 'required|exists:users,id',
                 'vendor_id' => 'required|exists:users,id',
-                
+                'billed' => 'required|boolean',
             ]);
     
             try {
@@ -237,7 +237,7 @@ public function updateRooftop(Request $request, string $id)
     
                 $task->engineer_id = $request->engineer_id;
                 $task->vendor_id = $request->vendor_id;
-                
+                $task->billed = $request->billed;
     
                 $task->save();
     
