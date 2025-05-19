@@ -19,6 +19,7 @@
         <th>Value</th>
         <th>Vendor</th>
         <th>Used At</th>
+        <th>Action</th>
       </tr>
     </x-slot:thead>
     <x-slot:tbody>
@@ -45,6 +46,15 @@
                   ({{ $daysInCustody }} days)
                 </span>
               @endif
+
+            </td>
+            <td>
+              <form action="{{ route('inventory.return') }}" method="POST" style="display:inline;">
+                  @csrf
+                  
+                  <input type="hidden" name="serial_number" value="{{ $item->serial_number }}">
+                  <button type="submit" class="btn btn-warning btn-sm">Return</button>
+              </form>
             </td>
           </tr>
         @endforeach

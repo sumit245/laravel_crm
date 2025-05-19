@@ -4,7 +4,7 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\HRMController;
+use App\Http\Controllers\API\PreviewController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
@@ -15,6 +15,7 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
+use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -32,6 +33,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
+        Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
     // Staff router
     Route::resource('staff', StaffController::class);
     Route::prefix('staff')->group(function () {
@@ -101,8 +103,18 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/view-bills', function () {
         return view('billing.viewBills');
     })->name('view.bills');
-    
-
+// View Settings
+// Employee onboarding routes
+Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
+Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
+Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
+Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
+Route::get('/apply/success', function() {
+    return view('hrm.success');
+})->name('hrm.success');
+Route::get('convenience-settings', function () {
+    return view('billing.settings');
+})->name('convenience.settings');
 
     // Inventory router
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
@@ -117,19 +129,21 @@ Route::middleware(['auth'])->group(function () {
     // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
-
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
 
-
     // Dispatch Inventory
     Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
-
+    // Return Dispatch Inventory
+    Route::post('/inventory/return', [InventoryController::class, 'returnInventory'])->name('inventory.return');
 
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
+    Route::get('/tasks/rooftop/{id}', [TasksController::class, 'rooftop'])->name('tasks.rooftop');
+    Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
+    // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
-
+    
     // Projects Controller
     // Deleting target
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
@@ -154,15 +168,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/upload-documents/{id}', [CandidateController::class, 'uploadDocuments'])->name('upload.documents');
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
-    // Route for hiring software HRM
-    Route::Resource('/hrm', HRMController::class);
-    Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
-    Route::get('apply-now', function () {
-        return view('hrm.applyNow');
-    })->name('apply-now');
-    
-    Route::get('admin-preview', function () {
-        return view('hrm.adminPreview');
-    })->name('admin-preview');
 
 });
+
+// apply now
+Route::get('apply-now', function () {
+    return view('hrm.applyNow');
+})->name('apply-now');
+
+Route::get('admin-preview', function () {
+    return view('hrm.adminPreview');
+})->name('admin-preview');
