@@ -199,7 +199,7 @@ class ConveyanceController extends Controller
         
         $request->validate([
             'travelfare' => 'required|array',
-            'travelfare.*.from' => 'required|integer',
+            'travelfare.*.from' => 'required|string|max:100',
             'travelfare.*.to' => 'nullable|string|max:100',
             'travelfare.*.departure_date' => 'nullable|date',
             'travelfare.*.departure_time' => 'nullable|date_format:H:i:s',
