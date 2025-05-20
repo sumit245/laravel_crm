@@ -64,7 +64,7 @@
           <th>Pole Number</th>
           <th>Beneficiary</th>
           <th>Beneficiary Contact</th>
-          <th>Location</th>
+          <!-- <th>Location</th> -->
           <th>Actions</th>
         </tr>
       </x-slot:thead>
@@ -74,10 +74,10 @@
           <td>
     <input type="checkbox" name="selected_tasks[]" value="{{ $pole->id }}" class="task-checkbox" />
   </td>
-            <td>{{ $pole->complete_pole_number ?? "N/A" }}</td>
+            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;"> <span class="text-primary"> {{ $pole->complete_pole_number ?? "N/A" }} </span> </td>
             <td>{{ $pole->beneficiary ?? "N/A" }}</td>
             <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
-            <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
+            <!-- <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;"> -->
             
             <td>
               <!-- View Button -->

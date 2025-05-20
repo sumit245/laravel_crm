@@ -17,11 +17,11 @@
         <div class="d-flex justify-content-between">
           <!-- Personal Details -->
           <div class="">
-            <p><strong>Name:</strong> {{ $staff->firstName }} {{ $staff->lastName }}</p>
+            <p><strong>Name:</strong> {{ $staff->firstName ?? "N/A" }} {{ $staff->lastName ?? "N/A" }}</p>
 
-            <p><strong>Mobile Phone:</strong>{{ $staff->contactNo }}</p>
-            <p><strong>Email Address:</strong>{{ $staff->email }}</p>
-            <p><strong>Address:</strong> {{ $staff->address }}</p>
+            <p><strong>Mobile Phone:</strong>{{ $staff->contactNo ?? "N/A" }}</p>
+            <p><strong>Email Address:</strong>{{ $staff->email ?? "N/A" }}</p>
+            <p><strong>Address:</strong> {{ $staff->address ?? "N/A" }}</p>
             <p><strong>Role: </strong>
               {{ $staff->role == 1
                   ? "Site Engineer"
@@ -33,31 +33,31 @@
                               ? "Store Incharge"
                               : "Coordinator"))) }}
             </p>
-            <p>{{ $staff->project_type }}</p>
+            <p><strong>Project: </strong>{{ $project->project_name ?? "N/A" }}</p>
             @if ($staff->role != 2 && isset($staff->projectManager))
-              <p><strong>Manager: </strong> {{ $staff->projectManager->firstName }}
-                {{ $staff->projectManager->lastName }}</p>
+              <p><strong>Manager: </strong> {{ $staff->projectManager->firstName ?? "N/A" }}
+                {{ $staff->projectManager->lastName ?? "N/A" }}</p>
             @endif
             @if ($isStreetlightProject)
               <div>
                 @if ($staff->role == 1)
                   <a href="{{ route("surveyed.poles", ["site_engineer" => $staff->id, "role" => 1]) }}"
                     class="text-primary text-decoration-none">Poles Surveyed:
-                    {{ $surveyedPolesCount }}</a> <br />
+                    {{ $surveyedPolesCount ?? 0 }}</a> <br />
                   <a href="{{ route("installed.poles", ["site_engineer" => $staff->id, "role" => 1]) }}"
                     class="text-success text-decoration-none">Installed Lights:
                     {{ $installedPolesCount ?? 0 }}</a>
                 @elseif($staff->role == 3)
                   <a href="{{ route("surveyed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
                     class="text-primary text-decoration-none">Poles Surveyed:
-                    {{ $surveyedPolesCount }}</a> <br />
+                    {{ $surveyedPolesCount ?? 0 }}</a> <br />
                   <a href="{{ route("installed.poles", ["vendor" => $staff->id, "role" => 1]) }}"
                     class="text-success text-decoration-none">Installed lights:
                     {{ $installedPolesCount ?? 0 }}</a>
                 @else
                   <a href="{{ route("surveyed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
                     class="text-primary text-decoration-none">Poles Surveyed:
-                    {{ $surveyedPolesCount }}</a> <br />
+                    {{ $surveyedPolesCount ?? 0 }}</a> <br />
                   <a href="{{ route("installed.poles", ["project_manager" => $staff->id, "role" => 1]) }}"
                     class="text-success text-decoration-none">Installed Lights:
                     {{ $installedPolesCount ?? 0 }}</a>

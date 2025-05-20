@@ -28,6 +28,8 @@ class User extends Authenticatable
         'contactNo',
         'address',
         'role',
+        'category',
+        'project_id',
         'accountName',
         'accountNumber',
         'ifsc',
@@ -39,6 +41,7 @@ class User extends Authenticatable
         'status',
         'disableLogin',
         'lastOnline',
+        'project_id',
         'manager_id',
         'site_engineer_id',
         'image'

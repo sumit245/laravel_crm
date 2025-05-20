@@ -15,8 +15,8 @@
     @endif
 
     <!-- Project Selection Dropdown -->
-    <div class="form-group mb-4">
-    <div class="row">
+    <!-- <div class="form-group mb-4">
+      <div class="row">
             <div class="col-md-12">
               <div class="form-group">
                 <label for="team_lead" class="form-label"> </label>
@@ -28,14 +28,29 @@
                 </select>
               </div>
             </div>
-</div>
-      
-    </div>
+      </div> 
+    </div> -->
 
     <form action="{{ route("staff.update", $staff->id) }}" method="POST">
       @csrf
       @method("PUT")
       
+      <div class="form-group mb-4">
+        <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="project_id" class="form-label"> </label>
+                <select name="project_id" class="form-select" id="project_id"> --
+                  <option value="">-- Select Project --</option>
+                  @foreach ($projects as $category)
+                    <option value="{{ $category->id }}">{{ $category->project_name }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+       </div> 
+    </div>
+
       <div class="form-group">
         <label for="name">Name</label>
         <input type="text" id="name" name="name" class="form-control" value="{{ old("name", $staff->name) }}"
@@ -57,6 +72,17 @@
           value="{{ old("lastName", $staff->lastName) }}" required>
       </div>
       <div class="form-group">
+        <label for="category">User Category</label>
+        <select id="category" name="category" class="form-control">
+            @foreach ($usercategory as $category)
+                <option value="{{ $category->category_code }}" 
+                    {{ old('category', $staff->category) == $category->category_code ? 'selected' : '' }}>
+                    {{ $category->category_code }}
+                </option>
+            @endforeach
+        </select>
+      </div>
+      <div class= "form-group">
         <label for="address">Address</label>
         <textarea id="address" name="address" class="form-control" required>{{ old("address", $staff->address) }}</textarea>
       </div>

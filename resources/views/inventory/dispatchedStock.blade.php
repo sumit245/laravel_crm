@@ -19,6 +19,7 @@
         <th>Value</th>
         <th>Vendor</th>
         <th>Used At</th>
+        <th>Action</th>
       </tr>
     </x-slot:thead>
     <x-slot:tbody>
@@ -37,14 +38,23 @@
                   {{ $item->streetlightPole->complete_pole_number }}
                 </a>
               @else
-              @php
-                $daysInCustody = \Carbon\Carbon::parse($item->dispatch_date)->diffInDays(\Carbon\Carbon::now());
-              @endphp
+                @php
+                  $daysInCustody = \Carbon\Carbon::parse($item->dispatch_date)->diffInDays(\Carbon\Carbon::now());
+                @endphp
                 In Vendor Custody
-              <span style="color: {{ $daysInCustody > 5 ? 'red' : 'inherit' }}">
-                ({{ $daysInCustody }} days)
-              </span>
-            @endif
+                <span style="color: {{ $daysInCustody > 5 ? "red" : "inherit" }}">
+                  ({{ $daysInCustody }} days)
+                </span>
+              @endif
+
+            </td>
+            <td>
+              <form action="{{ route('inventory.return') }}" method="POST" style="display:inline;">
+                  @csrf
+                  
+                  <input type="hidden" name="serial_number" value="{{ $item->serial_number }}">
+                  <button type="submit" class="btn btn-warning btn-sm">Return</button>
+              </form>
             </td>
           </tr>
         @endforeach
