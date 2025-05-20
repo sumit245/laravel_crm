@@ -26,7 +26,7 @@
 
             <!-- Tab Content Area -->
             <div class="col-md-9 col-lg-10">
-                <div class="tab-content p-3" id="v-pills-tabContent">
+                <div class="tab-content p-3 m-3" id="v-pills-tabContent">
 
                     <!-- Vehicle Settings Tab -->
                     <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel" aria-labelledby="v-pills-vehicle-tab">
@@ -43,7 +43,7 @@
                                     <table id="vehicleTable" class="table table-bordered table-striped table-sm">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>#</th>
+                                                <!-- <th>#</th> -->
                                                 <th>Vehicle Name</th>
                                                 <th>Category</th>
                                                 <th>Sub Category</th>
@@ -54,7 +54,7 @@
                                         <tbody>
                                             @foreach ($vehicles as $vehicle)
                                             <tr>
-                                                <td>{{ $vehicle->id }}</td>
+                                                <!-- <td>{{ $vehicle->id }}</td> -->
                                                 <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
                                                 <td>{{ $vehicle->category ?? "N/A" }}</td>
                                                 <td>{{ $vehicle->sub_category }}</td>
@@ -93,23 +93,23 @@
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <x-data-table id="userTable" class="table table-bordered table-striped table-sm">
-                                        <x-slot:thead class="table-light">
+                                    <table id="userTable" class="table table-bordered table-striped table-sm">
+                                        <thead class="table-light">
                                             <tr>
-                                                <th><input type="checkbox" id="selectAllUsers"></th>
-                                                <th>#</th>
+                                                <!-- <th><input type="checkbox" id="selectAllUsers"></th> -->
+                                                <!-- <th>#</th> -->
                                                 <th>Name</th>
                                                 <th>Role</th>
                                                 <th>Email</th>
                                                 <th>Category</th>
                                                 <th>Actions</th>
                                             </tr>
-                                        </x-slot:thead>
-                                        <x-slot:tbody>
+                                        </thead>
+                                        <tbody>
                                             @foreach ($users as $user)
                                             <tr>
-                                                <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
-                                                <td>{{ $user->id ?? 0 }}</td>
+                                                <!-- <td><input type="checkbox" class="user-checkbox" data-id="1"></td> -->
+                                                <!-- <td>{{ $user->id ?? 0 }}</td> -->
                                                 <td>{{ $user->firstName ?? "N/A" }} {{ $user->lastName ?? "N/A" }}</td>
                                                 <td>{{ $user->role ?? "N/A" }}</td>
                                                 <td>{{ $user->email ?? "N/A" }}</td>
@@ -121,8 +121,8 @@
                                                 </td>
                                             </tr>
                                             @endforeach
-                                        </x-slot:tbody>
-                                    </x-data-table>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -143,7 +143,7 @@
                                     <x-data-table id="categoryTable" class="table table-bordered table-striped table-sm">
                                         <x-slot:thead class="table-light">
                                             <tr>
-                                                <th>#</th>
+                                                <!-- <th>#</th> -->
                                                 <th>Category Name</th>
                                                 <th>Vehicles Allowed</th>
                                                 <th>Actions</th>
@@ -152,7 +152,7 @@
                                         <x-slot:tbody>
                                         @foreach ($categories as $cat)
                                             <tr>
-                                                <td>{{ $cat->id }}</td>
+                                                <!-- <td>{{ $cat->id }}</td> -->
                                                 <td>{{ $cat->category_code }}</td>
                                                 <!-- <td>{{ $cat->allowed_vehicles }}</td> -->
                                                  <td>
@@ -279,15 +279,15 @@
                         <input class="form-control" id="categoryName" name="category" required>
                         </input>
                         </div>
-                        <div class="mb-3">
+                        
                         <div class="mb-3">
                             <label for="vehiclesAllowed" class="form-label fw-bold">Allowed Vehicles</label>
-                            <select class="form-control" id="vehiclesAllowed" name="vehicle_id[]" multiple required>
+                            <select class="form-select" id="vehiclesAllowed" name="vehicle_id[]" multiple="multiple" required>
                                 @foreach ($vehicles as $vehicle)
                                     <option value="{{ $vehicle->id }}">{{ $vehicle->id }}</option>
                                 @endforeach
                             </select>
-                        </div> 
+                        </div>
 
                         <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -338,6 +338,18 @@
             allowClear: true,
             dropdownParent: $('#editCategoryModal')
         });
+        
+          $('#vehiclesAllowed').select2({
+            dropdownParent: $('#addCategoryModal'),
+            width: '100%',
+            placeholder: 'Select allowed vehicles'
+        });
+
+        // Reopen workaround if needed
+        $('#addCategoryModal').on('shown.bs.modal', function () {
+            $('#vehiclesAllowed').select2('open');
+        });
+    
         
 
         // Initialize DataTables
