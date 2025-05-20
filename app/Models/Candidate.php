@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Candidate extends Model
 {
     use HasFactory;
+    
     protected $fillable = [
         'name',
         'email',
@@ -22,6 +23,29 @@ class Candidate extends Model
         'experience',
         'last_salary',
         'document_path',
-        'status'
+        'status',
+        // New fields
+        'gender',
+        'marital_status',
+        'nationality',
+        'language',
+        'permanent_address',
+        'emergency_contact_name',
+        'emergency_contact_phone',
+        'education',
+        'previous_employer',
+        'notice_period',
+        'disabilities',
+        'currently_employed',
+        'reason_for_leaving',
+        'other_info',
+        'photo',
+        'signature'
+    ];
+    
+    // Add casting for JSON fields
+    protected $casts = [
+        'education' => 'array',
+        'document_path' => 'array',
     ];
 }

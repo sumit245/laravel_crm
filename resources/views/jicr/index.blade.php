@@ -16,7 +16,7 @@
                 @endforeach
               </select>
             </div>
-          </div>
+          </div> 
           <div class="col-sm-4">
             <div class="mb-3">
               <label for="blockSelect" class="form-label">Block</label>
@@ -48,9 +48,14 @@
         <div class="mt-3">
           <button type="submit" class="btn btn-primary">Generate JICR</button>
         </div>
-        
+
     </div>
     </form>
+    @if (session("error"))
+      <div class="alert alert-danger">
+        {{ session("error") }}
+      </div>
+    @endif
     @if (!empty($showReport) && isset($data))
       @include("jicr.show", ["data" => $data])
     @endif

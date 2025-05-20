@@ -51,13 +51,14 @@
                 <table id="tadaTable" class="table table-bordered table-striped table-sm mt-4">
                     <thead class="table-white">
                         <tr>
-                            <th><input type="checkbox" id="selectAll" /></th>
+                            <th>User</th>
                             <th>From</th>
                             <th>To</th>
                             <th>Kilometer</th>
                             <th>Date</th>
                             <th>Time</th>
-                            <th>Trip Price</th>
+                            <th>Vehicle</th>
+                            <th>Rate</th>
                             <th>Total</th>
                             <th>Bills</th>
                             <th>Status</th>
@@ -65,21 +66,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td><input type="checkbox" class="checkboxItem" /></td>
-                            <td>Madhepura</td>
-                            <td>Delhi</td>
-                            <td>986</td>
-                            <td>05-04-2025</td>
-                            <td>18:00</td>
-                            <td>₹1980</td>
-                            <td>₹2785</td>
+                    @foreach ($tadas as $tada)
+                    <tr>
+                            <td>{{ $tada->user->name ?? "N/A" }}</td>
+                            <td>{{ $tada->from ?? "N/A" }}</td>
+                            <td>{{ $tada->to ?? "N/A" }}</td>
+                            <td>{{ $tada->total_km ?? "N/A" }}</td>
+                            <td>{{ $tada->created_at ?? "N/A" }}</td>
+                            <td>{{ $tada->time ?? "N/A" }}</td>
+                            <td>{{ $tada->category }}</td>
+                            <td>{{ $tada->rate_per_km }}</td>
+                            <td>{{ $tada->rate_per_km * $tada->total_km ?? "N/A" }}</td>
+                            <td>{{ $tada->from ?? "N/A" }}</td>
+                             <!-- <td>Pending</td>
                             <td>
                             <a href="{{ route('view.bills') }}" class="btn btn-sm btn-outline-primary" >
                                <i class="bi bi-eye"></i> View Bills
                             </a>
-
-                            </td>
+                            </td>  -->
                             <td>
                                 <span class="badge badge-status badge-pending">Pending</span>
                             </td>
@@ -89,6 +93,7 @@
                                 </a>
                             </td>
                         </tr>
+                        @endforeach
                     </tbody>
                 </table>
             </div>
