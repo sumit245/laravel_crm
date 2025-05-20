@@ -274,38 +274,65 @@ class StaffController extends Controller
     }
 
     // Update Profile Picture
-    public function updateProfilePicture(Request $request)
+public function updateProfilePicture(Request $request)
 {
     $request->validate([
-        'profile_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+        'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif|max:2048',
     ]);
-    Log::info($request->profile_picture());
-    $users = Auth::user(); // Get logged-in user
-    $user = User::findOrFail($users->id);
+
+    $user = Auth::user();
 
     try {
-        // Delete old profile picture if exists and is not empty
-        
+        if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
+            \Log::error('Invalid file upload attempt');
+            return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
+        }
 
-        // Upload new image to S3
-        $imagePath = $request->file('profile_picture')->store('profile_pictures', 's3');
+        $file = $request->file('profile_picture');
 
-        // Generate a public URL for accessing the image
+        \Log::info('File upload attempt', [
+            'original_name' => $file->getClientOriginalName(),
+            'mime_type' => $file->getMimeType(),
+            'size' => $file->getSize()
+        ]);
+
+        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+        // Attempt S3 upload
+        $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
+
+        if (!$imagePath) {
+            throw new \Exception('S3 upload failed.');
+        }
+
         $imageUrl = Storage::disk('s3')->url($imagePath);
-        
-        // Update user record with the new image path
-        // Store either the full URL or just the path, but be consistent
-        $user->image = $imageUrl; // or $imagePath if you prefer to store just the path
+
+        \Log::info('Profile picture uploaded to S3', [
+            'user_id' => $user->id,
+            'path' => $imagePath,
+            'url' => $imageUrl
+        ]);
+
+        // Save image URL to user record
+        $user->image = $imageUrl;
         $user->save();
+        Log::info(('Profile picture URL saved to user record'), [
+            'user_id' => $user->id,
+            'image_url' => $imageUrl
+        ]);
 
         return redirect()->back()->with('success', 'Profile picture updated successfully!');
     } catch (\Exception $e) {
-        // Log the error for debugging
-        \Log::error('Profile picture update error: ' . $e->getMessage());
-        
-        return redirect()->back()->with('error', 'Failed to update profile picture. Please try again.');
+        \Log::error('Profile picture update error: ' . $e->getMessage(), [
+            'exception' => $e,
+            'trace' => $e->getTraceAsString()
+        ]);
+
+        return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
     }
 }
+
+
     
 
     public function changePassword($id)
