@@ -24,5 +24,9 @@ class UserCategory extends Model
     {
         return $this->belongsTo(Vehicle::class, 'allowed_vehicles', 'vehicle_id');
     }
+    public function users()
+    {
+        return $this->hasMany(User::class, 'category', 'id');
+    }
 
 }

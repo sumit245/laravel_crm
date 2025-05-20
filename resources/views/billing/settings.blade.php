@@ -85,9 +85,9 @@
                     <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
-                            <button class="btn btn-primary" id="assignCategoryBtn">
+                            <!-- <button class="btn btn-primary" id="assignCategoryBtn">
                                 <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
-                            </button>
+                            </button> -->
                         </div>
 
                         <div class="card shadow-sm">
@@ -109,11 +109,11 @@
                                             @foreach ($users as $user)
                                             <tr>
                                                 <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
-                                                <td>{{ $user->id }}</td>
-                                                <td>{{ $user->firstName }} {{ $user->lastName }}</td>
-                                                <td>{{ $user->role }}</td>
-                                                <td>{{ $user->email }}</td>
-                                                <td>{{ $user->category }}</td>
+                                                <td>{{ $user->id ?? 0 }}</td>
+                                                <td>{{ $user->firstName ?? "N/A" }} {{ $user->lastName ?? "N/A" }}</td>
+                                                <td>{{ $user->role ?? "N/A" }}</td>
+                                                <td>{{ $user->email ?? "N/A" }}</td>
+                                                <td>{{ $user->usercategory->category_code ?? "N/A" }}</td>
                                                 <td>
                                                     <a href="{{ route('billing.edituser', $user->id) }}" class="btn btn-icon btn-primary" title="Edit Category">
                                                         <i class="mdi mdi-pencil"></i>
@@ -154,7 +154,22 @@
                                             <tr>
                                                 <td>{{ $cat->id }}</td>
                                                 <td>{{ $cat->category_code }}</td>
-                                                <td>{{ $cat->allowed_vehicles }}</td>
+                                                <!-- <td>{{ $cat->allowed_vehicles }}</td> -->
+                                                 <td>
+                                                    @php
+                                                        $vehicleIds = json_decode($cat->allowed_vehicles, true);
+                                                        $vehicleList = [];
+                                                        
+                                                        if (is_array($vehicleIds)) {
+                                                            foreach ($vehicleIds as $id) {
+                                                                $vehicleList[] = $vehicleNames[$id] ?? $id;
+                                                            }
+                                                            echo implode(', ', $vehicleList);
+                                                        } else {
+                                                            echo $cat->allowed_vehicles;
+                                                        }
+                                                    @endphp
+                                                </td>
                                                 <td>
                                                 <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-warning">
                                                         <i class="mdi mdi-pencil"></i>

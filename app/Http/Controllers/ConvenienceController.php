@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conveyance;
+use App\Models\dailyfare;
 use App\Models\Tada;
+use App\Models\travelfare;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
@@ -58,7 +60,13 @@ class ConvenienceController extends Controller
     // Tada view
     public function tadaView(){
         $tadas = Tada::get();
-        return view('billing.tada', compact('tadas'));
+        $count_trip = Tada::count();
+        $total_km = Tada::sum('total_km');
+        $dailyamount = dailyfare::sum('amount');
+        $travelfare = travelfare::sum('amount');
+        $total_amount = $dailyamount + $travelfare;
+        $pendingclaimcount = Tada::where('status', null)->count();
+        return view('billing.tada', compact('tadas', 'count_trip', 'total_km', 'dailyamount', 'travelfare', 'total_amount', 'pendingclaimcount'));
     }
 
     public function updateTadaStatus(Request $request, $id)
@@ -93,10 +101,12 @@ class ConvenienceController extends Controller
     public function settings()
     {
         $vehicles = Vehicle::get();
-        $users = User::where('role', '!=', 3)->get();
-        $categories = UserCategory::get();
+        $users = User::with('usercategory')->where('role', '!=', 3)->get();
 
-        return view('billing.settings', compact('vehicles', 'users', 'categories'));
+        $categories = UserCategory::get();
+        $vehicleNames = $vehicles->pluck('name', 'id')->toArray();
+
+        return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames'));
     }
 
     // Add vehicle function
@@ -181,7 +191,7 @@ class ConvenienceController extends Controller
     
     $request->validate([
         'user_id' => 'required|exists:users,id',
-        'category' => 'string|max:50',
+        'category' => 'integer',
     ]);
 
     $user = User::findOrFail($request->input('user_id'));
@@ -221,7 +231,7 @@ class ConvenienceController extends Controller
 
             $validatedData = $request->validate([
                 'category_code' => 'required|string|max:255',
-                'vehicle_id' => 'required|integer',
+                'vehicle_id' => 'required|array',
             ]);
 
             $category = UserCategory::find($request->category_id);
