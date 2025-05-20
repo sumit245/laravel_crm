@@ -105,13 +105,7 @@ Route::middleware(['auth'])->group(function () {
     })->name('view.bills');
 // View Settings
 // Employee onboarding routes
-Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
-Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
-Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
-Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
-Route::get('/apply/success', function() {
-    return view('hrm.success');
-})->name('hrm.success');
+
 Route::get('convenience-settings', function () {
     return view('billing.settings');
 })->name('convenience.settings');
@@ -170,7 +164,13 @@ Route::get('convenience-settings', function () {
 
 
 });
-
+Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
+Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
+Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
+Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
+Route::get('/apply/success', function() {
+    return view('hrm.success');
+})->name('hrm.success');
 // apply now
 Route::get('apply-now', function () {
     return view('hrm.applyNow');
