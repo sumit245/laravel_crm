@@ -200,23 +200,47 @@ class ConvenienceController extends Controller
 
     return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
 }
-// Add Category
-    public function addCategory(Request $request)
-    {
-        \Log::info('Request Data: Add category', $request->all());
-        $validatedData = $request->validate([
-            'category' => 'required|string|max:255', // category_code
-            'vehicle_id' => 'required|integer', // single vehicle ID
-        ]);
 
-        // Save the new category
-        $category = new UserCategory(); // Assuming your model is UserCategory
-        $category->category_code = $validatedData['category'];
-        $category->allowed_vehicles = $validatedData['vehicle_id']; // Directly save single vehicle id
-        $category->save();
-
-        return redirect()->back()->with('success', 'Category added successfully.');
+    public function viewCategory(){
+        $vehicles = Vehicle::get();
+        return view('billing.addCategory', compact('vehicles'));
     }
+// Add Category
+public function addCategory(Request $request)
+{
+    \Log::info('Request Data: Add category', $request->all());
+    $validatedData = $request->validate([
+        'category' => 'required|string|max:255',
+        'name' => 'required|string|max:255',
+        'description' => 'nullable|string',
+        'room_min_price' => 'nullable|numeric|min:0',
+        'room_max_price' => 'nullable|numeric|min:0',
+        'vehicle_id' => 'required|array',
+        'vehicle_id.*' => 'exists:vehicles,id',
+    ]);
+
+    // Validate that min price is less than max price if both are provided
+    if (!empty($validatedData['room_min_price']) && !empty($validatedData['room_max_price'])) {
+        if ($validatedData['room_min_price'] > $validatedData['room_max_price']) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['room_min_price' => 'Minimum price cannot be greater than maximum price']);
+        }
+    }
+
+    // Save the new category
+    $category = new UserCategory(); // Assuming your model is UserCategory
+    $category->category_code = $validatedData['category'];
+    $category->name = $validatedData['name'];
+    $category->description = $validatedData['description'] ?? null;
+    $category->room_min_price = $validatedData['room_min_price'] ?? null;
+    $category->room_max_price = $validatedData['room_max_price'] ?? null;
+    $category->allowed_vehicles = json_encode($validatedData['vehicle_id']); // Store as JSON
+    $category->save();
+
+    return redirect()->route('billing.settings')->with('success', 'Category added successfully.');
+}
+
 
     public function editCategory(Request $request){
         $uc = UserCategory::find($request->id);
