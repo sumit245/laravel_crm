@@ -89,6 +89,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
 
     // Add Categories
+    Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
     Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
     Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');

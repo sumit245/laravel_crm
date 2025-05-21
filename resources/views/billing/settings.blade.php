@@ -132,9 +132,9 @@
                     <div class="tab-pane fade" id="v-pills-category" role="tabpanel" aria-labelledby="v-pills-category-tab">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0"><i class="bi bi-tags me-2"></i>Category Settings</h4>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                            <a href="{{ route('billing.addcategory') }}" class="btn btn-primary">
                                 <i class="mdi mdi-plus-circle me-1"></i> Add Category
-                            </button>
+                            </a>
                         </div>
 
                         <div class="card shadow-sm">
@@ -162,13 +162,16 @@
                                                         
                                                         if (is_array($vehicleIds)) {
                                                             foreach ($vehicleIds as $id) {
-                                                                $vehicleList[] = $vehicleNames[$id] ?? $id;
+                                                                // Try to find the vehicle by ID and get its category
+                                                                $vehicle = $vehicles->firstWhere('id', $id);
+                                                                $vehicleList[] = $vehicle ? ($vehicle->category ?? $vehicle->id) : $id;
                                                             }
                                                             echo implode(', ', $vehicleList);
                                                         } else {
                                                             echo $cat->allowed_vehicles;
                                                         }
                                                     @endphp
+
                                                 </td>
                                                 <td>
                                                 <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-warning">
