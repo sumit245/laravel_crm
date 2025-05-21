@@ -63,6 +63,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
     Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     // status update

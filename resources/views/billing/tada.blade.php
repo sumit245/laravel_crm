@@ -104,7 +104,7 @@
                                 
                             </td>
                             <td class="action-btns">
-                                <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal" title="View Details">
+                                <a href="{{ route('billing.tadaDetails', $tada->user_id) }}" class="btn btn-info btn-sm" title="View Details">
                                     <i class="mdi mdi-eye"></i>
                                 </a>
                             </td>
