@@ -69,6 +69,16 @@ class ConvenienceController extends Controller
         return view('billing.tada', compact('tadas', 'count_trip', 'total_km', 'dailyamount', 'travelfare', 'total_amount', 'pendingclaimcount'));
     }
 
+    public function viewtadaDetails(String $id){
+        $tadas = Tada::with('travelfare', 'dailyfare' , 'user')->where('user_id', $id)->first();
+        $travelfares = travelfare::where('tada_id', $tadas->id)->get();
+        $dailyfares = dailyfare::where('tada_id', $tadas->id)->get();
+        $dailyamount = dailyfare::sum('amount');
+        $travelfare = travelfare::sum('amount');
+        $conveyance = $dailyamount + $travelfare;
+        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance'));
+    }
+
     public function updateTadaStatus(Request $request, $id)
     {
         try {

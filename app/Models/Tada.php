@@ -51,4 +51,11 @@ class Tada extends Model
         return $this->belongsTo(User::class);
     }
 
+    public function travelfare(){
+        return $this->hasMany(travelfare::class);
+    }
+    public function dailyfare(){
+        return $this->hasMany(dailyfare::class);
+    }
+
 }
