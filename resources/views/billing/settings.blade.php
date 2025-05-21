@@ -339,11 +339,7 @@
             dropdownParent: $('#editCategoryModal')
         });
         
-          $('#vehiclesAllowed').select2({
-            dropdownParent: $('#addCategoryModal'),
-            width: '100%',
-            placeholder: 'Select allowed vehicles'
-        });
+         
 
         // Reopen workaround if needed
         $('#addCategoryModal').on('shown.bs.modal', function () {
