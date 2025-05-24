@@ -14176,3 +14176,13 @@
 "} 
 [2025-05-24 04:35:20] local.INFO: []  
 [2025-05-24 04:38:12] local.INFO: []  
+[2025-05-24 04:44:26] local.INFO: Received request staff data: {"_token":"0qxO5rCwr7aXeVdEYKt9NXH4Z2gkyJX5vqjz73kl","username":null,"project_id":"11","manager_id":"66","firstName":"Zaid","lastName":"Test","email":"TEst@zaid.com","contactNo":"987654321","address":"NA","role":"1","password":"12345678","password_confirmation":"12345678"} 
+[2025-05-24 04:44:35] local.INFO: []  
+[2025-05-24 04:44:35] local.INFO: No query results for model [App\Models\User] alt="user-avatar"  
+[2025-05-24 04:44:36] local.INFO: []  
+[2025-05-24 04:56:17] local.INFO: Received request staff data: {"_token":"0qxO5rCwr7aXeVdEYKt9NXH4Z2gkyJX5vqjz73kl","username":null,"project_id":"11","manager_id":"66","firstName":"Test","lastName":"testere","email":"tsea@gmail.com","contactNo":"987654321","address":"na","role":"4","category":"8","password":"12345678","password_confirmation":"12345678"} 
+[2025-05-24 04:56:31] local.INFO: []  
+[2025-05-24 04:56:32] local.INFO: No query results for model [App\Models\User] alt="user-avatar"  
+[2025-05-24 04:56:32] local.INFO: []  
+[2025-05-24 04:57:36] local.INFO: Vendor Edit1  
+[2025-05-24 04:58:10] local.INFO: Vendor Edit1  
