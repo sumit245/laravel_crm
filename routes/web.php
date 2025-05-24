@@ -137,7 +137,7 @@ Route::middleware(['auth'])->group(function () {
     
     // Projects Controller
     // Deleting target
-    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
+    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
 
 
 

@@ -262,7 +262,8 @@ public function updateRooftop(Request $request, string $id)
         try {
             $task = Task::findOrFail($id);
             $task->delete();
-            return response()->json(['success' => true]);
+            return redirect()->back()
+                    ->with('success', 'Task Deleted successfully.');
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }

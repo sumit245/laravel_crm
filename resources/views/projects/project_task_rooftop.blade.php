@@ -28,7 +28,7 @@
   </div>
 
   <!-- Modal for adding a target -->
-  <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
+   <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form action="{{ route("tasks.store") }}" method="POST">
@@ -45,18 +45,18 @@
               <div id="siteList"></div> -->
 
               <label for="siteSearch" class="form-label">Search Site</label>
-              <select id="siteSearch" class="form-control" style="width: 100%;">
-                <option value="">Search Site...</option>
-                @foreach ($sites as $site)
-                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
-                @endforeach
-              </select>
+                <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
+                    <option value="">Search Site...</option>
+                    @foreach ($sites as $site)
+                        <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                    @endforeach
+                </select>
 
               <!-- Selected Sites -->
-              <ul id="selectedSites"></ul>
+              <!-- <ul id="selectedSites"></ul> -->
               <!-- Hidden Select to Store Selected Sites -->
-              <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
-              </select>
+              <!-- <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
+              </select> -->
             </div>
             <div class="mb-3">
               <label for="activity" class="form-label">Activity</label>

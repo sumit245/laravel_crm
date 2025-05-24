@@ -138,7 +138,7 @@
                 class="btn btn-info btn-sm">View</a>
 
               <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-sm">Edit</a>
-              <form action="{{ route("tasks.destroy", $light->id) }}" method="POST" style="display: inline-block;" class="delete-task-form">
+              <form action="{{ route("tasks.destroystreetlight", $light->id) }}" method="POST" style="display: inline-block;" class="delete-task-form">
                 @csrf
                 @method("DELETE")
                 <button type="button" class="btn btn-danger btn-sm delete-task-btn">Delete</button>

@@ -16,7 +16,7 @@
             </ul>
           </div>
         @endif
-        @if($projectId==11)
+        @if($projectId==11) 
         
         <form action="{{route('sites.update', $streetlight->id)}}" method="POST">
     @csrf
@@ -204,6 +204,7 @@
           <button type="submit" class="btn btn-primary">Update Site</button>
         </form>
         @endif
+
       </div>
     </div>
   </div>
