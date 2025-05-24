@@ -103,7 +103,7 @@
             <th>Model</th>
             <th>Serial Number</th>
             <th>HSN Code</th>
-            <th>Unit</th>
+            <!-- <th>Unit</th> -->
             <th>In</th>
             <th>Out</th>
             <th class="actions">Actions</th>
@@ -118,7 +118,7 @@
               <td>{{ $item->model }}</td>
               <td>{{ $item->serial_number }}</td>
               <td>{{ $item->hsn }}</td>
-              <td>{{ $item->unit }}</td>
+              <!-- <td>{{ $item->unit }}</td> -->
               <td>{{ $item->created_at }}</td>
               <td>{{ $item->dispatch->dispatch_date ?? 'Not Dispatched' }}</td>
               <td>
