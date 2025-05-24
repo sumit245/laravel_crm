@@ -162,7 +162,7 @@ class TasksController extends Controller
         
     }
 
-    public function rooftop(string $id){
+    public function editrooftop(string $id){
        
         
         //code...
