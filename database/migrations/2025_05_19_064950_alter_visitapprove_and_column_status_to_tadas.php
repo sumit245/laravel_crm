@@ -13,14 +13,6 @@ return new class extends Migration
     {
         Schema::table('tadas', function (Blueprint $table) {
             //
-            
-            if (!Schema::hasColumn('tadas', 'visit_approve')) {
-            $table->boolean('visit_approve')->nullable()->default(null);
-        } else {
-            // If it exists, you might want to modify it instead
-            $table->boolean('visit_approve')->nullable()->default(null)->change();
-        }
-
             $table->boolean('status')->nullable()->default(null)->after('visit_approve');
         });
     }
