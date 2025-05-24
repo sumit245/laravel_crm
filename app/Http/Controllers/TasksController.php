@@ -147,6 +147,7 @@ class TasksController extends Controller
     public function edit(string $id, Request $request)
     {
         // Target in streetlight project is being edited
+        Log::info("Edit target", $request->all() ,  $id);
         $projectId = request()->query('project_id');
         if($projectId==11){
             $tasks = StreetlightTask::with(['site', 'engineer', 'vendor']) // eager load relationships
@@ -223,6 +224,7 @@ public function updateRooftop(Request $request, string $id)
      */
     public function update(Request $request, string $id)
     {
+        Log::info("Update target", $request->all());
         $projectId = $request->input('project_id');
     
         if ($projectId == 11) {
@@ -244,6 +246,7 @@ public function updateRooftop(Request $request, string $id)
                 return redirect()->route('projects.show', $projectId)
                     ->with('success', 'Task updated successfully.');
             } catch (\Exception $e) {
+                Log::error('Error updating task: ' . $e->getMessage());
                 return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
             }
         }
