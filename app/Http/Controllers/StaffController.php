@@ -51,7 +51,8 @@ class StaffController extends Controller
     {
         $teamLeads = User::where('role', 2)->get();
         $projects = Project::all();
-        return view('staff.create', compact('teamLeads', 'projects'));
+        $usercategories = UserCategory::all();
+        return view('staff.create', compact('teamLeads', 'projects', 'usercategories'));
     }
 
 
@@ -69,6 +70,7 @@ class StaffController extends Controller
             'email'     => 'required|email|unique:users,email',
             'contactNo' => 'string',
             'role'      => 'string',
+            'category'  => 'nullable|numeric',
             'address'   => 'string|max:255',
             'password'  => 'required|string|min:6|confirmed',
             'project_id' => 'required|exists:projects,id', // validate project_id
