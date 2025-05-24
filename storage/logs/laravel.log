@@ -1433,3 +1433,9 @@
 [2025-05-24 09:52:06] local.INFO: Project type   
 [2025-05-24 10:39:14] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"1802","rate":"2094.00","total_value":"3769446.00","make":"test","model":"test"},{"item_code":"SL02","item":"Luminary","total_quantity":"2088","rate":"2500.00","total_value":"5220000.00","make":"2025","model":"SSL20W"},{"item_code":"SL03","item":"Battery ","total_quantity":"2731","rate":"6000.00","total_value":"16386000.00","make":"2025","model":"LiFePO454Ah"}]  
 [2025-05-24 10:40:56] local.INFO: Project type 1  
+[2025-05-24 10:43:51] local.INFO: Edit target  
+[2025-05-24 10:44:34] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
+[2025-05-24 10:46:07] local.ERROR: {"id":330,"project_id":10,"site_id":7298,"vendor_id":58,"task_name":null,"status":"Completed","start_date":"2025-02-12","end_date":"2025-02-12","description":null,"approved_by":null,"image":"[\"tasks\\\/330\\\/1740573426_1166 Hazishekh sahrula PS balu tola.pdf\",\"tasks\\\/330\\\/1740573426_photo_1.jpg\"]","materials_consumed":null,"created_at":"2025-02-12T12:24:53.000000Z","updated_at":"2025-05-24T09:45:43.000000Z","activity":"Add Team","engineer_id":68,"manager_id":66,"completed_at":null,"rejected_at":null}  
