@@ -45,18 +45,18 @@
               <div id="siteList"></div> -->
 
               <label for="siteSearch" class="form-label">Search Site</label>
-                <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
-                    <option value="">Search Site...</option>
-                    @foreach ($sites as $site)
-                        <option value="{{ $site->id }}">{{ $site->site_name }}</option>
-                    @endforeach
-                </select>
+              <select id="siteSearch" class="form-control" style="width: 100%;">
+                <option value="">Search Site...</option>
+                @foreach ($sites as $site)
+                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                @endforeach
+              </select>
 
               <!-- Selected Sites -->
-              <!-- <ul id="selectedSites"></ul> -->
+              <ul id="selectedSites"></ul>
               <!-- Hidden Select to Store Selected Sites -->
-              <!-- <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
-              </select> -->
+              <select id="selectedSitesSelect" name="sites[]" multiple class="d-none">
+              </select>
             </div>
             <div class="mb-3">
               <label for="activity" class="form-label">Activity</label>
@@ -110,7 +110,7 @@
       <x-slot:tbody>
         @forelse ($targets as $target)
           <tr>
-            <td>{{ $target->site->site_name ?? "N/A" }}</td>
+            <td>{{ $target->site->site_name }}</td>
             <td>{{ $target->activity }}</td>
             <td>
               @if ($target && $target->engineer)
@@ -123,8 +123,9 @@
             <td>{{ $target->end_date }}</td>
             <td>
               <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
-              <a href="{{ route("tasks.rooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
-              <form action="{{ route("tasks.destroy", $target->id) }}" method="POST" style="display: inline-block;">
+              <a href="{{ route("tasks.edit", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
+              <form action="{{ route("tasks.destroy", $target->id) }}" method="POST"
+                style="display: inline-block;">
                 @csrf
                 @method("DELETE")
                 <button type="submit" class="btn btn-sm btn-danger">Delete</button>
@@ -136,7 +137,7 @@
             <td colspan="7">No targets found.</td>
           </tr>
         @endforelse
-      </x-slot-tbody>
+        </x-slot-tbody>
     </x-data-table>
   </div>
 </div>
@@ -190,26 +191,25 @@
     });
     // Select 2
     $(document).ready(function() {
-    $('#addTargetModal').on('shown.bs.modal', function () {
-      $('#activity').select2({
-        width: '100%',
-        dropdownParent: $('#addTargetModal')
-      });
+      $('#addTargetModal').on('shown.bs.modal', function() {
+        $('#activity').select2({
+          width: '100%',
+          dropdownParent: $('#addTargetModal')
+        });
 
-      $('#selectEngineer').select2({
-        width: '100%',
-        dropdownParent: $('#addTargetModal')
-      });
+        $('#selectEngineer').select2({
+          width: '100%',
+          dropdownParent: $('#addTargetModal')
+        });
 
-      $('#siteSearch').select2({ 
+        $('#siteSearch').select2({
           allowClear: true,
           dropdownParent: $('#addTargetModal')
+        });
+
+
       });
-
-      
     });
-  });
-
   </script>
 @endpush
 
