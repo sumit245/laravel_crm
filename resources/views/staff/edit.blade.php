@@ -75,7 +75,7 @@
         <label for="category">User Category</label>
         <select id="category" name="category" class="form-control">
             @foreach ($usercategory as $category)
-                <option value="{{ $category->category_code }}" 
+                <option value="{{ $category->id }}" 
                     {{ old('category', $staff->category) == $category->category_code ? 'selected' : '' }}>
                     {{ $category->category_code }}
                 </option>
