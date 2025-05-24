@@ -14186,3 +14186,5 @@
 [2025-05-24 04:56:32] local.INFO: []  
 [2025-05-24 04:57:36] local.INFO: Vendor Edit1  
 [2025-05-24 04:58:10] local.INFO: Vendor Edit1  
+[2025-05-24 05:07:08] local.INFO: Received request to update TADA status {"status":"0","_token":"0qxO5rCwr7aXeVdEYKt9NXH4Z2gkyJX5vqjz73kl"} 
+[2025-05-24 05:07:14] local.INFO: Received request to update TADA status {"status":"1","_token":"0qxO5rCwr7aXeVdEYKt9NXH4Z2gkyJX5vqjz73kl"} 
