@@ -12,7 +12,6 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -150,7 +149,7 @@ class HomeController extends Controller
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isSurveyDone', true)
                 ->whereBetween('updated_at', $dateRange)->count();
-                ->whereBetween('updated_at', $dateRange)->count();
+
 
 
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
@@ -158,7 +157,7 @@ class HomeController extends Controller
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isInstallationDone', true)
                 ->whereBetween('updated_at', $dateRange)->count();
-                ->whereBetween('updated_at', $dateRange)->count();
+
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
 
@@ -379,18 +378,18 @@ class HomeController extends Controller
             case 'custom':
                 $start = request()->start_date;
                 $end = request()->end_date;
-        
+
                 // Optional: fallback if missing
                 if (!$start || !$end) {
                     return [now()->subDay(), now()];
                 }
-        
+
                 return [
                     \Carbon\Carbon::parse($start)->startOfDay(),
                     \Carbon\Carbon::parse($end)->endOfDay()
                 ];
-            // case 'custom':
-            //     return [request()->start_date, request()->end_date];
+                // case 'custom':
+                //     return [request()->start_date, request()->end_date];
             default:
                 // Return all time data
                 return [now()->subDay(), now()]; // Last 24 hours

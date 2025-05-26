@@ -22,5 +22,4 @@ class UserCategory extends Model
     {
         return $this->belongsTo(Vehicle::class, 'allowed_vehicles', 'vehicle_id');
     }
-
 }
