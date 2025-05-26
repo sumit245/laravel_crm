@@ -375,33 +375,33 @@
             
             <!-- Document Uploads -->
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Document Uploads</span>
-                    <a href="{{ route('hrm.apply') }}#documents" class="edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                </div>
-                <div class="card-body">
-                    @if(!empty($data['documents']))
-                        <div class="row">
-                            @foreach($data['documents'] as $docName => $docPath)
-                                <div class="col-md-6 mb-3">
-                                    <div class="info-row">
-                                        <div class="info-label">{{ $docName }}:</div>
-                                        <div class="info-value">
-                                            <a href="{{ asset('storage/' . $docPath) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                                                <i class="fas fa-file-alt me-1"></i> View Document
-                                            </a>
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Document Uploads</span>
+        <a href="{{ route('hrm.apply') }}#documents" class="edit-btn">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+    </div>
+    <div class="card-body">
+        @if(!empty($data['documents']))
+            <div class="row">
+                @foreach($data['documents'] as $document)
+                    <div class="col-md-6 mb-3">
+                        <div class="info-row">
+                            <div class="info-label">{{ $document['name'] }}:</div>
+                            <div class="info-value">
+                                <a href="{{ config('filesystems.disks.s3.url') . '/' . $document['s3_path'] }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-file-alt me-1"></i> View Document
+                                </a>
+                            </div>
                         </div>
-                    @else
-                        <p>No documents uploaded.</p>
-                    @endif
-                </div>
+                    </div>
+                @endforeach
             </div>
+        @else
+            <p>No documents uploaded.</p>
+        @endif
+    </div>
+</div>
             
             <!-- Additional Information -->
             <div class="card">
@@ -441,20 +441,20 @@
             
             <!-- Passport Size Photo -->
             <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <span>Passport Size Photo</span>
-                    <a href="{{ route('hrm.apply') }}#photo" class="edit-btn">
-                        <i class="fas fa-edit"></i> Edit
-                    </a>
-                </div>
-                <div class="card-body text-center">
-                    @if(!empty($data['photo']))
-                        <img src="{{ asset('storage/' . $data['photo']) }}" alt="Passport Photo" class="photo-preview">
-                    @else
-                        <p>No passport photo uploaded.</p>
-                    @endif
-                </div>
-            </div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Passport Size Photo</span>
+        <a href="{{ route('hrm.apply') }}#photo" class="edit-btn">
+            <i class="fas fa-edit"></i> Edit
+        </a>
+    </div>
+    <div class="card-body text-center">
+        @if(!empty($data['passport_photo_s3_path']))
+            <img src="{{ config('filesystems.disks.s3.url') . '/' . $data['passport_photo_s3_path'] }}" alt="Passport Photo" class="photo-preview">
+        @else
+            <p>No passport photo uploaded.</p>
+        @endif
+    </div>
+</div>
             
             <!-- Declaration -->
             <div class="card">
