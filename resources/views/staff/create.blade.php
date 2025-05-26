@@ -15,7 +15,6 @@
             </ul>
           </div>
         @endif
-
         <form class="forms-sample" action="{{ route("staff.store") }}" method="POST">
           @csrf
           <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
