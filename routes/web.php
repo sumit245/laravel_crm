@@ -171,6 +171,7 @@ Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('h
 Route::get('/apply/success', function() {
     return view('hrm.success');
 })->name('hrm.success');
+Route::post('/apply/get-s3-upload-url', [PreviewController::class, 'getS3UploadUrl'])->name('hrm.get-s3-upload-url');
 // apply now
 Route::get('apply-now', function () {
     return view('hrm.applyNow');

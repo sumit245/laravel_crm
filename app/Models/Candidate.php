@@ -39,7 +39,9 @@ class Candidate extends Model
         'currently_employed',
         'reason_for_leaving',
         'other_info',
-        'photo',
+        'photo_name',
+        'photo_s3_path',
+        'document_paths',
         'signature'
     ];
     
@@ -47,5 +49,6 @@ class Candidate extends Model
     protected $casts = [
         'education' => 'array',
         'document_path' => 'array',
+        'document_paths' => 'array',
     ];
 }

@@ -3,11 +3,11 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
-
 use Illuminate\Http\Request;
 use App\Models\Candidate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Str;
 
 class PreviewController extends Controller
 {
@@ -58,10 +58,9 @@ class PreviewController extends Controller
             'experience' => 'required|numeric',
             'notice_period' => 'required|string|max:50',
             
-            // Documents
+            // Documents - now we're handling file paths directly
             'document_name' => 'nullable|array',
-            'document_file' => 'nullable|array',
-            'document_file.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:5120',
+            'document_s3_path' => 'nullable|array',
             
             // Additional Information
             'disabilities' => 'required|string|in:Yes,No',
@@ -69,8 +68,9 @@ class PreviewController extends Controller
             'reason_for_leaving' => 'nullable|string|max:255',
             'other_info' => 'nullable|string',
             
-            // Photo
-            'passport_photo' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            // Photo - now we're handling file paths directly
+            'passport_photo_name' => 'required|string',
+            'passport_photo_s3_path' => 'required|string',
             
             // Declaration
             'signature' => 'required|string|max:255',
@@ -78,37 +78,30 @@ class PreviewController extends Controller
             'agree_terms' => 'required|accepted',
         ]);
 
-        // Create a data array without file objects
+        // Create a data array
         $data = $validatedData;
         
         // Format addresses
         $data['permanent_address'] = "{$data['perm_house_no']}, {$data['perm_street']}, {$data['perm_city']}, {$data['perm_state']}, {$data['perm_country']} - {$data['perm_zip']}";
         $data['current_address'] = "{$data['curr_house_no']}, {$data['curr_street']}, {$data['curr_city']}, {$data['curr_state']}, {$data['curr_country']} - {$data['curr_zip']}";
         
-        // Process passport photo - store the file and save the path
-        if ($request->hasFile('passport_photo')) {
-            $photoPath = $request->file('passport_photo')->store('photos', 'public');
-            $data['photo'] = $photoPath;
-        }
-        
-        // Remove the file object from data array to prevent serialization issues
-        unset($data['passport_photo']);
-        
-        // Process documents - store the files and save the paths
+        // Process documents - we're now receiving S3 paths directly
         $documents = [];
-        if ($request->hasFile('document_file')) {
-            foreach ($request->file('document_file') as $index => $file) {
-                if ($file) {
-                    $path = $file->store('documents', 'public');
-                    $name = $request->document_name[$index] ?? "Document " . ($index + 1);
-                    $documents[$name] = $path;
+        if (isset($data['document_name']) && isset($data['document_s3_path'])) {
+            foreach ($data['document_name'] as $index => $name) {
+                if (isset($data['document_s3_path'][$index]) && !empty($data['document_s3_path'][$index])) {
+                    $documents[] = [
+                        'name' => $name,
+                        's3_path' => $data['document_s3_path'][$index]
+                    ];
                 }
             }
             $data['documents'] = $documents;
         }
         
-        // Remove the file objects from data array
-        unset($data['document_file']);
+        // Remove the raw document arrays from data
+        unset($data['document_name']);
+        unset($data['document_s3_path']);
         
         // Store all data in session
         Session::put('candidate_data', $data);
@@ -167,7 +160,11 @@ class PreviewController extends Controller
             $candidate->currently_employed = $data['currently_employed'] ?? null;
             $candidate->reason_for_leaving = $data['reason_for_leaving'] ?? null;
             $candidate->other_info = $data['other_info'] ?? null;
-            $candidate->photo = $data['photo'] ?? null;
+            
+            // Photo information
+            $candidate->photo_name = $data['passport_photo_name'] ?? null;
+            $candidate->photo_s3_path = $data['passport_photo_s3_path'] ?? null;
+            
             $candidate->signature = $data['signature'] ?? null;
             
             // Store education as JSON
@@ -177,7 +174,7 @@ class PreviewController extends Controller
             
             // Store document paths as JSON
             if (isset($data['documents'])) {
-                $candidate->document_path = json_encode($data['documents']);
+                $candidate->document_paths = json_encode($data['documents']);
             }
             
             // Set status to pending by default
@@ -197,5 +194,45 @@ class PreviewController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Error submitting application: ' . $e->getMessage());
         }
+    }
+
+    // Method to generate a presigned S3 URL for direct uploads
+    public function getS3UploadUrl(Request $request)
+    {
+        $request->validate([
+            'file_name' => 'required|string',
+            'file_type' => 'required|string'
+        ]);
+
+        $fileName = $request->file_name;
+        $fileType = $request->file_type;
+        
+        // Generate a unique file name
+        $uniqueFileName = Str::uuid() . '-' . $fileName;
+        
+        // Determine folder based on file type
+        $folder = str_contains($fileType, 'image') ? 'photos' : 'documents';
+        
+        // Generate the S3 path
+        $filePath = $folder . '/' . $uniqueFileName;
+        
+        // Generate a presigned URL for direct upload to S3
+        $s3Client = Storage::disk('s3')->getClient();
+        $bucket = config('filesystems.disks.s3.bucket');
+        
+        $command = $s3Client->getCommand('PutObject', [
+            'Bucket' => $bucket,
+            'Key' => $filePath,
+            'ContentType' => $fileType,
+            'ACL' => 'public-read'
+        ]);
+        
+        $presignedUrl = $s3Client->createPresignedRequest($command, '+60 minutes')->getUri()->__toString();
+        
+        return response()->json([
+            'upload_url' => $presignedUrl,
+            's3_path' => $filePath,
+            'file_name' => $uniqueFileName
+        ]);
     }
 }
