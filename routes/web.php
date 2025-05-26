@@ -61,7 +61,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Conveyance route fixed
     Route::get('/billing/tada', [ConveyanceController::class, 'convenience'])->name('billing.convenience');
-    // Tada route fixed
     Route::get('/billing/convenience', [ConveyanceController::class, 'tadaView'])->name('billing.tada');
     // Settings Route
     Route::get('/settings', [ConveyanceController::class, 'settings'])->name('billing.settings');
@@ -72,17 +71,17 @@ Route::middleware(['auth'])->group(function () {
     // Update Vehicle
     Route::post('/settings/update', [ConveyanceController::class, 'updateVehicle'])->name('billing.updatevehicle');
     // Delete Vehicle
-    Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
+    Route::delete('/settings/delete/{id}', [ConveyanceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Accept and Reject Conveyance
-    Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
-    Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
+    Route::post('/conveyance/accept/{id}', [ConveyanceController::class, 'accept'])->name('conveyance.accept');
+    Route::post('/conveyance/reject/{id}', [ConveyanceController::class, 'reject'])->name('conveyance.reject');
 
     // Conveyance details
-    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
+    Route::get('/convenience-details/{id}', [ConveyanceController::class, 'showdetailsconveyance'])->name('convenience.details');
 
 
     // Conveyance details
-    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
+    Route::get('/convenience-details/{id}', [ConveyanceController::class, 'showdetailsconveyance'])->name('convenience.details');
     Route::delete('/settings/delete/{id}', [ConveyanceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Billing Edit User
     Route::get('/settings/edit-user/{id}', [ConveyanceController::class, 'editUser'])->name('billing.edituser');
