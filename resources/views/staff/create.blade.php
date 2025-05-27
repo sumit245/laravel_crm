@@ -108,20 +108,35 @@
           </div>
         </div>
 
-        <div class="row">
-          <div class="col-md-12">
-            <div class="form-group">
-              <label for="role" class="form-label">Role</label>
-              <select name="role" class="form-select" id="role" required>
-                <option value="">-- Select Role --</option>
-                <option value="2">Project Manager</option>
-                <option value="1">Site Engineer</option>
-                <option value="4">Store Incharge</option>
-                <option value="5">Coordinator</option>
-              </select>
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="role" class="form-label">Role</label>
+                <select name="role" class="form-select" id="role" required>
+                  <option value="">-- Select Role --</option>
+                  <option value="2">Project Manager</option>
+                  <option value="1">Site Engineer</option>
+                  <option value="4">Store Incharge</option>
+                  <option value="5">Coordinator</option>
+                </select>
+              </div>
             </div>
           </div>
-        </div>
+          <!-- User category -->
+           <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="category" class="form-label">User Category</label>
+                <select name="category" class="form-select" id="category" required>
+                  <option value="">-- Select Category --</option>
+                  @foreach ($usercategories as $category)
+                    <option value="{{ $category->id }}">{{ $category->category_code }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+          </div>
+
 
         <!-- Password Fields with eye toggle -->
         <div class="row">

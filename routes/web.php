@@ -4,7 +4,7 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\API\PreviewController;
+use App\Http\Controllers\API\HRMController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
@@ -62,11 +62,14 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Conveyance route fixed
-    Route::get('/billing/tada', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
-    Route::get('/billing/convenience', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
+    // status update
+    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
     //Add Vehicle
     Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
     // Edit Vehicle
@@ -89,6 +92,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
 
     // Add Categories
+    Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
     Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
     Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
@@ -133,14 +137,14 @@ Route::get('convenience-settings', function () {
 
     // Task router
     Route::resource('tasks', TasksController::class)->except(['show']);
-    Route::get('/tasks/rooftop/{id}', [TasksController::class, 'rooftop'])->name('tasks.rooftop');
+    Route::get('/tasks/rooftop/{id}', [TasksController::class, 'editrooftop'])->name('tasks.editrooftop');
     Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
     // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
     
     // Projects Controller
     // Deleting target
-    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroy');
+    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
 
 
 

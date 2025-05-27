@@ -8,25 +8,25 @@
         <div class="col-md-3 col-sm-6">
             <div class="card-summary">
                 <h6>Total Trips</h6>
-                <div class="value">15</div>
+                <div class="value">{{ $count_trip }}</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card-summary">
                 <h6>Total KM</h6>
-                <div class="value">6,345</div>
+                <div class="value">{{ $total_km }}</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card-summary">
                 <h6>Total Expense</h6>
-                <div class="value">₹ 34,670</div>
+                <div class="value">Rs.{{ $total_amount }}</div>
             </div>
         </div>
         <div class="col-md-3 col-sm-6">
             <div class="card-summary">
                 <h6>Pending Claims</h6>
-                <div class="value">2</div>
+                <div class="value">{{ $pendingclaimcount }}</div>
             </div>
         </div>
     </div>
@@ -56,7 +56,7 @@
                             <th>To</th>
                             <th>Kilometer</th>
                             <th>Date</th>
-                            <th>Time</th>
+                            <!-- <th>Time</th> -->
                             <th>Vehicle</th>
                             <th>Rate</th>
                             <th>Total</th>
@@ -68,12 +68,12 @@
                     <tbody>
                     @foreach ($tadas as $tada)
                     <tr>
-                            <td>{{ $tada->user->name ?? "N/A" }}</td>
-                            <td>{{ $tada->from ?? "N/A" }}</td>
-                            <td>{{ $tada->to ?? "N/A" }}</td>
+                            <td>{{ $tada->user->firstName ?? "N/A" }}</td>
+                            <td>{{ $tada->from_city ?? "N/A" }}</td>
+                            <td>{{ $tada->to_city ?? "N/A" }}</td>
                             <td>{{ $tada->total_km ?? "N/A" }}</td>
                             <td>{{ $tada->created_at ?? "N/A" }}</td>
-                            <td>{{ $tada->time ?? "N/A" }}</td>
+                            <!-- <td>{{ $tada->time ?? "N/A" }}</td> -->
                             <td>{{ $tada->category }}</td>
                             <td>{{ $tada->rate_per_km }}</td>
                             <td>{{ $tada->rate_per_km * $tada->total_km ?? "N/A" }}</td>
@@ -85,10 +85,26 @@
                             </a>
                             </td>  -->
                             <td>
-                                <span class="badge badge-status badge-pending">Pending</span>
+                                @if($tada->status === null)
+                                    <span class="badge badge-status badge-pending">Pending</span>
+                                    <div class="mt-2">
+                                        <button type="button" class="badge badge-status badge-success accept-tada" data-id="{{ $tada->id }}" title="Accept">
+                                            <i class="mdi mdi-check"></i> Accept
+                                        </button>
+                                        <button type="button" class="badge badge-status badge-rejected reject-tada" data-id="{{ $tada->id }}" title="Reject">
+                                            <i class="mdi mdi-close"></i> Reject
+                                        </button>
+                                    </div>
+                                @elseif($tada->status == 0)
+                                    <span class="badge badge-status badge-rejected" style="background-color: red; color: white">Rejected</span>
+                                @elseif($tada->status == 1)
+                                    <span class="badge badge-status badge-success" style="background-color: mediumseagreen; color: #212529"> Accepted</span>
+                                
+                                @endif
+                                
                             </td>
                             <td class="action-btns">
-                                <a href="#" class="btn btn-info btn-sm" data-bs-toggle="modal" data-bs-target="#detailsModal" title="View Details">
+                                <a href="{{ route('billing.tadaDetails', $tada->user_id) }}" class="btn btn-info btn-sm" title="View Details">
                                     <i class="mdi mdi-eye"></i>
                                 </a>
                             </td>
@@ -234,6 +250,63 @@
 
         $('.dataTables_filter input').addClass('form-control form-control-sm');
     });
+
+    // Approve and Reject buttons Begins
+    $('.accept-tada').on('click', function() {
+    const tadaId = $(this).data('id');
+    updateTadaStatus(tadaId, 1);
+});
+
+$('.reject-tada').on('click', function() {
+    const tadaId = $(this).data('id');
+    updateTadaStatus(tadaId, 0);
+});
+
+function updateTadaStatus(tadaId, status) {
+    // Show confirmation dialog
+    const action = status === 1 ? 'accept' : 'reject';
+    
+    Swal.fire({
+        title: `Confirm ${action}?`,
+        text: `Are you sure you want to ${action} this TADA record?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: status === 1 ? '#28a745' : '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: `Yes, ${action} it!`
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Send AJAX request to update status
+            $.ajax({
+                url: `/tada/update-status/${tadaId}`,
+                type: 'POST',
+                data: {
+                    status: status,
+                    _token: $('meta[name="csrf-token"]').attr('content')
+                },
+                success: function(response) {
+                    Swal.fire(
+                        'Updated!',
+                        `TADA record has been ${action}ed.`,
+                        'success'
+                    ).then(() => {
+                        // Reload the page to reflect changes
+                        location.reload();
+                    });
+                },
+                error: function(xhr) {
+                    Swal.fire(
+                        'Error!',
+                        `Failed to ${action} TADA record.`,
+                        'error'
+                    );
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+    });
+}
+    // Approve and Reject buttons Ends
 
     // Checkbox logic
     document.getElementById('selectAll').addEventListener('change', function(e) {

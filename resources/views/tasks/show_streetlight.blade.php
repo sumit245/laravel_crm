@@ -33,11 +33,6 @@
                 Generate JICR
             </button>
         </div>
-        <div class="col-2 d-flex align-items-end mb-1">
-            <a href="#" class="btn btn-primary w-50">
-                Edit
-            </a>
-        </div>
     </div>
     
     

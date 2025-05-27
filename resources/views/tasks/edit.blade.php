@@ -38,6 +38,16 @@
         @endforeach
     </select>
 </div>
+        <!-- Billed Field -->
+    <div class="mb-3">
+        <label for="billed" class="form-label">Billed</label>
+        <select name="billed" id="billed" class="form-control">
+            <option value="">Select Option</option>
+            <option value="1" {{ isset($tasks->billed) && $tasks->billed == 1 ? 'selected' : '' }}>Yes</option>
+            <option value="0" {{ isset($tasks->billed) && $tasks->billed == 0 ? 'selected' : '' }}>No</option>
+        </select>
+    </div>
+
 
     <!-- Assigned Date -->
     <!-- <div class="mb-3">
