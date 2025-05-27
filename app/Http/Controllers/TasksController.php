@@ -107,13 +107,7 @@ class TasksController extends Controller
         //
         Log::info("Project type " . $request->project_type);
         if ($request->project_type != 1) {
-            // $task        = Task::findOrFail($id);
-            $tasks = Task::with('site', 'engineer', 'manager', 'vendor', 'city')->find($id)->first();
-            // $engineer_id = $task->engineer_id;
-            // $vendor = User::findOrFail($task->vendor_id);
-            // $manager = User::findOrFail($task->manager_id);
-            // $engineer    = User::findOrFail($engineer_id);
-            // $site =         Site::findOrFail($task->site_id);
+            $tasks = Task::with('site', 'engineer', 'manager', 'vendor')->find($id)->first();
             $images      = json_decode($tasks->image, true); // Ensure it's an array
             $fullUrls    = [];
             if (is_array($images)) {
@@ -121,7 +115,6 @@ class TasksController extends Controller
                     $fullUrls[] = Storage::disk('s3')->url($image);
                 }
             }
-
             // Add the full URLs to the image key
             $tasks->image = $fullUrls;
 

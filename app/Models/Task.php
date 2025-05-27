@@ -49,7 +49,4 @@ class Task extends Model
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
-    public function city(){
-        return $this->belongsTo(City::class);
-    }
 }
