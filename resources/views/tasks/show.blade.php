@@ -120,11 +120,11 @@
       <!-- ✅ Material & Rejection -->
       <h6 class="mb-3 border-bottom pb-1 mt-3"><strong>Material & Rejection</strong></h6>
       <div class="row mb-4">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <strong>Material Consumed:</strong>
           <p>{{ $tasks->material_consumed ?? "N/A" }}</p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <strong>Rejected At:</strong>
           <p>{{ $tasks->rejected_at ?? "N/A" }}</p>
         </div>
@@ -133,11 +133,11 @@
       <!-- ✅ Location Info -->
       <h6 class="mb-3 border-bottom pb-1 mt-3"><strong>Location Information</strong></h6>
       <div class="row mb-3">
-        <div class="col-md-6">
+        <div class="col-md-4">
           <strong>Latitude</strong>
           <p>{{ $tasks->site->actual_latitude }}</p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
           <strong>Longitude</strong>
           <p>{{ $tasks->site->actual_longitude }}</p>
         </div>
