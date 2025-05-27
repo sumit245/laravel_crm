@@ -138,10 +138,10 @@
                 class="btn btn-info btn-sm">View</a>
 
               <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-sm">Edit</a>
-              <form action="{{ route("tasks.destroy", $light->id) }}" method="POST" style="display: inline-block;">
+              <form action="{{ route("tasks.destroystreetlight", $light->id) }}" method="POST" style="display: inline-block;" class="delete-task-form">
                 @csrf
                 @method("DELETE")
-                <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                <button type="button" class="btn btn-danger btn-sm delete-task-btn">Delete</button>
               </form>
             </td>
           </tr>
@@ -257,15 +257,30 @@
 
     // Data table script ends
 
-    function confirmDelete() {
-      const confirmed = confirm("Are you sure you want to delete this task?");
-      if (confirmed) {
-        setTimeout(() => {
-          alert("Task deleted successfully.");
-        }, 100); // Show after delete is sent
+    // Delete target
+    $(document).ready(function() {
+  $('.delete-task-btn').on('click', function(e) {
+    e.preventDefault();
+    
+    const form = $(this).closest('.delete-task-form');
+    
+    Swal.fire({
+      title: 'Are you sure?',
+      text: 'You are about to delete this task. This action cannot be undone.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+      cancelButtonText: 'Cancel',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        form.submit();
       }
-      return confirmed;
-    }
+    });
+  });
+});
+    
     $(document).ready(function() {
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",

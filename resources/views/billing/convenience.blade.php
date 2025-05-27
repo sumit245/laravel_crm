@@ -104,7 +104,7 @@
                         <th><input type="checkbox" id="selectAll" /></th>
                         <th>Name</th>
                         <th>Employee Id</th>
-                        <th>Department</th>
+                        <!-- <th>Department</th> -->
                         <th>Distance</th>
                         <th>Amount</th>
                         <th>Status</th>
@@ -115,9 +115,9 @@
                     @foreach ($cons as $row)
                     <tr>
                         <td><input type="checkbox" class="checkboxItem" /></td>
-                        <td>{{ $row->user->name ?? "N/A" }}</td>
+                        <td>{{ $row->user->firstName ?? "N/A" }} {{ $row->user->lastName ?? "N/A" }}</td>
                         <td>{{ $row->user->id ?? "N/A" }}</td>
-                        <td>{{ $row->department ?? "N/A" }}</td>
+                        <!-- <td>{{ $row->department ?? "N/A" }}</td> -->
                         <td>{{ $row->kilometer ?? "N/A" }}</td>
                         <td>{{ ($row->amount ?? 0) }}</td>
                         <td>
@@ -134,16 +134,16 @@
                                 <i class="mdi mdi-eye"></i>
                             </a>
                             @if ($row->status === null)
-                                <form action="{{ route('conveyance.accept', $row->id) }}" method="POST" style="display: inline-block;">
+                                <form action="{{ route('conveyance.accept', $row->id) }}" method="POST" style="display: inline-block;" class="action-form" data-action="accept">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-warning" data-toggle="tooltip" title="Accept">
+                                    <button type="button" class="btn btn-sm btn-warning action-btn" data-toggle="tooltip" title="Accept">
                                         <i class="mdi mdi-check"></i>
                                     </button>
                                 </form>
 
-                                <form action="{{ route('conveyance.reject', $row->id) }}" method="POST" style="display: inline-block;">
+                                <form action="{{ route('conveyance.reject', $row->id) }}" method="POST" style="display: inline-block;" class="action-form" data-action="reject">
                                     @csrf
-                                    <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Reject">
+                                    <button type="button" class="btn btn-sm btn-danger action-btn" data-toggle="tooltip" title="Reject">
                                         <i class="mdi mdi-close"></i>
                                     </button>
                                 </form>
@@ -180,7 +180,34 @@
 @endsection
 
 @push('scripts')
-
+<script>
+    $(document).ready(function() {
+    $(document).on('click', '.action-btn', function(e) {
+        e.preventDefault();
+        
+        const form = $(this).closest('.action-form');
+        const action = form.data('action');
+        const actionText = action === 'accept' ? 'Accept' : 'Reject';
+        const actionColor = action === 'accept' ? '#ffc107' : '#dc3545';
+        
+        Swal.fire({
+            title: `${actionText} this conveyance?`,
+            text: `Are you sure you want to ${action} this conveyance request? This action cannot be undone.`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: actionColor,
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: `Yes, ${actionText}!`,
+            cancelButtonText: 'Cancel',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // Submit the form if confirmed
+                form.submit();
+            }
+        });
+    });
+});
+</script>
 @endpush
 
 

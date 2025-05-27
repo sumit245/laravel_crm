@@ -77,21 +77,86 @@ class SiteController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    // public function store(Request $request)
+    // {
+
+    //     try {
+    //         Log::info('Request received for create site', $request->all);
+    //         $site = Site::create($request->all());
+    //         return redirect()->route('sites.show', $site->id)
+    //             ->with('success', 'Site created successfully.');
+    //     } catch (\Exception $e) {
+    //         $errorMessage = $e->getMessage();
+
+    //         return redirect()->back()
+    //             ->withErrors(['error' => $errorMessage])
+    //             ->withInput();
+    //     }
+    // }
+
     public function store(Request $request)
-    {
+{
+    try {
+        // Log the incoming request data
+        Log::info('Request received for create site', $request->all());
+        
+        // Validate the request data
+        $validatedData = $request->validate([
+            'state' => 'required|integer',
+            'district' => 'required|integer',
+            'location' => 'required|string|max:255',
+            'project_id' => 'required|integer',
+            'site_name' => 'required|string|max:255',
+            'ic_vendor_name' => 'required|integer',
+            'site_engineer' => 'required|integer',
+            'contact_no' => 'required|string',
+            'meter_number' => 'required|string|max:50',
+            'net_meter_sr_no' => 'required|string|max:50',
+            'solar_meter_sr_no' => 'required|string|max:50',
+            'project_capacity' => 'required|numeric',
+            'ca_number' => 'required|string|max:50',
+            'sanction_load' => 'required|numeric',
+            'load_enhancement_status' => 'required|string|max:255',
+            'site_survey_status' => 'required|string|max:255',
+            'material_inspection_date' => 'required|date',
+            'spp_installation_date' => 'required|date',
+            'commissioning_date' => 'required|date',
+            'remarks' => 'nullable|string|max:1000',
+        ]);
 
-        try {
-            $site = Site::create($request->all());
-            return redirect()->route('sites.show', $site->id)
-                ->with('success', 'Site created successfully.');
-        } catch (\Exception $e) {
-            $errorMessage = $e->getMessage();
+        // Create the site with validated data
+        $site = Site::create($validatedData);
+        
+        // Log successful creation
+        Log::info('Site created successfully', ['site_id' => $site->id, 'site_name' => $site->site_name]);
+        
+        return redirect()->route('sites.show', $site->id)
+            ->with('success', 'Site created successfully.');
+            
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        // Handle validation errors
+        Log::warning('Site creation failed - Validation errors', [
+            'errors' => $e->errors(),
+            'input' => $request->all()
+        ]);
+        
+        return redirect()->back()
+            ->withErrors($e->errors())
+            ->withInput();
+            
+    } catch (\Exception $e) {
+        // Handle other exceptions
+        Log::error('Site creation failed - Exception', [
+            'error' => $e->getMessage(),
+            'input' => $request->all()
+        ]);
 
-            return redirect()->back()
-                ->withErrors(['error' => $errorMessage])
-                ->withInput();
-        }
+        return redirect()->back()
+            ->withErrors(['error' => 'An error occurred while creating the site. Please try again.'])
+            ->withInput();
     }
+}
+
 
     /**
      * Display the specified resource.
@@ -178,7 +243,7 @@ class SiteController extends Controller
                     'mukhiya_contact'
                 ]));
 
-                return redirect()->back()
+                return redirect()->route('projects.show', $request->project_id)
                     ->with('success', 'Streetlight site updated successfully.');
             } else {
                 // Normal Site model update

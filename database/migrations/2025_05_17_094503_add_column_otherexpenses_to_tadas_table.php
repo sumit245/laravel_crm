@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\After;
 
 return new class extends Migration
 {
@@ -11,10 +12,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('conveyances', function (Blueprint $table) {
+        Schema::table('tadas', function (Blueprint $table) {
             //
-            $table->string('image')->nullable()->after('vehicle_category'); // or place after any existing column
-            $table->date('date')->nullable()->after('time');
+            $table->json('otherexpense')->after('description_category')->nullable();
         });
     }
 
@@ -23,7 +23,7 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('convyenaces', function (Blueprint $table) {
+        Schema::table('tadas', function (Blueprint $table) {
             //
         });
     }

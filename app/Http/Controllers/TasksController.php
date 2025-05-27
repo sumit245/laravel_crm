@@ -147,6 +147,7 @@ class TasksController extends Controller
     public function edit(string $id, Request $request)
     {
         // Target in streetlight project is being edited
+        Log::info("Edit target", $request->all() ,  $id);
         $projectId = request()->query('project_id');
         if($projectId==11){
             $tasks = StreetlightTask::with(['site', 'engineer', 'vendor']) // eager load relationships
@@ -161,7 +162,7 @@ class TasksController extends Controller
         
     }
 
-    public function rooftop(string $id){
+    public function editrooftop(string $id){
        
         
         //code...
@@ -223,13 +224,14 @@ public function updateRooftop(Request $request, string $id)
      */
     public function update(Request $request, string $id)
     {
+        Log::info("Update target", $request->all());
         $projectId = $request->input('project_id');
     
         if ($projectId == 11) {
             $request->validate([
                 'engineer_id' => 'required|exists:users,id',
                 'vendor_id' => 'required|exists:users,id',
-                
+                'billed' => 'required|boolean',
             ]);
     
             try {
@@ -237,13 +239,14 @@ public function updateRooftop(Request $request, string $id)
     
                 $task->engineer_id = $request->engineer_id;
                 $task->vendor_id = $request->vendor_id;
-                
+                $task->billed = $request->billed;
     
                 $task->save();
     
                 return redirect()->route('projects.show', $projectId)
                     ->with('success', 'Task updated successfully.');
             } catch (\Exception $e) {
+                Log::error('Error updating task: ' . $e->getMessage());
                 return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
             }
         }
@@ -259,7 +262,8 @@ public function updateRooftop(Request $request, string $id)
         try {
             $task = Task::findOrFail($id);
             $task->delete();
-            return response()->json(['success' => true]);
+            return redirect()->back()
+                    ->with('success', 'Task Deleted successfully.');
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }

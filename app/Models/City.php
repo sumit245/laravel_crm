@@ -16,6 +16,10 @@ class City extends Model
      */
 
      protected $fillable = [
-        'name', 'state_id'
+        'name', 
+        'state_id',
+        'tier',
+        'room_min_price',
+        'room_max_price'
     ];
 }

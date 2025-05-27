@@ -15,6 +15,8 @@ class Conveyance extends Model
         'kilometer',
         'amount',
         'created_at',
+        'date',
+        'image',
         'time',
         'status',
         'vehicle_category',

@@ -14,6 +14,8 @@ class UserCategory extends Model
         'name',
         'description',
         'allowed_vehicles',
+        'room_min_price',
+        'room_max_price',
     ];
 
     public $timestamps = true;
@@ -21,6 +23,10 @@ class UserCategory extends Model
     public function vehicle()
     {
         return $this->belongsTo(Vehicle::class, 'allowed_vehicles', 'vehicle_id');
+    }
+    public function users()
+    {
+        return $this->hasMany(User::class, 'category', 'id');
     }
 
 }

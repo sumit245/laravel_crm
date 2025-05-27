@@ -35,9 +35,9 @@
     <!-- Category (Editable) -->
     <div class="mb-3">
         <label for="category" class="form-label fw-bold">Category</label>
-        <select class="form-select" id="category" name="category" required>
+        <select class="form-select " id="category" name="category" required>
             @foreach ($uc as $u)
-            <option value="{{$u->category_code}}">{{ $u->category_code }}</option>
+            <option value="{{$u->id}}">{{ $u->category_code }}</option>
             @endforeach
         </select>
     </div>
@@ -52,3 +52,9 @@
 
 
 @endsection
+
+@push('scripts')
+<script>
+    
+</script>
+@endpush

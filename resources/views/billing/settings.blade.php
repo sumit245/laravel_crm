@@ -26,7 +26,7 @@
 
             <!-- Tab Content Area -->
             <div class="col-md-9 col-lg-10">
-                <div class="tab-content p-3" id="v-pills-tabContent">
+                <div class="tab-content p-3 m-3" id="v-pills-tabContent">
 
                     <!-- Vehicle Settings Tab -->
                     <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel" aria-labelledby="v-pills-vehicle-tab">
@@ -43,7 +43,7 @@
                                     <table id="vehicleTable" class="table table-bordered table-striped table-sm">
                                         <thead class="table-light">
                                             <tr>
-                                                <th>#</th>
+                                                <!-- <th>#</th> -->
                                                 <th>Vehicle Name</th>
                                                 <th>Category</th>
                                                 <th>Sub Category</th>
@@ -54,7 +54,7 @@
                                         <tbody>
                                             @foreach ($vehicles as $vehicle)
                                             <tr>
-                                                <td>{{ $vehicle->id }}</td>
+                                                <!-- <td>{{ $vehicle->id }}</td> -->
                                                 <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
                                                 <td>{{ $vehicle->category ?? "N/A" }}</td>
                                                 <td>{{ $vehicle->sub_category }}</td>
@@ -85,35 +85,35 @@
                     <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
-                            <button class="btn btn-primary" id="assignCategoryBtn">
+                            <!-- <button class="btn btn-primary" id="assignCategoryBtn">
                                 <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
-                            </button>
+                            </button> -->
                         </div>
 
                         <div class="card shadow-sm">
                             <div class="card-body">
                                 <div class="table-responsive">
-                                    <x-data-table id="userTable" class="table table-bordered table-striped table-sm">
-                                        <x-slot:thead class="table-light">
+                                    <table id="userTable" class="table table-bordered table-striped table-sm">
+                                        <thead class="table-light">
                                             <tr>
-                                                <th><input type="checkbox" id="selectAllUsers"></th>
-                                                <th>#</th>
+                                                <!-- <th><input type="checkbox" id="selectAllUsers"></th> -->
+                                                <!-- <th>#</th> -->
                                                 <th>Name</th>
                                                 <th>Role</th>
                                                 <th>Email</th>
                                                 <th>Category</th>
                                                 <th>Actions</th>
                                             </tr>
-                                        </x-slot:thead>
-                                        <x-slot:tbody>
+                                        </thead>
+                                        <tbody>
                                             @foreach ($users as $user)
                                             <tr>
-                                                <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
-                                                <td>{{ $user->id }}</td>
-                                                <td>{{ $user->firstName }} {{ $user->lastName }}</td>
-                                                <td>{{ $user->role }}</td>
-                                                <td>{{ $user->email }}</td>
-                                                <td>{{ $user->category }}</td>
+                                                <!-- <td><input type="checkbox" class="user-checkbox" data-id="1"></td> -->
+                                                <!-- <td>{{ $user->id ?? 0 }}</td> -->
+                                                <td>{{ $user->firstName ?? "N/A" }} {{ $user->lastName ?? "N/A" }}</td>
+                                                <td>{{ $user->role ?? "N/A" }}</td>
+                                                <td>{{ $user->email ?? "N/A" }}</td>
+                                                <td>{{ $user->usercategory->category_code ?? "N/A" }}</td>
                                                 <td>
                                                     <a href="{{ route('billing.edituser', $user->id) }}" class="btn btn-icon btn-primary" title="Edit Category">
                                                         <i class="mdi mdi-pencil"></i>
@@ -121,8 +121,8 @@
                                                 </td>
                                             </tr>
                                             @endforeach
-                                        </x-slot:tbody>
-                                    </x-data-table>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </div>
                         </div>
@@ -132,9 +132,9 @@
                     <div class="tab-pane fade" id="v-pills-category" role="tabpanel" aria-labelledby="v-pills-category-tab">
                         <div class="d-flex justify-content-between align-items-center mb-4">
                             <h4 class="mb-0"><i class="bi bi-tags me-2"></i>Category Settings</h4>
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+                            <a href="{{ route('billing.addcategory') }}" class="btn btn-primary">
                                 <i class="mdi mdi-plus-circle me-1"></i> Add Category
-                            </button>
+                            </a>
                         </div>
 
                         <div class="card shadow-sm">
@@ -143,7 +143,7 @@
                                     <x-data-table id="categoryTable" class="table table-bordered table-striped table-sm">
                                         <x-slot:thead class="table-light">
                                             <tr>
-                                                <th>#</th>
+                                                <!-- <th>#</th> -->
                                                 <th>Category Name</th>
                                                 <th>Vehicles Allowed</th>
                                                 <th>Actions</th>
@@ -152,9 +152,27 @@
                                         <x-slot:tbody>
                                         @foreach ($categories as $cat)
                                             <tr>
-                                                <td>{{ $cat->id }}</td>
+                                                <!-- <td>{{ $cat->id }}</td> -->
                                                 <td>{{ $cat->category_code }}</td>
-                                                <td>{{ $cat->allowed_vehicles }}</td>
+                                                <!-- <td>{{ $cat->allowed_vehicles }}</td> -->
+                                                 <td>
+                                                    @php
+                                                        $vehicleIds = json_decode($cat->allowed_vehicles, true);
+                                                        $vehicleList = [];
+                                                        
+                                                        if (is_array($vehicleIds)) {
+                                                            foreach ($vehicleIds as $id) {
+                                                                // Try to find the vehicle by ID and get its category
+                                                                $vehicle = $vehicles->firstWhere('id', $id);
+                                                                $vehicleList[] = $vehicle ? ($vehicle->category ?? $vehicle->id) : $id;
+                                                            }
+                                                            echo implode(', ', $vehicleList);
+                                                        } else {
+                                                            echo $cat->allowed_vehicles;
+                                                        }
+                                                    @endphp
+
+                                                </td>
                                                 <td>
                                                 <a href="{{ route('billing.editcategory', $cat->id) }}" class="btn btn-icon btn-warning">
                                                         <i class="mdi mdi-pencil"></i>
@@ -247,63 +265,6 @@
         </div>
     </div>
 
-    <!-- Edit Vehicle Modal Not in use here made an different page -->
-    <div class="modal fade" id="editVehicleModal" tabindex="-1" aria-labelledby="editVehicleModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="editVehicleModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Vehicle</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form id="editVehicleForm" action="{{ route('billing.updatevehicle') }}" method="POST">
-                        @csrf
-                        @method('POST')
-
-                        <!-- Dynamic values will be inserted here directly from data attributes -->
-                        <input type="hidden" id="editVehicleId" name="vehicle_id" data-value-from="data-id">
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editVehicleName" class="form-label fw-bold">Vehicle Name</label>
-                                    <input type="text" class="form-control" id="editVehicleName" name="vehicle_name" required data-value-from="data-name">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editRatePerKm" class="form-label fw-bold">Rate per KM (₹)</label>
-                                    <input type="number" class="form-control" id="editRatePerKm" name="rate" step="0.01" required data-value-from="data-rate">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row mb-3">
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editCategory" class="form-label fw-bold">Category</label>
-                                    <input type="text" class="form-control" id="editCategory" name="category" data-value-from="data-category">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="mb-3">
-                                    <label for="editSubCategory" class="form-label fw-bold">Sub Category</label>
-                                    <input type="text" class="form-control" id="editSubCategory" name="sub_category" required data-value-from="data-sub-category">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="modal-footer bg-light">
-                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                                <i class="bi bi-x-circle me-1"></i> Cancel
-                            </button>
-                            <button type="submit" class="btn btn-primary" id="updateVehicleBtn">
-                                <i class="bi bi-save me-1"></i> Update Vehicle
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <!-- Add Category Modal -->
     <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel" aria-hidden="true">
         <div class="modal-dialog">
@@ -321,17 +282,16 @@
                         <input class="form-control" id="categoryName" name="category" required>
                         </input>
                         </div>
+                        
                         <div class="mb-3">
-                        <label for="vehicle" class="form-label fw-bold">Allowed Vehicles</label>
-                        <select class="form-control" id="vehicle" name="vehicle_id" required>
-                            <option value="" disabled>Select Allowed Vehicle</option>
-                            @foreach ($vehicles as $vehicle)
-                            <option value="{{ $vehicle->id }}">
-                                    {{ $vehicle->id }}
-                                </option>
-                            @endforeach
-                        </select> 
+                            <label for="vehiclesAllowed" class="form-label fw-bold">Allowed Vehicles</label>
+                            <select class="form-select" id="vehiclesAllowed" name="vehicle_id[]" multiple="multiple" required>
+                                @foreach ($vehicles as $vehicle)
+                                    <option value="{{ $vehicle->id }}">{{ $vehicle->id }}</option>
+                                @endforeach
+                            </select>
                         </div>
+
                         <div class="modal-footer bg-light">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                         <i class="bi bi-x-circle me-1"></i> Cancel
@@ -341,122 +301,6 @@
                     </button>
                 </div>
                     </form>
-                </div>
-                
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit Category Modal -->
-    <div class="modal fade" id="editCategoryModal" tabindex="-1" aria-labelledby="editCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="editCategoryModalLabel"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form id="editCategoryForm">
-                        <div class="mb-3">
-                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
-                            <div class="invalid-feedback">Please enter a category name.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
-                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
-                                <option value="Two Wheelers" selected>Two Wheelers</option>
-                                <option value="Four Wheelers" selected>Four Wheelers</option>
-                                <option value="Public Transport">Public Transport</option>
-                            </select>
-                            <div class="invalid-feedback">Please select at least one vehicle.</div>
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i> Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" id="updateCategoryBtn">
-                        <i class="bi bi-save me-1"></i> Update Category
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Edit User Category Modal -->
-<div class="modal fade" id="editCategoryModal{{-- $cat->id --}}" tabindex="-1" aria-labelledby="editCategoryModalLabel{{-- $cat->id --}}" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content shadow">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title fw-bold" id="editCategoryModalLabel{{ $cat->id }}"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body p-4">
-            <form id="editCategoryForm">
-                        <div class="mb-3">
-                            <label for="editCategoryName" class="form-label fw-bold">Category Name</label>
-                            <input type="text" class="form-control" id="editCategoryName" value="Personal" required>
-                            <div class="invalid-feedback">Please enter a category name.</div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="editVehiclesAllowed" class="form-label fw-bold">Vehicles Allowed</label>
-                            <select id="editVehiclesAllowed" name="editVehiclesAllowed[]" multiple="multiple" class="form-select" style="width: 100%;" required>
-                                @foreach ($categories as $category)
-                                <option value="{{ $category->category_code }}" selected>{{ $category->category_code }}</option>
-                                @endforeach
-                            </select>
-                            <div class="invalid-feedback">Please select at least one vehicle.</div>
-                        </div>
-                    </form>
-            </div>
-            <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="button" class="btn btn-primary" id="updateCategoryBtn">
-                    <i class="bi bi-save me-1"></i> Update Category
-                </button>
-            </div>
-        </div>
-    </div>
-    </div>
-
-
-    <!-- Assign Category Modal -->
-    <div class="modal fade" id="assignCategoryModal" tabindex="-1" aria-labelledby="assignCategoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content shadow">
-                <div class="modal-header bg-primary text-white">
-                    <h5 class="modal-title fw-bold" id="assignCategoryModalLabel"><i class="bi bi-tag-multiple me-2"></i> Assign Category to Users</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body p-4">
-                    <form id="assignCategoryForm">
-                        <div class="mb-3">
-                            <label for="bulkUserCategory" class="form-label fw-bold">Select Category</label>
-                            <select class="form-select" id="bulkUserCategory" required>
-                                <option value="" selected disabled>Select category</option>
-                                <option value="Field Staff">Field Staff</option>
-                                <option value="Management">Management</option>
-                                <option value="Store Staff">Store Staff</option>
-                                <option value="Admin">Admin</option>
-                            </select>
-                            <div class="invalid-feedback">Please select a category.</div>
-                        </div>
-                        <div class="alert alert-info">
-                            <i class="bi bi-info-circle me-2"></i> This will assign the selected category to all checked users.
-                        </div>
-                    </form>
-                </div>
-                <div class="modal-footer bg-light">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                        <i class="bi bi-x-circle me-1"></i> Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" id="saveBulkCategoryBtn">
-                        <i class="bi bi-save me-1"></i> Assign Category
-                    </button>
                 </div>
             </div>
         </div>
@@ -488,22 +332,24 @@
 
 @push('scripts')
 <script>
-
-    
-
     $(document).ready(function() {
         // Initialize Select2 for vehicles allowed dropdowns
-        $('#vehiclesAllowed').select2({
-            placeholder: "Select vehicles",
-            allowClear: true,
-            dropdownParent: $('#addCategoryModal')
-        });
+        
 
         $('#editVehiclesAllowed').select2({
             placeholder: "Select vehicles",
             allowClear: true,
             dropdownParent: $('#editCategoryModal')
         });
+        
+         
+
+        // Reopen workaround if needed
+        $('#addCategoryModal').on('shown.bs.modal', function () {
+            $('#vehiclesAllowed').select2('open');
+        });
+    
+        
 
         // Initialize DataTables
         $('#vehicleTable').DataTable({
@@ -828,6 +674,12 @@
             });
         });
 
+        $('#vehiclesAllowed').select2({
+            placeholder: "Select vehicles",
+            allowClear: true,
+            dropdownParent: $('#addCategoryModal')
+        });
+
         // Clear validation on input change
         $('input, select').on('change', function() {
             $(this).removeClass('is-invalid');
@@ -837,6 +689,7 @@
         $('#vehiclesAllowed, #editVehiclesAllowed').on('change', function() {
             $(this).next('.select2-container').css('border', '');
         });
+        
     });
 </script>
 @endpush
