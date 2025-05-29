@@ -61,8 +61,8 @@
             <td>{{ $member->serial_number }}</td>
             <td>{{ $member->hsn }}</td>
             <td>{{ $member->unit }}</td>
-            <!-- <td>{{ $member->created_at }}</td> -->
-            <!-- <td>{{  }}</td> -->
+            {{--  <td>{{ $member->created_at }}</td> 
+             <td>{{  }}</td> --}}
             <td>
               <!-- View Button -->
               <a href="#modal{{ $member->id }}" data-bs-toggle="modal" class="btn btn-sm btn-info">Details</a>

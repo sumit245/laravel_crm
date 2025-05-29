@@ -62,7 +62,7 @@
                 <!-- Placeholder Image -->
                 <img src="{{ asset($details->first()->user->image ?? 'images/default.png') }}" alt="Placeholder" class="rounded-circle" width="60" height="60">
                 <div class="ms-3">
-                    <h5 class="mb-0">{{ $details->first()->user->name ?? "N/A" }}</h5>
+                    <h5 class="mb-0">{{ $details->first()->user->firstName ?? "N/A" }} {{ $details->first()->user->lastName ?? "N/A" }}</h5>
                     @if ($details->first()->user->role==0)
                         <small class="text-muted">Admin</small>
                     @elseif ($details->first()->user->role==1)

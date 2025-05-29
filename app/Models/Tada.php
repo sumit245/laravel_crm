@@ -20,7 +20,9 @@ class Tada extends Model
         'outcome_achieve',
         // 'Desgination', // Consider correcting to 'designation' for consistency
         'start_journey',
+        'start_journey_time',
         'end_journey',
+        'end_journey_time',
         'transport',
         'start_journey_pnr',
         'from_city',
@@ -32,7 +34,7 @@ class Tada extends Model
         'vehicle_no',
         'category',
         'description_category',
-        'pickup_date',
+        'status'
     ];
 
     protected $casts = [
@@ -40,13 +42,20 @@ class Tada extends Model
         'end_journey_pnr' => 'array',
         'start_journey' => 'date',
         'end_journey' => 'date',
-        'pickup_date' => 'date',
+        'other'
     ];
 
     // Relationship to user
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function travelfare(){
+        return $this->hasMany(travelfare::class);
+    }
+    public function dailyfare(){
+        return $this->hasMany(dailyfare::class);
     }
 
 }

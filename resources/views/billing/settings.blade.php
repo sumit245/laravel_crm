@@ -32,7 +32,7 @@
 
       <!-- Tab Content Area -->
       <div class="col-md-9 col-lg-10">
-        <div class="tab-content p-3" id="v-pills-tabContent">
+        <div class="tab-content m-3 p-3" id="v-pills-tabContent">
 
           <!-- Vehicle Settings Tab -->
           <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel"
@@ -50,10 +50,10 @@
                   <table id="vehicleTable" class="table-bordered table-striped table-sm table">
                     <thead class="table-light">
                       <tr>
-                        <th>#</th>
+                        <!-- <th>#</th> -->
                         <th>Vehicle Name</th>
                         <th>Category</th>
-                        <th>Icon</th>
+                        <th>Sub Category</th>
                         <th>Rate/KM</th>
                         <th>Actions</th>
                       </tr>
@@ -61,10 +61,10 @@
                     <tbody>
                       @foreach ($vehicles as $vehicle)
                         <tr>
-                          <td>{{ $vehicle->id }}</td>
+                          <!-- <td>{{ $vehicle->id }}</td> -->
                           <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
                           <td>{{ $vehicle->category ?? "N/A" }}</td>
-                          <td><i class="fa fa-{{ $vehicle->icon }}"></td>
+                          <td>{{ $vehicle->sub_category }}</td>
                           <td>{{ $vehicle->rate }}</td>
                           <td>
                             <a href="{{ route("billing.editvehicle", $vehicle->id) }}" class="btn btn-icon btn-warning"
@@ -94,35 +94,35 @@
           <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
-              <button class="btn btn-primary" id="assignCategoryBtn">
-                <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
-              </button>
+              <!-- <button class="btn btn-primary" id="assignCategoryBtn">
+                                  <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
+                              </button> -->
             </div>
 
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
-                  <x-data-table id="userTable" class="table-bordered table-striped table-sm table">
-                    <x-slot:thead class="table-light">
+                  <table id="userTable" class="table-bordered table-striped table-sm table">
+                    <thead class="table-light">
                       <tr>
-                        <th><input type="checkbox" id="selectAllUsers"></th>
-                        <th>#</th>
+                        <!-- <th><input type="checkbox" id="selectAllUsers"></th> -->
+                        <!-- <th>#</th> -->
                         <th>Name</th>
                         <th>Role</th>
                         <th>Email</th>
                         <th>Category</th>
                         <th>Actions</th>
                       </tr>
-                    </x-slot:thead>
-                    <x-slot:tbody>
+                    </thead>
+                    <tbody>
                       @foreach ($users as $user)
                         <tr>
-                          <td><input type="checkbox" class="user-checkbox" data-id="1"></td>
-                          <td>{{ $user->id }}</td>
-                          <td>{{ $user->firstName }} {{ $user->lastName }}</td>
-                          <td>{{ $user->role }}</td>
-                          <td>{{ $user->email }}</td>
-                          <td>{{ $user->category }}</td>
+                          <!-- <td><input type="checkbox" class="user-checkbox" data-id="1"></td> -->
+                          <!-- <td>{{ $user->id ?? 0 }}</td> -->
+                          <td>{{ $user->firstName ?? "N/A" }} {{ $user->lastName ?? "N/A" }}</td>
+                          <td>{{ $user->role ?? "N/A" }}</td>
+                          <td>{{ $user->email ?? "N/A" }}</td>
+                          <td>{{ $user->usercategory->category_code ?? "N/A" }}</td>
                           <td>
                             <a href="{{ route("billing.edituser", $user->id) }}" class="btn btn-icon btn-primary"
                               title="Edit Category">
@@ -131,8 +131,8 @@
                           </td>
                         </tr>
                       @endforeach
-                    </x-slot:tbody>
-                  </x-data-table>
+                    </tbody>
+                  </table>
                 </div>
               </div>
             </div>
@@ -142,9 +142,9 @@
           <div class="tab-pane fade" id="v-pills-category" role="tabpanel" aria-labelledby="v-pills-category-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0"><i class="bi bi-tags me-2"></i>Category Settings</h4>
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addCategoryModal">
+              <a href="{{ route("billing.addcategory") }}" class="btn btn-primary">
                 <i class="mdi mdi-plus-circle me-1"></i> Add Category
-              </button>
+              </a>
             </div>
 
             <div class="card shadow-sm">
@@ -153,7 +153,7 @@
                   <x-data-table id="categoryTable" class="table-bordered table-striped table-sm table">
                     <x-slot:thead class="table-light">
                       <tr>
-                        <th>#</th>
+                        <!-- <th>#</th> -->
                         <th>Category Name</th>
                         <th>Vehicles Allowed</th>
                         <th>Actions</th>
@@ -162,9 +162,27 @@
                     <x-slot:tbody>
                       @foreach ($categories as $cat)
                         <tr>
-                          <td>{{ $cat->id }}</td>
+                          <!-- <td>{{ $cat->id }}</td> -->
                           <td>{{ $cat->category_code }}</td>
-                          <td>{{ $cat->allowed_vehicles }}</td>
+                          <!-- <td>{{ $cat->allowed_vehicles }}</td> -->
+                          <td>
+                            @php
+                              $vehicleIds = json_decode($cat->allowed_vehicles, true);
+                              $vehicleList = [];
+
+                              if (is_array($vehicleIds)) {
+                                  foreach ($vehicleIds as $id) {
+                                      // Try to find the vehicle by ID and get its category
+                                      $vehicle = $vehicles->firstWhere("id", $id);
+                                      $vehicleList[] = $vehicle ? $vehicle->category ?? $vehicle->id : $id;
+                                  }
+                                  echo implode(", ", $vehicleList);
+                              } else {
+                                  echo $cat->allowed_vehicles;
+                              }
+                            @endphp
+
+                          </td>
                           <td>
                             <a href="{{ route("billing.editcategory", $cat->id) }}" class="btn btn-icon btn-warning">
                               <i class="mdi mdi-pencil"></i>
@@ -284,24 +302,24 @@
               <input class="form-control" id="categoryName" name="category" required>
               </input>
             </div>
-            <div class="mb-3">
-              <div class="mb-3">
-                <label for="vehiclesAllowed" class="form-label fw-bold">Allowed Vehicles</label>
-                <select class="form-control" id="vehiclesAllowed" name="vehicle_id[]" multiple required>
-                  @foreach ($vehicles as $vehicle)
-                    <option value="{{ $vehicle->id }}">{{ $vehicle->id }}</option>
-                  @endforeach
-                </select>
-              </div>
 
-              <div class="modal-footer bg-light">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                  <i class="bi bi-x-circle me-1"></i> Cancel
-                </button>
-                <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
-                  <i class="bi bi-save me-1"></i> Save Category
-                </button>
-              </div>
+            <div class="mb-3">
+              <label for="vehiclesAllowed" class="form-label fw-bold">Allowed Vehicles</label>
+              <select class="form-select" id="vehiclesAllowed" name="vehicle_id[]" multiple="multiple" required>
+                @foreach ($vehicles as $vehicle)
+                  <option value="{{ $vehicle->id }}">{{ $vehicle->id }}</option>
+                @endforeach
+              </select>
+            </div>
+
+            <div class="modal-footer bg-light">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                <i class="bi bi-x-circle me-1"></i> Cancel
+              </button>
+              <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
+                <i class="bi bi-save me-1"></i> Save Category
+              </button>
+            </div>
           </form>
         </div>
       </div>
@@ -346,6 +364,14 @@
         allowClear: true,
         dropdownParent: $('#editCategoryModal')
       });
+
+
+
+      // Reopen workaround if needed
+      $('#addCategoryModal').on('shown.bs.modal', function() {
+        $('#vehiclesAllowed').select2('open');
+      });
+
 
 
       // Initialize DataTables

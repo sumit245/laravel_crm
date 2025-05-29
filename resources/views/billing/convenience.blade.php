@@ -31,40 +31,40 @@
 
     <!-- Export Buttons -->
     <!-- <div class="col-md-3 d-flex justify-content-end align-items-end gap-2">
-            <button class="btn btn-success btn-sm custom-btn" id="exportExcel">
-                <i class="mdi mdi-file-excel fs-4"></i>
-            </button>
-            <button class="btn btn-danger btn-sm custom-btn" id="exportPDF">
-                <i class="mdi mdi-file-pdf fs-4"></i>
-            </button>
-            <button class="btn btn-info btn-sm custom-btn me-2" id="printTable">
-                <i class="mdi mdi-printer fs-4"></i>
-            </button>
-        </div> -->
+              <button class="btn btn-success btn-sm custom-btn" id="exportExcel">
+                  <i class="mdi mdi-file-excel fs-4"></i>
+              </button>
+              <button class="btn btn-danger btn-sm custom-btn" id="exportPDF">
+                  <i class="mdi mdi-file-pdf fs-4"></i>
+              </button>
+              <button class="btn btn-info btn-sm custom-btn me-2" id="printTable">
+                  <i class="mdi mdi-printer fs-4"></i>
+              </button>
+          </div> -->
   </div>
 
   <!-- Filters and Search -->
   <div class="row mb-4 me-0 ms-0">
 
     <!-- <div class="col-md-3">
-          <input type="text" class="form-control shadow-sm" placeholder="Search by Request ID, User, or Date">
-      </div> -->
+            <input type="text" class="form-control shadow-sm" placeholder="Search by Request ID, User, or Date">
+        </div> -->
     <!-- <div class="col-md-3">
-          <select class="form-select shadow-sm" aria-label="Filter by Users">
-              <option selected>Users</option>
-              <option value="1">Ava Martinez</option>
-              <option value="2">Ethan Clark</option>
-              <option value="3">Sophia Chen</option>
-          </select>
-      </div> -->
+            <select class="form-select shadow-sm" aria-label="Filter by Users">
+                <option selected>Users</option>
+                <option value="1">Ava Martinez</option>
+                <option value="2">Ethan Clark</option>
+                <option value="3">Sophia Chen</option>
+            </select>
+        </div> -->
     <!-- <div class="col-md-3">
-          <select class="form-select shadow-sm" aria-label="Filter by Locations">
-              <option selected>Most Frequent Locations</option>
-              <option value="1">New York, NY</option>
-              <option value="2">San Francisco, CA</option>
-              <option value="3">Chicago, IL</option>
-          </select>
-      </div> -->
+            <select class="form-select shadow-sm" aria-label="Filter by Locations">
+                <option selected>Most Frequent Locations</option>
+                <option value="1">New York, NY</option>
+                <option value="2">San Francisco, CA</option>
+                <option value="3">Chicago, IL</option>
+            </select>
+        </div> -->
     <div class="col-md-3">
       <h3 class="fw-bold">Performance Overview</h3>
       <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
@@ -103,7 +103,7 @@
               <th><input type="checkbox" id="selectAll" /></th>
               <th>Name</th>
               <th>Employee Id</th>
-              <th>Department</th>
+              <!-- <th>Department</th> -->
               <th>Distance</th>
               <th>Amount</th>
               <th>Status</th>
@@ -114,9 +114,9 @@
             @foreach ($cons as $row)
               <tr>
                 <td><input type="checkbox" class="checkboxItem" /></td>
-                <td>{{ $row->user->name ?? "N/A" }}</td>
+                <td>{{ $row->user->firstName ?? "N/A" }} {{ $row->user->lastName ?? "N/A" }}</td>
                 <td>{{ $row->user->id ?? "N/A" }}</td>
-                <td>{{ $row->department ?? "N/A" }}</td>
+                <!-- <td>{{ $row->department ?? "N/A" }}</td> -->
                 <td>{{ $row->kilometer ?? "N/A" }}</td>
                 <td>{{ $row->amount ?? 0 }}</td>
                 <td>
@@ -135,17 +135,19 @@
                   </a>
                   @if ($row->status === null)
                     <form action="{{ route("conveyance.accept", $row->id) }}" method="POST"
-                      style="display: inline-block;">
+                      style="display: inline-block;" class="action-form" data-action="accept">
                       @csrf
-                      <button type="submit" class="btn btn-sm btn-warning" data-toggle="tooltip" title="Accept">
+                      <button type="button" class="btn btn-sm btn-warning action-btn" data-toggle="tooltip"
+                        title="Accept">
                         <i class="mdi mdi-check"></i>
                       </button>
                     </form>
 
                     <form action="{{ route("conveyance.reject", $row->id) }}" method="POST"
-                      style="display: inline-block;">
+                      style="display: inline-block;" class="action-form" data-action="reject">
                       @csrf
-                      <button type="submit" class="btn btn-sm btn-danger" data-toggle="tooltip" title="Reject">
+                      <button type="button" class="btn btn-sm btn-danger action-btn" data-toggle="tooltip"
+                        title="Reject">
                         <i class="mdi mdi-close"></i>
                       </button>
                     </form>
@@ -180,6 +182,34 @@
 @endsection
 
 @push("scripts")
+  <script>
+    $(document).ready(function() {
+      $(document).on('click', '.action-btn', function(e) {
+        e.preventDefault();
+
+        const form = $(this).closest('.action-form');
+        const action = form.data('action');
+        const actionText = action === 'accept' ? 'Accept' : 'Reject';
+        const actionColor = action === 'accept' ? '#ffc107' : '#dc3545';
+
+        Swal.fire({
+          title: `${actionText} this conveyance?`,
+          text: `Are you sure you want to ${action} this conveyance request? This action cannot be undone.`,
+          icon: 'warning',
+          showCancelButton: true,
+          confirmButtonColor: actionColor,
+          cancelButtonColor: '#6c757d',
+          confirmButtonText: `Yes, ${actionText}!`,
+          cancelButtonText: 'Cancel',
+        }).then((result) => {
+          if (result.isConfirmed) {
+            // Submit the form if confirmed
+            form.submit();
+          }
+        });
+      });
+    });
+  </script>
 @endpush
 
 @push("styles")

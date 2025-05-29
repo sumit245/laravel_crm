@@ -8,14 +8,12 @@ use App\Models\StreetlightTask;
 use App\Models\Project;
 use App\Models\User;
 use App\Models\UserCategory;
-use App\Models\UserCategory;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use function Laravel\Prompts\confirm;
 use function Laravel\Prompts\confirm;
 
 class StaffController extends Controller
@@ -53,7 +51,8 @@ class StaffController extends Controller
     {
         $teamLeads = User::where('role', 2)->get();
         $projects = Project::all();
-        return view('staff.create', compact('teamLeads', 'projects'));
+        $usercategories = UserCategory::all();
+        return view('staff.create', compact('teamLeads', 'projects', 'usercategories'));
     }
 
 
@@ -71,6 +70,7 @@ class StaffController extends Controller
             'email'     => 'required|email|unique:users,email',
             'contactNo' => 'string',
             'role'      => 'string',
+            'category'  => 'nullable|numeric',
             'address'   => 'string|max:255',
             'password'  => 'required|string|min:6|confirmed',
             'project_id' => 'required|exists:projects,id', // validate project_id
@@ -280,24 +280,63 @@ class StaffController extends Controller
     public function updateProfilePicture(Request $request)
     {
         $request->validate([
-            'profile_picture' => 'required|image|mimes:jpeg,png,jpg|max:2048',
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif|max:2048',
         ]);
 
-        $user = Auth::user(); // Get logged-in user
+        $user = Auth::user();
 
-        // Delete old profile picture if exists
-        if ($user->image) {
-            Storage::disk('s3')->delete($user->image);
+        try {
+            if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
+                \Log::error('Invalid file upload attempt');
+                return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
+            }
+
+            $file = $request->file('profile_picture');
+
+            \Log::info('File upload attempt', [
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize()
+            ]);
+
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // Attempt S3 upload
+            $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
+
+            if (!$imagePath) {
+                throw new \Exception('S3 upload failed.');
+            }
+
+            $imageUrl = Storage::disk('s3')->url($imagePath);
+
+            \Log::info('Profile picture uploaded to S3', [
+                'user_id' => $user->id,
+                'path' => $imagePath,
+                'url' => $imageUrl
+            ]);
+
+            // Save image URL to user record
+            $user->image = $imageUrl;
+            $user->save();
+            Log::info(('Profile picture URL saved to user record'), [
+                'user_id' => $user->id,
+                'image_url' => $imageUrl
+            ]);
+
+            return redirect()->back()->with('success', 'Profile picture updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Profile picture update error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
         }
-
-        // Upload new image// Upload new image to S3
-        $imagePath = $request->file('profile_picture')->store('profile_pictures', 's3');
-
-        // Generate a public URL for accessing the image
-        $imageUrl = Storage::disk('s3')->url($imagePath);
-
-        return redirect()->back()->with('success', 'Profile picture updated successfully!');
     }
+
+
+
 
     public function changePassword($id)
     {

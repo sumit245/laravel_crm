@@ -100,51 +100,47 @@
   <div class="table-responsive">
     <x-data-table id="bredaTargetTable" class="table-striped table">
       <x-slot:thead>
-        <x-data-table id="bredaTargetTable" class="table-striped table">
-          <x-slot:thead>
-            <tr>
-              <th>Site Name</th>
-              <th>Activity</th>
-              <th>Site Engineer</th>
-              <th>Start Date</th>
-              <th>End Date</th>
-              <th>Actions</th>
-            </tr>
-          </x-slot:thead>
-          <x-slot:tbody>
-          </x-slot:thead>
-          <x-slot:tbody>
-            @forelse ($targets as $target)
-              <tr>
-                <td>{{ $target->site->site_name ?? "N/A" }}</td>
-                <td>{{ $target->activity }}</td>
-                <td>
-                  @if ($target && $target->engineer)
-                    {{ $target->engineer->firstName }}
-                  @else
-                    Not Assigned
-                  @endif
-                </td>
-                <td>{{ $target->start_date }}</td>
-                <td>{{ $target->end_date }}</td>
-                <td>
-                  <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
-                  <a href="{{ route("tasks.rooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
-                  <form action="{{ route("tasks.destroy", $target->id) }}" method="POST"
-                    style="display: inline-block;">
-                    @csrf
-                    @method("DELETE")
-                    <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                  </form>
-                </td>
-              </tr>
-            @empty
-              <tr>
-                <td colspan="7">No targets found.</td>
-              </tr>
-            @endforelse
-            </x-slot-tbody>
-        </x-data-table>
+        <tr>
+          <th>Site Name</th>
+          <th>Activity</th>
+          <th>Site Engineer</th>
+          <th>Start Date</th>
+          <th>End Date</th>
+          <th>Actions</th>
+        </tr>
+      </x-slot:thead>
+      <x-slot:tbody>
+        @forelse ($targets as $target)
+          <tr>
+            <td>{{ $target->site->site_name }}</td>
+            <td>{{ $target->activity }}</td>
+            <td>
+              @if ($target && $target->engineer)
+                {{ $target->engineer->firstName }}
+              @else
+                Not Assigned
+              @endif
+            </td>
+            <td>{{ $target->start_date }}</td>
+            <td>{{ $target->end_date }}</td>
+            <td>
+              <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
+              <a href="{{ route("tasks.editrooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
+              <form action="{{ route("tasks.destroy", $target->id) }}" method="POST"
+                style="display: inline-block;">
+                @csrf
+                @method("DELETE")
+                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              </form>
+            </td>
+          </tr>
+        @empty
+          <tr>
+            <td colspan="7">No targets found.</td>
+          </tr>
+        @endforelse
+        </x-slot-tbody>
+    </x-data-table>
   </div>
 </div>
 
@@ -217,17 +213,6 @@
       });
     });
   </script>
-@endpush
-
-@push("styles")
-  <style>
-    .select2-container--default .select2-selection--single {
-      height: 38px;
-      padding: 6px 12px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-  </style>
 @endpush
 
 @push("styles")
