@@ -21,6 +21,7 @@ class StreetlightTask extends Model
         'materials_consumed',
         'description',
         'approved_by',
+        'billed',
     ];
 
     // Relationship: A task belongs to a pole

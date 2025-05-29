@@ -123,6 +123,21 @@
               </div>
             </div>
           </div>
+          <!-- User category -->
+           <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="category" class="form-label">User Category</label>
+                <select name="category" class="form-select" id="category" required>
+                  <option value="">-- Select Category --</option>
+                  @foreach ($usercategories as $category)
+                    <option value="{{ $category->id }}">{{ $category->category_code }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+          </div>
+
 
           <div class="row">
             <div class="col-sm-6 col-md-6">
