@@ -127,7 +127,7 @@
             <div class="col-md-12">
               <div class="form-group">
                 <label for="category" class="form-label">User Category</label>
-                <select name="category" class="form-select" id="category" required>
+                <select name="category" class="form-select" id="category">
                   <option value="">-- Select Category --</option>
                   @foreach ($usercategories as $category)
                     <option value="{{ $category->id }}">{{ $category->category_code }}</option>
