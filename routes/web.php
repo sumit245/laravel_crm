@@ -15,6 +15,7 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
+use App\Http\Controllers\ApplicationController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/jicr/generate', [JICRController::class, 'generatePDF'])->name('jicr.generate');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
+    Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
     // Staff router
     Route::resource('staff', StaffController::class);
@@ -112,7 +114,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/view-bills', function () {
         return view('billing.viewBills');
     })->name('view.bills');
+    // View Settings
+    // Employee onboarding routes
 
+    Route::get('convenience-settings', function () {
+        return view('billing.settings');
+    })->name('convenience.settings');
 
     // Inventory router
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');

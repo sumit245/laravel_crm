@@ -204,8 +204,8 @@
 
           <ul class="nav flex-column form-tabs">
             <div class="mb-4 p-3 text-center">
-              <img src="https://sugs-assets.s3.ap-south-1.amazonaws.com/logo.png" alt="Sugs Lloyd Limited" class="img-fluid"
-                style="max-height: 80px;">
+              <img src="https://sugs-assets.s3.ap-south-1.amazonaws.com/logo.png" alt="Sugs Lloyd Limited"
+                class="img-fluid" style="max-height: 80px;">
             </div>
             <li class="nav-item">
               <a class="nav-link active" data-section="personal-info">
@@ -696,9 +696,8 @@
                     <div class="alert alert-info">
                       <p class="mb-0">
                         I hereby declare that the information provided above is true to the best of my knowledge and
-                        belief.
-                        I understand that any false information may lead to disqualification from the recruitment
-                        process.
+                        belief. I understand that any false information may lead to disqualification from the
+                        recruitment process.
                       </p>
                     </div>
                     <div class="row g-3">
@@ -728,11 +727,192 @@
         </div>
       </div>
     </div>
+  @endsection
 
-    <!-- container-scroller -->
-    <!-- plugins:js -->
-    <script src="{{ asset("vendors/js/vendor.bundle.base.js") }}"></script>
-    <!-- endinject -->
+  @push("styles")
+    <style>
+      /* Main Layout Styles */
+      .side-nav {
+        background-color: #f8f9fa;
+        min-height: 100vh;
+        border-right: 1px solid #dee2e6;
+        position: sticky;
+        top: 0;
+      }
+
+      .form-check .form-check-input {
+        margin-left: 0;
+      }
+
+      .main-content {
+        padding: 0;
+        background-color: #fff;
+      }
+
+      /* Form Section Styles */
+      .form-section {
+        display: none;
+      }
+
+      .form-section.active {
+        display: block;
+      }
+
+      /* Navigation Tabs Styles */
+      .nav-section-title {
+        background-color: #e9ecef;
+        font-weight: bold;
+      }
+
+      .form-tabs .nav-link {
+        color: #6c757d;
+        padding: 0.75rem 1rem;
+        border-left: 3px solid transparent;
+        transition: all 0.2s ease;
+      }
+
+      .form-tabs .nav-link.active {
+        color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.1);
+        border-left: 3px solid #0d6efd;
+      }
+
+      .form-tabs .nav-link.disabled {
+        color: #adb5bd;
+        cursor: not-allowed;
+      }
+
+      .form-tabs .nav-link.completed {
+        color: #198754;
+        border-left: 3px solid #198754;
+      }
+
+      .section-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background-color: #e9ecef;
+        margin-right: 10px;
+        font-size: 0.8rem;
+        font-weight: bold;
+      }
+
+      .nav-link.active .section-number {
+        background-color: #0d6efd;
+        color: white;
+      }
+
+      .nav-link.completed .section-number {
+        background-color: #198754;
+        color: white;
+      }
+
+      .section-status .fa-circle {
+        font-size: 10px;
+        color: #adb5bd;
+      }
+
+      .nav-link.active .section-status .fa-circle {
+        color: #0d6efd;
+      }
+
+      .nav-link.completed .section-status .fa-circle:before {
+        content: "\f00c";
+        font-size: 14px;
+        color: #198754;
+      }
+
+      /* Form Watermark */
+      .form-watermark {
+        position: relative;
+      }
+
+      .form-watermark::before {
+        content: "";
+        background: url('{{ asset("images/logo.png") }}') no-repeat center center;
+        background-size: 300px;
+        opacity: 0.07;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+
+      /* Form Elements */
+      .form-label {
+        font-weight: 500;
+      }
+
+      .form-label::after {
+        content: " *";
+        color: red;
+      }
+
+      .card-header {
+        background-color: #f5f7fa;
+      }
+
+      .section-indicator {
+        font-size: 0.8rem;
+        color: #6c757d;
+      }
+
+      /* Document Upload */
+      .remove-document {
+        font-size: 24px;
+        line-height: 1;
+        padding: 0 10px;
+        height: 38px;
+      }
+
+      /* Photo Upload */
+      #removePhotoButton {
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        line-height: 16px;
+        padding: 0;
+        font-size: 16px;
+        text-align: center;
+      }
+
+      /* Progress Bar */
+      .form-progress {
+        padding: 15px 0;
+      }
+
+      .progress {
+        height: 8px;
+      }
+
+      /* Responsive Adjustments */
+      @media (max-width: 767.98px) {
+        .side-nav {
+          min-height: auto;
+          position: relative;
+        }
+
+        .form-tabs {
+          display: flex;
+          flex-wrap: nowrap;
+          overflow-x: auto;
+          white-space: nowrap;
+          -webkit-overflow-scrolling: touch;
+        }
+
+        .form-tabs .nav-item {
+          flex: 0 0 auto;
+        }
+      }
+    </style>
+  @endpush
+
+  @push("scripts")
     <script>
       document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
@@ -875,18 +1055,18 @@
           const row = document.createElement('div');
           row.className = 'row g-3 align-items-end mb-2';
           row.innerHTML = `
-                  <div class="col-md-5">
-                      <label class="form-label">Document Name</label>
-                      <input type="text" name="document_name[]" class="form-control" placeholder="Document Name" required>
-                  </div>
-                  <div class="col-md-5">
-                      <label class="form-label">Upload File</label>
-                      <input type="file" name="document_file[]" class="form-control" required>
-                  </div>
-                  <div class="col-md-2 d-flex align-items-end">
-                      <button type="button" class="btn btn-outline-danger remove-document">×</button>
-                  </div>
-              `;
+                <div class="col-md-5">
+                    <label class="form-label">Document Name</label>
+                    <input type="text" name="document_name[]" class="form-control" placeholder="Document Name" required>
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label">Upload File</label>
+                    <input type="file" name="document_file[]" class="form-control" required>
+                </div>
+                <div class="col-md-2 d-flex align-items-end">
+                    <button type="button" class="btn btn-outline-danger remove-document">×</button>
+                </div>
+            `;
           wrapper.appendChild(row);
         });
 
@@ -954,37 +1134,37 @@
         educationCount++;
         const container = document.getElementById('education-entries');
         const entryHTML = `
-          <div class="card-body row g-3 mb-3 border p-3" id="education-entry-${educationCount}">
-              <div class="col-md-4">
-                  <label class="form-label">Highest Qualification</label>
-                  <select name="education[${educationCount}][qualification]" class="form-control" required>
-                      <option value="">Select Qualification</option>
-                      <option value="Bachelors">Bachelors</option>
-                      <option value="Masters">Masters</option>
-                      <option value="PhD">PhD</option>
-                      <option value="Other">Other</option>
-                  </select>
-              </div>
-              <div class="col-md-4">
-                  <label class="form-label">Institution Name</label>
-                  <input type="text" name="education[${educationCount}][institution]" class="form-control" required>
-              </div>
-              <div class="col-md-4">
-                  <label class="form-label">Year of Graduation</label>
-                  <input type="text" name="education[${educationCount}][year]" class="form-control" required>
-              </div>
-              <div class="col-md-4">
-                  <label class="form-label">Specialization</label>
-                  <input type="text" name="education[${educationCount}][specialization]" class="form-control" required>
-              </div>
-              <div class="col-md-4">
-                  <label class="form-label">Additional Certifications</label>
-                  <input type="text" name="education[${educationCount}][certifications]" class="form-control">
-              </div>
-              <div class="col-md-4 d-flex align-items-end">
-                  <button type="button" class="btn btn-danger" onclick="removeEducationEntry(${educationCount})">Remove</button>
-              </div>
-          </div>`;
+        <div class="card-body row g-3 mb-3 border p-3" id="education-entry-${educationCount}">
+            <div class="col-md-4">
+                <label class="form-label">Highest Qualification</label>
+                <select name="education[${educationCount}][qualification]" class="form-control" required>
+                    <option value="">Select Qualification</option>
+                    <option value="Bachelors">Bachelors</option>
+                    <option value="Masters">Masters</option>
+                    <option value="PhD">PhD</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Institution Name</label>
+                <input type="text" name="education[${educationCount}][institution]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Year of Graduation</label>
+                <input type="text" name="education[${educationCount}][year]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Specialization</label>
+                <input type="text" name="education[${educationCount}][specialization]" class="form-control" required>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Additional Certifications</label>
+                <input type="text" name="education[${educationCount}][certifications]" class="form-control">
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="button" class="btn btn-danger" onclick="removeEducationEntry(${educationCount})">Remove</button>
+            </div>
+        </div>`;
         container.insertAdjacentHTML('beforeend', entryHTML);
       }
 
@@ -998,6 +1178,4 @@
       // Add initial entry by default
       window.onload = addEducationEntry;
     </script>
-  </body>
-
-</html>
+  @endpush
