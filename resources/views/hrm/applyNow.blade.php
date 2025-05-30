@@ -1461,144 +1461,70 @@
     // Add this at the end of your existing script
     document.addEventListener('DOMContentLoaded', function() {
         // Function to save form data to sessionStorage
-        function saveFormDataToSessionStorage() {
+        function saveFormData() {
             const formData = {};
+            const form = document.getElementById('onboarding-form');
             
-            // Personal Information
-            formData.name = document.getElementById('name').value;
-            formData.email = document.getElementById('email').value;
-            formData.phone = document.getElementById('phone').value;
-            formData.dob = document.getElementById('dob').value;
-            formData.gender = document.querySelector('input[name="gender"]:checked')?.value;
-            formData.marital_status = document.querySelector('input[name="marital_status"]:checked')?.value;
-            formData.nationality = document.getElementById('nationality').value;
-            formData.language = document.getElementById('language').value;
+            // Get all input elements
+            const inputs = form.querySelectorAll('input, select, textarea');
             
-            // Contact Information
-            formData.perm_house_no = document.getElementById('perm_house_no').value;
-            formData.perm_street = document.getElementById('perm_street').value;
-            formData.perm_city = document.getElementById('perm_city').value;
-            formData.perm_state = document.getElementById('perm_state').value;
-            formData.perm_country = document.getElementById('perm_country').value;
-            formData.perm_zip = document.getElementById('perm_zip').value;
-            
-            formData.curr_house_no = document.getElementById('curr_house_no').value;
-            formData.curr_street = document.getElementById('curr_street').value;
-            formData.curr_city = document.getElementById('curr_city').value;
-            formData.curr_state = document.getElementById('curr_state').value;
-            formData.curr_country = document.getElementById('curr_country').value;
-            formData.curr_zip = document.getElementById('curr_zip').value;
-            
-            formData.emergency_contact_name = document.getElementById('emergency_contact_name').value;
-            formData.emergency_contact_phone = document.getElementById('emergency_contact_phone').value;
-            
-            // Employment Details
-            formData.position_applied_for = document.getElementById('position_applied_for').value;
-            formData.department = document.getElementById('department').value;
-            formData.date_of_joining = document.getElementById('date_of_joining').value;
-            formData.previous_employer = document.getElementById('previous_employer').value;
-            formData.experience = document.getElementById('experience').value;
-            formData.notice_period = document.getElementById('notice_period').value;
-            
-            // Additional Information
-            formData.disabilities = document.querySelector('input[name="disabilities"]:checked')?.value;
-            formData.currently_employed = document.querySelector('input[name="currently_employed"]:checked')?.value;
-            formData.reason_for_leaving = document.getElementById('reason_for_leaving').value;
-            formData.other_info = document.getElementById('other_info').value;
-            
-            // Declaration
-            formData.signature = document.getElementById('signature').value;
-            formData.date = document.getElementById('declaration_date').value;
+            inputs.forEach(input => {
+                // Skip file inputs
+                if (input.type === 'file') return;
+                
+                // Handle radio buttons and checkboxes
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData[input.name] = input.value;
+                    }
+                } else {
+                    formData[input.name] = input.value;
+                }
+            });
             
             // Save to sessionStorage
-            sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
+            sessionStorage.setItem('employeeFormData', JSON.stringify(formData));
+        }
+        
+        // Function to load form data from sessionStorage
+        function loadFormData() {
+            const savedData = sessionStorage.getItem('employeeFormData');
+            
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                const form = document.getElementById('onboarding-form');
+                
+                // Set values for all inputs
+                Object.keys(formData).forEach(name => {
+                    const input = form.querySelector(`[name="${name}"]`);
+                    
+                    if (input) {
+                        if (input.type === 'radio' || input.type === 'checkbox') {
+                            const radioOrCheckbox = form.querySelector(`[name="${name}"][value="${formData[name]}"]`);
+                            if (radioOrCheckbox) {
+                                radioOrCheckbox.checked = true;
+                            }
+                        } else {
+                            input.value = formData[name];
+                        }
+                    }
+                });
+            }
         }
         
         // Save form data when moving between sections
         document.querySelectorAll('.next-section, .prev-section').forEach(button => {
-            button.addEventListener('click', saveFormDataToSessionStorage);
+            button.addEventListener('click', saveFormData);
         });
         
         // Save form data periodically (every 30 seconds)
-        setInterval(saveFormDataToSessionStorage, 30000);
+        setInterval(saveFormData, 30000);
         
-        // Load form data from sessionStorage if available
-        function loadFormDataFromSessionStorage() {
-            const savedData = sessionStorage.getItem('employee_form_data');
-            if (savedData) {
-                const formData = JSON.parse(savedData);
-                
-                // Personal Information
-                if (formData.name) document.getElementById('name').value = formData.name;
-                if (formData.email) document.getElementById('email').value = formData.email;
-                if (formData.phone) document.getElementById('phone').value = formData.phone;
-                if (formData.dob) document.getElementById('dob').value = formData.dob;
-                if (formData.gender) {
-                    const genderRadio = document.querySelector(`input[name="gender"][value="${formData.gender}"]`);
-                    if (genderRadio) genderRadio.checked = true;
-                }
-                if (formData.marital_status) {
-                    const maritalRadio = document.querySelector(`input[name="marital_status"][value="${formData.marital_status}"]`);
-                    if (maritalRadio) maritalRadio.checked = true;
-                }
-                if (formData.nationality) document.getElementById('nationality').value = formData.nationality;
-                if (formData.language) document.getElementById('language').value = formData.language;
-                
-                // Contact Information
-                if (formData.perm_house_no) document.getElementById('perm_house_no').value = formData.perm_house_no;
-                if (formData.perm_street) document.getElementById('perm_street').value = formData.perm_street;
-                if (formData.perm_city) document.getElementById('perm_city').value = formData.perm_city;
-                if (formData.perm_state) document.getElementById('perm_state').value = formData.perm_state;
-                if (formData.perm_country) document.getElementById('perm_country').value = formData.perm_country;
-                if (formData.perm_zip) document.getElementById('perm_zip').value = formData.perm_zip;
-                
-                if (formData.curr_house_no) document.getElementById('curr_house_no').value = formData.curr_house_no;
-                if (formData.curr_street) document.getElementById('curr_street').value = formData.curr_street;
-                if (formData.curr_city) document.getElementById('curr_city').value = formData.curr_city;
-                if (formData.curr_state) document.getElementById('curr_state').value = formData.curr_state;
-                if (formData.curr_country) document.getElementById('curr_country').value = formData.curr_country;
-                if (formData.curr_zip) document.getElementById('curr_zip').value = formData.curr_zip;
-                
-                if (formData.emergency_contact_name) document.getElementById('emergency_contact_name').value = formData.emergency_contact_name;
-                if (formData.emergency_contact_phone) document.getElementById('emergency_contact_phone').value = formData.emergency_contact_phone;
-                
-                // Employment Details
-                if (formData.position_applied_for) document.getElementById('position_applied_for').value = formData.position_applied_for;
-                if (formData.department) document.getElementById('department').value = formData.department;
-                if (formData.date_of_joining) document.getElementById('date_of_joining').value = formData.date_of_joining;
-                if (formData.previous_employer) document.getElementById('previous_employer').value = formData.previous_employer;
-                if (formData.experience) document.getElementById('experience').value = formData.experience;
-                if (formData.notice_period) document.getElementById('notice_period').value = formData.notice_period;
-                
-                // Additional Information
-                if (formData.disabilities) {
-                    const disabilitiesRadio = document.querySelector(`input[name="disabilities"][value="${formData.disabilities}"]`);
-                    if (disabilitiesRadio) disabilitiesRadio.checked = true;
-                }
-                if (formData.currently_employed) {
-                    const employedRadio = document.querySelector(`input[name="currently_employed"][value="${formData.currently_employed}"]`);
-                    if (employedRadio) {
-                        employedRadio.checked = true;
-                        // Trigger the change event to show/hide reason for leaving
-                        employedRadio.dispatchEvent(new Event('change'));
-                    }
-                }
-                if (formData.reason_for_leaving) document.getElementById('reason_for_leaving').value = formData.reason_for_leaving;
-                if (formData.other_info) document.getElementById('other_info').value = formData.other_info;
-                
-                // Declaration
-                if (formData.signature) document.getElementById('signature').value = formData.signature;
-            }
-        }
+        // Load form data when page loads
+        window.addEventListener('DOMContentLoaded', loadFormData);
         
-        // Load saved form data when page loads
-        loadFormDataFromSessionStorage();
-        
-        // Clear sessionStorage when form is submitted
-        document.getElementById('onboarding-form').addEventListener('submit', function() {
-            // Keep the data in sessionStorage until the preview page confirms submission
-            // sessionStorage.removeItem('employee_form_data');
-        });
+        // Save form data before submitting
+        document.getElementById('onboarding-form').addEventListener('submit', saveFormData);
     });
 </script>
 
