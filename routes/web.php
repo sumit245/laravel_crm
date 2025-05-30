@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\PreviewController;
 use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConveyanceController;
@@ -174,10 +175,26 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-    Route::Resource('/hrm', HRMController::class);
-    Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
-});
 
+
+});
+Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
+Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
+Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
+Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
+Route::get('/apply/success', function () {
+    return view('hrm.success');
+})->name('hrm.success');
+
+// Candidate Management Routes
+Route::get('/candidates', [CandidateController::class, 'index'])->name('candidates.index');
+Route::post('/candidates/import', [CandidateController::class, 'importCandidates'])->name('candidates.import');
+Route::post('/candidates/send-emails', [CandidateController::class, 'sendEmails'])->name('candidates.send-emails');
+Route::get('/candidates/{id}/upload', [CandidateController::class, 'showUploadForm'])->name('candidates.upload-form');
+Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocuments'])->name('candidates.upload');
+
+
+// apply now
 Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');

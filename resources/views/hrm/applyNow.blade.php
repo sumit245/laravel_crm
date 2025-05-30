@@ -2,73 +2,160 @@
 <html lang="en">
 
   <head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <title>Sugs Lloyd Ltd | Apply Now</title>
-    <!-- plugins:css -->
-    <link rel="stylesheet" href="{{ asset("vendors/mdi/css/materialdesignicons.min.css") }}">
-    <link rel="stylesheet" href="{{ asset("vendors/ti-icons/css/themify-icons.css") }}">
-    <link rel="stylesheet" href="{{ asset("vendors/css/vendor.bundle.base.css") }}">
-    <!-- inject:css -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Onboarding - Sugs Lloyd Ltd</title>
+
+    {{-- datatables css --}}
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+    {{-- base css --}}
     <link rel="stylesheet" href="{{ asset("css/vertical-layout-light/style.css") }}">
-    <!-- endinject -->
-    <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}" />
+
+    {{-- select2 css --}}
+    <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
+    <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
+
+    {{-- Google Fonts --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+
+    {{-- Font Awesome --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
     <style>
+      /* Google Forms inspired styles */
+      body {
+        font-family: 'Roboto', sans-serif;
+        background-color: #f0f0f0;
+        color: #202124;
+        overflow-x: hidden;
+      }
+
       /* Main Layout Styles */
+      .container-scroller {
+        padding: 0;
+      }
+
+      .page-body-wrapper {
+        padding: 0;
+      }
+
+      .main-panel {
+        width: 100%;
+      }
+
+      /* Fixed sidebar styles */
       .side-nav {
-        background-color: #f8f9fa;
+        background-color: #fff;
         min-height: 100vh;
-        border-right: 1px solid #dee2e6;
-        position: sticky;
+        border-right: 1px solid #e0e0e0;
+        position: fixed;
         top: 0;
+        bottom: 0;
+        left: 0;
+        width: 16.666667%;
+        overflow-y: auto;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        padding-top: 20px;
+        z-index: 1000;
       }
 
-      .form-check .form-check-input {
-        margin-left: 0;
-      }
-
+      /* Adjust main content to accommodate fixed sidebar */
       .main-content {
         padding: 0;
-        background-color: #fff;
+        background-color: #f0f0f0;
+        margin-left: 16.666667%;
+      }
+
+      @media (max-width: 767.98px) {
+        .side-nav {
+          position: relative;
+          width: 100%;
+          min-height: auto;
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
       }
 
       /* Form Section Styles */
       .form-section {
         display: none;
+        margin-bottom: 24px;
       }
 
       .form-section.active {
         display: block;
       }
 
+      /* Card Styles - Google Forms inspired */
+      .card {
+        border: none;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+        overflow: hidden;
+      }
+
+      .card-header {
+        background-color: #673ab7;
+        color: white;
+        padding: 16px 24px;
+        border-bottom: none;
+        font-weight: 500;
+      }
+
+      .card-body {
+        padding: 24px;
+        background-color: white;
+      }
+
+      .card-footer {
+        background-color: white;
+        border-top: 1px solid #e0e0e0;
+        padding: 16px 24px;
+      }
+
       /* Navigation Tabs Styles */
-      .nav-section-title {
-        background-color: #e9ecef;
-        font-weight: bold;
+      .form-tabs {
+        padding-left: 0;
+      }
+
+      .form-tabs .nav-item {
+        width: 100%;
       }
 
       .form-tabs .nav-link {
-        color: #6c757d;
-        padding: 0.75rem 1rem;
+        color: #5f6368;
+        padding: 12px 16px;
         border-left: 3px solid transparent;
         transition: all 0.2s ease;
+        border-radius: 0 24px 24px 0;
+        margin-bottom: 4px;
+      }
+
+      .form-tabs .nav-link:hover {
+        background-color: #f1f3f4;
       }
 
       .form-tabs .nav-link.active {
-        color: #0d6efd;
-        background-color: rgba(13, 110, 253, 0.1);
-        border-left: 3px solid #0d6efd;
+        color: #673ab7;
+        background-color: #f0ebf8;
+        border-left: 3px solid #673ab7;
+        font-weight: 500;
       }
 
       .form-tabs .nav-link.disabled {
-        color: #adb5bd;
+        color: #bdc1c6;
         cursor: not-allowed;
       }
 
       .form-tabs .nav-link.completed {
-        color: #198754;
-        border-left: 3px solid #198754;
+        color: #1a73e8;
+        border-left: 3px solid #1a73e8;
       }
 
       .section-number {
@@ -78,83 +165,217 @@
         width: 24px;
         height: 24px;
         border-radius: 50%;
-        background-color: #e9ecef;
-        margin-right: 10px;
+        background-color: #e0e0e0;
+        margin-right: 12px;
         font-size: 0.8rem;
-        font-weight: bold;
+        font-weight: 500;
       }
 
       .nav-link.active .section-number {
-        background-color: #0d6efd;
+        background-color: #673ab7;
         color: white;
       }
 
       .nav-link.completed .section-number {
-        background-color: #198754;
+        background-color: #1a73e8;
         color: white;
-      }
-
-      .section-status .fa-circle {
-        font-size: 10px;
-        color: #adb5bd;
-      }
-
-      .nav-link.active .section-status .fa-circle {
-        color: #0d6efd;
-      }
-
-      .nav-link.completed .section-status .fa-circle:before {
-        content: "\f00c";
-        font-size: 14px;
-        color: #198754;
-      }
-
-      /* Form Watermark */
-      .form-watermark {
-        position: relative;
-      }
-
-      .form-watermark::before {
-        content: "";
-        background: url('{{ asset("images/logo.png") }}') no-repeat center center;
-        background-size: 300px;
-        opacity: 0.07;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
       }
 
       /* Form Elements */
       .form-label {
         font-weight: 500;
+        color: #5f6368;
+        margin-bottom: 8px;
       }
 
-      .form-label::after {
+      .form-label.required::after {
         content: " *";
-        color: red;
+        color: #d93025;
       }
 
-      .card-header {
-        background-color: #f5f7fa;
+      .form-control {
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        padding: 8px 12px;
+        height: auto;
+        font-size: 14px;
+        transition: border 0.3s;
       }
 
-      .section-indicator {
-        font-size: 0.8rem;
-        color: #6c757d;
+      .form-control:focus {
+        border-color: #673ab7;
+        box-shadow: 0 1px 2px 0 rgba(103, 58, 183, 0.3);
+      }
+
+      .form-control.is-invalid {
+        border-color: #d93025;
+        background-image: none;
+      }
+
+      .invalid-feedback {
+        color: #d93025;
+        font-size: 12px;
+        margin-top: 4px;
+      }
+
+      /* Enhanced Select Styles */
+      select.form-control {
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23673ab7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 10px center;
+        background-size: 16px;
+        padding-right: 30px;
+        cursor: pointer;
+      }
+
+      /* Select2 Custom Styling */
+      .select2-container--bootstrap4 .select2-selection {
+        border: 1px solid #dadce0;
+        border-radius: 4px;
+        height: auto;
+        min-height: 38px;
+        padding: 4px 8px;
+        font-size: 14px;
+      }
+
+      .select2-container--bootstrap4.select2-container--focus .select2-selection {
+        border-color: #673ab7;
+        box-shadow: 0 1px 2px 0 rgba(103, 58, 183, 0.3);
+      }
+
+      .select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
+        background-color: #673ab7;
+      }
+
+      .select2-container--bootstrap4 .select2-dropdown {
+        border-color: #dadce0;
+        border-radius: 4px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .select2-container--bootstrap4 .select2-selection__arrow {
+        height: 36px;
+      }
+
+      .select2-container--bootstrap4 .select2-selection__rendered {
+        line-height: 28px;
+      }
+
+      /* Radio and Checkbox Styles */
+      .form-check {
+        padding-left: 0;
+        margin-bottom: 8px;
+      }
+
+      .form-check-input {
+        margin-left: 0;
+        margin-right: 8px;
+        width: 18px;
+        height: 18px;
+      }
+
+      .form-check-input:checked {
+        background-color: #673ab7;
+        border-color: #673ab7;
+      }
+
+      .form-check-label {
+        margin-left: 8px;
+        font-weight: 400;
+      }
+
+      /* Button Styles */
+      .btn {
+        font-weight: 500;
+        padding: 8px 24px;
+        border-radius: 4px;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background-color: #673ab7;
+        border-color: #673ab7;
+      }
+
+      .btn-primary:hover {
+        background-color: #5e35b1;
+        border-color: #5e35b1;
+      }
+
+      .btn-success {
+        background-color: #1a73e8;
+        border-color: #1a73e8;
+      }
+
+      .btn-success:hover {
+        background-color: #1765cc;
+        border-color: #1765cc;
+      }
+
+      .btn-outline-secondary {
+        color: #5f6368;
+        border-color: #dadce0;
+      }
+
+      .btn-outline-secondary:hover {
+        background-color: #f1f3f4;
+        color: #202124;
+      }
+
+      .btn-danger {
+        background-color: #d93025;
+        border-color: #d93025;
+      }
+
+      /* Section Headers */
+      h5.fw-semibold {
+        color: #202124;
+        margin-bottom: 16px;
+        font-weight: 500;
+      }
+
+      /* Progress Bar */
+      .progress {
+        height: 8px;
+        border-radius: 4px;
+        background-color: #e0e0e0;
+        margin-top: 16px;
+      }
+
+      .progress-bar {
+        background-color: #673ab7;
       }
 
       /* Document Upload */
-      .remove-document {
-        font-size: 24px;
-        line-height: 1;
-        padding: 0 10px;
-        height: 38px;
+      .document-upload {
+        border: 1px dashed #dadce0;
+        border-radius: 4px;
+        padding: 16px;
+        text-align: center;
+        transition: all 0.2s;
+      }
+
+      .document-upload:hover {
+        border-color: #673ab7;
+        background-color: #f8f9fa;
       }
 
       /* Photo Upload */
+      .photo-upload-container {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+
+      #passportPhotoPreview {
+        border-radius: 4px;
+        border: 1px solid #dadce0;
+        padding: 4px;
+        max-height: 150px;
+      }
+
       #removePhotoButton {
         border-radius: 50%;
         width: 24px;
@@ -163,15 +384,9 @@
         padding: 0;
         font-size: 16px;
         text-align: center;
-      }
-
-      /* Progress Bar */
-      .form-progress {
-        padding: 15px 0;
-      }
-
-      .progress {
-        height: 8px;
+        background-color: #d93025;
+        border-color: #d93025;
+        color: white;
       }
 
       /* Responsive Adjustments */
@@ -192,948 +407,1083 @@
         .form-tabs .nav-item {
           flex: 0 0 auto;
         }
+
+        .card-header {
+          padding: 12px 16px;
+        }
+
+        .card-body {
+          padding: 16px;
+        }
+
+        .card-footer {
+          padding: 12px 16px;
+        }
+      }
+
+      /* Form Watermark */
+      .form-watermark {
+        position: relative;
+      }
+
+      .form-watermark::before {
+        content: "";
+        background: url('{{ asset("images/logo.png") }}') no-repeat center center;
+        background-size: 300px;
+        opacity: 0.03;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 0;
+      }
+
+      /* Alert Styles */
+      .alert {
+        border-radius: 4px;
+        padding: 16px;
+      }
+
+      .alert-info {
+        background-color: #e8f0fe;
+        border-color: #d2e3fc;
+        color: #1967d2;
+      }
+
+      /* Section Dividers */
+      hr {
+        margin: 24px 0;
+        border-color: #e0e0e0;
+      }
+
+      /* Logo Container */
+      .logo-container {
+        text-align: center;
+        padding: 16px;
+        margin-bottom: 16px;
+        border-bottom: 1px solid #e0e0e0;
+      }
+
+      /* Progress Indicator */
+      .progress-indicator {
+        padding: 16px;
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        margin-bottom: 24px;
+      }
+
+      .progress-text {
+        font-size: 14px;
+        color: #5f6368;
+        margin-bottom: 8px;
       }
     </style>
   </head>
 
   <body>
-    <div class="container p-4">
-      <div class="row g-0">
-        <!-- Side Navigation Tabs -->
-        <div class="col-md-3 col-lg-2 side-nav">
+    <div class="container-scroller">
+      <div class="container-fluid page-body-wrapper">
+        <div class="main-panel">
+          <div class="container-fluid p-0">
+            <div class="row g-0">
+              <!-- Side Navigation Tabs -->
+              <div class="col-md-3 col-lg-2 side-nav">
+                <div class="logo-container">
+                  <img src="{{ asset("images/logo.png") }}" alt="Sugs Lloyd Ltd Logo" class="img-fluid"
+                    style="max-height: 80px;">
+                </div>
 
-          <ul class="nav flex-column form-tabs">
-            <div class="mb-4 p-3 text-center">
-              <img src="https://sugs-assets.s3.ap-south-1.amazonaws.com/logo.png" alt="Sugs Lloyd Limited"
-                class="img-fluid" style="max-height: 80px;">
+                <!-- Progress Indicator -->
+                <div class="progress-indicator mx-3">
+                  <div class="progress-text">Form Completion</div>
+                  <div class="progress">
+                    <div id="progress-bar" class="progress-bar" role="progressbar" style="width: 0%"></div>
+                  </div>
+                  <div class="mt-2 text-end">
+                    <small id="progress-percentage">0%</small>
+                  </div>
+                </div>
+
+                <ul class="nav flex-column form-tabs">
+                  <li class="nav-item">
+                    <a class="nav-link active" data-section="personal-info">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">1</span>
+                        <span class="section-title">Personal Information</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="contact-info">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">2</span>
+                        <span class="section-title">Contact Information</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="education">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">3</span>
+                        <span class="section-title">Educational Background</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="employment">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">4</span>
+                        <span class="section-title">Employment Details</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="documents">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">5</span>
+                        <span class="section-title">Document Uploads</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="additional-info">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">6</span>
+                        <span class="section-title">Additional Information</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="photo">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">7</span>
+                        <span class="section-title">Passport Size Photo</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                  <li class="nav-item">
+                    <a class="nav-link disabled" data-section="declaration">
+                      <div class="d-flex align-items-center">
+                        <span class="section-number">8</span>
+                        <span class="section-title">Declaration</span>
+                        <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
+                      </div>
+                    </a>
+                  </li>
+                </ul>
+              </div>
+
+              <!-- Main Form Content -->
+              <div class="col-md-9 col-lg-10 main-content form-watermark">
+                <div class="p-4">
+                  <div class="mb-4 pb-2">
+                    <div class="card">
+                      <div class="card-body">
+                        <h3 class="fw-bold mb-2">Employee Onboarding – Sugs Lloyd Ltd</h3>
+                        <p class="text-muted mb-0">Please fill out all the details below carefully. All fields marked
+                          with * are mandatory.</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <form id="onboarding-form" method="POST" action="{{ route("hrm.store") }}"
+                    enctype="multipart/form-data">
+                    @csrf
+
+                    <!-- Personal Information Section -->
+                    <div class="form-section active" id="personal-info">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">1. Personal Information</span>
+                          <span class="section-indicator">Section 1 of 8</span>
+                        </div>
+                        <div class="card-body">
+                          <div class="row g-3">
+                            <div class="col-md-4">
+                              <label class="form-label required" for="name">Full Name</label>
+                              <input type="text" id="name" name="name" class="form-control" required
+                                pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid name (2-50 characters, letters only)
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="email">Email Address</label>
+                              <input type="email" id="email" name="email" class="form-control" required
+                                pattern="[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$"
+                                title="Please enter a valid email address">
+                              <div class="invalid-feedback">Please enter a valid email address</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="phone">Phone Number</label>
+                              <input type="text" id="phone" name="phone" class="form-control" required
+                                pattern="^[0-9+\s()-]{10,15}$"
+                                title="Please enter a valid phone number (10-15 digits)">
+                              <div class="invalid-feedback">Please enter a valid phone number (10-15 digits)</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="dob">Date of Birth</label>
+                              <input type="date" id="dob" name="dob" class="form-control" required
+                                max="{{ date("Y-m-d", strtotime("-18 years")) }}">
+                              <div class="invalid-feedback">You must be at least 18 years old</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required">Gender</label>
+                              <div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="gender" id="gender-male"
+                                    value="Male" required>
+                                  <label class="form-check-label" for="gender-male">Male</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="gender" id="gender-female"
+                                    value="Female" required>
+                                  <label class="form-check-label" for="gender-female">Female</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="gender" id="gender-other"
+                                    value="Other" required>
+                                  <label class="form-check-label" for="gender-other">Other</label>
+                                </div>
+                                <div class="invalid-feedback">Please select your gender</div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required">Marital Status</label>
+                              <div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="marital_status"
+                                    id="marital-single" value="Single" required>
+                                  <label class="form-check-label" for="marital-single">Single</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="marital_status"
+                                    id="marital-married" value="Married" required>
+                                  <label class="form-check-label" for="marital-married">Married</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="marital_status"
+                                    id="marital-other" value="Other" required>
+                                  <label class="form-check-label" for="marital-other">Other</label>
+                                </div>
+                                <div class="invalid-feedback">Please select your marital status</div>
+                              </div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="nationality">Nationality</label>
+                              <input type="text" id="nationality" name="nationality" class="form-control"
+                                required pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid nationality (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid nationality (2-50 characters, letters
+                                only)</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="language">Preferred Language</label>
+                              <select id="language" name="language" class="form-select custom-select" required>
+                                <option value="">Select Language</option>
+                                <option value="English">English</option>
+                                <option value="Hindi">Hindi</option>
+                                <option value="Other">Other</option>
+                              </select>
+                              <div class="invalid-feedback">Please select your preferred language</div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary" disabled>Previous</button>
+                            <button type="button" class="btn btn-primary next-section" data-next="contact-info">Next
+                              Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Contact Information Section -->
+                    <div class="form-section" id="contact-info">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">2. Contact Information</span>
+                          <span class="section-indicator">Section 2 of 8</span>
+                        </div>
+                        <div class="card-body">
+                          <h5 class="fw-semibold mb-3">Permanent Address</h5>
+                          <div class="row g-3 border-bottom mb-4 pb-3">
+                            <div class="col-md-3">
+                              <label class="form-label required" for="perm_house_no">House/Flat No.</label>
+                              <input type="text" id="perm_house_no" name="perm_house_no" class="form-control"
+                                required>
+                              <div class="invalid-feedback">Please enter your house/flat number</div>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label required" for="perm_street">Street/Road</label>
+                              <input type="text" id="perm_street" name="perm_street" class="form-control"
+                                required>
+                              <div class="invalid-feedback">Please enter your street/road</div>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label required" for="perm_city">City</label>
+                              <input type="text" id="perm_city" name="perm_city" class="form-control" required
+                                pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid city name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid city name</div>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label required" for="perm_state">State</label>
+                              <input type="text" id="perm_state" name="perm_state" class="form-control" required
+                                pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid state name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid state name</div>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label required" for="perm_country">Country</label>
+                              <input type="text" id="perm_country" name="perm_country" class="form-control"
+                                required pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid country name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid country name</div>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label required" for="perm_zip">PIN / ZIP Code</label>
+                              <input type="text" id="perm_zip" name="perm_zip" class="form-control" required
+                                pattern="^[0-9]{5,10}$" title="Please enter a valid ZIP code (5-10 digits)">
+                              <div class="invalid-feedback">Please enter a valid ZIP code (5-10 digits)</div>
+                            </div>
+                          </div>
+
+                          <!-- Same as Permanent Checkbox -->
+                          <div class="form-check mb-3">
+                            <input type="checkbox" class="form-check-input" id="sameAsPermanent">
+                            <label class="form-check-label" for="sameAsPermanent">Same as Permanent Address</label>
+                          </div>
+
+                          <h5 class="fw-semibold mb-3">Current Address</h5>
+                          <div class="row g-3 mb-4">
+                            <div class="col-md-3">
+                              <label class="form-label">House/Flat No.</label>
+                              <input type="text" id="curr_house_no" name="curr_house_no" class="form-control"
+                                required>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label">Street/Road</label>
+                              <input type="text" id="curr_street" name="curr_street" class="form-control"
+                                required>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label">City</label>
+                              <input type="text" id="curr_city" name="curr_city" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label">State</label>
+                              <input type="text" id="curr_state" name="curr_state" class="form-control" required>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label">Country</label>
+                              <input type="text" id="curr_country" name="curr_country" class="form-control"
+                                required>
+                            </div>
+                            <div class="col-md-3">
+                              <label class="form-label">PIN / ZIP Code</label>
+                              <input type="text" id="curr_zip" name="curr_zip" class="form-control" required>
+                            </div>
+                          </div>
+
+                          <hr>
+                          <div class="row g-3">
+                            <div class="col-md-6">
+                              <label class="form-label">Emergency Contact Name</label>
+                              <input type="text" name="emergency_contact_name" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Emergency Contact Phone Number</label>
+                              <input type="text" name="emergency_contact_phone" class="form-control" required>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="personal-info">Previous</button>
+                            <button type="button" class="btn btn-primary next-section" data-next="education">Next
+                              Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Educational Background Section -->
+                    <div class="form-section" id="education">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">3. Educational Background</span>
+                          <span class="section-indicator">Section 3 of 8</span>
+                        </div>
+
+                        <div id="education-entries">
+                          <!-- Education entry will be added here dynamically -->
+                        </div>
+
+                        <div class="card-body">
+                          <button type="button" class="btn btn-success" onclick="addEducationEntry()">+ Add More
+                            Education</button>
+                        </div>
+
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="contact-info">Previous</button>
+                            <button type="button" class="btn btn-primary next-section" data-next="employment">Next
+                              Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Employment Details Section -->
+                    <div class="form-section" id="employment">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">4. Employment Details</span>
+                          <span class="section-indicator">Section 4 of 8</span>
+                        </div>
+                        <div class="card-body row g-3">
+                          <div class="col-md-4">
+                            <label class="form-label">Position Applied For</label>
+                            <input type="text" name="position_applied_for" class="form-control" required>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Department</label>
+                            <input type="text" name="department" class="form-control" required>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Date of Joining</label>
+                            <input type="date" name="date_of_joining" class="form-control" required>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Previous Employer</label>
+                            <input type="text" name="previous_employer" class="form-control" required>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Total Years of Experience</label>
+                            <input type="number" name="experience" step="0.1" class="form-control" required>
+                          </div>
+                          <div class="col-md-4">
+                            <label class="form-label">Notice Period</label>
+                            <input type="text" name="notice_period" class="form-control" required>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="education">Previous</button>
+                            <button type="button" class="btn btn-primary next-section" data-next="documents">Next
+                              Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Document Uploads Section -->
+                    <div class="form-section" id="documents">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">5. Document Uploads</span>
+                          <span class="section-indicator">Section 5 of 8</span>
+                        </div>
+                        <div class="card-body">
+                          <p class="text-muted mb-4">
+                            Upload documents (PDF, JPG, PNG, max 5MB each). You can add more documents below.
+                          </p>
+                          <div id="documentUploads">
+                            <div class="row g-3 align-items-end mb-2">
+                              <div class="col-md-5">
+                                <label class="form-label">Document Name</label>
+                                <input type="text" name="document_name[]" class="form-control"
+                                  placeholder="e.g. Resume" required>
+                              </div>
+                              <div class="col-md-5">
+                                <label class="form-label">Upload File</label>
+                                <input type="file" name="document_file[]" class="form-control" required>
+                              </div>
+                              <div class="col-md-2 d-flex align-items-end">
+                                <button type="button"
+                                  class="btn btn-outline-danger remove-document d-none">×</button>
+                              </div>
+                            </div>
+                          </div>
+                          <button type="button" id="addMoreDocuments" class="btn btn-outline-secondary mt-2">+ Add
+                            More Documents</button>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="employment">Previous</button>
+                            <button type="button" class="btn btn-primary next-section"
+                              data-next="additional-info">Next Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Additional Information Section -->
+                    <div class="form-section" id="additional-info">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">6. Additional Information</span>
+                          <span class="section-indicator">Section 6 of 8</span>
+                        </div>
+                        <div class="card-body">
+                          <div class="row g-3">
+                            <div class="col-md-6">
+                              <label class="form-label">Do you have any disabilities?</label>
+                              <div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="disabilities"
+                                    id="disabilities-yes" value="Yes" required>
+                                  <label class="form-check-label" for="disabilities-yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="disabilities"
+                                    id="disabilities-no" value="No" required>
+                                  <label class="form-check-label" for="disabilities-no">No</label>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Are you currently employed?</label>
+                              <div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="currently_employed"
+                                    id="employed-yes" value="Yes" required>
+                                  <label class="form-check-label" for="employed-yes">Yes</label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                  <input type="radio" class="form-check-input" name="currently_employed"
+                                    id="employed-no" value="No" required>
+                                  <label class="form-check-label" for="employed-no">No</label>
+                                </div>
+                              </div>
+                            </div>
+                            <div class="col-md-12">
+                              <label class="form-label">If yes, reason for leaving current employment:</label>
+                              <input type="text" name="reason_for_leaving" class="form-control">
+                            </div>
+                            <div class="col-md-12">
+                              <label class="form-label">Any other information you'd like to provide:</label>
+                              <textarea name="other_info" class="form-control"></textarea>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="documents">Previous</button>
+                            <button type="button" class="btn btn-primary next-section" data-next="photo">Next
+                              Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Passport Size Photo Section -->
+                    <div class="form-section" id="photo">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">7. Passport Size Photo</span>
+                          <span class="section-indicator">Section 7 of 8</span>
+                        </div>
+                        <div class="card-body">
+                          <p class="text-muted mb-3">Upload a recent passport size photo (JPG, PNG, max 2MB).</p>
+                          <div class="row g-3">
+                            <div class="col-md-6">
+                              <label class="form-label">Upload Photo</label>
+                              <input type="file" id="passportPhotoInput" name="passport_photo"
+                                accept="image/jpeg,image/png" class="form-control" required>
+                            </div>
+                            <div class="col-md-6 d-flex align-items-end">
+                              <div class="position-relative d-inline-block">
+                                <label class="form-label d-block">Preview</label>
+                                <img id="passportPhotoPreview" src="{{ asset("images/default-avatar.png") }}"
+                                  alt="Passport Preview" class="img-thumbnail" style="max-height: 150px;">
+                                <button type="button" id="removePhotoButton"
+                                  class="btn btn-sm btn-danger position-absolute end-0 top-0 m-1"
+                                  style="display:none;">×</button>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="additional-info">Previous</button>
+                            <button type="button" class="btn btn-primary next-section" data-next="declaration">Next
+                              Section</button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Declaration Section -->
+                    <div class="form-section" id="declaration">
+                      <div class="card mb-4">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                          <span class="fw-bold">8. Declaration</span>
+                          <span class="section-indicator">Section 8 of 8</span>
+                        </div>
+                        <div class="card-body">
+                          <div class="alert alert-info">
+                            <p class="mb-0">
+                              I hereby declare that the information provided above is true to the best of my knowledge
+                              and belief. I understand that any false information may lead to disqualification from the
+                              recruitment process.
+                            </p>
+                          </div>
+                          <div class="row g-3">
+                            <div class="col-md-6">
+                              <label class="form-label">Signature</label>
+                              <input type="text" name="signature" class="form-control" required>
+                            </div>
+                            <div class="col-md-6">
+                              <label class="form-label">Date</label>
+                              <input type="date" name="date" class="form-control" required>
+                            </div>
+                          </div>
+                        </div>
+                        <div class="card-footer">
+                          <div class="d-flex justify-content-between">
+                            <button type="button" class="btn btn-outline-secondary prev-section"
+                              data-prev="photo">Previous</button>
+                            <button type="submit" class="btn btn-success">
+                              <i class="fas fa-check-circle"></i> Submit & Preview
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+              </div>
             </div>
-            <li class="nav-item">
-              <a class="nav-link active" data-section="personal-info">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">1</span>
-                  <span class="section-title">Personal Information</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="contact-info">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">2</span>
-                  <span class="section-title">Contact Information</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="education">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">3</span>
-                  <span class="section-title">Educational Background</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="employment">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">4</span>
-                  <span class="section-title">Employment Details</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="documents">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">5</span>
-                  <span class="section-title">Document Uploads</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="additional-info">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">6</span>
-                  <span class="section-title">Additional Information</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="photo">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">7</span>
-                  <span class="section-title">Passport Size Photo</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-            <li class="nav-item">
-              <a class="nav-link disabled" data-section="declaration">
-                <div class="d-flex align-items-center">
-                  <span class="section-number">8</span>
-                  <span class="section-title">Declaration</span>
-                  <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                </div>
-              </a>
-            </li>
-          </ul>
-        </div>
-
-        <!-- Main Form Content -->
-        <div class="col-md-9 col-lg-10 main-content form-watermark">
-          <div class="p-4">
-            <div class="border-bottom mb-4 pb-2">
-              <h3 class="fw-bold">Employee Onboarding – Sugs Lloyd Ltd</h3>
-              <p class="text-muted">Please fill out all the details below carefully. All fields are mandatory.</p>
-            </div>
-
-            <form id="onboarding-form" method="POST" action="#" enctype="multipart/form-data">
-              @csrf
-
-              <!-- Personal Information Section -->
-              <div class="form-section active" id="personal-info">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">1. Personal Information</span>
-                    <span class="section-indicator">Section 1 of 8</span>
-                  </div>
-                  <div class="card-body row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label">Full Name</label>
-                      <input type="text" name="name" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Email Address</label>
-                      <input type="email" name="email" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Phone Number</label>
-                      <input type="text" name="phone" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Date of Birth</label>
-                      <input type="date" name="dob" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Gender</label>
-                      <div>
-                        <div class="form-check form-check-inline">
-                          <input type="radio" class="form-check-input" name="gender" id="gender-male"
-                            value="Male" required>
-                          <label class="form-check-label" for="gender-male">Male</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input type="radio" class="form-check-input" name="gender" id="gender-female"
-                            value="Female" required>
-                          <label class="form-check-label" for="gender-female">Female</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input type="radio" class="form-check-input" name="gender" id="gender-other"
-                            value="Other" required>
-                          <label class="form-check-label" for="gender-other">Other</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Marital Status</label>
-                      <div>
-                        <div class="form-check form-check-inline">
-                          <input type="radio" class="form-check-input" name="marital_status" id="marital-single"
-                            value="Single" required>
-                          <label class="form-check-label" for="marital-single">Single</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input type="radio" class="form-check-input" name="marital_status" id="marital-married"
-                            value="Married" required>
-                          <label class="form-check-label" for="marital-married">Married</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                          <input type="radio" class="form-check-input" name="marital_status" id="marital-other"
-                            value="Other" required>
-                          <label class="form-check-label" for="marital-other">Other</label>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Nationality</label>
-                      <input type="text" name="nationality" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Preferred Language</label>
-                      <select name="language" class="form-control" required>
-                        <option value="">Select Language</option>
-                        <option value="English">English</option>
-                        <option value="Hindi">Hindi</option>
-                        <option value="Other">Other</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary" disabled>Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="contact-info">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Contact Information Section -->
-              <div class="form-section" id="contact-info">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">2. Contact Information</span>
-                    <span class="section-indicator">Section 2 of 8</span>
-                  </div>
-                  <div class="card-body">
-                    <h5 class="fw-semibold mb-3">Permanent Address</h5>
-                    <div class="row g-3 border-bottom mb-4 pb-3">
-                      <div class="col-md-3">
-                        <label class="form-label">House/Flat No.</label>
-                        <input type="text" id="perm_house_no" name="perm_house_no" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Street/Road</label>
-                        <input type="text" id="perm_street" name="perm_street" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">City</label>
-                        <input type="text" id="perm_city" name="perm_city" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">State</label>
-                        <input type="text" id="perm_state" name="perm_state" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Country</label>
-                        <input type="text" id="perm_country" name="perm_country" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">PIN / ZIP Code</label>
-                        <input type="text" id="perm_zip" name="perm_zip" class="form-control" required>
-                      </div>
-                    </div>
-
-                    <!-- Same as Permanent Checkbox -->
-                    <div class="form-check mb-3">
-                      <input type="checkbox" class="form-check-input" id="sameAsPermanent">
-                      <label class="form-check-label" for="sameAsPermanent">Same as Permanent Address</label>
-                    </div>
-
-                    <h5 class="fw-semibold mb-3">Current Address</h5>
-                    <div class="row g-3 mb-4">
-                      <div class="col-md-3">
-                        <label class="form-label">House/Flat No.</label>
-                        <input type="text" id="curr_house_no" name="curr_house_no" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Street/Road</label>
-                        <input type="text" id="curr_street" name="curr_street" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">City</label>
-                        <input type="text" id="curr_city" name="curr_city" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">State</label>
-                        <input type="text" id="curr_state" name="curr_state" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">Country</label>
-                        <input type="text" id="curr_country" name="curr_country" class="form-control" required>
-                      </div>
-                      <div class="col-md-3">
-                        <label class="form-label">PIN / ZIP Code</label>
-                        <input type="text" id="curr_zip" name="curr_zip" class="form-control" required>
-                      </div>
-                    </div>
-
-                    <hr>
-                    <div class="row g-3">
-                      <div class="col-md-6">
-                        <label class="form-label">Emergency Contact Name</label>
-                        <input type="text" name="emergency_contact_name" class="form-control" required>
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Emergency Contact Phone Number</label>
-                        <input type="text" name="emergency_contact_phone" class="form-control" required>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="personal-info">Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="education">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Educational Background Section -->
-              <div class="form-section" id="education">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">3. Educational Background</span>
-                    <span class="section-indicator">Section 3 of 8</span>
-                  </div>
-
-                  <div id="education-entries">
-                    <!-- Education entry will be added here dynamically -->
-                  </div>
-
-                  <div class="card-body">
-                    <button type="button" class="btn btn-success" onclick="addEducationEntry()">+ Add More
-                      Education</button>
-                  </div>
-
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="contact-info">Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="employment">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Employment Details Section -->
-              <div class="form-section" id="employment">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">4. Employment Details</span>
-                    <span class="section-indicator">Section 4 of 8</span>
-                  </div>
-                  <div class="card-body row g-3">
-                    <div class="col-md-4">
-                      <label class="form-label">Position Applied For</label>
-                      <input type="text" name="position_applied_for" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Department</label>
-                      <input type="text" name="department" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Date of Joining</label>
-                      <input type="date" name="date_of_joining" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Previous Employer</label>
-                      <input type="text" name="previous_employer" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Total Years of Experience</label>
-                      <input type="number" name="experience" step="0.1" class="form-control" required>
-                    </div>
-                    <div class="col-md-4">
-                      <label class="form-label">Notice Period</label>
-                      <input type="text" name="notice_period" class="form-control" required>
-                    </div>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="education">Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="documents">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Document Uploads Section -->
-              <div class="form-section" id="documents">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">5. Document Uploads</span>
-                    <span class="section-indicator">Section 5 of 8</span>
-                  </div>
-                  <div class="card-body">
-                    <p class="text-muted mb-4">
-                      Upload documents (PDF, JPG, PNG, max 5MB each). You can add more documents below.
-                    </p>
-                    <div id="documentUploads">
-                      <div class="row g-3 align-items-end mb-2">
-                        <div class="col-md-5">
-                          <label class="form-label">Document Name</label>
-                          <input type="text" name="document_name[]" class="form-control"
-                            placeholder="e.g. Resume" required>
-                        </div>
-                        <div class="col-md-5">
-                          <label class="form-label">Upload File</label>
-                          <input type="file" name="document_file[]" class="form-control" required>
-                        </div>
-                        <div class="col-md-2 d-flex align-items-end">
-                          <button type="button" class="btn btn-outline-danger remove-document d-none">×</button>
-                        </div>
-                      </div>
-                    </div>
-                    <button type="button" id="addMoreDocuments" class="btn btn-outline-secondary mt-2">+ Add More
-                      Documents</button>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="employment">Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="additional-info">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Additional Information Section -->
-              <div class="form-section" id="additional-info">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">6. Additional Information</span>
-                    <span class="section-indicator">Section 6 of 8</span>
-                  </div>
-                  <div class="card-body">
-                    <div class="row g-3">
-                      <div class="col-md-6">
-                        <label class="form-label">Do you have any disabilities?</label>
-                        <div>
-                          <div class="form-check form-check-inline">
-                            <input type="radio" class="form-check-input" name="disabilities" id="disabilities-yes"
-                              value="Yes" required>
-                            <label class="form-check-label" for="disabilities-yes">Yes</label>
-                          </div>
-                          <div class="form-check form-check-inline">
-                            <input type="radio" class="form-check-input" name="disabilities" id="disabilities-no"
-                              value="No" required>
-                            <label class="form-check-label" for="disabilities-no">No</label>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Are you currently employed?</label>
-                        <div>
-                          <div class="form-check form-check-inline">
-                            <input type="radio" class="form-check-input" name="currently_employed"
-                              id="employed-yes" value="Yes" required>
-                            <label class="form-check-label" for="employed-yes">Yes</label>
-                          </div>
-                          <div class="form-check form-check-inline">
-                            <input type="radio" class="form-check-input" name="currently_employed"
-                              id="employed-no" value="No" required>
-                            <label class="form-check-label" for="employed-no">No</label>
-                          </div>
-                        </div>
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label">If yes, reason for leaving current employment:</label>
-                        <input type="text" name="reason_for_leaving" class="form-control">
-                      </div>
-                      <div class="col-md-12">
-                        <label class="form-label">Any other information you'd like to provide:</label>
-                        <textarea name="other_info" class="form-control"></textarea>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="documents">Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="photo">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Passport Size Photo Section -->
-              <div class="form-section" id="photo">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">7. Passport Size Photo</span>
-                    <span class="section-indicator">Section 7 of 8</span>
-                  </div>
-                  <div class="card-body">
-                    <p class="text-muted mb-3">Upload a recent passport size photo (JPG, PNG, max 2MB).</p>
-                    <div class="row g-3">
-                      <div class="col-md-6">
-                        <label class="form-label">Upload Photo</label>
-                        <input type="file" id="passportPhotoInput" name="passport_photo"
-                          accept="image/jpeg,image/png" class="form-control" required>
-                      </div>
-                      <div class="col-md-6 d-flex align-items-end">
-                        <div class="position-relative d-inline-block">
-                          <label class="form-label d-block">Preview</label>
-                          <img id="passportPhotoPreview" src="{{ asset("images/default-avatar.png") }}"
-                            alt="Passport Preview" class="img-thumbnail" style="max-height: 150px;">
-                          <button type="button" id="removePhotoButton"
-                            class="btn btn-sm btn-danger position-absolute end-0 top-0 m-1"
-                            style="display:none;">×</button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="additional-info">Previous</button>
-                      <button type="button" class="btn btn-primary next-section" data-next="declaration">Next
-                        Section</button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Declaration Section -->
-              <div class="form-section" id="declaration">
-                <div class="card mb-4">
-                  <div class="card-header d-flex justify-content-between align-items-center">
-                    <span class="fw-bold">8. Declaration</span>
-                    <span class="section-indicator">Section 8 of 8</span>
-                  </div>
-                  <div class="card-body">
-                    <div class="alert alert-info">
-                      <p class="mb-0">
-                        I hereby declare that the information provided above is true to the best of my knowledge and
-                        belief. I understand that any false information may lead to disqualification from the
-                        recruitment process.
-                      </p>
-                    </div>
-                    <div class="row g-3">
-                      <div class="col-md-6">
-                        <label class="form-label">Signature</label>
-                        <input type="text" name="signature" class="form-control" required>
-                      </div>
-                      <div class="col-md-6">
-                        <label class="form-label">Date</label>
-                        <input type="date" name="date" class="form-control" required>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="card-footer">
-                    <div class="d-flex justify-content-between">
-                      <button type="button" class="btn btn-outline-secondary prev-section"
-                        data-prev="photo">Previous</button>
-                      <button type="submit" class="btn btn-success">
-                        <i class="fas fa-check-circle"></i> Submit & Preview
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </form>
           </div>
-        </div>
-      </div>
-    </div>
-  @endsection
+        @endsection
 
-  @push("styles")
-    <style>
-      /* Main Layout Styles */
-      .side-nav {
-        background-color: #f8f9fa;
-        min-height: 100vh;
-        border-right: 1px solid #dee2e6;
-        position: sticky;
-        top: 0;
-      }
-
-      .form-check .form-check-input {
-        margin-left: 0;
-      }
-
-      .main-content {
-        padding: 0;
-        background-color: #fff;
-      }
-
-      /* Form Section Styles */
-      .form-section {
-        display: none;
-      }
-
-      .form-section.active {
-        display: block;
-      }
-
-      /* Navigation Tabs Styles */
-      .nav-section-title {
-        background-color: #e9ecef;
-        font-weight: bold;
-      }
-
-      .form-tabs .nav-link {
-        color: #6c757d;
-        padding: 0.75rem 1rem;
-        border-left: 3px solid transparent;
-        transition: all 0.2s ease;
-      }
-
-      .form-tabs .nav-link.active {
-        color: #0d6efd;
-        background-color: rgba(13, 110, 253, 0.1);
-        border-left: 3px solid #0d6efd;
-      }
-
-      .form-tabs .nav-link.disabled {
-        color: #adb5bd;
-        cursor: not-allowed;
-      }
-
-      .form-tabs .nav-link.completed {
-        color: #198754;
-        border-left: 3px solid #198754;
-      }
-
-      .section-number {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        border-radius: 50%;
-        background-color: #e9ecef;
-        margin-right: 10px;
-        font-size: 0.8rem;
-        font-weight: bold;
-      }
-
-      .nav-link.active .section-number {
-        background-color: #0d6efd;
-        color: white;
-      }
-
-      .nav-link.completed .section-number {
-        background-color: #198754;
-        color: white;
-      }
-
-      .section-status .fa-circle {
-        font-size: 10px;
-        color: #adb5bd;
-      }
-
-      .nav-link.active .section-status .fa-circle {
-        color: #0d6efd;
-      }
-
-      .nav-link.completed .section-status .fa-circle:before {
-        content: "\f00c";
-        font-size: 14px;
-        color: #198754;
-      }
-
-      /* Form Watermark */
-      .form-watermark {
-        position: relative;
-      }
-
-      .form-watermark::before {
-        content: "";
-        background: url('{{ asset("images/logo.png") }}') no-repeat center center;
-        background-size: 300px;
-        opacity: 0.07;
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        z-index: 0;
-      }
-
-      /* Form Elements */
-      .form-label {
-        font-weight: 500;
-      }
-
-      .form-label::after {
-        content: " *";
-        color: red;
-      }
-
-      .card-header {
-        background-color: #f5f7fa;
-      }
-
-      .section-indicator {
-        font-size: 0.8rem;
-        color: #6c757d;
-      }
-
-      /* Document Upload */
-      .remove-document {
-        font-size: 24px;
-        line-height: 1;
-        padding: 0 10px;
-        height: 38px;
-      }
-
-      /* Photo Upload */
-      #removePhotoButton {
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        line-height: 16px;
-        padding: 0;
-        font-size: 16px;
-        text-align: center;
-      }
-
-      /* Progress Bar */
-      .form-progress {
-        padding: 15px 0;
-      }
-
-      .progress {
-        height: 8px;
-      }
-
-      /* Responsive Adjustments */
-      @media (max-width: 767.98px) {
-        .side-nav {
-          min-height: auto;
-          position: relative;
-        }
-
-        .form-tabs {
-          display: flex;
-          flex-wrap: nowrap;
-          overflow-x: auto;
-          white-space: nowrap;
-          -webkit-overflow-scrolling: touch;
-        }
-
-        .form-tabs .nav-item {
-          flex: 0 0 auto;
-        }
-      }
-    </style>
-  @endpush
-
-  @push("scripts")
-    <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        // Initialize variables
-        const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info',
-          'photo', 'declaration'
-        ];
-        let completedSections = [];
-
-        // Function to update progress bar
-        function updateProgress() {
-          const totalSections = sections.length;
-          const completedCount = completedSections.length;
-          const progressPercentage = Math.round((completedCount / totalSections) * 100);
-
-          document.getElementById('progress-bar').style.width = progressPercentage + '%';
-          document.getElementById('progress-percentage').textContent = progressPercentage + '%';
-        }
-
-        // Function to mark section as completed
-        function markSectionCompleted(sectionId) {
-          if (!completedSections.includes(sectionId)) {
-            completedSections.push(sectionId);
-
-            // Update tab status
-            const tabLink = document.querySelector(.nav - link[data - section = "${sectionId}"]);
-            tabLink.classList.add('completed');
-
-            updateProgress();
-          }
-        }
-
-        // Function to validate section
-        function validateSection(sectionId) {
-          const section = document.getElementById(sectionId);
-          const inputs = section.querySelectorAll('input[required], select[required], textarea[required]');
-          let isValid = true;
-
-          inputs.forEach(input => {
-            if (!input.value.trim()) {
-              isValid = false;
-              input.classList.add('is-invalid');
-            } else {
-              input.classList.remove('is-invalid');
+        @push("styles")
+          <style>
+            /* Main Layout Styles */
+            .side-nav {
+              background-color: #f8f9fa;
+              min-height: 100vh;
+              border-right: 1px solid #dee2e6;
+              position: sticky;
+              top: 0;
             }
-          });
 
-          return isValid;
-        }
-
-        // Function to switch sections
-        function switchSection(fromSection, toSection) {
-          // Hide current section
-          document.getElementById(fromSection).classList.remove('active');
-
-          // Show target section
-          document.getElementById(toSection).classList.add('active');
-
-          // Update active tab
-          document.querySelector(.nav - link[data - section = "${fromSection}"]).classList.remove('active');
-          document.querySelector(.nav - link[data - section = "${toSection}"]).classList.add('active');
-          document.querySelector(.nav - link[data - section = "${toSection}"]).classList.remove('disabled');
-
-          // Scroll to top
-          window.scrollTo(0, 0);
-        }
-
-
-        // Next section button click handler
-        document.querySelectorAll('.next-section').forEach(button => {
-          button.addEventListener('click', function() {
-            const currentSection = this.closest('.form-section').id;
-            const nextSection = this.getAttribute('data-next');
-
-            // Validate current section if needed
-            // const isValid = validateSection(currentSection);
-            // if (isValid) {
-
-            // Switch to next section
-            document.getElementById(currentSection).classList.remove('active');
-            document.getElementById(nextSection).classList.add('active');
-
-            // Update active tab
-            document.querySelector(`.nav-link[data-section="${currentSection}"]`).classList.remove('active');
-            document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.add('active');
-            document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.remove('disabled');
-
-            // Mark current section as completed if needed
-            // markSectionCompleted(currentSection);
-
-            // Scroll to top
-            window.scrollTo(0, 0);
-            // }
-          });
-        });
-
-        // Previous section button click handler
-        document.querySelectorAll('.prev-section').forEach(button => {
-          button.addEventListener('click', function() {
-            const currentSection = this.closest('.form-section').id;
-            const prevSection = this.getAttribute('data-prev');
-
-            switchSection(currentSection, prevSection);
-          });
-        });
-
-        // Tab click handler
-        document.querySelectorAll('.form-tabs .nav-link').forEach(tab => {
-          tab.addEventListener('click', function(e) {
-            if (!this.classList.contains('disabled')) {
-              const targetSection = this.getAttribute('data-section');
-              const currentSection = document.querySelector('.form-section.active').id;
-
-              switchSection(currentSection, targetSection);
+            .form-check .form-check-input {
+              margin-left: 0;
             }
-          });
-        });
 
-        // Same as permanent address checkbox
-        document.getElementById('sameAsPermanent').addEventListener('change', function() {
-          const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
-          fields.forEach(field => {
-            const perm = document.getElementById(perm_$ {
-              field
-            });
-            const curr = document.getElementById(curr_$ {
-              field
-            });
-            if (this.checked) {
-              curr.value = perm.value;
-              curr.readOnly = true;
-            } else {
-              curr.readOnly = false;
+            .main-content {
+              padding: 0;
+              background-color: #fff;
             }
-          });
-        });
 
-        // Add more documents button
-        document.getElementById('addMoreDocuments').addEventListener('click', function() {
-          const wrapper = document.getElementById('documentUploads');
-          const row = document.createElement('div');
-          row.className = 'row g-3 align-items-end mb-2';
-          row.innerHTML = `
+            /* Form Section Styles */
+            .form-section {
+              display: none;
+            }
+
+            .form-section.active {
+              display: block;
+            }
+
+            /* Navigation Tabs Styles */
+            .nav-section-title {
+              background-color: #e9ecef;
+              font-weight: bold;
+            }
+
+            .form-tabs .nav-link {
+              color: #6c757d;
+              padding: 0.75rem 1rem;
+              border-left: 3px solid transparent;
+              transition: all 0.2s ease;
+            }
+
+            .form-tabs .nav-link.active {
+              color: #0d6efd;
+              background-color: rgba(13, 110, 253, 0.1);
+              border-left: 3px solid #0d6efd;
+            }
+
+            .form-tabs .nav-link.disabled {
+              color: #adb5bd;
+              cursor: not-allowed;
+            }
+
+            .form-tabs .nav-link.completed {
+              color: #198754;
+              border-left: 3px solid #198754;
+            }
+
+            .section-number {
+              display: inline-flex;
+              align-items: center;
+              justify-content: center;
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              background-color: #e9ecef;
+              margin-right: 10px;
+              font-size: 0.8rem;
+              font-weight: bold;
+            }
+
+            .nav-link.active .section-number {
+              background-color: #0d6efd;
+              color: white;
+            }
+
+            .nav-link.completed .section-number {
+              background-color: #198754;
+              color: white;
+            }
+
+            .section-status .fa-circle {
+              font-size: 10px;
+              color: #adb5bd;
+            }
+
+            .nav-link.active .section-status .fa-circle {
+              color: #0d6efd;
+            }
+
+            .nav-link.completed .section-status .fa-circle:before {
+              content: "\f00c";
+              font-size: 14px;
+              color: #198754;
+            }
+
+            /* Form Watermark */
+            .form-watermark {
+              position: relative;
+            }
+
+            .form-watermark::before {
+              content: "";
+              background: url('{{ asset("images/logo.png") }}') no-repeat center center;
+              background-size: 300px;
+              opacity: 0.07;
+              position: absolute;
+              top: 0;
+              left: 0;
+              width: 100%;
+              height: 100%;
+              z-index: 0;
+            }
+
+            /* Form Elements */
+            .form-label {
+              font-weight: 500;
+            }
+
+            .form-label::after {
+              content: " *";
+              color: red;
+            }
+
+            .card-header {
+              background-color: #f5f7fa;
+            }
+
+            .section-indicator {
+              font-size: 0.8rem;
+              color: #6c757d;
+            }
+
+            /* Document Upload */
+            .remove-document {
+              font-size: 24px;
+              line-height: 1;
+              padding: 0 10px;
+              height: 38px;
+            }
+
+            /* Photo Upload */
+            #removePhotoButton {
+              border-radius: 50%;
+              width: 24px;
+              height: 24px;
+              line-height: 16px;
+              padding: 0;
+              font-size: 16px;
+              text-align: center;
+            }
+
+            /* Progress Bar */
+            .form-progress {
+              padding: 15px 0;
+            }
+
+            .progress {
+              height: 8px;
+            }
+
+            /* Responsive Adjustments */
+            @media (max-width: 767.98px) {
+              .side-nav {
+                min-height: auto;
+                position: relative;
+              }
+
+              .form-tabs {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+              }
+
+              .form-tabs .nav-item {
+                flex: 0 0 auto;
+              }
+            }
+          </style>
+        @endpush
+
+        @push("scripts")
+          <script>
+            document.addEventListener('DOMContentLoaded', function() {
+              // Initialize variables
+              const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info',
+                'photo', 'declaration'
+              ];
+              let completedSections = [];
+
+              // Function to update progress bar
+              function updateProgress() {
+                const totalSections = sections.length;
+                const completedCount = completedSections.length;
+                const progressPercentage = Math.round((completedCount / totalSections) * 100);
+
+                document.getElementById('progress-bar').style.width = progressPercentage + '%';
+                document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+              }
+
+              // Function to mark section as completed
+              function markSectionCompleted(sectionId) {
+                if (!completedSections.includes(sectionId)) {
+                  completedSections.push(sectionId);
+
+                  // Update tab status
+                  const tabLink = document.querySelector(.nav - link[data - section = "${sectionId}"]);
+                  tabLink.classList.add('completed');
+
+                  updateProgress();
+                }
+              }
+
+              // Function to validate section
+              function validateSection(sectionId) {
+                const section = document.getElementById(sectionId);
+                const inputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+                let isValid = true;
+
+                inputs.forEach(input => {
+                  if (!input.value.trim()) {
+                    isValid = false;
+                    input.classList.add('is-invalid');
+                  } else {
+                    input.classList.remove('is-invalid');
+                  }
+                });
+
+                return isValid;
+              }
+
+              // Function to switch sections
+              function switchSection(fromSection, toSection) {
+                // Hide current section
+                document.getElementById(fromSection).classList.remove('active');
+
+                // Show target section
+                document.getElementById(toSection).classList.add('active');
+
+                // Update active tab
+                document.querySelector(.nav - link[data - section = "${fromSection}"]).classList.remove('active');
+                document.querySelector(.nav - link[data - section = "${toSection}"]).classList.add('active');
+                document.querySelector(.nav - link[data - section = "${toSection}"]).classList.remove('disabled');
+
+                // Scroll to top
+                window.scrollTo(0, 0);
+              }
+
+
+              // Next section button click handler
+              document.querySelectorAll('.next-section').forEach(button => {
+                button.addEventListener('click', function() {
+                  const currentSection = this.closest('.form-section').id;
+                  const nextSection = this.getAttribute('data-next');
+
+                  // Validate current section if needed
+                  // const isValid = validateSection(currentSection);
+                  // if (isValid) {
+
+                  // Switch to next section
+                  document.getElementById(currentSection).classList.remove('active');
+                  document.getElementById(nextSection).classList.add('active');
+
+                  // Update active tab
+                  document.querySelector(`.nav-link[data-section="${currentSection}"]`).classList.remove('active');
+                  document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.add('active');
+                  document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.remove('disabled');
+
+                  // Mark current section as completed if needed
+                  // markSectionCompleted(currentSection);
+
+                  // Scroll to top
+                  window.scrollTo(0, 0);
+                  // }
+                });
+              });
+
+              // Previous section button click handler
+              document.querySelectorAll('.prev-section').forEach(button => {
+                button.addEventListener('click', function() {
+                  const currentSection = this.closest('.form-section').id;
+                  const prevSection = this.getAttribute('data-prev');
+
+                  switchSection(currentSection, prevSection);
+                });
+              });
+
+              // Tab click handler
+              document.querySelectorAll('.form-tabs .nav-link').forEach(tab => {
+                tab.addEventListener('click', function(e) {
+                  if (!this.classList.contains('disabled')) {
+                    const targetSection = this.getAttribute('data-section');
+                    const currentSection = document.querySelector('.form-section.active').id;
+
+                    switchSection(currentSection, targetSection);
+                  }
+                });
+              });
+
+              // Same as permanent address checkbox
+              document.getElementById('sameAsPermanent').addEventListener('change', function() {
+                const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
+                fields.forEach(field => {
+                  const perm = document.getElementById(perm_$ {
+                    field
+                  });
+                  const curr = document.getElementById(curr_$ {
+                    field
+                  });
+                  if (this.checked) {
+                    curr.value = perm.value;
+                    curr.readOnly = true;
+                  } else {
+                    curr.readOnly = false;
+                  }
+                });
+              });
+
+              // Add more documents button
+              document.getElementById('addMoreDocuments').addEventListener('click', function() {
+                const wrapper = document.getElementById('documentUploads');
+                const row = document.createElement('div');
+                row.className = 'row g-3 align-items-end mb-2';
+                row.innerHTML = `
                 <div class="col-md-5">
-                    <label class="form-label">Document Name</label>
-                    <input type="text" name="document_name[]" class="form-control" placeholder="Document Name" required>
+                    <label class="form-label required" for="document_name_${documentCount}">Document Name</label>
+                    <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" placeholder="Document Name" required>
+                    <div class="invalid-feedback">Please enter a document name</div>
                 </div>
                 <div class="col-md-5">
-                    <label class="form-label">Upload File</label>
-                    <input type="file" name="document_file[]" class="form-control" required>
+                    <label class="form-label required" for="document_file_${documentCount}">Upload File</label>
+                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.  id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                    <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
-                    <button type="button" class="btn btn-outline-danger remove-document">×</button>
+                    <button type="button" class="btn btn-outline-danger remove-document">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             `;
-          wrapper.appendChild(row);
-        });
+                wrapper.appendChild(row);
+              });
 
-        // Remove document field
-        document.getElementById('documentUploads').addEventListener('click', function(e) {
-          if (e.target.classList.contains('remove-document')) {
-            const row = e.target.closest('.row');
-            row.remove();
-          }
-        });
+              // Remove document field
+              document.getElementById('documentUploads').addEventListener('click', function(e) {
+                if (e.target.classList.contains('remove-document')) {
+                  const row = e.target.closest('.row');
+                  row.remove();
+                }
+              });
 
-        // Passport photo preview
-        const photoInput = document.getElementById('passportPhotoInput');
-        const photoPreview = document.getElementById('passportPhotoPreview');
-        const removeButton = document.getElementById('removePhotoButton');
+              // Passport photo preview
+              const photoInput = document.getElementById('passportPhotoInput');
+              const photoPreview = document.getElementById('passportPhotoPreview');
+              const removeButton = document.getElementById('removePhotoButton');
 
-        photoInput.addEventListener('change', function(event) {
-          const file = event.target.files[0];
-          if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = function(e) {
-              photoPreview.src = e.target.result;
-              removeButton.style.display = 'inline-block';
-            };
-            reader.readAsDataURL(file);
-          } else {
-            resetPassportPhoto();
-          }
-        });
+              photoInput.addEventListener('change', function(event) {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                  const reader = new FileReader();
+                  reader.onload = function(e) {
+                    photoPreview.src = e.target.result;
+                    removeButton.style.display = 'inline-block';
+                  };
+                  reader.readAsDataURL(file);
+                } else {
+                  resetPassportPhoto();
+                }
+              });
 
-        removeButton.addEventListener('click', function() {
-          resetPassportPhoto();
-        });
+              removeButton.addEventListener('click', function() {
+                resetPassportPhoto();
+              });
 
-        function resetPassportPhoto() {
-          photoPreview.src = '{{ asset("images/default-avatar.png") }}';
-          photoInput.value = '';
-          removeButton.style.display = 'none';
-        }
+              function resetPassportPhoto() {
+                photoPreview.src = '{{ asset("images/default-avatar.png") }}';
+                photoInput.value = '';
+                removeButton.style.display = 'none';
+              }
 
-        // Form submission
-        document.getElementById('onboarding-form').addEventListener('submit', function(e) {
-          e.preventDefault();
+              // Form submission
+              document.getElementById('onboarding-form').addEventListener('submit', function(e) {
+                e.preventDefault();
 
-          // Validate all sections
-          let allValid = true;
-          sections.forEach(section => {
-            if (!validateSection(section)) {
-              allValid = false;
-            }
-          });
+                // Validate all sections
+                let allValid = true;
+                sections.forEach(section => {
+                  if (!validateSection(section)) {
+                    allValid = false;
+                  }
+                });
 
-          if (allValid) {
-            // Submit the form
-            this.submit();
-          } else {
-            alert('Please fill in all required fields in all sections before submitting.');
-          }
-        });
-      });
+                if (allValid) {
+                  // Submit the form
+                  this.submit();
+                } else {
+                  alert('Please fill in all required fields in all sections before submitting.');
+                }
+              });
+            });
 
-      let educationCount = 0;
+            let educationCount = 0;
 
-      function addEducationEntry() {
-        educationCount++;
-        const container = document.getElementById('education-entries');
-        const entryHTML = `
+            function addEducationEntry() {
+              educationCount++;
+              const container = document.getElementById('education-entries');
+              const entryHTML = `
         <div class="card-body row g-3 mb-3 border p-3" id="education-entry-${educationCount}">
             <div class="col-md-4">
                 <label class="form-label">Highest Qualification</label>
@@ -1165,17 +1515,17 @@
                 <button type="button" class="btn btn-danger" onclick="removeEducationEntry(${educationCount})">Remove</button>
             </div>
         </div>`;
-        container.insertAdjacentHTML('beforeend', entryHTML);
-      }
+              container.insertAdjacentHTML('beforeend', entryHTML);
+            }
 
-      function removeEducationEntry(id) {
-        const entry = document.getElementById(education - entry - $ {
-          id
-        });
-        if (entry) entry.remove();
-      }
+            function removeEducationEntry(id) {
+              const entry = document.getElementById(education - entry - $ {
+                id
+              });
+              if (entry) entry.remove();
+            }
 
-      // Add initial entry by default
-      window.onload = addEducationEntry;
-    </script>
-  @endpush
+            // Add initial entry by default
+            window.onload = addEducationEntry;
+          </script>
+        @endpush
