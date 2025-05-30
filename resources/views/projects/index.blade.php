@@ -53,6 +53,8 @@
   </div>
 @endsection
 
+
+
 @push("scripts")
   <script>
     $(document).ready(function() {
