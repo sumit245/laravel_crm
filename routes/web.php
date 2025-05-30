@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\API\PreviewController;
 use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
@@ -160,14 +161,22 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-    Route::Resource('/hrm', HRMController::class);
-    Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
-    Route::get('apply-now', function () {
-        return view('hrm.applyNow');
-    })->name('apply-now');
-    
-    Route::get('admin-preview', function () {
-        return view('hrm.adminPreview');
-    })->name('admin-preview');
+   
 
 });
+ Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
+Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
+Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
+Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
+Route::get('/apply/success', function() {
+    return view('hrm.success');
+})->name('hrm.success');
+Route::post('/apply/get-s3-upload-url', [PreviewController::class, 'getS3UploadUrl'])->name('hrm.get-s3-upload-url');
+// apply now
+Route::get('apply-now', function () {
+    return view('hrm.applyNow');
+})->name('apply-now');
+
+Route::get('admin-preview', function () {
+    return view('hrm.adminPreview');
+})->name('admin-preview');
