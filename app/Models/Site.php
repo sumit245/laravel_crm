@@ -10,7 +10,7 @@ class Site extends Model
     use HasFactory;
     protected $fillable = [
         'breda_sl_no',
-        // 'project_id',
+        'project_id',
         'site_name',
         'state',
         'district',
