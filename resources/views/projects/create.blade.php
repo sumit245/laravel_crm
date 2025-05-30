@@ -37,10 +37,14 @@
                 placeholder="AG123456">
             </div>
 
-            <div class="form-group">
-              <label for="agreement_date" class="form-label">Agreement Date</label>
-              <input type="date" name="agreement_date" class="form-control" id="agreement_date">
-            </div>
+           <div class="form-group">
+  <label for="agreement_date" class="form-label">Agreement Date</label>
+  <div style="width: 100%;" onclick="document.getElementById('agreement_date').showPicker()">
+    <input type="date" name="agreement_date" class="form-control" id="agreement_date"
+      style="pointer-events: none; background-color: white;"
+      value="{{ old('agreement_date', date('Y-m-d')) }}" max="{{ date('Y-m-d') }}">
+  </div>
+</div>
           </div>
 
           <!-- Other Fields -->
@@ -63,16 +67,19 @@
           </div>
 
           <div class="form-group">
-            <label for="start_date" class="form-label">Start Date</label>
-            <input type="date" name="start_date" class="form-control" id="start_date"
-              value="{{ old("date", date("Y-m-d")) }}">
-          </div>
+  <label for="start_date" class="form-label">Start Date</label>
+  <div onclick="document.getElementById('start_date').showPicker()" style="width: 100%;">
+    <input type="date" name="start_date" class="form-control" id="start_date"
+      value="{{ old('date', date('Y-m-d')) }}">
+  </div>
+</div>
 
-          <div class="form-group">
-            <label for="end_date" class="form-label">End Date</label>
-            <input type="date" name="end_date" class="form-control" id="end_date"
-              value="{{ old("end_date", date("Y-m-d")) }}">
-          </div>
+
+        <div class="form-group" onclick="document.getElementById('end_date').showPicker()" style="cursor: pointer;">
+  <label for="end_date" class="form-label">End Date</label>
+  <input type="date" name="end_date" class="form-control" id="end_date"
+    value="{{ old('end_date', date('Y-m-d')) }}">
+</div>
 
           <div class="form-group">
             <label for="work_order_number" class="form-label">Work Order Number</label>
@@ -94,7 +101,7 @@
 
           <div class="form-group">
             <label for="total" class="form-label">Total (INR)</label>
-            <input type="number" step="0.01" name="total" class="form-control" id="total"
+            <input type="number" step="0.01" max="999999999999.99" name="total" class="form-control" id="total"
               placeholder="5000.82" value="{{ old("total") }}" readonly>
           </div>
 
@@ -110,6 +117,15 @@
     </div>
   </div>
 @endsection
+
+@push('styles')
+  <style>
+    .select2-container--default .select2-selection--single:read-only {
+      padding: 0px;
+      display: flex;
+    }
+  </style>
+@endpush
 
 @push("scripts")
   <script>
