@@ -60,16 +60,16 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Conveyance route fixed
-    Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    Route::get('/billing/convenience', [ConveyanceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
-    Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
-    Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
+    Route::get('/billing/tada', [ConveyanceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('billing/tada-details/{id}', [ConveyanceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
     Route::get('/billing/tada', [ConveyanceController::class, 'convenience'])->name('billing.convenience');
     Route::get('/billing/convenience', [ConveyanceController::class, 'tadaView'])->name('billing.tada');
     // Settings Route
-    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
+    Route::get('/settings', [ConveyanceController::class, 'settings'])->name('billing.settings');
     // status update
-    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    Route::post('/tada/update-status/{id}', [ConveyanceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
     Route::get('/settings', [ConveyanceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle
     Route::post('/settings/add', [ConveyanceController::class, 'addVehicle'])->name('billing.addvehicle');
@@ -96,8 +96,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/update-user', [ConveyanceController::class, 'updateUser'])->name('billing.updateuser');
 
     // Add Categories
-    Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
-    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    Route::get('/settings/add-category', [ConveyanceController::class, 'viewCategory'])->name('billing.addcategory');
+    Route::post('/settings/add-category', [ConveyanceController::class, 'addCategory'])->name('billing.addcategory');
     Route::post('/settings/add-category', [ConveyanceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
     Route::get('/settings/edit-category/{id}', [ConveyanceController::class, 'editCategory'])->name('billing.editcategory');
@@ -169,11 +169,12 @@ Route::middleware(['auth'])->group(function () {
     // Route for hiring software HRM
     Route::Resource('/hrm', HRMController::class);
     Route::post('/hrm/preview', [HRMController::class, 'preview'])->name('hrm.preview');
-    Route::get('apply-now', function () {
-        return view('hrm.applyNow');
-    })->name('apply-now');
-
-    Route::get('admin-preview', function () {
-        return view('hrm.adminPreview');
-    })->name('admin-preview');
 });
+
+Route::get('apply-now', function () {
+    return view('hrm.applyNow');
+})->name('apply-now');
+
+Route::get('admin-preview', function () {
+    return view('hrm.adminPreview');
+})->name('admin-preview');
