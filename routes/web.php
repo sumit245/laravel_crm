@@ -170,9 +170,7 @@ Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.p
 Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
 Route::get('/apply/success', function() {
     return view('hrm.success');
-})->name('hrm.success');
-Route::post('/apply/get-s3-upload-url', [PreviewController::class, 'getS3UploadUrl'])->name('hrm.get-s3-upload-url');
-// apply now
+})->name('hrm.success');// apply now
 Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
