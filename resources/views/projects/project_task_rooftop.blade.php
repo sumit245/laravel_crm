@@ -135,9 +135,9 @@
             </td>
           </tr>
         @empty
-          <tr>
+          <!-- <tr>
             <td colspan="7">No targets found.</td>
-          </tr>
+          </tr> -->
         @endforelse
         </x-slot-tbody>
     </x-data-table>

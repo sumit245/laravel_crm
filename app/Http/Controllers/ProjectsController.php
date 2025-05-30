@@ -63,9 +63,9 @@ class ProjectsController extends Controller
             'start_date'        => 'required|date',
             'end_date'          => 'required|date',
             'work_order_number' => 'required|string|unique:projects',
-            'rate'              => 'nullable|string',
+            'rate'              => 'nullable|numeric',
             'project_capacity'  => 'nullable|string',
-            'total'             => 'string',
+            'total'             => 'numeric',
             'description'       => 'string',
             'agreement_number' => 'nullable|string|required_if:project_type,1',
             'agreement_date' => 'nullable|date|required_if:project_type,1',
@@ -75,7 +75,7 @@ class ProjectsController extends Controller
             $project = Project::create($validated);
 
             return redirect()->route('projects.show', $project->id)
-                ->with('success', 'Inventory created successfully.');
+                ->with('success', 'Project created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
             $errorMessage = $e->getMessage();
