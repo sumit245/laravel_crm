@@ -170,7 +170,17 @@ Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.p
 Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
 Route::get('/apply/success', function() {
     return view('hrm.success');
-})->name('hrm.success');// apply now
+})->name('hrm.success');
+
+// Candidate Management Routes
+Route::get('/candidates', [CandidateController::class, 'index'])->name('candidates.index');
+Route::post('/candidates/import', [CandidateController::class, 'importCandidates'])->name('candidates.import');
+Route::post('/candidates/send-emails', [CandidateController::class, 'sendEmails'])->name('candidates.send-emails');
+Route::get('/candidates/{id}/upload', [CandidateController::class, 'showUploadForm'])->name('candidates.upload-form');
+Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocuments'])->name('candidates.upload');
+
+
+// apply now
 Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
@@ -178,3 +188,4 @@ Route::get('apply-now', function () {
 Route::get('admin-preview', function () {
     return view('hrm.adminPreview');
 })->name('admin-preview');
+

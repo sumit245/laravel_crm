@@ -9,11 +9,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 
+
+
 class PreviewController extends Controller
 {
     public function applyNow()
     {
-        return view('applyNow');
+        return view('hrm.applyNow');
     }
 
     public function storeAndPreview(Request $request)
@@ -80,12 +82,14 @@ class PreviewController extends Controller
 
         // Handle file uploads
         $documents = [];
+        $documentPaths = [];
         if ($request->hasFile('document_file')) {
             foreach ($request->file('document_file') as $index => $file) {
                 if ($file->isValid()) {
                     $docName = $request->document_name[$index] ?? 'Document ' . ($index + 1);
                     $path = $file->store('documents', 'public');
                     $documents[$docName] = $path;
+                    $documentPaths[] = $path;
                 }
             }
         }
@@ -133,11 +137,17 @@ class PreviewController extends Controller
             
             // Documents
             'documents' => $documents,
+            'document_paths' => $documentPaths,
             'photo' => $photoPath,
             
             // Declaration
             'signature' => $request->signature,
             'date' => $request->date,
+            
+            // Raw data for form fields
+            // ✅ Safely exclude files
+'raw_data' => $request->except(['document_file', 'passport_photo'])
+
         ];
 
         // Store in session
@@ -160,7 +170,7 @@ class PreviewController extends Controller
         return view('hrm.preview', ['data' => $data]);
     }
 
-    public function submitFinal()
+    public function submitFinal(Request $request)
     {
         // Get data from session
         $data = session('employee_form_data', []);
@@ -170,8 +180,26 @@ class PreviewController extends Controller
             return redirect()->route('hrm.apply')->with('error', 'No form data found. Please fill the form first.');
         }
         
-        // Here you would save the data to your database
-        // For example: Employee::create($data);
+        // Prepare data for Candidate model
+        $candidateData = [
+            'name' => $data['name'],
+            'email' => $data['email'],
+            'phone' => $data['phone'],
+            'date_of_offer' => now()->format('Y-m-d'), // Current date as offer date
+            'address' => $data['current_address'],
+            'designation' => $data['position_applied_for'],
+            'department' => $data['department'],
+            'location' => explode(',', $data['current_address'])[2] ?? '', // Extract city from address
+            'doj' => $data['date_of_joining'],
+            'ctc' => 0, // Default value, update as needed
+            'experience' => $data['experience'],
+            'last_salary' => 0, // Default value, update as needed
+            'document_path' => json_encode($data['document_paths'] ?? []),
+            'status' => 'pending'
+        ];
+        
+        // Create the candidate record
+        $candidate = Candidate::create($candidateData);
         
         // Clear the session data
         session()->forget('employee_form_data');
