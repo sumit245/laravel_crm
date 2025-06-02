@@ -6,25 +6,26 @@
       <div class="card-body">
         <h4 class="card-title">Add Vendor</h4>
 
-        <!-- Project Selection Dropdown -->
-        <div class="form-group mb-4">
-          <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="team_lead" class="form-label"></label>
-                <select name="team_lead_id" class="form-select" id="team_lead">
-                  <option value="">-- Select Project --</option>
-                  @foreach ($projects as $category)
-                    <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
-                  @endforeach
-                </select>
+        <form class="forms-sample" action="{{ route('uservendors.store') }}" method="POST" enctype="multipart/form-data">
+          @csrf
+
+          <!-- Project Selection Dropdown -->
+          <div class="form-group mb-4">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="select_project" class="form-label">Select Project</label>
+                  <select name="project_id" class="form-select" id="select_project">
+                    <option value="">-- Select Project --</option>
+                    @foreach ($projects as $category)
+                      <option value="{{ $category->id }}">{{ $category->project_name }}</option>
+                    @endforeach
+                  </select>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        <form class="forms-sample" action="{{ route('uservendors.store') }}" method="POST" enctype="multipart/form-data">
-          @csrf
 
           <div class="d-none mb-3 hidden">
             <label for="username" class="form-label">Username</label>
@@ -36,7 +37,7 @@
             <div class="col-md-12">
               <div class="form-group">
                 <label for="team_lead" class="form-label">Team Lead</label>
-                <select name="team_lead_id" class="form-select" id="team_lead">
+                <select name="manager_id" class="form-select" id="team_lead">
                   <option value="">-- Select Project Manager --</option>
                   @foreach ($siteEngineers as $teamLead)
                     <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
