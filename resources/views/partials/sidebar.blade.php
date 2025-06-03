@@ -111,6 +111,15 @@
     </li>
 
     <hr />
+    <li class="nav-item nav-category">My Meetings</li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("meets.index") }}">
+        <i class="menu-icon mdi mdi-cogs"></i>
+        <span class="menu-title">Create Meeting Links</span>
+      </a>
+    </li>
+
+    <hr />
     <li class="nav-item">
       <a class="nav-link" href="">
         <i class="menu-icon mdi mdi-cogs"></i>
