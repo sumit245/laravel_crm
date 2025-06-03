@@ -57,11 +57,13 @@ class VendorController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        Log::info('Received request vendor data:', $request->all());
         // Validate the incoming data without requiring a username
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
             'firstName'     => 'required|string',
+            'manager_id'    => 'nullable|exists:users,id',
+            'project_id'    => 'nullable|exists:projects,id',
             'lastName'      => 'required|string',
             'contactPerson' => 'string',
             'contactNo'     => 'string',
@@ -84,12 +86,15 @@ class VendorController extends Controller
             $validated['password'] = bcrypt($validated['password']); // Hash
             $validated['role']     = 3;
             // Create the staff user
+            // Log::info('Creating vendor: ' . $validated['project_id']);
             $vendor = User::create($validated);
+            Log::info('Vendor created successfully: ' . $vendor->name);
             return redirect()->route('uservendors.index', $vendor->id)
                 ->with('success', 'Vendor created successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors
             $errorMessage = $e->getMessage();
+            Log::info('Error creating vendor: ' . $errorMessage);
 
             return redirect()->back()
                 ->withErrors(['error' => $errorMessage])

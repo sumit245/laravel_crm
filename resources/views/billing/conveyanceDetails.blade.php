@@ -114,7 +114,7 @@
                         <tr>
                             <td><input type="checkbox" class="checkboxItem" /></td>
                             <td>{{ $detail->time }}</td>
-                            <td>{{ $detail->vehicle->category ?? 'N/A' }}</td>
+                            <td>{{ $detail->vehicle->category }}</td>
                             <td>{{ $detail->to ?? 'N/A' }}</td>
                             <td>{{ $detail->from ?? 'N/A' }}</td>
                             <td>{{ $detail->kilometer ?? 'N/A' }}</td>
