@@ -21,28 +21,28 @@
         </tr>
       </thead>
       <tbody>
-        @foreach ($projects as $member)
+        @foreach ($projects as $project)
           <tr>
             <td>{{ $loop->iteration }}</td>
-            <td>{{ $member->project_name }}</td>
-            <td>{{ $member->work_order_number }}</td>
-            <td>{{ $member->start_date }}</td>
-            <td>{{ $member->rate }}</td>
+            <td>{{ $project->project_name }}</td>
+            <td>{{ $project->work_order_number }}</td>
+            <td>{{ $project->start_date }}</td>
+            <td>{{ $project->rate }}</td>
             <td>
               <!-- View Button -->
-              <a href="{{ route("projects.show", $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+              <a href="{{ route("projects.show", $project->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
                 title="View Details">
                 <i class="mdi mdi-eye"></i>
               </a>
               <!-- Edit Button -->
-              <a href="{{ route("projects.edit", $member->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
+              <a href="{{ route("projects.edit", $project->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
                 title="Edit Project">
                 <i class="mdi mdi-pencil"></i>
               </a>
               <!-- Delete Button -->
               <button type="submit" class="btn btn-icon btn-danger delete-project" data-toggle="tooltip"
-                title="Delete Project" data-id="{{ $member->id }}" data-name="{{ $member->project_name }}"
-                data-url="{{ route("projects.destroy", $member->id) }}">
+                title="Delete Project" data-id="{{ $project->id }}" data-name="{{ $project->project_name }}"
+                data-url="{{ route("projects.destroy", $project->id) }}">
                 <i class="mdi mdi-delete"></i>
               </button>
             </td>
