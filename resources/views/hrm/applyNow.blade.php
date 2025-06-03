@@ -768,43 +768,63 @@
                           <h5 class="fw-semibold mb-3">Current Address</h5>
                           <div class="row g-3 mb-4">
                             <div class="col-md-3">
-                              <label class="form-label">House/Flat No.</label>
+                              <label class="form-label required" for="curr_house_no">House/Flat No.</label>
                               <input type="text" id="curr_house_no" name="curr_house_no" class="form-control"
                                 required>
+                              <div class="invalid-feedback">Please enter your house/flat number</div>
                             </div>
                             <div class="col-md-3">
-                              <label class="form-label">Street/Road</label>
+                              <label class="form-label required" for="curr_street">Street/Road</label>
                               <input type="text" id="curr_street" name="curr_street" class="form-control"
                                 required>
+                              <div class="invalid-feedback">Please enter your street/road</div>
                             </div>
                             <div class="col-md-3">
-                              <label class="form-label">City</label>
-                              <input type="text" id="curr_city" name="curr_city" class="form-control" required>
+                              <label class="form-label required" for="curr_city">City</label>
+                              <input type="text" id="curr_city" name="curr_city" class="form-control" required
+                                pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid city name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid city name</div>
                             </div>
                             <div class="col-md-3">
-                              <label class="form-label">State</label>
-                              <input type="text" id="curr_state" name="curr_state" class="form-control" required>
+                              <label class="form-label required" for="curr_state">State</label>
+                              <input type="text" id="curr_state" name="curr_state" class="form-control" required
+                                pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid state name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid state name</div>
                             </div>
                             <div class="col-md-3">
-                              <label class="form-label">Country</label>
+                              <label class="form-label required" for="curr_country">Country</label>
                               <input type="text" id="curr_country" name="curr_country" class="form-control"
-                                required>
+                                required pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid country name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid country name</div>
                             </div>
                             <div class="col-md-3">
-                              <label class="form-label">PIN / ZIP Code</label>
-                              <input type="text" id="curr_zip" name="curr_zip" class="form-control" required>
+                              <label class="form-label required" for="curr_zip">PIN / ZIP Code</label>
+                              <input type="text" id="curr_zip" name="curr_zip" class="form-control" required
+                                pattern="^[0-9]{5,10}$" title="Please enter a valid ZIP code (5-10 digits)">
+                              <div class="invalid-feedback">Please enter a valid ZIP code (5-10 digits)</div>
                             </div>
                           </div>
 
                           <hr>
                           <div class="row g-3">
                             <div class="col-md-6">
-                              <label class="form-label">Emergency Contact Name</label>
-                              <input type="text" name="emergency_contact_name" class="form-control" required>
+                              <label class="form-label required" for="emergency_contact_name">Emergency Contact
+                                Name</label>
+                              <input type="text" id="emergency_contact_name" name="emergency_contact_name"
+                                class="form-control" required pattern="^[a-zA-Z\s]{2,50}$"
+                                title="Please enter a valid name (2-50 characters, letters only)">
+                              <div class="invalid-feedback">Please enter a valid emergency contact name</div>
                             </div>
                             <div class="col-md-6">
-                              <label class="form-label">Emergency Contact Phone Number</label>
-                              <input type="text" name="emergency_contact_phone" class="form-control" required>
+                              <label class="form-label required" for="emergency_contact_phone">Emergency Contact Phone
+                                Number</label>
+                              <input type="text" id="emergency_contact_phone" name="emergency_contact_phone"
+                                class="form-control" required pattern="^[0-9+\s()-]{10,15}$"
+                                title="Please enter a valid phone number (10-15 digits)">
+                              <div class="invalid-feedback">Please enter a valid emergency contact phone number</div>
                             </div>
                           </div>
                         </div>
@@ -832,8 +852,9 @@
                         </div>
 
                         <div class="card-body">
-                          <button type="button" class="btn btn-success" onclick="addEducationEntry()">+ Add More
-                            Education</button>
+                          <button type="button" class="btn btn-success" onclick="addEducationEntry()">
+                            <i class="fas fa-plus-circle me-2"></i> Add More Education
+                          </button>
                         </div>
 
                         <div class="card-footer">
@@ -854,30 +875,45 @@
                           <span class="fw-bold">4. Employment Details</span>
                           <span class="section-indicator">Section 4 of 8</span>
                         </div>
-                        <div class="card-body row g-3">
-                          <div class="col-md-4">
-                            <label class="form-label">Position Applied For</label>
-                            <input type="text" name="position_applied_for" class="form-control" required>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Department</label>
-                            <input type="text" name="department" class="form-control" required>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Date of Joining</label>
-                            <input type="date" name="date_of_joining" class="form-control" required>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Previous Employer</label>
-                            <input type="text" name="previous_employer" class="form-control" required>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Total Years of Experience</label>
-                            <input type="number" name="experience" step="0.1" class="form-control" required>
-                          </div>
-                          <div class="col-md-4">
-                            <label class="form-label">Notice Period</label>
-                            <input type="text" name="notice_period" class="form-control" required>
+                        <div class="card-body">
+                          <div class="row g-3">
+                            <div class="col-md-4">
+                              <label class="form-label required" for="position_applied_for">Position Applied
+                                For</label>
+                              <input type="text" id="position_applied_for" name="position_applied_for"
+                                class="form-control" required>
+                              <div class="invalid-feedback">Please enter the position you are applying for</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="department">Department</label>
+                              <input type="text" id="department" name="department" class="form-control" required>
+                              <div class="invalid-feedback">Please enter the department</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="date_of_joining">Date of Joining</label>
+                              <input type="date" id="date_of_joining" name="date_of_joining" class="form-control"
+                                required min="{{ date("Y-m-d") }}">
+                              <div class="invalid-feedback">Please select a valid joining date (must be today or in the
+                                future)</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="previous_employer">Previous Employer</label>
+                              <input type="text" id="previous_employer" name="previous_employer"
+                                class="form-control" required>
+                              <div class="invalid-feedback">Please enter your previous employer</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="experience">Total Years of Experience</label>
+                              <input type="number" id="experience" name="experience" step="0.1" min="0"
+                                max="50" class="form-control" required>
+                              <div class="invalid-feedback">Please enter a valid experience (0-50 years)</div>
+                            </div>
+                            <div class="col-md-4">
+                              <label class="form-label required" for="notice_period">Notice Period</label>
+                              <input type="text" id="notice_period" name="notice_period" class="form-control"
+                                required>
+                              <div class="invalid-feedback">Please enter your notice period</div>
+                            </div>
                           </div>
                         </div>
                         <div class="card-footer">
@@ -899,28 +935,35 @@
                           <span class="section-indicator">Section 5 of 8</span>
                         </div>
                         <div class="card-body">
-                          <p class="text-muted mb-4">
+                          <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
                             Upload documents (PDF, JPG, PNG, max 5MB each). You can add more documents below.
-                          </p>
+                          </div>
                           <div id="documentUploads">
-                            <div class="row g-3 align-items-end mb-2">
+                            <div class="row g-3 align-items-end bg-light mb-3 rounded border p-3">
                               <div class="col-md-5">
-                                <label class="form-label">Document Name</label>
-                                <input type="text" name="document_name[]" class="form-control"
-                                  placeholder="e.g. Resume" required>
+                                <label class="form-label required" for="document_name_1">Document Name</label>
+                                <input type="text" id="document_name_1" name="document_name[]"
+                                  class="form-control" placeholder="e.g. Resume" required>
+                                <div class="invalid-feedback">Please enter a document name</div>
                               </div>
                               <div class="col-md-5">
-                                <label class="form-label">Upload File</label>
-                                <input type="file" name="document_file[]" class="form-control" required>
+                                <label class="form-label required" for="document_file_1">Upload File</label>
+                                <input type="file" id="document_file_1" name="document_file[]"
+                                  class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)
+                                </div>
                               </div>
                               <div class="col-md-2 d-flex align-items-end">
-                                <button type="button"
-                                  class="btn btn-outline-danger remove-document d-none">×</button>
+                                <button type="button" class="btn btn-outline-danger remove-document d-none">
+                                  <i class="fas fa-times"></i>
+                                </button>
                               </div>
                             </div>
                           </div>
-                          <button type="button" id="addMoreDocuments" class="btn btn-outline-secondary mt-2">+ Add
-                            More Documents</button>
+                          <button type="button" id="addMoreDocuments" class="btn btn-outline-secondary mt-2">
+                            <i class="fas fa-plus-circle me-2"></i> Add More Documents
+                          </button>
                         </div>
                         <div class="card-footer">
                           <div class="d-flex justify-content-between">
@@ -943,7 +986,7 @@
                         <div class="card-body">
                           <div class="row g-3">
                             <div class="col-md-6">
-                              <label class="form-label">Do you have any disabilities?</label>
+                              <label class="form-label required">Do you have any disabilities?</label>
                               <div>
                                 <div class="form-check form-check-inline">
                                   <input type="radio" class="form-check-input" name="disabilities"
@@ -955,10 +998,11 @@
                                     id="disabilities-no" value="No" required>
                                   <label class="form-check-label" for="disabilities-no">No</label>
                                 </div>
+                                <div class="invalid-feedback">Please select an option</div>
                               </div>
                             </div>
                             <div class="col-md-6">
-                              <label class="form-label">Are you currently employed?</label>
+                              <label class="form-label required">Are you currently employed?</label>
                               <div>
                                 <div class="form-check form-check-inline">
                                   <input type="radio" class="form-check-input" name="currently_employed"
@@ -970,15 +1014,20 @@
                                     id="employed-no" value="No" required>
                                   <label class="form-check-label" for="employed-no">No</label>
                                 </div>
+                                <div class="invalid-feedback">Please select an option</div>
                               </div>
                             </div>
-                            <div class="col-md-12">
-                              <label class="form-label">If yes, reason for leaving current employment:</label>
-                              <input type="text" name="reason_for_leaving" class="form-control">
+                            <div class="col-md-12" id="reason-for-leaving-container" style="display: none;">
+                              <label class="form-label required" for="reason_for_leaving">Reason for leaving current
+                                employment:</label>
+                              <input type="text" id="reason_for_leaving" name="reason_for_leaving"
+                                class="form-control">
+                              <div class="invalid-feedback">Please provide a reason for leaving</div>
                             </div>
                             <div class="col-md-12">
-                              <label class="form-label">Any other information you'd like to provide:</label>
-                              <textarea name="other_info" class="form-control"></textarea>
+                              <label class="form-label" for="other_info">Any other information you'd like to
+                                provide:</label>
+                              <textarea id="other_info" name="other_info" class="form-control" rows="4"></textarea>
                             </div>
                           </div>
                         </div>
@@ -1001,21 +1050,28 @@
                           <span class="section-indicator">Section 7 of 8</span>
                         </div>
                         <div class="card-body">
-                          <p class="text-muted mb-3">Upload a recent passport size photo (JPG, PNG, max 2MB).</p>
+                          <div class="alert alert-info mb-4">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Upload a recent passport size photo (JPG, PNG, max 2MB).
+                          </div>
                           <div class="row g-3">
                             <div class="col-md-6">
-                              <label class="form-label">Upload Photo</label>
+                              <label class="form-label required" for="passportPhotoInput">Upload Photo</label>
                               <input type="file" id="passportPhotoInput" name="passport_photo"
                                 accept="image/jpeg,image/png" class="form-control" required>
+                              <div class="invalid-feedback">Please upload a valid passport photo (JPG, PNG, max 2MB)
+                              </div>
                             </div>
                             <div class="col-md-6 d-flex align-items-end">
-                              <div class="position-relative d-inline-block">
+                              <div class="photo-upload-container">
                                 <label class="form-label d-block">Preview</label>
-                                <img id="passportPhotoPreview" src="{{ asset("images/default-avatar.png") }}"
-                                  alt="Passport Preview" class="img-thumbnail" style="max-height: 150px;">
-                                <button type="button" id="removePhotoButton"
-                                  class="btn btn-sm btn-danger position-absolute end-0 top-0 m-1"
-                                  style="display:none;">×</button>
+                                <div class="position-relative d-inline-block">
+                                  <img id="passportPhotoPreview" src="{{ asset("images/default-avatar.png") }}"
+                                    alt="Passport Preview" class="img-thumbnail" style="max-height: 150px;">
+                                  <button type="button" id="removePhotoButton"
+                                    class="btn btn-sm btn-danger position-absolute end-0 top-0 m-1"
+                                    style="display:none;">×</button>
+                                </div>
                               </div>
                             </div>
                           </div>
@@ -1039,8 +1095,9 @@
                           <span class="section-indicator">Section 8 of 8</span>
                         </div>
                         <div class="card-body">
-                          <div class="alert alert-info">
+                          <div class="alert alert-info mb-4">
                             <p class="mb-0">
+                              <i class="fas fa-info-circle me-2"></i>
                               I hereby declare that the information provided above is true to the best of my knowledge
                               and belief. I understand that any false information may lead to disqualification from the
                               recruitment process.
@@ -1048,12 +1105,26 @@
                           </div>
                           <div class="row g-3">
                             <div class="col-md-6">
-                              <label class="form-label">Signature</label>
-                              <input type="text" name="signature" class="form-control" required>
+                              <label class="form-label required" for="signature">Signature</label>
+                              <input type="text" id="signature" name="signature" class="form-control" required>
+                              <div class="invalid-feedback">Please enter your signature</div>
                             </div>
                             <div class="col-md-6">
-                              <label class="form-label">Date</label>
-                              <input type="date" name="date" class="form-control" required>
+                              <label class="form-label required" for="declaration_date">Date</label>
+                              <input type="date" id="declaration_date" name="date" class="form-control"
+                                required value="{{ date("Y-m-d") }}" readonly>
+                              <div class="invalid-feedback">Please select today's date</div>
+                            </div>
+                            <div class="col-md-12 mt-4">
+                              <div class="form-check">
+                                <input type="checkbox" id="agree_terms" name="agree_terms" class="form-check-input"
+                                  required>
+                                <label class="form-check-label" for="agree_terms">
+                                  I agree to the terms and conditions and confirm that all information provided is
+                                  accurate.
+                                </label>
+                                <div class="invalid-feedback">You must agree to the terms and conditions</div>
+                              </div>
                             </div>
                           </div>
                         </div>
@@ -1062,7 +1133,7 @@
                             <button type="button" class="btn btn-outline-secondary prev-section"
                               data-prev="photo">Previous</button>
                             <button type="submit" class="btn btn-success">
-                              <i class="fas fa-check-circle"></i> Submit & Preview
+                              <i class="fas fa-check-circle me-2"></i> Submit & Preview
                             </button>
                           </div>
                         </div>
@@ -1073,334 +1144,186 @@
               </div>
             </div>
           </div>
-        @endsection
+        </div>
+      </div>
+    </div>
 
-        @push("styles")
-          <style>
-            /* Main Layout Styles */
-            .side-nav {
-              background-color: #f8f9fa;
-              min-height: 100vh;
-              border-right: 1px solid #dee2e6;
-              position: sticky;
-              top: 0;
-            }
+    <!-- Scripts -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="{{ asset("vendors/select2/select2.min.js") }}"></script>
+    <script src="{{ asset("js/off-canvas.js") }}"></script>
+    <script src="{{ asset("js/hoverable-collapse.js") }}"></script>
+    <script src="{{ asset("js/template.js") }}"></script>
+    <script src="{{ asset("js/dashboard.js") }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-            .form-check .form-check-input {
-              margin-left: 0;
-            }
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        // Initialize variables
+        const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info',
+          'photo', 'declaration'
+        ];
+        let completedSections = [];
 
-            .main-content {
-              padding: 0;
-              background-color: #fff;
-            }
 
-            /* Form Section Styles */
-            .form-section {
-              display: none;
-            }
+        // Function to update progress bar
+        function updateProgress() {
+          const totalSections = sections.length;
+          const completedCount = completedSections.length;
+          const progressPercentage = Math.round((completedCount / totalSections) * 100);
 
-            .form-section.active {
-              display: block;
-            }
+          document.getElementById('progress-bar').style.width = progressPercentage + '%';
+          document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+        }
 
-            /* Navigation Tabs Styles */
-            .nav-section-title {
-              background-color: #e9ecef;
-              font-weight: bold;
-            }
+        // Function to mark section as completed
+        function markSectionCompleted(sectionId) {
+          if (!completedSections.includes(sectionId)) {
+            completedSections.push(sectionId);
 
-            .form-tabs .nav-link {
-              color: #6c757d;
-              padding: 0.75rem 1rem;
-              border-left: 3px solid transparent;
-              transition: all 0.2s ease;
-            }
+            // Update tab status
+            const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+            tabLink.classList.add('completed');
 
-            .form-tabs .nav-link.active {
-              color: #0d6efd;
-              background-color: rgba(13, 110, 253, 0.1);
-              border-left: 3px solid #0d6efd;
-            }
+            updateProgress();
+          }
+        }
 
-            .form-tabs .nav-link.disabled {
-              color: #adb5bd;
-              cursor: not-allowed;
-            }
+        // Function to validate section
+        function validateSection(sectionId) {
+          const section = document.getElementById(sectionId);
+          const inputs = section.querySelectorAll('input[required], select[required], textarea[required]');
+          let isValid = true;
 
-            .form-tabs .nav-link.completed {
-              color: #198754;
-              border-left: 3px solid #198754;
-            }
+          inputs.forEach(input => {
+            if (input.type === 'radio') {
+              // For radio buttons, check if any in the group is checked
+              const name = input.name;
+              const radioGroup = section.querySelectorAll(`input[name="${name}"]`);
+              const isChecked = Array.from(radioGroup).some(radio => radio.checked);
 
-            .section-number {
-              display: inline-flex;
-              align-items: center;
-              justify-content: center;
-              width: 24px;
-              height: 24px;
-              border-radius: 50%;
-              background-color: #e9ecef;
-              margin-right: 10px;
-              font-size: 0.8rem;
-              font-weight: bold;
-            }
-
-            .nav-link.active .section-number {
-              background-color: #0d6efd;
-              color: white;
-            }
-
-            .nav-link.completed .section-number {
-              background-color: #198754;
-              color: white;
-            }
-
-            .section-status .fa-circle {
-              font-size: 10px;
-              color: #adb5bd;
-            }
-
-            .nav-link.active .section-status .fa-circle {
-              color: #0d6efd;
-            }
-
-            .nav-link.completed .section-status .fa-circle:before {
-              content: "\f00c";
-              font-size: 14px;
-              color: #198754;
-            }
-
-            /* Form Watermark */
-            .form-watermark {
-              position: relative;
-            }
-
-            .form-watermark::before {
-              content: "";
-              background: url('{{ asset("images/logo.png") }}') no-repeat center center;
-              background-size: 300px;
-              opacity: 0.07;
-              position: absolute;
-              top: 0;
-              left: 0;
-              width: 100%;
-              height: 100%;
-              z-index: 0;
-            }
-
-            /* Form Elements */
-            .form-label {
-              font-weight: 500;
-            }
-
-            .form-label::after {
-              content: " *";
-              color: red;
-            }
-
-            .card-header {
-              background-color: #f5f7fa;
-            }
-
-            .section-indicator {
-              font-size: 0.8rem;
-              color: #6c757d;
-            }
-
-            /* Document Upload */
-            .remove-document {
-              font-size: 24px;
-              line-height: 1;
-              padding: 0 10px;
-              height: 38px;
-            }
-
-            /* Photo Upload */
-            #removePhotoButton {
-              border-radius: 50%;
-              width: 24px;
-              height: 24px;
-              line-height: 16px;
-              padding: 0;
-              font-size: 16px;
-              text-align: center;
-            }
-
-            /* Progress Bar */
-            .form-progress {
-              padding: 15px 0;
-            }
-
-            .progress {
-              height: 8px;
-            }
-
-            /* Responsive Adjustments */
-            @media (max-width: 767.98px) {
-              .side-nav {
-                min-height: auto;
-                position: relative;
-              }
-
-              .form-tabs {
-                display: flex;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-              }
-
-              .form-tabs .nav-item {
-                flex: 0 0 auto;
-              }
-            }
-          </style>
-        @endpush
-
-        @push("scripts")
-          <script>
-            document.addEventListener('DOMContentLoaded', function() {
-              // Initialize variables
-              const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info',
-                'photo', 'declaration'
-              ];
-              let completedSections = [];
-
-              // Function to update progress bar
-              function updateProgress() {
-                const totalSections = sections.length;
-                const completedCount = completedSections.length;
-                const progressPercentage = Math.round((completedCount / totalSections) * 100);
-
-                document.getElementById('progress-bar').style.width = progressPercentage + '%';
-                document.getElementById('progress-percentage').textContent = progressPercentage + '%';
-              }
-
-              // Function to mark section as completed
-              function markSectionCompleted(sectionId) {
-                if (!completedSections.includes(sectionId)) {
-                  completedSections.push(sectionId);
-
-                  // Update tab status
-                  const tabLink = document.querySelector(.nav - link[data - section = "${sectionId}"]);
-                  tabLink.classList.add('completed');
-
-                  updateProgress();
+              if (!isChecked) {
+                isValid = false;
+                // Find the parent div that contains the invalid-feedback
+                const parentDiv = input.closest('div.col-md-4, div.col-md-6, div.col-md-12');
+                if (parentDiv) {
+                  const feedback = parentDiv.querySelector('.invalid-feedback');
+                  if (feedback) {
+                    feedback.style.display = 'block';
+                  }
                 }
               }
-
-              // Function to validate section
-              function validateSection(sectionId) {
-                const section = document.getElementById(sectionId);
-                const inputs = section.querySelectorAll('input[required], select[required], textarea[required]');
-                let isValid = true;
-
-                inputs.forEach(input => {
-                  if (!input.value.trim()) {
-                    isValid = false;
-                    input.classList.add('is-invalid');
-                  } else {
-                    input.classList.remove('is-invalid');
-                  }
-                });
-
-                return isValid;
+            } else if (input.type === 'checkbox') {
+              if (!input.checked && input.required) {
+                isValid = false;
+                input.classList.add('is-invalid');
+              } else {
+                input.classList.remove('is-invalid');
               }
-
-              // Function to switch sections
-              function switchSection(fromSection, toSection) {
-                // Hide current section
-                document.getElementById(fromSection).classList.remove('active');
-
-                // Show target section
-                document.getElementById(toSection).classList.add('active');
-
-                // Update active tab
-                document.querySelector(.nav - link[data - section = "${fromSection}"]).classList.remove('active');
-                document.querySelector(.nav - link[data - section = "${toSection}"]).classList.add('active');
-                document.querySelector(.nav - link[data - section = "${toSection}"]).classList.remove('disabled');
-
-                // Scroll to top
-                window.scrollTo(0, 0);
+            } else if (input.type === 'file') {
+              // Skip file validation for now as it's handled separately
+            } else {
+              // For other inputs, check if they have a value and match their pattern if any
+              if (!input.value.trim()) {
+                isValid = false;
+                input.classList.add('is-invalid');
+              } else if (input.pattern && !new RegExp(input.pattern).test(input.value)) {
+                isValid = false;
+                input.classList.add('is-invalid');
+              } else {
+                input.classList.remove('is-invalid');
               }
+            }
+          });
 
+          return isValid;
+        }
 
-              // Next section button click handler
-              document.querySelectorAll('.next-section').forEach(button => {
-                button.addEventListener('click', function() {
-                  const currentSection = this.closest('.form-section').id;
-                  const nextSection = this.getAttribute('data-next');
+        // Function to switch sections
+        function switchSection(fromSection, toSection) {
+          // Hide current section
+          document.getElementById(fromSection).classList.remove('active');
 
-                  // Validate current section if needed
-                  // const isValid = validateSection(currentSection);
-                  // if (isValid) {
+          // Show target section
+          document.getElementById(toSection).classList.add('active');
 
-                  // Switch to next section
-                  document.getElementById(currentSection).classList.remove('active');
-                  document.getElementById(nextSection).classList.add('active');
+          // Update active tab
+          document.querySelector(`.nav-link[data-section="${fromSection}"]`).classList.remove('active');
+          document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.add('active');
+          document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.remove('disabled');
 
-                  // Update active tab
-                  document.querySelector(`.nav-link[data-section="${currentSection}"]`).classList.remove('active');
-                  document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.add('active');
-                  document.querySelector(`.nav-link[data-section="${nextSection}"]`).classList.remove('disabled');
+          // Scroll to top
+          window.scrollTo(0, 0);
+        }
 
-                  // Mark current section as completed if needed
-                  // markSectionCompleted(currentSection);
+        // Next section button click handler
+        document.querySelectorAll('.next-section').forEach(button => {
+          button.addEventListener('click', function() {
+            const currentSection = this.closest('.form-section').id;
+            const nextSection = this.getAttribute('data-next');
 
-                  // Scroll to top
-                  window.scrollTo(0, 0);
-                  // }
-                });
+            if (validateSection(currentSection)) {
+              markSectionCompleted(currentSection);
+              switchSection(currentSection, nextSection);
+            } else {
+              Swal.fire({
+                title: 'Validation Error',
+                text: 'Please fill in all required fields correctly before proceeding.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#673ab7'
               });
+            }
+          });
+        });
 
-              // Previous section button click handler
-              document.querySelectorAll('.prev-section').forEach(button => {
-                button.addEventListener('click', function() {
-                  const currentSection = this.closest('.form-section').id;
-                  const prevSection = this.getAttribute('data-prev');
+        // Previous section button click handler
+        document.querySelectorAll('.prev-section').forEach(button => {
+          button.addEventListener('click', function() {
+            const currentSection = this.closest('.form-section').id;
+            const prevSection = this.getAttribute('data-prev');
 
-                  switchSection(currentSection, prevSection);
-                });
-              });
+            switchSection(currentSection, prevSection);
+          });
+        });
 
-              // Tab click handler
-              document.querySelectorAll('.form-tabs .nav-link').forEach(tab => {
-                tab.addEventListener('click', function(e) {
-                  if (!this.classList.contains('disabled')) {
-                    const targetSection = this.getAttribute('data-section');
-                    const currentSection = document.querySelector('.form-section.active').id;
+        // Tab click handler
+        document.querySelectorAll('.form-tabs .nav-link').forEach(tab => {
+          tab.addEventListener('click', function(e) {
+            if (!this.classList.contains('disabled')) {
+              const targetSection = this.getAttribute('data-section');
+              const currentSection = document.querySelector('.form-section.active').id;
 
-                    switchSection(currentSection, targetSection);
-                  }
-                });
-              });
+              switchSection(currentSection, targetSection);
+            }
+          });
+        });
 
-              // Same as permanent address checkbox
-              document.getElementById('sameAsPermanent').addEventListener('change', function() {
-                const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
-                fields.forEach(field => {
-                  const perm = document.getElementById(perm_$ {
-                    field
-                  });
-                  const curr = document.getElementById(curr_$ {
-                    field
-                  });
-                  if (this.checked) {
-                    curr.value = perm.value;
-                    curr.readOnly = true;
-                  } else {
-                    curr.readOnly = false;
-                  }
-                });
-              });
+        // Same as permanent address checkbox
+        document.getElementById('sameAsPermanent').addEventListener('change', function() {
+          const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
+          fields.forEach(field => {
+            const perm = document.getElementById(`perm_${field}`);
+            const curr = document.getElementById(`curr_${field}`);
+            if (this.checked) {
+              curr.value = perm.value;
+              curr.readOnly = true;
+              curr.classList.add('bg-light');
+            } else {
+              curr.readOnly = false;
+              curr.classList.remove('bg-light');
+            }
+          });
+        });
 
-              // Add more documents button
-              document.getElementById('addMoreDocuments').addEventListener('click', function() {
-                const wrapper = document.getElementById('documentUploads');
-                const row = document.createElement('div');
-                row.className = 'row g-3 align-items-end mb-2';
-                row.innerHTML = `
+        // Add more documents button
+        document.getElementById('addMoreDocuments').addEventListener('click', function() {
+          const wrapper = document.getElementById('documentUploads');
+          const documentCount = wrapper.children.length + 1;
+          const row = document.createElement('div');
+          row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
+          row.innerHTML = `
                 <div class="col-md-5">
                     <label class="form-label required" for="document_name_${documentCount}">Document Name</label>
                     <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" placeholder="Document Name" required>
@@ -1417,115 +1340,283 @@
                     </button>
                 </div>
             `;
-                wrapper.appendChild(row);
-              });
+          wrapper.appendChild(row);
 
-              // Remove document field
-              document.getElementById('documentUploads').addEventListener('click', function(e) {
-                if (e.target.classList.contains('remove-document')) {
-                  const row = e.target.closest('.row');
-                  row.remove();
-                }
-              });
-
-              // Passport photo preview
-              const photoInput = document.getElementById('passportPhotoInput');
-              const photoPreview = document.getElementById('passportPhotoPreview');
-              const removeButton = document.getElementById('removePhotoButton');
-
-              photoInput.addEventListener('change', function(event) {
-                const file = event.target.files[0];
-                if (file && file.type.startsWith('image/')) {
-                  const reader = new FileReader();
-                  reader.onload = function(e) {
-                    photoPreview.src = e.target.result;
-                    removeButton.style.display = 'inline-block';
-                  };
-                  reader.readAsDataURL(file);
-                } else {
-                  resetPassportPhoto();
-                }
-              });
-
-              removeButton.addEventListener('click', function() {
-                resetPassportPhoto();
-              });
-
-              function resetPassportPhoto() {
-                photoPreview.src = '{{ asset("images/default-avatar.png") }}';
-                photoInput.value = '';
-                removeButton.style.display = 'none';
-              }
-
-              // Form submission
-              document.getElementById('onboarding-form').addEventListener('submit', function(e) {
-                e.preventDefault();
-
-                // Validate all sections
-                let allValid = true;
-                sections.forEach(section => {
-                  if (!validateSection(section)) {
-                    allValid = false;
-                  }
-                });
-
-                if (allValid) {
-                  // Submit the form
-                  this.submit();
-                } else {
-                  alert('Please fill in all required fields in all sections before submitting.');
-                }
-              });
+          // Show all remove buttons if there's more than one document
+          if (wrapper.children.length > 1) {
+            wrapper.querySelectorAll('.remove-document').forEach(btn => {
+              btn.classList.remove('d-none');
             });
+          }
+        });
 
-            let educationCount = 0;
+        // Remove document field
+        document.getElementById('documentUploads').addEventListener('click', function(e) {
+          if (e.target.classList.contains('remove-document') || e.target.closest('.remove-document')) {
+            const button = e.target.classList.contains('remove-document') ? e.target : e.target.closest(
+              '.remove-document');
+            const row = button.closest('.row');
+            row.remove();
 
-            function addEducationEntry() {
-              educationCount++;
-              const container = document.getElementById('education-entries');
-              const entryHTML = `
-        <div class="card-body row g-3 mb-3 border p-3" id="education-entry-${educationCount}">
-            <div class="col-md-4">
-                <label class="form-label">Highest Qualification</label>
-                <select name="education[${educationCount}][qualification]" class="form-control" required>
-                    <option value="">Select Qualification</option>
-                    <option value="Bachelors">Bachelors</option>
-                    <option value="Masters">Masters</option>
-                    <option value="PhD">PhD</option>
-                    <option value="Other">Other</option>
-                </select>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Institution Name</label>
-                <input type="text" name="education[${educationCount}][institution]" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Year of Graduation</label>
-                <input type="text" name="education[${educationCount}][year]" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Specialization</label>
-                <input type="text" name="education[${educationCount}][specialization]" class="form-control" required>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label">Additional Certifications</label>
-                <input type="text" name="education[${educationCount}][certifications]" class="form-control">
-            </div>
-            <div class="col-md-4 d-flex align-items-end">
-                <button type="button" class="btn btn-danger" onclick="removeEducationEntry(${educationCount})">Remove</button>
-            </div>
-        </div>`;
-              container.insertAdjacentHTML('beforeend', entryHTML);
+            // Hide remove button if only one document remains
+            const wrapper = document.getElementById('documentUploads');
+            if (wrapper.children.length === 1) {
+              wrapper.querySelector('.remove-document').classList.add('d-none');
             }
+          }
+        });
 
-            function removeEducationEntry(id) {
-              const entry = document.getElementById(education - entry - $ {
-                id
+        // Passport photo preview
+        const photoInput = document.getElementById('passportPhotoInput');
+        const photoPreview = document.getElementById('passportPhotoPreview');
+        const removeButton = document.getElementById('removePhotoButton');
+
+        photoInput.addEventListener('change', function(event) {
+          const file = event.target.files[0];
+          if (file && file.type.startsWith('image/')) {
+            // Check file size (max 2MB)
+            if (file.size > 2 * 1024 * 1024) {
+              Swal.fire({
+                title: 'File Too Large',
+                text: 'The photo must be less than 2MB in size.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#673ab7'
               });
-              if (entry) entry.remove();
+              photoInput.value = '';
+              return;
             }
 
-            // Add initial entry by default
-            window.onload = addEducationEntry;
-          </script>
-        @endpush
+            const reader = new FileReader();
+            reader.onload = function(e) {
+              photoPreview.src = e.target.result;
+              removeButton.style.display = 'inline-block';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            resetPassportPhoto();
+          }
+        });
+
+        removeButton.addEventListener('click', function() {
+          resetPassportPhoto();
+        });
+
+        function resetPassportPhoto() {
+          photoPreview.src = '{{ asset("images/default-avatar.png") }}';
+          photoInput.value = '';
+          removeButton.style.display = 'none';
+        }
+
+        // Show/hide reason for leaving based on employment status
+        document.querySelectorAll('input[name="currently_employed"]').forEach(radio => {
+          radio.addEventListener('change', function() {
+            const reasonContainer = document.getElementById('reason-for-leaving-container');
+            const reasonInput = document.getElementById('reason_for_leaving');
+
+            if (this.value === 'Yes') {
+              reasonContainer.style.display = 'block';
+              reasonInput.required = true;
+            } else {
+              reasonContainer.style.display = 'none';
+              reasonInput.required = false;
+              reasonInput.value = '';
+            }
+          });
+        });
+
+        // Form submission
+        // document.getElementById('onboarding-form').addEventListener('submit', function(e) {
+        //     e.preventDefault();
+
+        //     // Validate all sections
+        //     let allValid = true;
+        //     sections.forEach(section => {
+        //         if (!validateSection(section)) {
+        //             allValid = false;
+        //         }
+        //     });
+
+        //     if (allValid) {
+        //         // Submit the form
+        //         this.submit();
+        //     } else {
+        //         Swal.fire({
+        //             title: 'Validation Error',
+        //             text: 'Please fill in all required fields in all sections before submitting.',
+        //             icon: 'error',
+        //             confirmButtonText: 'OK',
+        //             confirmButtonColor: '#673ab7'
+        //         });
+        //     }
+        // });
+
+        // Initialize Select2 for enhanced select boxes
+        if ($.fn.select2) {
+          $('.custom-select').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('#onboarding-form'),
+            minimumResultsForSearch: 6
+          });
+        }
+      });
+
+      let educationCount = 0;
+
+      function addEducationEntry() {
+        educationCount++;
+        const container = document.getElementById('education-entries');
+        const entryHTML = `
+            <div class="card-body row g-3 mb-3 border p-3 bg-light rounded" id="education-entry-${educationCount}">
+                <div class="col-md-4">
+                    <label class="form-label required" for="education_qualification_${educationCount}">Highest Qualification</label>
+                    <select id="education_qualification_${educationCount}" name="education[${educationCount}][qualification]" class="form-select custom-select" required>
+                        <option value="">Select Qualification</option>
+                        <option value="High School">High School</option>
+                        <option value="Diploma">Diploma</option>
+                        <option value="Bachelors">Bachelors</option>
+                        <option value="Masters">Masters</option>
+                        <option value="PhD">PhD</option>
+                        <option value="Other">Other</option>
+                    </select>
+                    <div class="invalid-feedback">Please select a qualification</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required" for="education_institution_${educationCount}">Institution Name</label>
+                    <input type="text" id="education_institution_${educationCount}" name="education[${educationCount}][institution]" class="form-control" required>
+                    <div class="invalid-feedback">Please enter the institution name</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required" for="education_year_${educationCount}">Year of Graduation</label>
+                    <input type="number" id="education_year_${educationCount}" name="education[${educationCount}][year]" class="form-control" min="1950" max="${new Date().getFullYear()}" required>
+                    <div class="invalid-feedback">Please enter a valid graduation year</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required" for="education_specialization_${educationCount}">Specialization</label>
+                    <input type="text" id="education_specialization_${educationCount}" name="education[${educationCount}][specialization]" class="form-control" required>
+                    <div class="invalid-feedback">Please enter your specialization</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label" for="education_certifications_${educationCount}">Additional Certifications</label>
+                    <input type="text" id="education_certifications_${educationCount}" name="education[${educationCount}][certifications]" class="form-control">
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger" onclick="removeEducationEntry(${educationCount})">
+                        <i class="fas fa-trash-alt me-2"></i> Remove
+                    </button>
+                </div>
+            </div>`;
+        container.insertAdjacentHTML('beforeend', entryHTML);
+
+        // Initialize Select2 for the newly added select
+        if ($.fn.select2) {
+          $(`#education_qualification_${educationCount}`).select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $(`#education-entry-${educationCount}`),
+            minimumResultsForSearch: 6
+          });
+        }
+      }
+
+      function removeEducationEntry(id) {
+        const entry = document.getElementById(`education-entry-${id}`);
+        if (entry) {
+          // Use SweetAlert2 for confirmation
+          Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to remove this education entry.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              entry.remove();
+            }
+          });
+        }
+      }
+
+      // Add initial entry by default
+      window.onload = function() {
+        addEducationEntry();
+      };
+    </script>
+
+    <script>
+      // Add this at the end of your existing script
+      document.addEventListener('DOMContentLoaded', function() {
+        // Function to save form data to sessionStorage
+        function saveFormData() {
+          const formData = {};
+          const form = document.getElementById('onboarding-form');
+
+          // Get all input elements
+          const inputs = form.querySelectorAll('input, select, textarea');
+
+          inputs.forEach(input => {
+            // Skip file inputs
+            if (input.type === 'file') return;
+
+            // Handle radio buttons and checkboxes
+            if (input.type === 'radio' || input.type === 'checkbox') {
+              if (input.checked) {
+                formData[input.name] = input.value;
+              }
+            } else {
+              formData[input.name] = input.value;
+            }
+          });
+
+          // Save to sessionStorage
+          sessionStorage.setItem('employeeFormData', JSON.stringify(formData));
+        }
+
+        // Function to load form data from sessionStorage
+        function loadFormData() {
+          const savedData = sessionStorage.getItem('employeeFormData');
+
+          if (savedData) {
+            const formData = JSON.parse(savedData);
+            const form = document.getElementById('onboarding-form');
+
+            // Set values for all inputs
+            Object.keys(formData).forEach(name => {
+              const input = form.querySelector(`[name="${name}"]`);
+
+              if (input) {
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                  const radioOrCheckbox = form.querySelector(`[name="${name}"][value="${formData[name]}"]`);
+                  if (radioOrCheckbox) {
+                    radioOrCheckbox.checked = true;
+                  }
+                } else {
+                  input.value = formData[name];
+                }
+              }
+            });
+          }
+        }
+
+        // Save form data when moving between sections
+        document.querySelectorAll('.next-section, .prev-section').forEach(button => {
+          button.addEventListener('click', saveFormData);
+        });
+
+        // Save form data periodically (every 30 seconds)
+        setInterval(saveFormData, 30000);
+
+        // Load form data when page loads
+        window.addEventListener('DOMContentLoaded', loadFormData);
+
+        // Save form data before submitting
+        document.getElementById('onboarding-form').addEventListener('submit', saveFormData);
+      });
+    </script>
+
+  </body>
+
+</html>
