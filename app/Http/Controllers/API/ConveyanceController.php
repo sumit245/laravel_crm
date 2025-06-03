@@ -13,6 +13,7 @@ use App\Models\UserCategory;
 use App\Models\Vehicle;
 use DB;
 use Illuminate\Http\Request;
+use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
 class ConveyanceController extends Controller
@@ -110,9 +111,9 @@ class ConveyanceController extends Controller
         }
     }
 
-    public function getVehicles(){
-        $vehicles = Vehicle::get();
-        return response()->json($vehicles);
+    public function getVehicles($id){
+        $vehicle = Vehicle::where('id', $id)->get();
+        return response()->json($vehicle);
     }
 
     /**
