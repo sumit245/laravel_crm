@@ -157,8 +157,12 @@
                   <div class="w-100 text-center pdf-thumbnail" data-pdf-url="{{ $file }}">
                     <span class="text-muted">Loading PDF...</span>
                   </div>
+                  <div class="w-100 text-center pdf-thumbnail" data-pdf-url="{{ $file }}">
+                    <span class="text-muted">Loading PDF...</span>
+                  </div>
                 @else
                   <a href="{{ $file }}" target="_blank" class="d-block">
+                    <img src="{{ $file }}" alt="Attachment" class="img-fluid" style="max-height: 160px;">
                     <img src="{{ $file }}" alt="Attachment" class="img-fluid" style="max-height: 160px;">
                   </a>
                 @endif
@@ -168,8 +172,20 @@
                   {{ $extension === 'pdf' ? 'View PDF' : 'View Image' }}
                 </a>
               </div>
+              </div>
+              <div class="card-footer text-center bg-white">
+                <a href="{{ $file }}" target="_blank" class="text-decoration-none small">
+                  {{ $extension === 'pdf' ? 'View PDF' : 'View Image' }}
+                </a>
+              </div>
             </div>
           </div>
+        @empty
+          <div class="col-12">
+            <p class="text-muted">No attachments available.</p>
+          </div>
+        @endforelse
+      </div>
         @empty
           <div class="col-12">
             <p class="text-muted">No attachments available.</p>
@@ -202,6 +218,10 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     const pdfThumbnails = document.querySelectorAll('.pdf-thumbnail');
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const pdfThumbnails = document.querySelectorAll('.pdf-thumbnail');
 
     pdfThumbnails.forEach(thumbnail => {
       const pdfUrl = thumbnail.dataset.pdfUrl;
@@ -212,7 +232,31 @@
           const context = canvas.getContext('2d');
           canvas.width = viewport.width;
           canvas.height = viewport.height;
+    pdfThumbnails.forEach(thumbnail => {
+      const pdfUrl = thumbnail.dataset.pdfUrl;
+      pdfjsLib.getDocument(pdfUrl).promise.then((pdf) => {
+        pdf.getPage(1).then((page) => {
+          const viewport = page.getViewport({ scale: 0.5 });
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.width = viewport.width;
+          canvas.height = viewport.height;
 
+          page.render({
+            canvasContext: context,
+            viewport: viewport
+          }).promise.then(() => {
+            thumbnail.innerHTML = '';
+            thumbnail.appendChild(canvas);
+          });
+        });
+      }).catch((error) => {
+        console.error('Error loading PDF:', error);
+        thumbnail.innerHTML = '<span class="text-danger">Failed to load PDF</span>';
+      });
+    });
+  });
+</script>
           page.render({
             canvasContext: context,
             viewport: viewport
