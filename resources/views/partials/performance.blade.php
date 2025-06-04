@@ -48,7 +48,17 @@
 </style>
 
 <div class="container my-4">
-  <h2 class="mb-4 fw-bold">📊 Performance Overview</h2>
+  <!-- <h2 class="mb-4 fw-bold">📊 Performance Overview</h2> -->
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h3 class="fw-bold">Performance Overview</h3>
+    <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
+      <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
+      <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
+      <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
+      <option value="all_time" {{ request("date_filter") == "all_time" ? "selected" : "" }}>All Time</option>
+      <option value="custom" {{ request("date_filter") == "custom" ? "selected" : "" }}>Custom Range</option>
+    </select>
+  </div>
 
   @foreach ($rolePerformances as $role => $users)
     <h4 class="text-primary mb-3">{{ $role }}</h4>
@@ -106,3 +116,70 @@
     </div>
   @endforeach
 </div>
+
+<script>
+  function filterTasks() {
+    let selectedFilter = document.getElementById('taskFilter').value;
+
+    if (selectedFilter === 'custom') {
+      // Show the custom date range modal
+      var customDateModal = new bootstrap.Modal(document.getElementById('customDateModal'));
+      customDateModal.show();
+    } else {
+      // Redirect with the selected filter
+      let url = new URL(window.location.href);
+      url.searchParams.set('date_filter', selectedFilter);
+
+      // Remove any existing custom date parameters if they exist
+      url.searchParams.delete('start_date');
+      url.searchParams.delete('end_date');
+
+      window.location.href = url.toString();
+    }
+  }
+
+  // Update the minimum date for the end date input based on the start date
+  function updateEndDateMin() {
+    const startDate = document.getElementById('start_date').value;
+    const endDateInput = document.getElementById('end_date');
+
+    if (startDate) {
+      endDateInput.min = startDate;
+
+      // If current end date is before start date, update it
+      if (endDateInput.value && endDateInput.value < startDate) {
+        endDateInput.value = startDate;
+      }
+    }
+  }
+
+  // Validate the date range before form submission
+  function validateDateRange() {
+    const startDate = document.getElementById('start_date').value;
+    const endDate = document.getElementById('end_date').value;
+    const dateError = document.getElementById('dateError');
+
+    if (startDate && endDate && endDate < startDate) {
+      dateError.textContent = 'End date cannot be earlier than start date';
+      document.getElementById('end_date').classList.add('is-invalid');
+      return false;
+    }
+
+    document.getElementById('end_date').classList.remove('is-invalid');
+    return true;
+  }
+
+  // Check if we should show the date modal on page load
+  document.addEventListener('DOMContentLoaded', function() {
+    // Set up initial min date for end date
+    updateEndDateMin();
+
+    if (document.getElementById('taskFilter').value === 'custom') {
+      // Only show if we're not already seeing results (i.e., no date params yet)
+      if (!new URLSearchParams(window.location.search).has('start_date')) {
+        var customDateModal = new bootstrap.Modal(document.getElementById('customDateModal'));
+        customDateModal.show();
+      }
+    }
+  });
+</script>
