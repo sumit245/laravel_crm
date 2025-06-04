@@ -368,7 +368,7 @@ class ConveyanceController extends Controller
                 $vehicles = Vehicle::where('id', $conv->vehicle_category)->get(); // Adjust 'category' if your column is different
                 $conv->vehicles = $vehicles; // Add vehicles as a dynamic property
                 return $conv;
-            });
+            }); 
                 if (!$conveyance) {
                 return response()->json([
                     'status' => false,
