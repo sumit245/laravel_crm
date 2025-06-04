@@ -80,6 +80,7 @@
           </ul>
 
           <!-- Vendor Tab -->
+          @foreach ($vendors as $vendor)
           <div class="tab-pane fade show active" id="vendor-content" role="tabpanel" aria-labelledby="vendor-tab">
             <div class="row mt-3">
               <div class="col-md-4 mb-3">
@@ -87,8 +88,8 @@
                   <div class="d-flex align-items-center mb-3">
                     <img src="https://via.placeholder.com/50" alt="Profile" class="profile-img me-3">
                     <div>
-                      <h6 class="mb-0">Vendor Name</h6>
-                      <small class="text-muted">🥇 Vendor Company</small>
+                      <h6 class="mb-0">{{ $vendor->firstName }} {{ $vendor->lastName }}</h6>
+                      <small class="text-muted">{{ $vendor->name }}</small>
                     </div>
                   </div>
                   <div class="mt-3 mb-4">
@@ -99,11 +100,11 @@
                       <span class="badge badge-performance badge-high">85%</span>
                     </div>
                   </div>
-                  <div class="metric">🎯 Targets: <strong>120</strong></div>
-                  <div class="metric">✅ Completed: <strong>100</strong></div>
-                  <div class="metric">🔍 Submitted Sites: <strong>90</strong></div>
-                  <div class="metric">💡 Approved Sites: <strong>80</strong></div>
-                  <div class="metric">🧾 Billed: <strong>0</strong></div>
+                  <div class="metric">🎯 Targets: <strong></strong></div>
+                  <div class="metric">✅ Completed: <strong></strong></div>
+                  <div class="metric">🔍 Submitted Sites: <strong></strong></div>
+                  <div class="metric">💡 Approved Sites: <strong></strong></div>
+                  <div class="metric">🧾 Billed: <strong></strong></div>
                   <div class="text-end mt-3">
                     <a href="#" class="btn btn-sm btn-primary">See Details</a>
                   </div>
@@ -112,8 +113,9 @@
               <!-- <div class="col-12"><p class="text-muted">No vendors found.</p></div> -->
             </div>
           </div>
-
+          @endforeach
           <!-- Site Engineer Tab -->
+          @foreach ($siteEngineers as $engineer)
           <div class="tab-pane fade" id="site-engineer-content" role="tabpanel" aria-labelledby="site-engineer-tab">
             <div class="row mt-3">
               <div class="col-md-4 mb-3">
@@ -121,7 +123,7 @@
                   <div class="d-flex align-items-center mb-3">
                     <img src="https://via.placeholder.com/50" alt="Profile" class="profile-img me-3">
                     <div>
-                      <h6 class="mb-0">Site Engineer Name</h6>
+                      <h6 class="mb-0"></h6>
                       <small class="text-muted">🥇 Site Engineer Team</small>
                     </div>
                   </div>
@@ -147,7 +149,7 @@
             </div>
           </div>
         </div>
-
+        @endforeach
       </div>
     </div>
   </div>
