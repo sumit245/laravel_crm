@@ -3,16 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Conveyance;
-use App\Models\dailyfare;
 use App\Models\Tada;
-use App\Models\travelfare;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
+use Exception;
 use Illuminate\Http\Request;
-use Log;
+use Illuminate\Support\Facades\Log;
 
-class ConvenienceController extends Controller
+class ConveyanceController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -49,6 +48,7 @@ class ConvenienceController extends Controller
     public function accept($id)
     {
         Conveyance::where('id', $id)->update(['status' => 1]);
+
         return back()->with('success', 'Status updated to Accepted.');
     }
 
@@ -63,64 +63,44 @@ class ConvenienceController extends Controller
     public function tadaView()
     {
         $tadas = Tada::get();
-        $count_trip = Tada::count();
-        $total_km = Tada::sum('total_km');
-        $dailyamount = dailyfare::sum('amount');
-        $travelfare = travelfare::sum('amount');
-        $total_amount = $dailyamount + $travelfare;
-        $pendingclaimcount = Tada::where('status', null)->count();
-        return view('billing.tada', compact('tadas', 'count_trip', 'total_km', 'dailyamount', 'travelfare', 'total_amount', 'pendingclaimcount'));
-    }
-
-    public function viewtadaDetails(String $id)
-    {
-        $tadas = Tada::with('travelfare', 'dailyfare', 'user')->where('user_id', $id)->first();
-        $travelfares = travelfare::where('tada_id', $tadas->id)->get();
-        $dailyfares = dailyfare::where('tada_id', $tadas->id)->get();
-        $dailyamount = dailyfare::sum('amount');
-        $travelfare = travelfare::sum('amount');
-        $conveyance = $dailyamount + $travelfare;
-        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance'));
-    }
-
-    public function updateTadaStatus(Request $request, $id)
-    {
-        try {
-            // Validate request
-            Log::info('Received request to update TADA status', $request->all());
-            $validated = $request->validate([
-                'status' => 'required|boolean',
-            ]);
-
-            // Find the TADA record
-            $tada = Tada::findOrFail($id);
-
-            // Update the status
-            $tada->status = $validated['status'];
-            $tada->update();
-
-            return response()->json([
-                'status' => 'success',
-                'message' => 'TADA status updated successfully',
-                'data' => $tada
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to update TADA status: ' . $e->getMessage()
-            ], 500);
-        }
+        return view('billing.tada', compact('tadas'));
     }
 
     public function settings()
     {
         $vehicles = Vehicle::get();
-        $users = User::with('usercategory')->where('role', '!=', 3)->get();
-
+        $users = User::where('role', '!=', 3)->get();
         $categories = UserCategory::get();
-        $vehicleNames = $vehicles->pluck('name', 'id')->toArray();
 
-        return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames'));
+        return view('billing.settings', compact('vehicles', 'users', 'categories'));
+    }
+
+    public function getAllVehicles(Request $request)
+    {
+        try {
+            //code...
+            $vehicles = Vehicle::get();
+            return response()->json($vehicles, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'msg' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function getVehicleDetail($id)
+    {
+        try {
+            //code...
+            $vehicle = Vehicle::find($id);
+            return response()->json($vehicle, 200);
+        } catch (Exception $e) {
+            return response()->json([
+                'error' => 'Something went wrong',
+                'msg' => $e->getMessage()
+            ], 500);
+        }
     }
 
     // Add vehicle function
@@ -153,14 +133,13 @@ class ConvenienceController extends Controller
 
     public function updateVehicle(Request $request)
     {
-
         $id = $request->input('user_id'); // Vehicle ID from the hidden input field
-
         // Validate the required fields: 'category' and 'rate'
         $validatedData = $request->validate([
             'vehicle_name' => 'nullable|string|max:100',  // Optional field
             'category' => 'required|string',  // Category is required as a string
             'subcategory' => 'nullable|string|max:50',  // Optional field
+            'icon' => 'nullable|string|max:50',  // Optional field
             'rate' => 'required|numeric',  // Rate is required and must be numeric
         ]);
 
@@ -169,17 +148,14 @@ class ConvenienceController extends Controller
             $vehicle = Vehicle::findOrFail($id);
 
             // Update the fields using the update method
-            $vehicle->update([
-                'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
-                'category' => $validatedData['category'],  // Directly assign the incoming category value
-                'sub_category' => $validatedData['subcategory'],  // Nullable field
-                'rate' => $validatedData['rate'],  // Required field
-            ]);
+            $vehicle->update($validatedData);
 
             // Redirect to the settings page with a success message
             return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
         } catch (\Exception $e) {
             // Log the error message
+            Log::error('Error updating vehicle: ' . $e->getMessage());
+
             // Return to the same page with an error message
             return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
         }
@@ -208,57 +184,38 @@ class ConvenienceController extends Controller
 
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'category' => 'integer',
+            'category' => 'required|in:M1,M2,M3,M4,M5',
+        ]);
+
+        Log::info('Request Data: Update user', $request->all());
+        $request->validate([
+            'user_id' => 'required|exists:users,id',
+            'category' => 'required|in:M1,M2,M3,M4,M5',
         ]);
 
         $user = User::findOrFail($request->input('user_id'));
         $user->category = $request->input('category');
-        $user->update();
+        $user->save();
 
         return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
-    }
-
-    public function viewCategory()
-    {
-        $vehicles = Vehicle::get();
-        return view('billing.addCategory', compact('vehicles'));
     }
     // Add Category
     public function addCategory(Request $request)
     {
-        \Log::info('Request Data: Add category', $request->all());
+        Log::info('Request Data: Add category', $request->all());
         $validatedData = $request->validate([
-            'category' => 'required|string|max:255',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'room_min_price' => 'nullable|numeric|min:0',
-            'room_max_price' => 'nullable|numeric|min:0',
-            'vehicle_id' => 'required|array',
-            'vehicle_id.*' => 'exists:vehicles,id',
+            'category' => 'required|string|max:255', // category_code
+            'vehicle_id' => 'required|integer', // single vehicle ID
         ]);
-
-        // Validate that min price is less than max price if both are provided
-        if (!empty($validatedData['room_min_price']) && !empty($validatedData['room_max_price'])) {
-            if ($validatedData['room_min_price'] > $validatedData['room_max_price']) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['room_min_price' => 'Minimum price cannot be greater than maximum price']);
-            }
-        }
 
         // Save the new category
         $category = new UserCategory(); // Assuming your model is UserCategory
         $category->category_code = $validatedData['category'];
-        $category->name = $validatedData['name'];
-        $category->description = $validatedData['description'] ?? null;
-        $category->room_min_price = $validatedData['room_min_price'] ?? null;
-        $category->room_max_price = $validatedData['room_max_price'] ?? null;
-        $category->allowed_vehicles = json_encode($validatedData['vehicle_id']); // Store as JSON
+        $category->allowed_vehicles = $validatedData['vehicle_id']; // Directly save single vehicle id
         $category->save();
 
-        return redirect()->route('billing.settings')->with('success', 'Category added successfully.');
+        return redirect()->back()->with('success', 'Category added successfully.');
     }
-
 
     public function editCategory(Request $request)
     {
@@ -270,11 +227,11 @@ class ConvenienceController extends Controller
     public function updateCategory(Request $request)
     {
         try {
-            \Log::info('Request Data: Update category', $request->all());
+            Log::info('Request Data: Update category', $request->all());
 
             $validatedData = $request->validate([
                 'category_code' => 'required|string|max:255',
-                'vehicle_id' => 'required|array',
+                'vehicle_id' => 'required|integer',
             ]);
 
             $category = UserCategory::find($request->category_id);
@@ -290,7 +247,7 @@ class ConvenienceController extends Controller
 
             return redirect()->route('billing.settings')->with('success', 'Category updated successfully!');
         } catch (\Exception $e) {
-            \Log::error('Error updating category: ' . $e->getMessage());
+            Log::error('Error updating category: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while updating the category.');
         }
     }

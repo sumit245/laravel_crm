@@ -22,6 +22,10 @@
     
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     
     <style>
         /* Google Forms inspired styles */
@@ -246,11 +250,12 @@
         }
         
         .select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
-            background-color: #673ab7;
+            background-color: #dee3df;
         }
         
         .select2-container--bootstrap4 .select2-dropdown {
             border-color: #dadce0;
+            /* background:grey; */
             border-radius: 4px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -387,6 +392,10 @@
             border-color: #d93025;
             color: white;
         }
+
+        .section-title{
+           white-space: nowrap;
+        }
         
         /* Responsive Adjustments */
         @media (max-width: 767.98px) {
@@ -478,6 +487,14 @@
             color: #5f6368;
             margin-bottom: 8px;
         }
+        .form-check .form-check-input {
+           float: left;
+           margin-left: 0rem;
+           margin-top: 0px;
+        }
+        .swal2-modal .swal2-icon{
+            margin: 0px;
+        }
     </style>
 </head>
 
@@ -525,7 +542,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link disabled" data-section="education">
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center g-1">
                                             <span class="section-number">3</span>
                                             <span class="section-title">Educational Background</span>
                                             <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
@@ -662,7 +679,7 @@
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label required" for="nationality">Nationality</label>
-                                                        <input type="text" id="nationality" name="nationality" class="form-control" required pattern="^[a-zA-Z\s]{2,50}$" title="Please enter a valid nationality (2-50 characters, letters only)">
+                                                        <input type="text" id="nationality" name="nationality" class="form-control" required pattern="^[a-zA-Z\s]{2,50}$" value="Indian" readonly>
                                                         <div class="invalid-feedback">Please enter a valid nationality (2-50 characters, letters only)</div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -678,8 +695,7 @@
                                                 </div>
                                             </div>
                                             <div class="card-footer">
-                                                <div class="d-flex justify-content-between">
-                                                    <button type="button" class="btn btn-outline-secondary" disabled>Previous</button>
+                                                <div class="d-flex justify-content-end">
                                                     <button type="button" class="btn btn-primary next-section" data-next="contact-info">Next Section</button>
                                                 </div>
                                             </div>
@@ -987,7 +1003,7 @@
                                                         <input type="file" id="passportPhotoInput" name="passport_photo" accept="image/jpeg,image/png" class="form-control" required>
                                                         <div class="invalid-feedback">Please upload a valid passport photo (JPG, PNG, max 2MB)</div>
                                                     </div>
-                                                    <div class="col-md-6 d-flex align-items-end">
+                                                    <div class="col-md-6 align-items-end" id="p_photo" style="display: none;">
                                                         <div class="photo-upload-container">
                                                             <label class="form-label d-block">Preview</label>
                                                             <div class="position-relative d-inline-block">
@@ -1042,7 +1058,7 @@
                                                         </div>
                                                     </div>
                                                 </div>
-                                                </div>
+                                            </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
                                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="photo">Previous</button>
@@ -1071,438 +1087,7 @@
     <script src="{{ asset("js/dashboard.js") }}"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script>
-    // Add this at the end of your existing script
-    document.addEventListener('DOMContentLoaded', function() {
-        // Function to handle S3 uploads
-        async function uploadFileToS3(file) {
-            try {
-                // Get a presigned URL from the server
-                const response = await fetch('{{ route("hrm.get-s3-upload-url") }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({
-                        file_name: file.name,
-                        file_type: file.type
-                    })
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Failed to get upload URL');
-                }
-                
-                const data = await response.json();
-                
-                // Upload the file directly to S3
-                const uploadResponse = await fetch(data.upload_url, {
-                    method: 'PUT',
-                    body: file,
-                    headers: {
-                        'Content-Type': file.type
-                    }
-                });
-                
-                if (!uploadResponse.ok) {
-                    throw new Error('Failed to upload file to S3');
-                }
-                
-                // Return the S3 path and file name
-                return {
-                    s3_path: data.s3_path,
-                    file_name: data.file_name
-                };
-            } catch (error) {
-                console.error('Error uploading file:', error);
-                Swal.fire({
-                    title: 'Upload Error',
-                    text: 'Failed to upload file: ' + error.message,
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#673ab7'
-                });
-                return null;
-            }
-        }
-        
-        // Handle passport photo upload
-        const photoInput = document.getElementById('passportPhotoInput');
-        const photoPreview = document.getElementById('passportPhotoPreview');
-        const removeButton = document.getElementById('removePhotoButton');
-        
-        // Create hidden fields for S3 path and file name
-        const photoS3PathInput = document.createElement('input');
-        photoS3PathInput.type = 'hidden';
-        photoS3PathInput.name = 'passport_photo_s3_path';
-        photoS3PathInput.id = 'passport_photo_s3_path';
-        
-        const photoNameInput = document.createElement('input');
-        photoNameInput.type = 'hidden';
-        photoNameInput.name = 'passport_photo_name';
-        photoNameInput.id = 'passport_photo_name';
-        
-        // Add hidden fields to the form
-        photoInput.parentNode.appendChild(photoS3PathInput);
-        photoInput.parentNode.appendChild(photoNameInput);
-        
-        photoInput.addEventListener('change', async function(event) {
-            const file = event.target.files[0];
-            if (file && file.type.startsWith('image/')) {
-                // Check file size (max 2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    Swal.fire({
-                        title: 'File Too Large',
-                        text: 'The photo must be less than 2MB in size.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#673ab7'
-                    });
-                    photoInput.value = '';
-                    return;
-                }
-                
-                // Show loading indicator
-                photoPreview.src = '{{ asset("images/loading.gif") }}';
-                
-                // Upload to S3
-                const result = await uploadFileToS3(file);
-                if (result) {
-                    // Set hidden field values
-                    photoS3PathInput.value = result.s3_path;
-                    photoNameInput.value = result.file_name;
-                    
-                    // Show preview from S3
-                    const s3Url = '{{ config("filesystems.disks.s3.url") }}/' + result.s3_path;
-                    photoPreview.src = s3Url;
-                    removeButton.style.display = 'inline-block';
-                    
-                    // Save to sessionStorage
-                    const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-                    formData.passport_photo_s3_path = result.s3_path;
-                    formData.passport_photo_name = result.file_name;
-                    sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
-                } else {
-                    // Reset on error
-                    resetPassportPhoto();
-                }
-            } else {
-                resetPassportPhoto();
-            }
-        });
-        
-        removeButton.addEventListener('click', function() {
-            resetPassportPhoto();
-            
-            // Remove from sessionStorage
-            const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-            delete formData.passport_photo_s3_path;
-            delete formData.passport_photo_name;
-            sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
-        });
-        
-        function resetPassportPhoto() {
-            photoPreview.src = '{{ asset("images/default-avatar.png") }}';
-            photoInput.value = '';
-            photoS3PathInput.value = '';
-            photoNameInput.value = '';
-            removeButton.style.display = 'none';
-        }
-        
-        // Handle document uploads
-        document.getElementById('addMoreDocuments').addEventListener('click', function() {
-            const wrapper = document.getElementById('documentUploads');
-            const documentCount = wrapper.children.length + 1;
-            const row = document.createElement('div');
-            row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
-            row.innerHTML = `
-                <div class="col-md-4">
-                    <label class="form-label required" for="document_name_${documentCount}">Document Name</label>
-                    <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" placeholder="Document Name" required>
-                    <div class="invalid-feedback">Please enter a document name</div>
-                </div>
-                <div class="col-md-4">
-                    <label class="form-label required" for="document_file_${documentCount}">Upload File</label>
-                    <input type="file" id="document_file_${documentCount}" class="form-control document-file-input" accept=".pdf,.jpg,.jpeg,.png" required>
-                    <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
-                    <input type="hidden" name="document_s3_path[]" id="document_s3_path_${documentCount}">
-                    <div class="upload-status mt-2" id="upload_status_${documentCount}"></div>
-                </div>
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="button" class="btn btn-outline-danger remove-document">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            `;
-            wrapper.appendChild(row);
-            
-            // Add event listener to the new file input
-            const newFileInput = row.querySelector('.document-file-input');
-            const newS3PathInput = row.querySelector(`#document_s3_path_${documentCount}`);
-            const newStatusDiv = row.querySelector(`#upload_status_${documentCount}`);
-            
-            newFileInput.addEventListener('change', async function(event) {
-                const file = event.target.files[0];
-                if (file) {
-                    // Check file size (max 5MB)
-                    if (file.size > 5 * 1024 * 1024) {
-                        Swal.fire({
-                            title: 'File Too Large',
-                            text: 'The document must be less than 5MB in size.',
-                            icon: 'error',
-                            confirmButtonText: 'OK',
-                            confirmButtonColor: '#673ab7'
-                        });
-                        newFileInput.value = '';
-                        return;
-                    }
-                    
-                    // Show loading indicator
-                    newStatusDiv.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Uploading...</span>';
-                    
-                    // Upload to S3
-                    const result = await uploadFileToS3(file);
-                    if (result) {
-                        // Set hidden field value
-                        newS3PathInput.value = result.s3_path;
-                        
-                        // Show success message
-                        newStatusDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Uploaded successfully</span>';
-                        
-                        // Save to sessionStorage
-                        const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-                        if (!formData.document_s3_paths) formData.document_s3_paths = [];
-                        if (!formData.document_names) formData.document_names = [];
-                        
-                        const documentName = row.querySelector(`#document_name_${documentCount}`).value || 'Document ' + documentCount;
-                        
-                        formData.document_s3_paths.push(result.s3_path);
-                        formData.document_names.push(documentName);
-                        
-                        sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
-                    } else {
-                        // Show error message
-                        newStatusDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Upload failed</span>';
-                        newFileInput.value = '';
-                    }
-                }
-            });
-            
-            // Show all remove buttons if there's more than one document
-            if (wrapper.children.length > 1) {
-                wrapper.querySelectorAll('.remove-document').forEach(btn => {
-                    btn.classList.remove('d-none');
-                });
-            }
-        });
-        
-        // Initialize the first document upload
-        const firstDocumentFile = document.getElementById('document_file_1');
-        const firstS3PathInput = document.createElement('input');
-        firstS3PathInput.type = 'hidden';
-        firstS3PathInput.name = 'document_s3_path[]';
-        firstS3PathInput.id = 'document_s3_path_1';
-        firstDocumentFile.parentNode.appendChild(firstS3PathInput);
-        
-        const firstStatusDiv = document.createElement('div');
-        firstStatusDiv.className = 'upload-status mt-2';
-        firstStatusDiv.id = 'upload_status_1';
-        firstDocumentFile.parentNode.appendChild(firstStatusDiv);
-        
-        firstDocumentFile.addEventListener('change', async function(event) {
-            const file = event.target.files[0];
-            if (file) {
-                // Check file size (max 5MB)
-                if (file.size > 5 * 1024 * 1024) {
-                    Swal.fire({
-                        title: 'File Too Large',
-                        text: 'The document must be less than 5MB in size.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#673ab7'
-                    });
-                    firstDocumentFile.value = '';
-                    return;
-                }
-                
-                // Show loading indicator
-                firstStatusDiv.innerHTML = '<span class="text-info"><i class="fas fa-spinner fa-spin"></i> Uploading...</span>';
-                
-                // Upload to S3
-                const result = await uploadFileToS3(file);
-                if (result) {
-                    // Set hidden field value
-                    firstS3PathInput.value = result.s3_path;
-                    
-                    // Show success message
-                    firstStatusDiv.innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Uploaded successfully</span>';
-                    
-                    // Save to sessionStorage
-                    const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-                    if (!formData.document_s3_paths) formData.document_s3_paths = [];
-                    if (!formData.document_names) formData.document_names = [];
-                    
-                    const documentName = document.getElementById('document_name_1').value || 'Document 1';
-                    
-                    formData.document_s3_paths.push(result.s3_path);
-                    formData.document_names.push(documentName);
-                    
-                    sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
-                } else {
-                    // Show error message
-                    firstStatusDiv.innerHTML = '<span class="text-danger"><i class="fas fa-exclamation-circle"></i> Upload failed</span>';
-                    firstDocumentFile.value = '';
-                }
-            }
-        });
-        
-        // Update document name in sessionStorage when it changes
-        document.getElementById('document_name_1').addEventListener('change', function() {
-            const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-            if (formData.document_names && formData.document_names.length > 0) {
-                formData.document_names[0] = this.value;
-                sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
-            }
-        });
-        
-        // Remove document field and update sessionStorage
-        document.getElementById('documentUploads').addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-document') || e.target.closest('.remove-document')) {
-                const button = e.target.classList.contains('remove-document') ? e.target : e.target.closest('.remove-document');
-                const row = button.closest('.row');
-                const index = Array.from(row.parentNode.children).indexOf(row);
-                
-                // Update sessionStorage
-                const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-                if (formData.document_s3_paths && formData.document_names) {
-                    formData.document_s3_paths.splice(index, 1);
-                    formData.document_names.splice(index, 1);
-                    sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
-                }
-                
-                // Remove the row
-                row.remove();
-                
-                // Hide remove button if only one document remains
-                const wrapper = document.getElementById('documentUploads');
-                if (wrapper.children.length === 1) {
-                    wrapper.querySelector('.remove-document').classList.add('d-none');
-                }
-            }
-        });
-        
-        // Load saved form data from sessionStorage when page loads
-        function loadFormDataFromSessionStorage() {
-            const savedData = sessionStorage.getItem('employee_form_data');
-            if (savedData) {
-                const formData = JSON.parse(savedData);
-                
-                // Load passport photo if available
-                if (formData.passport_photo_s3_path && formData.passport_photo_name) {
-                    document.getElementById('passport_photo_s3_path').value = formData.passport_photo_s3_path;
-                    document.getElementById('passport_photo_name').value = formData.passport_photo_name;
-                    
-                    // Show preview from S3
-                    const s3Url = '{{ config("filesystems.disks.s3.url") }}/' + formData.passport_photo_s3_path;
-                    document.getElementById('passportPhotoPreview').src = s3Url;
-                    document.getElementById('removePhotoButton').style.display = 'inline-block';
-                }
-                
-                // Load documents if available
-                if (formData.document_s3_paths && formData.document_names) {
-                    // First document is already in the form
-                    if (formData.document_s3_paths.length > 0 && formData.document_names.length > 0) {
-                        document.getElementById('document_name_1').value = formData.document_names[0];
-                        document.getElementById('document_s3_path_1').value = formData.document_s3_paths[0];
-                        document.getElementById('upload_status_1').innerHTML = '<span class="text-success"><i class="fas fa-check-circle"></i> Uploaded successfully</span>';
-                    }
-                    
-                    // Add additional documents
-                    for (let i = 1; i < formData.document_s3_paths.length; i++) {
-                        const wrapper = document.getElementById('documentUploads');
-                        const documentCount = wrapper.children.length + 1;
-                        const row = document.createElement('div');
-                        row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
-                        row.innerHTML = `
-                            <div class="col-md-4">
-                                <label class="form-label required" for="document_name_${documentCount}">Document Name</label>
-                                <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" value="${formData.document_names[i]}" required>
-                                <div class="invalid-feedback">Please enter a document name</div>
-                            </div>
-                            <div class="col-md-4">
-                                <label class="form-label required" for="document_file_${documentCount}">Upload File</label>
-                                <input type="file" id="document_file_${documentCount}" class="form-control document-file-input" accept=".pdf,.jpg,.jpeg,.png">
-                                <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
-                                <input type="hidden" name="document_s3_path[]" id="document_s3_path_${documentCount}" value="${formData.document_s3_paths[i]}">
-                                <div class="upload-status mt-2" id="upload_status_${documentCount}">
-                                    <span class="text-success"><i class="fas fa-check-circle"></i> Uploaded successfully</span>
-                                </div>
-                            </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="button" class="btn btn-outline-danger remove-document">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        `;
-                        wrapper.appendChild(row);
-                    }
-                    
-                    // Show all remove buttons if there's more than one document
-                    if (wrapper.children.length > 1) {
-                        wrapper.querySelectorAll('.remove-document').forEach(btn => {
-                            btn.classList.remove('d-none');
-                        });
-                    }
-                }
-            }
-        }
-        
-        // Load saved form data when page loads
-        loadFormDataFromSessionStorage();
-        
-        // Modify the form submission to include S3 paths
-        document.getElementById('onboarding-form').addEventListener('submit', function(e) {
-            // Add document S3 paths and names from sessionStorage
-            const formData = JSON.parse(sessionStorage.getItem('employee_form_data') || '{}');
-            
-            // Make sure the passport photo is uploaded
-            if (!document.getElementById('passport_photo_s3_path').value) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Missing Photo',
-                    text: 'Please upload your passport size photo.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#673ab7'
-                });
-                return;
-            }
-            
-            // Make sure at least one document is uploaded
-            const documentS3Paths = document.querySelectorAll('input[name="document_s3_path[]"]');
-            let hasDocument = false;
-            for (let i = 0; i < documentS3Paths.length; i++) {
-                if (documentS3Paths[i].value) {
-                    hasDocument = true;
-                    break;
-                }
-            }
-            
-            if (!hasDocument) {
-                e.preventDefault();
-                Swal.fire({
-                    title: 'Missing Documents',
-                    text: 'Please upload at least one document.',
-                    icon: 'error',
-                    confirmButtonText: 'OK',
-                    confirmButtonColor: '#673ab7'
-                });
-                return;
-            }
-        });
-    });
-</script>
+
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
@@ -1526,7 +1111,7 @@
                 completedSections.push(sectionId);
                 
                 // Update tab status
-                const tabLink = document.querySelector(.nav-link[data-section="${sectionId}"]);
+                const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
                 tabLink.classList.add('completed');
                 
                 updateProgress();
@@ -1543,7 +1128,7 @@
                 if (input.type === 'radio') {
                     // For radio buttons, check if any in the group is checked
                     const name = input.name;
-                    const radioGroup = section.querySelectorAll(input[name="${name}"]);
+                    const radioGroup = section.querySelectorAll(`input[name="${name}"]`);
                     const isChecked = Array.from(radioGroup).some(radio => radio.checked);
                     
                     if (!isChecked) {
@@ -1592,9 +1177,9 @@
             document.getElementById(toSection).classList.add('active');
             
             // Update active tab
-            document.querySelector(.nav-link[data-section="${fromSection}"]).classList.remove('active');
-            document.querySelector(.nav-link[data-section="${toSection}"]).classList.add('active');
-            document.querySelector(.nav-link[data-section="${toSection}"]).classList.remove('disabled');
+            document.querySelector(`.nav-link[data-section="${fromSection}"]`).classList.remove('active');
+            document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.add('active');
+            document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.remove('disabled');
             
             // Scroll to top
             window.scrollTo(0, 0);
@@ -1647,8 +1232,8 @@
         document.getElementById('sameAsPermanent').addEventListener('change', function() {
             const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
             fields.forEach(field => {
-                const perm = document.getElementById(perm_${field});
-                const curr = document.getElementById(curr_${field});
+                const perm = document.getElementById(`perm_${field}`);
+                const curr = document.getElementById(`curr_${field}`);
                 if (this.checked) {
                     curr.value = perm.value;
                     curr.readOnly = true;
@@ -1674,7 +1259,7 @@
                 </div>
                 <div class="col-md-5">
                     <label class="form-label required" for="document_file_${documentCount}">Upload File</label>
-                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.  id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
                     <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -1712,6 +1297,7 @@
         const photoInput = document.getElementById('passportPhotoInput');
         const photoPreview = document.getElementById('passportPhotoPreview');
         const removeButton = document.getElementById('removePhotoButton');
+        const ppppp = document.getElementById('p_photo');
         
         photoInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -1733,6 +1319,7 @@
                 reader.onload = function(e) {
                     photoPreview.src = e.target.result;
                     removeButton.style.display = 'inline-block';
+                    ppppp.style.display = "block" 
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -1766,32 +1353,6 @@
                 }
             });
         });
-        
-        // Form submission
-        // document.getElementById('onboarding-form').addEventListener('submit', function(e) {
-        //     e.preventDefault();
-            
-        //     // Validate all sections
-        //     let allValid = true;
-        //     sections.forEach(section => {
-        //         if (!validateSection(section)) {
-        //             allValid = false;
-        //         }
-        //     });
-            
-        //     if (allValid) {
-        //         // Submit the form
-        //         this.submit();
-        //     } else {
-        //         Swal.fire({
-        //             title: 'Validation Error',
-        //             text: 'Please fill in all required fields in all sections before submitting.',
-        //             icon: 'error',
-        //             confirmButtonText: 'OK',
-        //             confirmButtonColor: '#673ab7'
-        //         });
-        //     }
-        // });
         
         // Initialize Select2 for enhanced select boxes
         if ($.fn.select2) {
@@ -1830,7 +1391,7 @@
                     <div class="invalid-feedback">Please enter the institution name</div>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label required" for="education_year_${educationCount}">Year of Graduation</label>
+                    <label class="form-label required" for="education_year_${educationCount}">Passing Year</label>
                     <input type="number" id="education_year_${educationCount}" name="education[${educationCount}][year]" class="form-control" min="1950" max="${new Date().getFullYear()}" required>
                     <div class="invalid-feedback">Please enter a valid graduation year</div>
                 </div>
@@ -1853,17 +1414,17 @@
         
         // Initialize Select2 for the newly added select
         if ($.fn.select2) {
-            $(#education_qualification_${educationCount}).select2({
+            $(`#education_qualification_${educationCount}`).select2({
                 theme: 'bootstrap4',
                 width: '100%',
-                dropdownParent: $(#education-entry-${educationCount}),
+                dropdownParent: $(`#education-entry-${educationCount}`),
                 minimumResultsForSearch: 6
             });
         }
     }
 
     function removeEducationEntry(id) {
-        const entry = document.getElementById(education-entry-${id});
+        const entry = document.getElementById(`education-entry-${id}`);
         if (entry) {
             // Use SweetAlert2 for confirmation
             Swal.fire({
@@ -1892,145 +1453,84 @@
     // Add this at the end of your existing script
     document.addEventListener('DOMContentLoaded', function() {
         // Function to save form data to sessionStorage
-        function saveFormDataToSessionStorage() {
+        function saveFormData() {
             const formData = {};
+            const form = document.getElementById('onboarding-form');
             
-            // Personal Information
-            formData.name = document.getElementById('name').value;
-            formData.email = document.getElementById('email').value;
-            formData.phone = document.getElementById('phone').value;
-            formData.dob = document.getElementById('dob').value;
-            formData.gender = document.querySelector('input[name="gender"]:checked')?.value;
-            formData.marital_status = document.querySelector('input[name="marital_status"]:checked')?.value;
-            formData.nationality = document.getElementById('nationality').value;
-            formData.language = document.getElementById('language').value;
+            // Get all input elements
+            const inputs = form.querySelectorAll('input, select, textarea');
             
-            // Contact Information
-            formData.perm_house_no = document.getElementById('perm_house_no').value;
-            formData.perm_street = document.getElementById('perm_street').value;
-            formData.perm_city = document.getElementById('perm_city').value;
-            formData.perm_state = document.getElementById('perm_state').value;
-            formData.perm_country = document.getElementById('perm_country').value;
-            formData.perm_zip = document.getElementById('perm_zip').value;
-            
-            formData.curr_house_no = document.getElementById('curr_house_no').value;
-            formData.curr_street = document.getElementById('curr_street').value;
-            formData.curr_city = document.getElementById('curr_city').value;
-            formData.curr_state = document.getElementById('curr_state').value;
-            formData.curr_country = document.getElementById('curr_country').value;
-            formData.curr_zip = document.getElementById('curr_zip').value;
-            
-            formData.emergency_contact_name = document.getElementById('emergency_contact_name').value;
-            formData.emergency_contact_phone = document.getElementById('emergency_contact_phone').value;
-            
-            // Employment Details
-            formData.position_applied_for = document.getElementById('position_applied_for').value;
-            formData.department = document.getElementById('department').value;
-            formData.date_of_joining = document.getElementById('date_of_joining').value;
-            formData.previous_employer = document.getElementById('previous_employer').value;
-            formData.experience = document.getElementById('experience').value;
-            formData.notice_period = document.getElementById('notice_period').value;
-            
-            // Additional Information
-            formData.disabilities = document.querySelector('input[name="disabilities"]:checked')?.value;
-            formData.currently_employed = document.querySelector('input[name="currently_employed"]:checked')?.value;
-            formData.reason_for_leaving = document.getElementById('reason_for_leaving').value;
-            formData.other_info = document.getElementById('other_info').value;
-            
-            // Declaration
-            formData.signature = document.getElementById('signature').value;
-            formData.date = document.getElementById('declaration_date').value;
+            inputs.forEach(input => {
+                // Skip file inputs
+                if (input.type === 'file') return;
+                
+                // Handle radio buttons and checkboxes
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData[input.name] = input.value;
+                    }
+                } else {
+                    formData[input.name] = input.value;
+                }
+            });
             
             // Save to sessionStorage
-            sessionStorage.setItem('employee_form_data', JSON.stringify(formData));
+            sessionStorage.setItem('employeeFormData', JSON.stringify(formData));
+        }
+        
+        // Function to load form data from sessionStorage
+        function loadFormData() {
+            const savedData = sessionStorage.getItem('employeeFormData');
+            
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                const form = document.getElementById('onboarding-form');
+                
+                // Set values for all inputs
+                Object.keys(formData).forEach(name => {
+                    const input = form.querySelector(`[name="${name}"]`);
+                    
+                    if (input) {
+                        if (input.type === 'radio' || input.type === 'checkbox') {
+                            const radioOrCheckbox = form.querySelector(`[name="${name}"][value="${formData[name]}"]`);
+                            if (radioOrCheckbox) {
+                                radioOrCheckbox.checked = true;
+                            }
+                        } else {
+                            input.value = formData[name];
+                        }
+                    }
+                });
+            }
         }
         
         // Save form data when moving between sections
         document.querySelectorAll('.next-section, .prev-section').forEach(button => {
-            button.addEventListener('click', saveFormDataToSessionStorage);
+            button.addEventListener('click', saveFormData);
         });
         
         // Save form data periodically (every 30 seconds)
-        setInterval(saveFormDataToSessionStorage, 30000);
+        setInterval(saveFormData, 30000);
         
-        // Load form data from sessionStorage if available
-        function loadFormDataFromSessionStorage() {
-            const savedData = sessionStorage.getItem('employee_form_data');
-            if (savedData) {
-                const formData = JSON.parse(savedData);
-                
-                // Personal Information
-                if (formData.name) document.getElementById('name').value = formData.name;
-                if (formData.email) document.getElementById('email').value = formData.email;
-                if (formData.phone) document.getElementById('phone').value = formData.phone;
-                if (formData.dob) document.getElementById('dob').value = formData.dob;
-                if (formData.gender) {
-                    const genderRadio = document.querySelector(`input[name="gender"][value="${formData.gender}"]`);
-                    if (genderRadio) genderRadio.checked = true;
-                }
-                if (formData.marital_status) {
-                    const maritalRadio = document.querySelector(`input[name="marital_status"][value="${formData.marital_status}"]`);
-                    if (maritalRadio) maritalRadio.checked = true;
-                }
-                if (formData.nationality) document.getElementById('nationality').value = formData.nationality;
-                if (formData.language) document.getElementById('language').value = formData.language;
-                
-                // Contact Information
-                if (formData.perm_house_no) document.getElementById('perm_house_no').value = formData.perm_house_no;
-                if (formData.perm_street) document.getElementById('perm_street').value = formData.perm_street;
-                if (formData.perm_city) document.getElementById('perm_city').value = formData.perm_city;
-                if (formData.perm_state) document.getElementById('perm_state').value = formData.perm_state;
-                if (formData.perm_country) document.getElementById('perm_country').value = formData.perm_country;
-                if (formData.perm_zip) document.getElementById('perm_zip').value = formData.perm_zip;
-                
-                if (formData.curr_house_no) document.getElementById('curr_house_no').value = formData.curr_house_no;
-                if (formData.curr_street) document.getElementById('curr_street').value = formData.curr_street;
-                if (formData.curr_city) document.getElementById('curr_city').value = formData.curr_city;
-                if (formData.curr_state) document.getElementById('curr_state').value = formData.curr_state;
-                if (formData.curr_country) document.getElementById('curr_country').value = formData.curr_country;
-                if (formData.curr_zip) document.getElementById('curr_zip').value = formData.curr_zip;
-                
-                if (formData.emergency_contact_name) document.getElementById('emergency_contact_name').value = formData.emergency_contact_name;
-                if (formData.emergency_contact_phone) document.getElementById('emergency_contact_phone').value = formData.emergency_contact_phone;
-                
-                // Employment Details
-                if (formData.position_applied_for) document.getElementById('position_applied_for').value = formData.position_applied_for;
-                if (formData.department) document.getElementById('department').value = formData.department;
-                if (formData.date_of_joining) document.getElementById('date_of_joining').value = formData.date_of_joining;
-                if (formData.previous_employer) document.getElementById('previous_employer').value = formData.previous_employer;
-                if (formData.experience) document.getElementById('experience').value = formData.experience;
-                if (formData.notice_period) document.getElementById('notice_period').value = formData.notice_period;
-                
-                // Additional Information
-                if (formData.disabilities) {
-                    const disabilitiesRadio = document.querySelector(`input[name="disabilities"][value="${formData.disabilities}"]`);
-                    if (disabilitiesRadio) disabilitiesRadio.checked = true;
-                }
-                if (formData.currently_employed) {
-                    const employedRadio = document.querySelector(`input[name="currently_employed"][value="${formData.currently_employed}"]`);
-                    if (employedRadio) {
-                        employedRadio.checked = true;
-                        // Trigger the change event to show/hide reason for leaving
-                        employedRadio.dispatchEvent(new Event('change'));
-                    }
-                }
-                if (formData.reason_for_leaving) document.getElementById('reason_for_leaving').value = formData.reason_for_leaving;
-                if (formData.other_info) document.getElementById('other_info').value = formData.other_info;
-                
-                // Declaration
-                if (formData.signature) document.getElementById('signature').value = formData.signature;
-            }
-        }
+        // Load form data when page loads
+        window.addEventListener('DOMContentLoaded', loadFormData);
         
-        // Load saved form data when page loads
-        loadFormDataFromSessionStorage();
-        
-        // Clear sessionStorage when form is submitted
-        document.getElementById('onboarding-form').addEventListener('submit', function() {
-            // Keep the data in sessionStorage until the preview page confirms submission
-            // sessionStorage.removeItem('employee_form_data');
-        });
+        // Save form data before submitting
+        document.getElementById('onboarding-form').addEventListener('submit', saveFormData);
     });
+
+    const dobInput = document.getElementById('dob');
+     const dojInput = document.getElementById('date_of_joining');
+
+    // Optional: You can auto-focus it when the page loads or on a specific user action
+    dobInput.addEventListener('click', function () {
+        this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
+    });
+
+     dojInput.addEventListener('click', function () {
+        this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
+    });
+
 </script>
 
 </body>

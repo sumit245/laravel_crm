@@ -28,5 +28,4 @@ class UserCategory extends Model
     {
         return $this->hasMany(User::class, 'category', 'id');
     }
-
 }

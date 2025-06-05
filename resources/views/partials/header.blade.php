@@ -55,7 +55,7 @@
       </li>
       <li class="nav-item dropdown d-none d-lg-block user-dropdown">
         <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-          <img class="img-xs rounded-circle" src="{{ asset("images/faces/face8.jpg") }}" alt="Profile image">
+          <img class="img-xs rounded-circle" src="{{ Auth::user()->image ?? asset("images/faces/face8.jpg") }}" alt="Profile image">
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
@@ -74,7 +74,7 @@
           <a class="dropdown-item" href="#">
             <i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity
           </a>
-          <a class="dropdown-item" href={{route('staff.change-password', Auth::id())}}>
+          <a class="dropdown-item" href={{ route("staff.change-password", Auth::id()) }}>
             <i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Change Password
           </a>
           <form id="logout-form" action="{{ route("logout") }}" method="POST" style="display: none;">
