@@ -57,7 +57,7 @@
       </div>
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Sim Number</label>
-        <p class="mg-b-0">{{ $pole->sim_number ? "Yes" : "No" }}</p>
+        <p class="mg-b-0">{{ $pole->sim_number ?? "" }}</p>
       </div>
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Battery QR</label>

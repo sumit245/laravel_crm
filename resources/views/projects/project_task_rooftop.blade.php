@@ -28,7 +28,7 @@
   </div>
 
   <!-- Modal for adding a target -->
-   <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
+  <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form action="{{ route("tasks.store") }}" method="POST">
@@ -41,16 +41,17 @@
           <div class="modal-body">
             <div class="form-group mb-3">
               <!-- <label for="siteSearch" class="form-label">Search Site</label>
+              <!-- <label for="siteSearch" class="form-label">Search Site</label>
               <input type="text" id="siteSearch" placeholder="Search Site..." class="form-control">
               <div id="siteList"></div> -->
 
               <label for="siteSearch" class="form-label">Search Site</label>
-                <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
-                    <option value="">Search Site...</option>
-                    @foreach ($sites as $site)
-                        <option value="{{ $site->id }}">{{ $site->site_name }}</option>
-                    @endforeach
-                </select>
+              <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
+                <option value="">Search Site...</option>
+                @foreach ($sites as $site)
+                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                @endforeach
+              </select>
 
               <!-- Selected Sites -->
               <!-- <ul id="selectedSites"></ul> -->
@@ -65,6 +66,7 @@
                 <option value="RMS">RMS</option>
                 <option value="Billing">Billing</option>
                 <option value="Add Team">Add Team</option>
+                <option value="Survey">Survey</option>
                 <option value="Survey">Survey</option>
               </select>
             </div>
@@ -96,50 +98,51 @@
 
   <!-- Table to display targets -->
   <div class="table-responsive">
-    <x-data-table id="bredaTargetTable" class="table-striped table">
-      <x-slot:thead>
+  <x-data-table id="bredaTargetTable" class="table-striped table">
+    <x-slot:thead>
+      <tr>
+        <th>Site Name</th>
+        <th>Activity</th>
+        <th>Site Engineer</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Actions</th>
+      </tr>
+    </x-slot:thead>
+    <x-slot:tbody>
+      @forelse ($targets as $target)
         <tr>
-          <th>Site Name</th>
-          <th>Activity</th>
-          <th>Site Engineer</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Actions</th>
+          <td>{{ $target->site->site_name }}</td>
+          <td>{{ $target->activity }}</td>
+          <td>
+            @if ($target && $target->engineer)
+              {{ $target->engineer->firstName }}
+            @else
+              Not Assigned
+            @endif
+          </td>
+          <td>{{ $target->start_date }}</td>
+          <td>{{ $target->end_date }}</td>
+          <td>
+            <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
+            <a href="{{ route("tasks.editrooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <form action="{{ route("tasks.destroy", $target->id) }}" method="POST"
+              style="display: inline-block;">
+              @csrf
+              @method("DELETE")
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+          </td>
         </tr>
-      </x-slot:thead>
-      <x-slot:tbody>
-        @forelse ($targets as $target)
-          <tr>
-            <td>{{ $target->site->site_name }}</td>
-            <td>{{ $target->activity }}</td>
-            <td>
-              @if ($target && $target->engineer)
-                {{ $target->engineer->firstName }}
-              @else
-                Not Assigned
-              @endif
-            </td>
-            <td>{{ $target->start_date }}</td>
-            <td>{{ $target->end_date }}</td>
-            <td>
-              <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
-              <a href="{{ route("tasks.editrooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
-              <form action="{{ route("tasks.destroy", $target->id) }}" method="POST"
-                style="display: inline-block;">
-                @csrf
-                @method("DELETE")
-                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-              </form>
-            </td>
-          </tr>
-        @empty
-          <tr>
-            <td colspan="7">No targets found.</td>
-          </tr>
-        @endforelse
-        </x-slot-tbody>
-    </x-data-table>
-  </div>
+      @empty
+        <!-- <tr>
+          <td colspan="6">No targets found.</td>
+        </tr> -->
+      @endforelse
+      </x-slot-tbody>
+  </x-data-table>
+</div>
+
 </div>
 
 @push("scripts")

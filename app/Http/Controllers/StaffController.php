@@ -219,8 +219,8 @@ class StaffController extends Controller
         //
         $staff = User::findOrFail($id);
         $projects = Project::all();
-        $usercategory = UserCategory::all(); 
-            
+        $usercategory = UserCategory::all();
+
         return view('staff.edit', compact('staff', 'projects', 'usercategory')); // Form to edit staff
     }
 
@@ -232,11 +232,12 @@ class StaffController extends Controller
         //
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
-            'project_id'=> 'nullable|integer',
+            'project_id' => 'nullable|integer',
             'firstName' => 'nullable|string|max:25',
             'lastName'  => 'nullable|string|max:25',
             'email'     => 'required|email|unique:users,email,' . $staff->id,
             'contactNo' => 'string',
+            'category'  => 'nullable|string',
             'category'  => 'nullable|string',
             'address'   => 'string|max:255',
             'password'  => 'nullable|string|min:6|confirmed',
@@ -276,66 +277,66 @@ class StaffController extends Controller
     }
 
     // Update Profile Picture
-public function updateProfilePicture(Request $request)
-{
-    $request->validate([
-        'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif|max:2048',
-    ]);
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif|max:2048',
+        ]);
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    try {
-        if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
-            \Log::error('Invalid file upload attempt');
-            return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
+        try {
+            if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
+                \Log::error('Invalid file upload attempt');
+                return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
+            }
+
+            $file = $request->file('profile_picture');
+
+            \Log::info('File upload attempt', [
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize()
+            ]);
+
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // Attempt S3 upload
+            $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
+
+            if (!$imagePath) {
+                throw new \Exception('S3 upload failed.');
+            }
+
+            $imageUrl = Storage::disk('s3')->url($imagePath);
+
+            \Log::info('Profile picture uploaded to S3', [
+                'user_id' => $user->id,
+                'path' => $imagePath,
+                'url' => $imageUrl
+            ]);
+
+            // Save image URL to user record
+            $user->image = $imageUrl;
+            $user->save();
+            Log::info(('Profile picture URL saved to user record'), [
+                'user_id' => $user->id,
+                'image_url' => $imageUrl
+            ]);
+
+            return redirect()->back()->with('success', 'Profile picture updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Profile picture update error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
         }
-
-        $file = $request->file('profile_picture');
-
-        \Log::info('File upload attempt', [
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize()
-        ]);
-
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-        // Attempt S3 upload
-        $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
-
-        if (!$imagePath) {
-            throw new \Exception('S3 upload failed.');
-        }
-
-        $imageUrl = Storage::disk('s3')->url($imagePath);
-
-        \Log::info('Profile picture uploaded to S3', [
-            'user_id' => $user->id,
-            'path' => $imagePath,
-            'url' => $imageUrl
-        ]);
-
-        // Save image URL to user record
-        $user->image = $imageUrl;
-        $user->save();
-        Log::info(('Profile picture URL saved to user record'), [
-            'user_id' => $user->id,
-            'image_url' => $imageUrl
-        ]);
-
-        return redirect()->back()->with('success', 'Profile picture updated successfully!');
-    } catch (\Exception $e) {
-        \Log::error('Profile picture update error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
-        ]);
-
-        return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
     }
-}
 
 
-    
+
 
     public function changePassword($id)
     {
@@ -352,7 +353,7 @@ public function updateProfilePicture(Request $request)
         User::where('id', $id)->update([
             'password' => bcrypt($request->password)
         ]);
-        
+
 
         // $staff           = User::findOrFail($id);
         // $staff->password = $request->password;

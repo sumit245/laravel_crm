@@ -16,40 +16,40 @@
 
     <!-- Project Selection Dropdown -->
     <!-- <div class="form-group mb-4">
-      <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="team_lead" class="form-label"> </label>
-                <select name="team_lead_id" class="form-select" id="team_lead">
-                  <option value="">-- Select Project --</option>
-                  @foreach ($projects as $category)
-                    <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
-                  @endforeach
-                </select>
+        <div class="row">
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label for="team_lead" class="form-label"> </label>
+                  <select name="team_lead_id" class="form-select" id="team_lead">
+                    <option value="">-- Select Project --</option>
+                    @foreach ($projects as $category)
+  <option value="{{ $category->project_name }}">{{ $category->project_name }}</option>
+  @endforeach
+                  </select>
+                </div>
               </div>
-            </div>
-      </div> 
-    </div> -->
+        </div>
+      </div> -->
 
     <form action="{{ route("staff.update", $staff->id) }}" method="POST">
       @csrf
       @method("PUT")
-      
+
       <div class="form-group mb-4">
         <div class="row">
-            <div class="col-md-12">
-              <div class="form-group">
-                <label for="project_id" class="form-label"> </label>
-                <select name="project_id" class="form-select" id="project_id"> --
-                  <option value="">-- Select Project --</option>
-                  @foreach ($projects as $category)
-                    <option value="{{ $category->id }}">{{ $category->project_name }}</option>
-                  @endforeach
-                </select>
-              </div>
+          <div class="col-md-12">
+            <div class="form-group">
+              <label for="project_id" class="form-label"> </label>
+              <select name="project_id" class="form-select" id="project_id"> --
+                <option value="">-- Select Project --</option>
+                @foreach ($projects as $category)
+                  <option value="{{ $category->id }}">{{ $category->project_name }}</option>
+                @endforeach
+              </select>
             </div>
-       </div> 
-    </div>
+          </div>
+        </div>
+      </div>
 
       <div class="form-group">
         <label for="name">Name</label>
@@ -74,12 +74,12 @@
       <div class="form-group">
         <label for="category">User Category</label>
         <select id="category" name="category" class="form-control">
-            @foreach ($usercategory as $category)
-                <option value="{{ $category->id }}" 
-                    {{ old('category', $staff->category) == $category->id ? 'selected' : '' }}>
-                    {{ $category->category_code }}
-                </option>
-            @endforeach
+          @foreach ($usercategory as $category)
+            <option value="{{ $category->id }}"
+              {{ old("category", $staff->category) == $category->id ? "selected" : "" }}>
+              {{ $category->category_code }}
+            </option>
+          @endforeach
         </select>
       </div>
       <div class= "form-group">
@@ -128,7 +128,7 @@
           sessionStorage.setItem("project_id", projectId);
         })
       });
-      
+
       // Load stored project if available
       let storedProjectName = sessionStorage.getItem("project_name");
       let storedProjectId = sessionStorage.getItem("project_id");

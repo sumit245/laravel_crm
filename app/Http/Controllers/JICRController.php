@@ -120,6 +120,7 @@ class JICRController extends Controller
             }
 
             $data['poles'] = Pole::where('task_id', $assignedTasks->id)
+		->where('isInstallationDone', true)
                 ->whereBetween('updated_at', [$request->from_date, $request->to_date])
                 ->get()
                 ->map(function ($pole) use ($streetlight) {
