@@ -80,7 +80,7 @@
           </ul>
 
           <!-- Vendor Tab -->
-          @foreach ($vendors as $vendor)
+          
           <div class="tab-pane fade show active" id="vendor-content" role="tabpanel" aria-labelledby="vendor-tab">
             <div class="row mt-3">
               <div class="col-md-4 mb-3">
@@ -88,8 +88,8 @@
                   <div class="d-flex align-items-center mb-3">
                     <img src="https://via.placeholder.com/50" alt="Profile" class="profile-img me-3">
                     <div>
-                      <h6 class="mb-0">{{ $vendor->firstName }} {{ $vendor->lastName }}</h6>
-                      <small class="text-muted">{{ $vendor->name }}</small>
+                      <h6 class="mb-0">{{-- $vendor->firstName }} {{ $vendor->lastName --}}</h6>
+                      <small class="text-muted">{{-- $vendor->name --}}</small>
                     </div>
                   </div>
                   <div class="mt-3 mb-4">
@@ -113,9 +113,9 @@
               <!-- <div class="col-12"><p class="text-muted">No vendors found.</p></div> -->
             </div>
           </div>
-          @endforeach
+          
           <!-- Site Engineer Tab -->
-          @foreach ($siteEngineers as $engineer)
+          
           <div class="tab-pane fade" id="site-engineer-content" role="tabpanel" aria-labelledby="site-engineer-tab">
             <div class="row mt-3">
               <div class="col-md-4 mb-3">
@@ -149,7 +149,7 @@
             </div>
           </div>
         </div>
-        @endforeach
+      
       </div>
     </div>
   </div>

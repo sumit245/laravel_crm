@@ -112,8 +112,8 @@ class StaffController extends Controller
             // Fetch the staff details along with relationships
             $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
             $userId = $staff->id;
-            $vendors = User::where('role', 3)->where('manager_id', $id)->get();
-            $siteEngineers = User::where('role', 1)->where('manager_id', $id)->get();
+            // $vendors = User::where('role', 3)->where('manager_id', $id)->get();
+            // $siteEngineers = User::where('role', 1)->where('manager_id', $id)->get();
 
             // Get the project_id of the staff
             $projectId = $staff->project_id;
@@ -204,8 +204,6 @@ class StaffController extends Controller
                 'completedTasksCount',
                 'pendingTasksCount',
                 'rejectedTasksCount',
-                'vendors',
-                'siteEngineers'
             ));
         } catch (\Exception $e) {
             //throw $th;
