@@ -3,7 +3,7 @@
 use App\Http\Controllers\API\PreviewController;
 use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
-use App\Http\Controllers\ConveyanceController;
+use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\API\HRMController;
 use App\Http\Controllers\InventoryController;
@@ -17,6 +17,7 @@ use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use App\Http\Controllers\ApplicationController;
+use App\Http\Controllers\MeetController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
@@ -63,51 +64,51 @@ Route::middleware(['auth'])->group(function () {
 
 
     // Conveyance route fixed
-    Route::get('/billing/convenience', [ConveyanceController::class, 'convenience'])->name('billing.convenience');
+    Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
-    Route::get('/billing/tada', [ConveyanceController::class, 'tadaView'])->name('billing.tada');
-    Route::get('billing/tada-details/{id}', [ConveyanceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
-    Route::get('/billing/tada', [ConveyanceController::class, 'convenience'])->name('billing.convenience');
-    Route::get('/billing/convenience', [ConveyanceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
+    Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
+    Route::get('/billing/conveyance', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    // Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
     // Settings Route
-    Route::get('/settings', [ConveyanceController::class, 'settings'])->name('billing.settings');
+    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     // status update
-    Route::post('/tada/update-status/{id}', [ConveyanceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
-    Route::get('/settings', [ConveyanceController::class, 'settings'])->name('billing.settings');
+    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle
-    Route::post('/settings/add', [ConveyanceController::class, 'addVehicle'])->name('billing.addvehicle');
+    Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
     // Edit Vehicle
-    Route::get('/settings/edit/{id}', [ConveyanceController::class, 'editVehicle'])->name('billing.editvehicle');
+    Route::get('/settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('billing.editvehicle');
     // Update Vehicle
-    Route::post('/settings/update', [ConveyanceController::class, 'updateVehicle'])->name('billing.updatevehicle');
+    Route::post('/settings/update', [ConvenienceController::class, 'updateVehicle'])->name('billing.updatevehicle');
     // Delete Vehicle
-    Route::delete('/settings/delete/{id}', [ConveyanceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
+    Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Accept and Reject Conveyance
-    Route::post('/conveyance/accept/{id}', [ConveyanceController::class, 'accept'])->name('conveyance.accept');
-    Route::post('/conveyance/reject/{id}', [ConveyanceController::class, 'reject'])->name('conveyance.reject');
+    Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
+    Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
 
     // Conveyance details
-    Route::get('/convenience-details/{id}', [ConveyanceController::class, 'showdetailsconveyance'])->name('convenience.details');
+    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
 
 
     // Conveyance details
-    Route::get('/convenience-details/{id}', [ConveyanceController::class, 'showdetailsconveyance'])->name('convenience.details');
-    Route::delete('/settings/delete/{id}', [ConveyanceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
+    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
+    Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Billing Edit User
-    Route::get('/settings/edit-user/{id}', [ConveyanceController::class, 'editUser'])->name('billing.edituser');
+    Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
     // Billing Update User
-    Route::post('/settings/update-user', [ConveyanceController::class, 'updateUser'])->name('billing.updateuser');
+    Route::post('/settings/update-user', [ConvenienceController::class, 'updateUser'])->name('billing.updateuser');
 
     // Add Categories
-    Route::get('/settings/add-category', [ConveyanceController::class, 'viewCategory'])->name('billing.addcategory');
-    Route::post('/settings/add-category', [ConveyanceController::class, 'addCategory'])->name('billing.addcategory');
-    Route::post('/settings/add-category', [ConveyanceController::class, 'addCategory'])->name('billing.addcategory');
+    Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
+    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
-    Route::get('/settings/edit-category/{id}', [ConveyanceController::class, 'editCategory'])->name('billing.editcategory');
+    Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
     // Update Categories
-    Route::post('/settings/update-category', [ConveyanceController::class, 'updateCategory'])->name('billing.updatecategory');
+    Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
     // Delete Categories
-    Route::delete('/settings/delete-category/{id}', [ConveyanceController::class, 'deleteCategory'])->name('billing.deletecategory');
+    Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');
 
     //Convenience Details
 
@@ -202,3 +203,19 @@ Route::get('apply-now', function () {
 Route::get('admin-preview', function () {
     return view('hrm.adminPreview');
 })->name('admin-preview');
+
+//Meeting Review Extension
+// List all meetings
+Route::get('/meets', [MeetController::class, 'index'])->name('meets.index');
+// Show create form
+Route::get('/meets/create', [MeetController::class, 'create'])->name('meets.create');
+// Store new meeting
+Route::post('/meets', [MeetController::class, 'store'])->name('meets.store');
+// Show a single meeting (optional, if needed)
+Route::get('/meets/{meet}', [MeetController::class, 'show'])->name('meets.show');
+// Show edit form (optional, if you need to edit meetings)
+Route::get('/meets/{meet}/edit', [MeetController::class, 'edit'])->name('meets.edit');
+// Update a meeting (optional)
+Route::put('/meets/{meet}', [MeetController::class, 'update'])->name('meets.update');
+// Delete a meeting (optional)
+Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
