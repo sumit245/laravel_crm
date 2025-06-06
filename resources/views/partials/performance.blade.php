@@ -59,8 +59,10 @@
       <option value="custom" {{ request("date_filter") == "custom" ? "selected" : "" }}>Custom Range</option>
     </select>
   </div>
+  <!-- <pre>{{ print_r($rolePerformances, true) }}</pre> -->
 
   @foreach ($rolePerformances as $role => $users)
+  @if ($role === 'Project Manager')
     <h4 class="text-primary mb-3">{{ $role }}</h4>
     <div class="row">
       @forelse ($users as $index => $user)
@@ -114,6 +116,7 @@
         <p class="text-muted">No data for {{ $role }}</p>
       @endforelse
     </div>
+    @endif
   @endforeach
 </div>
 
