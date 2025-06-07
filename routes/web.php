@@ -23,6 +23,10 @@ Auth::routes(['register' => false]);
 
 Route::middleware(['auth'])->group(function () {
     // Home router
+
+    Route::get('/vendor-data/{id}', [StaffController::class, 'vendorData'])->name('vendor.data');
+
+
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
     Route::get('/jicr', [JICRController::class, 'index'])->name('jicr.index');
