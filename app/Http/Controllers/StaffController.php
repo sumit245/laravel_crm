@@ -390,4 +390,38 @@ public function updateProfilePicture(Request $request)
         $surveyedPoles = Pole::all();
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
+
+    public function vendorData($id){
+        $managerid = $id;
+        $vendorids = StreetlightTask::where('manager_id', $managerid)
+                    ->distinct()
+                    ->pluck('vendor_id')
+                    ->toArray();
+        // $totaltaskcount = StreetlightTask::where('manager_id',$managerid)->count();
+        // Vendor data of surveyed poles
+
+        $vendorIds = StreetlightTask::where('manager_id', $managerid)
+                ->whereNotNull('vendor_id')
+                ->pluck('vendor_id')
+                ->unique();
+
+        $vendorPoleCounts = [];
+
+        foreach ($vendorIds as $vendorId) {
+            // Get task IDs for this vendor under the manager
+            $taskIds = StreetlightTask::where('manager_id', $managerid)
+                        ->where('vendor_id', $vendorId)
+                        ->pluck('id');
+
+            // Get count of poles for those tasks
+            $totalCount = StreetlightTask::where('vendor_id', $vendorId)->count();
+            $surveyCount = Pole::whereIn('task_id', $taskIds)->where('isSurveyDone', 1)->count();
+            $installCount = Pole::whereIn('task_id', $taskIds)->where('isInstallationDone', 1)->count();
+            $vendorPoleCounts[$vendorId] = ['survey'=>  $surveyCount, 'install' => $installCount, 'tasks'=> $totalCount];
+        }
+
+        return view('vendor',compact('vendorids', 'vendorPoleCounts'));
+
+    }
+
 }
