@@ -357,11 +357,15 @@ class ConveyanceController extends Controller
         }
     }
 
-    public function showConveyance(string $id)
-    {
+     public function showConveyance(string $id){
         try {
             $conveyance = Conveyance::where('user_id', $id)->get();
-            if (!$conveyance) {
+            $data = $conveyance->map(function ($conv) {
+                $vehicles = Vehicle::where('id', $conv->vehicle_category)->get(); // Adjust 'category' if your column is different
+                $conv->vehicles = $vehicles; // Add vehicles as a dynamic property
+                return $conv;
+            }); 
+                if (!$conveyance) {
                 return response()->json([
                     'status' => false,
                     'message' => 'Conveyance not found'
@@ -370,7 +374,7 @@ class ConveyanceController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Conveyance fetched successfully',
-                'data' => $conveyance
+                'data' => $data
             ]);
         } catch (\Throwable $th) {
             return response()->json([
