@@ -39,82 +39,144 @@
       <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1 mb-4" style="height: 40px !important;">Add Site</a>
     </div>
   </div>
-  <x-data-table id="sitesTable" :pageLength="50">
-    <x-slot:thead>
+</div>
+  <table id="sitesTable" class="table table-striped table-bordered table-sm mt-4">
+  <thead>
+    <tr>
+      <th><input type="checkbox" id="selectAll" /></th>
+
+      @if ($project->project_type == 0)
+        <th>Breda Sl No</th>
+        <th>Site Name</th>
+        <th>Address</th>
+        <th>Vendor</th>
+        <th>Engineer</th>
+      @else
+        <th>Site Code</th>
+        <th>State</th>
+        <th>District</th>
+        <th>Block</th>
+        <th>Panchayat</th>
+        <th>Ward</th>
+      @endif
+
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    @foreach ($sites as $site)
       <tr>
-        <th data-select="true">
-          <input type="checkbox" id="selectAll" />
-        </th>
+        <td>
+          <input type="checkbox" name="selected[]" value="{{ $site->id }}" class="select-checkbox">
+        </td>
 
         @if ($project->project_type == 0)
-          {{-- Rooftop Installation --}}
-          <th>Breda Sl No</th>
-          <th>Site Name</th>
-          <th>Address</th>
-          <th>Vendor</th>
-          <th>Engineer</th>
+          <td>{{ $site->breda_sl_no }}</td>
+          <td>{{ $site->site_name }}</td>
+          <td>
+            {{ $site->location }},
+            {{ optional($site->districtRelation)->name ?? "Unknown District" }},
+            {{ optional($site->stateRelation)->name ?? "Unknown State" }}
+          </td>
+          <td>{{ $site->vendorRelation->name ?? "" }}</td>
+          <td>{{ $site->engineerRelation->firstName ?? "" }} {{ $site->engineerRelation->lastName ?? " " }}</td>
         @else
-          {{-- Streetlight Installation --}}
-          <th>Site Code</th>
-          <th>State</th>
-          <th>District</th>
-          <th>Block</th>
-          <th>Panchayat</th>
-          <th>Ward</th>
+          <td>{{ $site->task_id }}</td>
+          <td>{{ $site->state }}</td>
+          <td>{{ $site->district }}</td>
+          <td>{{ $site->block }}</td>
+          <td>{{ $site->panchayat }}</td>
+          <td>{{ $site->ward }}</td>
         @endif
 
-        <th>Actions</th>
+        <td>
+          <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon" title="View Details">
+            <i class="mdi mdi-eye"></i>
+          </a>
+          <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon" title="Edit Site">
+            <i class="mdi mdi-pencil"></i>
+          </a>
+          <form action="{{ route('sites.destroy', $site->id) }}?project_id={{ $project->id }}" method="POST" style="display:inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-danger btn-icon" title="Delete Site">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </form>
+        </td>
       </tr>
-    </x-slot:thead>
+    @endforeach
+  </tbody>
+</table>
 
-    <x-slot:tbody>
-      @foreach ($sites as $site)
-        <tr>
-          <td>
-            <input type="checkbox" name="selected[]" value="{{ $site->id }}" class="select-checkbox">
-          </td>
+@push('styles')
+<style>
+  /* This forces the search box alignment to the left */
+  div.dataTables_filter {
+    text-align: left !important;
+  }
 
-          @if ($project->project_type == 0)
-            {{-- Rooftop Installation --}}
-            <td>{{ $site->breda_sl_no }}</td>
-            <td>{{ $site->site_name }}</td>
-            <td>
-              {{ $site->location }},
-              {{ optional($site->districtRelation)->name ?? "Unknown District" }},
-              {{ optional($site->stateRelation)->name ?? "Unknown State" }}
-            </td>
-            <td>{{ $site->vendorRelation->name ?? "" }}</td>
-            <td>{{ $site->engineerRelation->firstName ?? "" }} {{ $site->engineerRelation->lastName ?? " " }}</td>
-          @else
-            {{-- Streetlight Installation --}}
-            <td>{{ $site->task_id }}</td>
-            <td>{{ $site->state }}</td>
-            <td>{{ $site->district }}</td>
-            <td>{{ $site->block }}</td>
-            <td>{{ $site->panchayat }}</td>
-            <td>{{ $site->ward }}</td>
-          @endif
+  div.dataTables_filter label {
+    float: left !important;
+  }
 
-          <td>
-            <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon" data-toggle="tooltip"
-              title="View Details">
-              <i class="mdi mdi-eye"></i>
-            </a>
-            <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon" data-toggle="tooltip"
-              title="Edit Site">
-              <i class="mdi mdi-pencil"></i>
-            </a>
-            <form action="{{ route('sites.destroy', $site->id) }}?project_id={{ $project->id }}" method="POST" style="display:inline;">
-              @csrf
-              @method('DELETE')
-              <button type="submit" class="btn btn-danger btn-icon" data-toggle="tooltip" title="Delete Site">
-                <i class="mdi mdi-delete"></i>
-              </button>
-            </form>
+  div.dataTables_filter input {
+    margin-left: 0.5rem;
+  }
+</style>
+@endpush
 
-          </td>
-        </tr>
-      @endforeach
-    </x-slot:tbody>
-  </x-data-table>
-</div>
+
+@push('scripts')
+<!-- Include jQuery and DataTables -->
+<script>
+  $(document).ready(function () {
+    const table = $('#sitesTable').DataTable({
+      dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+      buttons: [
+        {
+          extend: 'print',
+          text: '<i class="mdi mdi-printer"></i>',
+          className: 'btn btn-sm btn-info',
+          titleAttr: 'Print Table'
+        },
+        {
+          extend: 'excelHtml5',
+          text: '<i class="mdi mdi-file-excel"></i>',
+          className: 'btn btn-sm btn-success',
+          titleAttr: 'Export to Excel'
+        }
+      ],
+      pageLength: 50,
+      searching: true,
+      responsive: true,
+      columnDefs: [
+        { orderable: false, targets: [0, -1] } // checkbox and actions
+      ],
+      language: {
+        search: '',
+        searchPlaceholder: 'Search...'
+      },
+      select: {
+        style: 'multi',
+        selector: 'td:first-child input[type="checkbox"]'
+      }
+    });
+
+    $('#selectAll').on('click', function () {
+      const checked = this.checked;
+      $('input.select-checkbox').prop('checked', checked);
+      checked ? table.rows().select() : table.rows().deselect();
+    });
+
+    $('#sitesTable tbody').on('click', 'input.select-checkbox', function () {
+      const total = $('input.select-checkbox').length;
+      const checked = $('input.select-checkbox:checked').length;
+      $('#selectAll').prop('checked', total === checked);
+    });
+  });
+</script>
+@endpush
