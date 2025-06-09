@@ -2,3 +2,7 @@
 [2025-06-09 06:57:40] local.INFO: []  
 [2025-06-09 06:57:40] local.INFO: []  
 [2025-06-09 06:57:55] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"2323","rate":"2094.00","total_value":"4864362.00","make":"2799","model":"Solar penal 120wp"},{"item_code":"SL02","item":"Luminary","total_quantity":"2799","rate":"2500.00","total_value":"6997500.00","make":"2025","model":"SSL20W"},{"item_code":"SL03","item":"Battery ","total_quantity":"2241","rate":"6000.00","total_value":"13446000.00","make":"2025","model":"LiFePO454Ah"}]  
+[2025-06-09 07:55:51] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
