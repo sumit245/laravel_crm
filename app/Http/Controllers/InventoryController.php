@@ -482,9 +482,6 @@ class InventoryController extends Controller
                     "isDispatched" => true
 
                 ]);
-                Log::info("Dispatching item");
-                Log::info($dispatch);
-
                 // Reduce stock from inventory
                 $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
