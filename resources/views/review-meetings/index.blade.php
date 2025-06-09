@@ -1,102 +1,69 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="content-wrapper p-2">
-    <div class="card">
-      <div class="card-body">
-        <h4 class="card-title">Add Projects</h4>
-
-        <!-- Display validation errors -->
-        @if ($errors->any())
-          <div class="alert alert-danger">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
-        @endif
-        <form class="forms-sample" action="{{ route("meets.store") }}" method="POST">
-          @csrf
-          <div class="form-group">
-            <label for="meet_title" class="form-label">Meeting Title</label>
-            <input type="text" name="title" class="form-control" id="meet_title" placeholder="Meeting Title"
-              required>
-          </div>
-          <div class="form-group">
-            <label for="meet_title" class="form-label">Agenda of Meeting</label>
-            <textarea name="agenda" class="form-control" placeholder="Agenda"></textarea>
-          </div>
-          <div class="row">
-            <div class="col-sm-8">
-              <div class="form-group">
-                <label for="meet_title" class="form-label">Link to Join</label>
-                <input type="url" class="form-control" name="meet_link" placeholder="Meeting Link" required>
-              </div>
-            </div>
-            <div class="col-sm-4">
-              <div class="form-group">
-                <label for="meet_title" class="form-label">Select Platform</label>
-                <select name="platform" class="form-select" required>
-                  <option value="Google Meet">Google Meet</option>
-                  <option value="Zoom">Zoom</option>
-                  <option value="Teams">Teams</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="agreement_date" class="form-label">Date of meeting</label>
-            <input type="date" name="meet_date" class="form-control" value="{{ old("meet_date", date("Y-m-d")) }}"
-              min="{{ date("Y-m-d") }}" required>
-          </div>
-          <div class="form-group">
-            <label for="agreement_date" class="form-label">Time of Meeting</label>
-            <input type="time" class="form-control" name="meet_time" required>
-          </div>
-
-          <div class="form-group">
-            <label for="agreement_date" class="form-label">Agreement Date</label>
-            <select name="type" class="form-select" required>
-              <option value="Review">Review</option>
-              <option value="Planning">Planning</option>
-              <option value="Discussion">Discussion</option>
-            </select>
-          </div>
-
-          {{-- TODO: Select Project --}}
-          <div>
-            <label>Project:</label>
-            <select name="project_id">
-              <option value="">-- Select Project --</option>
-              @foreach ($projects as $project)
-                <option value="{{ $project->id }}">{{ $project->project_name }}</option>
-              @endforeach
-            </select>
-          </div>
-
-          {{-- TODO: Select Users by Role --}}
-          <div>
-            <label>Select Participants:</label>
-            <select name="users[]" multiple>
-              @foreach ($usersByRole as $role => $roleUsers)
-                <optgroup label="{{ $role }}">
-                  @foreach ($roleUsers as $user)
-                    <option value="{{ $user->id }}">
-                      {{ $user->firstName }} {{ $user->lastName }} ({{ $user->email }})
-                    </option>
-                  @endforeach
-                </optgroup>
-              @endforeach
-            </select>
-          </div>
-
-          <button type="submit" class="btn btn-primary">Create Meeting</button>
-
-        </form>
-      </div>
+  <div class="container p-2">
+    <div class="d-flex justify-content-between mb-3">
+      <!-- Search box is added automatically by DataTables -->
+      <div></div> <!-- Empty div to align with search box -->
+      <a class="btn btn-primary" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Create New Meeting"
+        href="{{ route("meets.create") }}"> <i class="mdi mdi-plus-circle"></i></a>
     </div>
+    <table id="meetingsTable" class="table-bordered table-striped table">
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Agenda</th>
+          <th>Platform</th>
+          <th>Meet Link</th>
+          <th>Date & Time</th>
+          <th>Type</th>
+          <th>Participants</th>
+          <th>Created At</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        @foreach ($meets as $meet)
+          <tr>
+            <td>{{ $meet->title }}</td>
+            <td>{{ $meet->agenda }}</td>
+            <td>{{ $meet->platform }}</td>
+            <td><a href="{{ $meet->meet_link }}" target="_blank">Join</a></td>
+            <td>{{ $meet->meet_date }}</br>{{ $meet->meet_time }}</td>
+            <td>{{ $meet->type }}</td>
+            <td>
+              @php
+                $userIds = json_decode($meet->user_ids, true);
+                $participants = \App\Models\User::whereIn("id", $userIds)->get();
+              @endphp
+              @foreach ($participants as $user)
+                <div>{{ $user->firstName }} {{ $user->lastName }}</div>
+              @endforeach
+            </td>
+            <td>{{ $meet->created_at->format("d M Y") }}</td>
+            <td>
+              <!-- View Button -->
+              <a href="{{ route("meets.show", $meet->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+                title="View Details">
+                <i class="mdi mdi-eye"></i>
+              </a>
+              <!-- Edit Button -->
+              <a href="{{ route("meets.edit", $meet->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
+                title="Postpone">
+                <i class="mdi mdi-pencil"></i>
+              </a>
+            </td>
+          </tr>
+        @endforeach
+      </tbody>
+    </table>
   </div>
 @endsection
+
+@push("scripts")
+  <script>
+    $(document).ready(function() {
+      $('#meetingsTable').DataTable();
+    });
+  </script>
+@endpush
