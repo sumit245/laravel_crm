@@ -26,19 +26,15 @@ class SiteImport implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
-        Log::info('Processing row:', $row);
-
         // Fetch the district ID based on the exact district name
         $districtId = $this->getDistrictId($row['district']);
         $stateId    = $this->getStateId($row['state']);
 
         // If no matching district or state is found, log an error and skip this row
         if (!$districtId) {
-            Log::error('District not found for: ' . $row['district']);
             return null;
         }
         if (!$stateId) {
-            Log::error('State not found for: ' . $row['state']);
             return null;
         }
 

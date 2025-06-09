@@ -35,7 +35,6 @@ class StoreController extends Controller
     public function store(Request $request, $projectId)
     {
         try {
-            Log::info($request);
             $validated = $request->validate([
                 'name'          => 'required|string|max:255',
                 'address'       => 'required|string|max:500',
@@ -52,7 +51,6 @@ class StoreController extends Controller
             $project = Project::with('stores')->findOrFail($projectId);
             $users   = User::where('role', '!=', 3)->get();
             // TODO: Also remove role 1
-            Log::info($project);
             // Redirect back to the project detail page with updated data
             return redirect()->back()->with('success', 'Store Created Successfully');
         } catch (\Exception $e) {

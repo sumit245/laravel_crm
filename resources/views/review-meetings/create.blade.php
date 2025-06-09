@@ -50,7 +50,7 @@
             <div class="col-sm-6">
 
               <div class="form-group">
-                <label for="agreement_date" class="form-label">Date of meeting</label>
+                <label for="agreement_date" class="form-label">Date of meetings</label>
                 <input type="date" name="meet_date" class="form-control" value="{{ old("meet_date", date("Y-m-d")) }}"
                   min="{{ date("Y-m-d") }}" required>
               </div>
