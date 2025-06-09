@@ -32,7 +32,6 @@ class RemoteApiHelper
             'MfId' => 101,
             'dateTime' => now()->format('Y-m-d H:i:s'),
         ];
-        Log::info($payload);
         try {
             $response = Http::asForm()->post($url, $payload);
             Log::info($response->json());
