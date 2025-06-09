@@ -1520,7 +1520,7 @@
     });
 
     const dobInput = document.getElementById('dob');
-     const dojInput = document.getElementById('date_of_joining');
+    const dojInput = document.getElementById('date_of_joining');
 
     // Optional: You can auto-focus it when the page loads or on a specific user action
     dobInput.addEventListener('click', function () {
