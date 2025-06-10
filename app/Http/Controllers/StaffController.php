@@ -391,37 +391,89 @@ public function updateProfilePicture(Request $request)
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
 
-    public function vendorData($id){
+    public function vendorData($id)
+    {
         $managerid = $id;
-        $vendorids = StreetlightTask::where('manager_id', $managerid)
-                    ->distinct()
-                    ->pluck('vendor_id')
-                    ->toArray();
-        // $totaltaskcount = StreetlightTask::where('manager_id',$managerid)->count();
-        // Vendor data of surveyed poles
 
-        $vendorIds = StreetlightTask::where('manager_id', $managerid)
-                ->whereNotNull('vendor_id')
-                ->pluck('vendor_id')
-                ->unique();
+        // Get distinct vendor IDs for this manager
+        $vendorids = StreetlightTask::where('manager_id', $managerid)
+            ->whereNotNull('vendor_id')
+            ->pluck('vendor_id')
+            ->unique();
 
         $vendorPoleCounts = [];
 
-        foreach ($vendorIds as $vendorId) {
-            // Get task IDs for this vendor under the manager
-            $taskIds = StreetlightTask::where('manager_id', $managerid)
-                        ->where('vendor_id', $vendorId)
-                        ->pluck('id');
+        foreach ($vendorids as $vendorId) {
+            // Get all tasks for this vendor under this manager
+            $tasks = StreetlightTask::where('manager_id', $managerid)
+                ->where('vendor_id', $vendorId)
+                ->with('site', 'vendor')
+                ->get();
 
-            // Get count of poles for those tasks
-            $totalCount = StreetlightTask::where('vendor_id', $vendorId)->count();
+            $taskIds = $tasks->pluck('id');
+
+            // Get pole counts (survey/install) from pole table
             $surveyCount = Pole::whereIn('task_id', $taskIds)->where('isSurveyDone', 1)->count();
             $installCount = Pole::whereIn('task_id', $taskIds)->where('isInstallationDone', 1)->count();
-            $vendorPoleCounts[$vendorId] = ['survey'=>  $surveyCount, 'install' => $installCount, 'tasks'=> $totalCount];
+
+            // Sum total poles from Streetlight.site model
+            $totalPoles = $tasks->reduce(function ($carry, $task) {
+                return $carry + ($task->site)->total_poles ?? 0;
+            }, 0);
+
+            // Optional: fetch vendor name if needed in view
+            $vendor = optional($tasks->first()->vendor);
+            $vendorName = trim(($vendor->firstName ?? '') . ' ' . ($vendor->lastName ?? ''));
+            // Add to final array
+            $vendorPoleCounts[$vendorId] = [
+                'vendor_name'  => $vendorName,
+                'survey'       => $surveyCount,
+                'install'      => $installCount,
+                'tasks'        => $tasks->count(),
+                'total_poles'  => $totalPoles,
+            ];
+            // === Today's Data ===
+            $today = now()->toDateString();
+        $todayTasks = $tasks->filter(function ($task) use ($today) {
+            return $task->start_date === $today || $task->end_date === $today;
+        });
+
+        $todayTaskIds = $todayTasks->pluck('id');
+
+        $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
+            ->where('isSurveyDone', 1)->count();
+
+        $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
+            ->where('isInstallationDone', 1)->count();
+
+         
+    $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
+        return $task->end_date >= $today;
+    });
+
+        // $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+        //     // Only count if end_date is today or in future
+        //     if ($task->end_date >= $today) {
+        //         return $carry + (optional($task->site)->number_of_poles ?? 0);
+        //     }
+        //     return $carry;
+        // }, 0);
+
+        $vendorPoleCountsToday[$vendorId] = [
+            'vendor_name'  => $vendorName,
+            'survey'       => $todaySurvey,
+            'install'      => $todayInstall,
+            'tasks'        => $todayTasks->count(),
+            'total_poles'  => $totalPoles,
+            // 'today_target' => $todayTotalPoles,
+            ];
         }
 
-        return view('vendor',compact('vendorids', 'vendorPoleCounts'));
-
+        return view('vendor', compact('vendorids', 'vendorPoleCounts', 'vendorPoleCountsToday'));
     }
+
+
+        
+
 
 }
