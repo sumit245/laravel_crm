@@ -426,6 +426,7 @@ public function updateProfilePicture(Request $request)
             $vendorName = trim(($vendor->firstName ?? '') . ' ' . ($vendor->lastName ?? ''));
             // Add to final array
             $vendorPoleCounts[$vendorId] = [
+                'id'           => $vendorId,
                 'vendor_name'  => $vendorName,
                 'survey'       => $surveyCount,
                 'install'      => $installCount,
@@ -447,17 +448,30 @@ public function updateProfilePicture(Request $request)
             ->where('isInstallationDone', 1)->count();
 
          
-    $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
-        return $task->end_date >= $today;
-    });
+        $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
+            return $task->end_date >= $today;
+        });
 
-        // $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
-        //     // Only count if end_date is today or in future
-        //     if ($task->end_date >= $today) {
-        //         return $carry + (optional($task->site)->number_of_poles ?? 0);
-        //     }
-        //     return $carry;
-        // }, 0);
+        $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+            // Only count if end_date is today or in future
+            if ($task->end_date >= $today) {
+                return $carry + (optional($task->site)->total_poles ?? 0);
+            }
+            return $carry;
+        }, 0);
+        $backLogPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+            // Only count if end_date is today or in future
+            if ($task->end_date < $today) {
+                return $carry + (optional($task->site)->total_poles ?? 0);
+            }
+            return $carry;
+        }, 0);
+
+        $backlogSites = $tasks->filter(function ($task) use ($today) {
+            return $task->end_date < $today && $task->site;
+        })->map(function ($task) {
+            return $task->site;
+        })->unique('id')->values();
 
         $vendorPoleCountsToday[$vendorId] = [
             'vendor_name'  => $vendorName,
@@ -465,7 +479,9 @@ public function updateProfilePicture(Request $request)
             'install'      => $todayInstall,
             'tasks'        => $todayTasks->count(),
             'total_poles'  => $totalPoles,
-            // 'today_target' => $todayTotalPoles,
+            'today_target' => $todayTotalPoles,
+            'backlog'      => $backLogPoles,
+            'backlog_sites' => $backlogSites,
             ];
         }
 
