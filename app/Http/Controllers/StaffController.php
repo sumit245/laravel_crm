@@ -488,6 +488,104 @@ public function updateProfilePicture(Request $request)
         return view('vendor', compact('vendorids', 'vendorPoleCounts', 'vendorPoleCountsToday'));
     }
 
+    public function engineerData($id)
+    {
+        $managerid = $id;
+
+        // Get distinct engineer IDs for this manager
+        $engineerids = StreetlightTask::where('manager_id', $managerid)
+            ->whereNotNull('engineer_id')
+            ->pluck('engineer_id')
+            ->unique();
+
+        $engineerPoleCounts = [];
+
+        foreach ($engineerids as $engineerId) {
+            // Get all tasks for this engineer under this manager
+            $tasks = StreetlightTask::where('manager_id', $managerid)
+                ->where('engineer_id', $engineerId)
+                ->with('site', 'engineer')
+                ->get();
+
+            $taskIds = $tasks->pluck('id');
+
+            // Get pole counts (survey/install) from pole table
+            $surveyCount = Pole::whereIn('task_id', $taskIds)->where('isSurveyDone', 1)->count();
+            $installCount = Pole::whereIn('task_id', $taskIds)->where('isInstallationDone', 1)->count();
+
+            // Sum total poles from Streetlight.site model
+            $totalPoles = $tasks->reduce(function ($carry, $task) {
+                return $carry + ($task->site)->total_poles ?? 0;
+            }, 0);
+
+            // Optional: fetch engineer name if needed in view
+            $engineer = optional($tasks->first()->engineer);
+            $engineerName = trim(($engineer->firstName ?? '') . ' ' . ($engineer->lastName ?? ''));
+            
+            // Add to final array
+            $engineerPoleCounts[$engineerId] = [
+                'id'           => $engineerId,
+                'engineer_name'  => $engineerName,
+                'survey'       => $surveyCount,
+                'install'      => $installCount,
+                'tasks'        => $tasks->count(),
+                'total_poles'  => $totalPoles,
+            ];
+
+            // === Today's Data ===
+            $today = now()->toDateString();
+            $todayTasks = $tasks->filter(function ($task) use ($today) {
+                return $task->start_date === $today || $task->end_date === $today;
+            });
+
+            $todayTaskIds = $todayTasks->pluck('id');
+
+            $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
+                ->where('isSurveyDone', 1)->count();
+
+            $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
+                ->where('isInstallationDone', 1)->count();
+
+            $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
+                return $task->end_date >= $today;
+            });
+
+            $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+                // Only count if end_date is today or in future
+                if ($task->end_date >= $today) {
+                    return $carry + (optional($task->site)->total_poles ?? 0);
+                }
+                return $carry;
+            }, 0);
+
+            $backLogPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+                // Only count if end_date is in the past
+                if ($task->end_date < $today) {
+                    return $carry + (optional($task->site)->total_poles ?? 0);
+                }
+                return $carry;
+            }, 0);
+
+            $backlogSites = $tasks->filter(function ($task) use ($today) {
+                return $task->end_date < $today && $task->site;
+            })->map(function ($task) {
+                return $task->site;
+            })->unique('id')->values();
+
+            $engineerPoleCountsToday[$engineerId] = [
+                'engineer_name'  => $engineerName,
+                'survey'         => $todaySurvey,
+                'install'        => $todayInstall,
+                'tasks'          => $todayTasks->count(),
+                'total_poles'    => $totalPoles,
+                'today_target'   => $todayTotalPoles,
+                'backlog'        => $backLogPoles,
+                'backlog_sites'  => $backlogSites,
+            ];
+        }
+
+        return view('engineer', compact('engineerids', 'engineerPoleCounts', 'engineerPoleCountsToday'));
+    }
 
         
 
