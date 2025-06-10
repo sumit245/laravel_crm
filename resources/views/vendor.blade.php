@@ -9,7 +9,7 @@
                   <div class="d-flex align-items-center mb-3">
                     <img src="https://via.placeholder.com/50" alt="Profile" class="profile-img me-3">
                     <div>
-                      <h6 class="mb-0">{{-- $vendor->firstName }} {{ $vendor->lastName --}} <li>Vendor ID: {{ $vendorId }}</li></h6>
+                      <h6 class="mb-0"> <li>{{ $count['vendor_name'] }}</li></h6>
                       <small class="text-muted">{{-- $vendor->name --}}</small>
                     </div>
                   </div>
@@ -21,9 +21,11 @@
                       <span class="badge badge-performance badge-high">85%</span>
                     </div>
                   </div>
-                  <div class="metric">🎯 Targets: <strong></strong>{{ $count['tasks'] }}</div>
+                  <div class="mt-3">Overall Data</div>
+                  <div class="metric">🎯 Targets: <strong></strong>{{ $count['total_poles'] }}</div>
                   <div class="metric">✅ Surveyed Poles: <strong></strong>{{ $count['survey'] }}</div>
                   <div class="metric">💡 Installed Sites: <strong></strong>{{ $count['install'] }}</div>
+
                   <div class="metric">🧾 Billed: <strong></strong></div>
                   <div class="text-end mt-3">
                     <a href="#" class="btn btn-sm btn-primary">See Details</a>
@@ -35,4 +37,15 @@
           </div>
     @endforeach
 </div>
+              <!-- Tab 2: Today -->
+            @foreach ($vendorPoleCountsToday as $vendorId => $data)
+                <div class="card bg-light">
+                    <h4>{{ $data['vendor_name'] }} (Today)</h4>
+                    <p>Total Poles Today: {{ $data['total_poles'] }}</p>
+                    <p>Surveyed Today: {{ $data['survey'] }}</p>
+                    <p>Installed Today: {{ $data['install'] }}</p>
+                    <p>Tasks Today: {{ $data['tasks'] }}</p>
+                    
+                </div>
+            @endforeach
 @endsection

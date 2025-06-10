@@ -7,6 +7,7 @@ use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\API\HRMController;
 use App\Http\Controllers\InventoryController;
+use App\Http\Controllers\MeetController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
 use App\Http\Controllers\StaffController;
@@ -46,6 +47,22 @@ Route::middleware(['auth'])->group(function () {
     
     Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
     Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
+
+    //Meeting Review Extension
+// List all meetings
+Route::get('/meets', [MeetController::class, 'index'])->name('meets.index');
+// Show create form
+Route::get('/meets/create', [MeetController::class, 'create'])->name('meets.create');
+// Store new meeting
+Route::post('/meets', [MeetController::class, 'store'])->name('meets.store');
+// Show a single meeting (optional, if needed)
+Route::get('/meets/{meet}', [MeetController::class, 'show'])->name('meets.show');
+// Show edit form (optional, if you need to edit meetings)
+Route::get('/meets/{meet}/edit', [MeetController::class, 'edit'])->name('meets.edit');
+// Update a meeting (optional)
+Route::put('/meets/{meet}', [MeetController::class, 'update'])->name('meets.update');
+// Delete a meeting (optional)
+Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
 
 
     // vendor Router
