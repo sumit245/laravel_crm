@@ -46,7 +46,6 @@ Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEng
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
 Route::apiResource('streetlight', StreetlightController::class);
 
-
 Route::apiResource('inventories', InventoryController::class);
 Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
 Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
