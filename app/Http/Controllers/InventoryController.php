@@ -666,4 +666,9 @@ class InventoryController extends Controller
             return redirect()->back()->with('error', 'Failed to return inventory item');
         }
     }
+
+    public function replaceItem(Request $request)
+    {
+        Log::info($request);
+    }
 }

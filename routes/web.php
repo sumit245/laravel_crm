@@ -5,7 +5,6 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\API\HRMController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\ProjectsController;
 use App\Http\Controllers\SiteController;
@@ -16,7 +15,6 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
-use App\Http\Controllers\ApplicationController;
 use App\Http\Controllers\MeetController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
@@ -132,6 +130,8 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/inventory/checkQR', [InventoryController::class, 'checkQR'])->name('inventory.checkQR');
     Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
+    Route::post('/inventory/replace', [InventoryController::class, 'replaceItem'])->name('inventory.replace');
+
     // adding inventory data
     // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
@@ -179,6 +179,7 @@ Route::middleware(['auth'])->group(function () {
 
 
 });
+
 Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
 Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
 Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
