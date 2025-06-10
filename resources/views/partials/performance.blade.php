@@ -149,9 +149,10 @@
                   Vendors
                 </a>
 
-               <button class="btn btn-sm btn-outline-info" onclick="showSiteEngineers({{ $user->id }}, '{{ $user->name }}', {{ json_encode($user->siteEngineers ?? []) }})">
-                 Engineers
-               </button>
+               <a href="{{ route('engineer.data', ['id' => $user->id]) }}" 
+                  class="btn btn-sm btn-outline-success">
+                  Engineers
+                </a>
                <a href="{{ route('staff.show', $user->id) }}" class="btn btn-sm btn-primary">
                  Details
              </a>
