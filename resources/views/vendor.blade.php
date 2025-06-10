@@ -45,7 +45,7 @@
                     <p>Surveyed Today: {{ $data['survey'] }}</p>
                     <p>Installed Today: {{ $data['install'] }}</p>
                     <p>Tasks Today: {{ $data['tasks'] }}</p>
-                    
+                    <p>Target Today: {{ $data['today_target'] }}</p>
                 </div>
             @endforeach
 @endsection
