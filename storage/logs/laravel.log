@@ -3265,3 +3265,314 @@
 #46 C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\xampp\\\\htdocs...')
 #47 {main}
 "} 
+[2025-06-09 11:45:12] local.INFO: []  
+[2025-06-09 11:45:12] local.INFO: []  
+[2025-06-09 11:45:12] local.INFO: []  
+[2025-06-10 05:58:33] local.INFO: []  
+[2025-06-10 05:58:33] local.INFO: []  
+[2025-06-10 05:58:33] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: [{"id":91,"name":"Anand Karan","vendor_name":"Anand","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/anand5168_20250313_034440.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":116,"name":"Rupesh Pratap","vendor_name":"Rupesh","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rupesh2751_20250227_055915.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":117,"name":"Satish Thakur","vendor_name":"Satish Thakur","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/satish7055_20250226_043057.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":150,"name":"Aayush Gautam","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aayush5083_20250416_153603.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: [{"id":85,"name":"Golu Kumar","vendor_name":"Golu Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/golu7923_20250308_033246.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":87,"name":"Ashutosh Aryan","vendor_name":"Ashutosh Aryan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ashutosh1183_20250226_045307.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":88,"name":"Laljeet Rishi","vendor_name":"Lalijeet Rishi","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":89,"name":"Ujjain kumar chandravanshi","vendor_name":"Ujjain kumar chandravanshi","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ujjain8743_20250305_105027.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":93,"name":"Pritam Kumar","vendor_name":"Pritam Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/pritam6615_20250226_073915.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":94,"name":"Abhishek Raj","vendor_name":"Abhishek Raj","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/abhishek1962_20250226_063624.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":95,"name":"Aashish Ranjan","vendor_name":"Aashish Ranjan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aashish6021_20250404_094409.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":97,"name":"Rahul Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rahul2082_20250226_073835.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":98,"name":"Prabhat Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/prabhat8785_20250226_055851.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":99,"name":"MD Zafar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/md2985_20250226_073146.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":100,"name":"Dharmendra Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/dharmendra1641_20250404_094336.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":102,"name":"Raunak Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/raunak3361_20250226_071402.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":103,"name":"Rohit Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rohit6719_20250226_062457.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":104,"name":"Aamir Khan","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aamir4108_20250404_101540.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":105,"name":"Sonu Kumar Ray","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/sonu4923_20250226_072139.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":106,"name":"Sohail Ansari","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/sohail5146_20250304_070836.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":108,"name":"Aditya Ranjan","vendor_name":"Aditya Ranjan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aditya1581_20250404_094502.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":109,"name":"Desh Bhushan","vendor_name":"Desh Bhushan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/desh9988_20250226_060954.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":140,"name":"Aman Kumar","vendor_name":"Aman kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aman8460_20250228_064423.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":151,"name":" ","vendor_name":"Demo User","image":null,"role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: Now: 2025-06-10 05:58:45  
+[2025-06-10 05:58:45] local.INFO: SubDay: 2025-06-09 05:58:45  
+[2025-06-10 05:58:45] local.INFO: []  
+[2025-06-10 05:58:45] local.INFO: [{"id":110,"name":"Abhishek Singh","vendor_name":"Abhishek Kumar Singh","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":113,"name":"Nishant Nihal","vendor_name":"LUV & SUN Solution Private Limited","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":114,"name":"Chandan Kumar Singh","vendor_name":"R.A.S Construction","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":115,"name":"Bittu Singh","vendor_name":"BITTU KUMAR SINGH","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":121,"name":"Bablu Kumar","vendor_name":"AAYAT ENTERPRISES","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aayatenterprises9209_20250227_053202.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":122,"name":"Aftab Alam","vendor_name":"DELIGHT POWER PRIVATE LIMITED","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":123,"name":"Manoj Sharma","vendor_name":"Nandani Solar Solution","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":124,"name":"Patan Yadav","vendor_name":"Sharearm Agro & Food Industries","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":125,"name":"Parmila Devi","vendor_name":"Mithilanchal Green energy","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":126,"name":"Prakash Pant","vendor_name":"Evedin Technologies LLP","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":127,"name":"Biren Singh","vendor_name":"Harshita and Raghuraj Pratap Tradors (S)","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":128,"name":"Rajesh Kumar","vendor_name":"SAR Enterprises","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":129,"name":"Rajib Kumar Bhagat","vendor_name":"Ujjwal Solar Solution PVT LIMITED","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":130,"name":"Vikash Kumar Singh","vendor_name":"M\/S DEV TRADERS","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":131,"name":"Ashutosh Kumar","vendor_name":"Shiv Enterprises","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/shiventerprises9535_20250227_073759.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":132,"name":"Amresh Kumar Verma","vendor_name":"AMRESH KUMAR VERMA","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":134,"name":"Rohit Kumar","vendor_name":"Rohit Kumar","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":136,"name":"Subodh Kumar","vendor_name":"Subodh Kumar","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":137,"name":"Basant  kumar Jha","vendor_name":"ASSETS MANAGEMENT SERVICES","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/assetsmanagementservices3290_20250226_113237.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":138,"name":"Nitesh Kumar","vendor_name":"Nitesh Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ajaykumarsahani3522_20250305_104932.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":139,"name":"Rakesh Ranjan","vendor_name":"Ridhi Sidhi Construction","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ridhisidhiconstruction5583_20250305_062350.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":152,"name":"Govind Kumar","vendor_name":"Gagan Enterprises","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":154,"name":"Rakesh Ranjan","vendor_name":"Ridhi Sidhi Construction Lakhisarai","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ridhisidhiconstruction5583_20250305_062350.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-06-10 06:00:10] local.INFO: []  
+[2025-06-10 06:00:10] local.INFO: []  
+[2025-06-10 06:00:10] local.INFO: []  
+[2025-06-10 06:19:22] local.INFO: []  
+[2025-06-10 06:19:22] local.INFO: []  
+[2025-06-10 06:19:22] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: [{"id":91,"name":"Anand Karan","vendor_name":"Anand","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/anand5168_20250313_034440.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":116,"name":"Rupesh Pratap","vendor_name":"Rupesh","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rupesh2751_20250227_055915.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":117,"name":"Satish Thakur","vendor_name":"Satish Thakur","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/satish7055_20250226_043057.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":150,"name":"Aayush Gautam","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aayush5083_20250416_153603.jpg","role":"Project Manager","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: [{"id":85,"name":"Golu Kumar","vendor_name":"Golu Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/golu7923_20250308_033246.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":87,"name":"Ashutosh Aryan","vendor_name":"Ashutosh Aryan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ashutosh1183_20250226_045307.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":88,"name":"Laljeet Rishi","vendor_name":"Lalijeet Rishi","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":89,"name":"Ujjain kumar chandravanshi","vendor_name":"Ujjain kumar chandravanshi","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ujjain8743_20250305_105027.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":93,"name":"Pritam Kumar","vendor_name":"Pritam Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/pritam6615_20250226_073915.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":94,"name":"Abhishek Raj","vendor_name":"Abhishek Raj","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/abhishek1962_20250226_063624.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":95,"name":"Aashish Ranjan","vendor_name":"Aashish Ranjan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aashish6021_20250404_094409.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":97,"name":"Rahul Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rahul2082_20250226_073835.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":98,"name":"Prabhat Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/prabhat8785_20250226_055851.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":99,"name":"MD Zafar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/md2985_20250226_073146.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":100,"name":"Dharmendra Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/dharmendra1641_20250404_094336.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":102,"name":"Raunak Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/raunak3361_20250226_071402.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":103,"name":"Rohit Kumar","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/rohit6719_20250226_062457.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":104,"name":"Aamir Khan","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aamir4108_20250404_101540.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":105,"name":"Sonu Kumar Ray","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/sonu4923_20250226_072139.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":106,"name":"Sohail Ansari","vendor_name":"","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/sohail5146_20250304_070836.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":108,"name":"Aditya Ranjan","vendor_name":"Aditya Ranjan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aditya1581_20250404_094502.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":109,"name":"Desh Bhushan","vendor_name":"Desh Bhushan","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/desh9988_20250226_060954.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":140,"name":"Aman Kumar","vendor_name":"Aman kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aman8460_20250228_064423.jpg","role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":151,"name":" ","vendor_name":"Demo User","image":null,"role":"Site Engineer","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: Now: 2025-06-10 06:19:26  
+[2025-06-10 06:19:26] local.INFO: SubDay: 2025-06-09 06:19:26  
+[2025-06-10 06:19:26] local.INFO: []  
+[2025-06-10 06:19:26] local.INFO: [{"id":110,"name":"Abhishek Singh","vendor_name":"Abhishek Kumar Singh","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":113,"name":"Nishant Nihal","vendor_name":"LUV & SUN Solution Private Limited","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":114,"name":"Chandan Kumar Singh","vendor_name":"R.A.S Construction","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":115,"name":"Bittu Singh","vendor_name":"BITTU KUMAR SINGH","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":121,"name":"Bablu Kumar","vendor_name":"AAYAT ENTERPRISES","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/aayatenterprises9209_20250227_053202.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":122,"name":"Aftab Alam","vendor_name":"DELIGHT POWER PRIVATE LIMITED","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":123,"name":"Manoj Sharma","vendor_name":"Nandani Solar Solution","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":124,"name":"Patan Yadav","vendor_name":"Sharearm Agro & Food Industries","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":125,"name":"Parmila Devi","vendor_name":"Mithilanchal Green energy","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":126,"name":"Prakash Pant","vendor_name":"Evedin Technologies LLP","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":127,"name":"Biren Singh","vendor_name":"Harshita and Raghuraj Pratap Tradors (S)","image":"https:\/\/randomuser.me\/api\/portraits\/men\/3.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":128,"name":"Rajesh Kumar","vendor_name":"SAR Enterprises","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":129,"name":"Rajib Kumar Bhagat","vendor_name":"Ujjwal Solar Solution PVT LIMITED","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":130,"name":"Vikash Kumar Singh","vendor_name":"M\/S DEV TRADERS","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":131,"name":"Ashutosh Kumar","vendor_name":"Shiv Enterprises","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/shiventerprises9535_20250227_073759.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":132,"name":"Amresh Kumar Verma","vendor_name":"AMRESH KUMAR VERMA","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":134,"name":"Rohit Kumar","vendor_name":"Rohit Kumar","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":136,"name":"Subodh Kumar","vendor_name":"Subodh Kumar","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":137,"name":"Basant  kumar Jha","vendor_name":"ASSETS MANAGEMENT SERVICES","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/assetsmanagementservices3290_20250226_113237.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":138,"name":"Nitesh Kumar","vendor_name":"Nitesh Kumar","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ajaykumarsahani3522_20250305_104932.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":139,"name":"Rakesh Ranjan","vendor_name":"Ridhi Sidhi Construction","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ridhisidhiconstruction5583_20250305_062350.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":152,"name":"Govind Kumar","vendor_name":"Gagan Enterprises","image":null,"role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"},{"id":154,"name":"Rakesh Ranjan","vendor_name":"Ridhi Sidhi Construction Lakhisarai","image":"https:\/\/sugslloyd.s3.ap-south-1.amazonaws.com\/users\/avatar\/ridhisidhiconstruction5583_20250305_062350.jpg","role":"Vendor","totalTasks":0,"surveyedPoles":0,"installedPoles":0,"performance":0,"medal":"none"}]  
+[2025-06-10 06:57:54] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-10 08:46:20] local.INFO: []  
+[2025-06-10 08:46:20] local.INFO: []  
+[2025-06-10 08:46:20] local.INFO: []  
+[2025-06-10 09:45:27] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
