@@ -61,9 +61,9 @@
 
       <div class="row mb-3">
         <!-- <div class="col-md-4">
-            <strong>Task Name:</strong>
-            <p>{{-- $task->activity --}}</p>
-          </div> -->
+              <strong>Task Name:</strong>
+              <p>{{-- $task->activity --}}</p>
+            </div> -->
         <div class="col-md-4">
           <strong>Start Date:</strong>
           <p>{{ $tasks->start_date }}</p>
@@ -77,9 +77,9 @@
           <p><span class="badge bg-success">{{ $tasks->status }}</span></p>
         </div>
         <!-- <div class="col-md-4 mt-1">
-            <strong>Priority:</strong>
-            <p>{{-- ucfirst($task->priority) --}}</p>
-          </div> -->
+              <strong>Priority:</strong>
+              <p>{{-- ucfirst($task->priority) --}}</p>
+            </div> -->
         <div class="col-md-4 mt-1">
           <strong>Description:</strong>
           <p>{{ $task->description ?? "N/A" }}</p>
@@ -196,18 +196,18 @@
 
   <!-- ✅ Footer with Actions -->
   <!-- <div class="card-footer d-flex justify-content-end">
-        <a href="{{-- route("tasks.edit", $task->id) }}" class="btn btn-sm btn-warning mx-2">
+          <a href="{{-- route("tasks.edit", $task->id) }}" class="btn btn-sm btn-warning mx-2">
         <i class="mdi mdi-pencil"></i> Edit
       </a>
       <form action="{{ route("tasks.destroy", $task->id) --}}" method="POST"
-              onsubmit="return confirm('Are you sure you want to delete this task?');">
-          @csrf
-          @method("DELETE")
-          <button type="submit" class="btn btn-sm btn-danger">
-            <i class="mdi mdi-delete"></i> Delete
-          </button>
-        </form>
-      </div> -->
+                onsubmit="return confirm('Are you sure you want to delete this task?');">
+            @csrf
+            @method("DELETE")
+            <button type="submit" class="btn btn-sm btn-danger">
+              <i class="mdi mdi-delete"></i> Delete
+            </button>
+          </form>
+        </div> -->
   </div>
   </div>
 @endsection

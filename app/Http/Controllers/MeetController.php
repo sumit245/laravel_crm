@@ -7,8 +7,6 @@ use App\Models\Meet;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use App\Helpers\WhatsappHelper;
 
 class MeetController extends Controller
 {
@@ -46,44 +44,27 @@ class MeetController extends Controller
 
     public function store(Request $request)
     {
-        Log::info($request->all());
         $validated = $request->validate([
             'title' => 'required|string',
             'agenda' => 'nullable|string',
             'meet_link' => 'required|url',
             'platform' => 'required|string',
             'meet_date' => 'required|date',
-            'meet_time' => 'required',
+            'meet_time_from' => 'required',
+            'meet_time_to' => 'required',
             'type' => 'required|string',
             'user_ids' => 'required|array|min:1',
             'user_ids.*' => 'exists:users,id',
         ]);
-        $users = User::whereIn('id', $validated['user_ids'])->get(['contactNo', 'firstName', 'lastName']);
-        // foreach ($users as $user) {
-        //     WhatsappHelper::sendMeetLink(
-        //         $user->contactNo,
-        //         $user->firstName . ' ' . $user->lastName,
-        //         [
-        //             'firstName' => $user->firstName,
-        //             'lastName' => $user->lastName,
-        //             'title' => $validated['title'],
-        //             'agenda' => $validated['agenda'] ?? '',
-        //             'meet_link' => $validated['meet_link'],
-        //             'platform' => $validated['platform'],
-        //             'meet_date' => $validated['meet_date'],
-        //             'meet_time' => $validated['meet_time'],
-        //             'type' => $validated['type'],
-        //         ]
-        //     );
-        // }
 
         $meet = Meet::create([
             ...$validated,
             'user_ids' => json_encode($validated['user_ids']),
         ]);
+
         // Optional: Send WhatsApp notification here later
 
-        return redirect()->route('meets.index')->with('success', 'Meeting created successfully!');
+        return redirect()->route('review-meetings.index')->with('success', 'Meeting created successfully!');
     }
 
     public function show(Meet $meet)
@@ -105,6 +86,6 @@ class MeetController extends Controller
     public function destroy(Meet $meet)
     {
         $meet->delete();
-        return redirect()->route('meets.index')->with('success', 'Meeting deleted');
+        return redirect()->route('review-meetings.index')->with('success', 'Meeting deleted');
     }
 }
