@@ -1,169 +1,111 @@
-<<<<<<< HEAD
-[2025-06-10 13:10:30] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\symfony\\process\\Pipes\\WindowsPipes.php:147)
+[2025-06-12 16:09:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-=======
-[2025-06-12 15:17:55] local.INFO: tada data:   
-[2025-06-12 15:24:09] local.INFO: tada data:   
->>>>>>> fef942d8ae3eb7846763046d2c1f0273eef10ff9
-[2025-06-12 15:33:21] local.ERROR: syntax error, unexpected token "<<", expecting end of file {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"<<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\routes\\web.php:19)
+[2025-06-12 16:09:51] local.INFO: tada data:  {"user_id":1,"visiting_to":"Patna","purpose_of_visit":"Demo","outcome_achieved":"Meeting","date_of_departure":"2025-05-09","date_of_return":"2025-05-09","miscellaneous":[]} 
+[2025-06-12 16:09:51] local.ERROR: Class "App\Http\Controllers\API\DB" not found {"exception":"[object] (Error(code: 0): Class \"App\\Http\\Controllers\\API\\DB\" not found at C:\\xampp\\htdocs\\sugs\\admin\\app\\Http\\Controllers\\API\\ConveyanceController.php:182)
 [stacktrace]
-#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(511): Illuminate\\Routing\\RouteFileRegistrar->register('C:\\\\xampp\\\\htdocs...')
-#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(465): Illuminate\\Routing\\Router->loadRoutes('C:\\\\xampp\\\\htdocs...')
-#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\RouteRegistrar.php(194): Illuminate\\Routing\\Router->group(Array, 'C:\\\\xampp\\\\htdocs...')
-#3 C:\\xampp\\htdocs\\sugs\\admin\\app\\Providers\\RouteServiceProvider.php(37): Illuminate\\Routing\\RouteRegistrar->group('C:\\\\xampp\\\\htdocs...')
-#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): App\\Providers\\RouteServiceProvider->App\\Providers\\{closure}()
-#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(120): Illuminate\\Container\\Container->call(Object(Closure))
-#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(45): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->loadRoutes()
-#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->Illuminate\\Foundation\\Support\\Providers\\{closure}()
-#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\ServiceProvider.php(119): Illuminate\\Container\\Container->call(Object(Closure))
-#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1062): Illuminate\\Support\\ServiceProvider->callBootedCallbacks()
-#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1040): Illuminate\\Foundation\\Application->bootProvider(Object(App\\Providers\\RouteServiceProvider))
-#19 [internal function]: Illuminate\\Foundation\\Application->Illuminate\\Foundation\\{closure}(Object(App\\Providers\\RouteServiceProvider), 29)
-#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1041): array_walk(Array, Object(Closure))
-#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\BootProviders.php(17): Illuminate\\Foundation\\Application->boot()
-#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(286): Illuminate\\Foundation\\Bootstrap\\BootProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
-#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(447): Illuminate\\Foundation\\Application->bootstrapWith(Array)
-#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(199): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
-#25 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
-#26 {main}
+#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Controller.php(54): App\\Http\\Controllers\\API\\ConveyanceController->store(Object(Illuminate\\Http\\Request))
+#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('store', Array)
+#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(260): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\API\\ConveyanceController), 'store')
+#3 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Route.php(205): Illuminate\\Routing\\Route->runController()
+#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(806): Illuminate\\Routing\\Route->run()
+#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Routing\\Router->Illuminate\\Routing\\{closure}(Object(Illuminate\\Http\\Request))
+#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(159): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(135): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequest(Object(Illuminate\\Http\\Request), Object(Closure), Array)
+#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Middleware\\ThrottleRequests.php(87): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\\Http\\Request), Object(Closure), 'api', Object(Closure))
+#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Routing\\Middleware\\ThrottleRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'api')
+#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(807): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->Illuminate\\Foundation\\Http\\{closure}(Object(Illuminate\\Http\\Request))
+#19 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#26 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#28 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#30 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Http\\Middleware\\TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#32 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Pipeline\\Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->Illuminate\\Pipeline\\{closure}(Object(Illuminate\\Http\\Request))
+#34 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#35 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Http\\Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#36 C:\\xampp\\htdocs\\sugs\\admin\\public\\index.php(52): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#37 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\resources\\server.php(16): require_once('C:\\\\xampp\\\\htdocs...')
+#38 {main}
 "} 
-[2025-06-12 15:33:21] local.ERROR: syntax error, unexpected token "<<", expecting end of file {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"<<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\routes\\web.php:19)
-[stacktrace]
-#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(511): Illuminate\\Routing\\RouteFileRegistrar->register('C:\\\\xampp\\\\htdocs...')
-#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(465): Illuminate\\Routing\\Router->loadRoutes('C:\\\\xampp\\\\htdocs...')
-#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\RouteRegistrar.php(194): Illuminate\\Routing\\Router->group(Array, 'C:\\\\xampp\\\\htdocs...')
-#3 C:\\xampp\\htdocs\\sugs\\admin\\app\\Providers\\RouteServiceProvider.php(37): Illuminate\\Routing\\RouteRegistrar->group('C:\\\\xampp\\\\htdocs...')
-#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): App\\Providers\\RouteServiceProvider->App\\Providers\\{closure}()
-#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(120): Illuminate\\Container\\Container->call(Object(Closure))
-#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(45): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->loadRoutes()
-#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->Illuminate\\Foundation\\Support\\Providers\\{closure}()
-#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\ServiceProvider.php(119): Illuminate\\Container\\Container->call(Object(Closure))
-#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1062): Illuminate\\Support\\ServiceProvider->callBootedCallbacks()
-#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1040): Illuminate\\Foundation\\Application->bootProvider(Object(App\\Providers\\RouteServiceProvider))
-#19 [internal function]: Illuminate\\Foundation\\Application->Illuminate\\Foundation\\{closure}(Object(App\\Providers\\RouteServiceProvider), 29)
-#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1041): array_walk(Array, Object(Closure))
-#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\BootProviders.php(17): Illuminate\\Foundation\\Application->boot()
-#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(286): Illuminate\\Foundation\\Bootstrap\\BootProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
-#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(447): Illuminate\\Foundation\\Application->bootstrapWith(Array)
-#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(199): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
-#25 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
-#26 {main}
-"} 
-[2025-06-12 15:34:10] local.ERROR: syntax error, unexpected token "<<", expecting end of file {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"<<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\routes\\web.php:19)
-[stacktrace]
-#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(511): Illuminate\\Routing\\RouteFileRegistrar->register('C:\\\\xampp\\\\htdocs...')
-#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(465): Illuminate\\Routing\\Router->loadRoutes('C:\\\\xampp\\\\htdocs...')
-#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\RouteRegistrar.php(194): Illuminate\\Routing\\Router->group(Array, 'C:\\\\xampp\\\\htdocs...')
-#3 C:\\xampp\\htdocs\\sugs\\admin\\app\\Providers\\RouteServiceProvider.php(37): Illuminate\\Routing\\RouteRegistrar->group('C:\\\\xampp\\\\htdocs...')
-#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): App\\Providers\\RouteServiceProvider->App\\Providers\\{closure}()
-#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(120): Illuminate\\Container\\Container->call(Object(Closure))
-#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(45): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->loadRoutes()
-#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->Illuminate\\Foundation\\Support\\Providers\\{closure}()
-#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\ServiceProvider.php(119): Illuminate\\Container\\Container->call(Object(Closure))
-#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1062): Illuminate\\Support\\ServiceProvider->callBootedCallbacks()
-#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1040): Illuminate\\Foundation\\Application->bootProvider(Object(App\\Providers\\RouteServiceProvider))
-#19 [internal function]: Illuminate\\Foundation\\Application->Illuminate\\Foundation\\{closure}(Object(App\\Providers\\RouteServiceProvider), 29)
-#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1041): array_walk(Array, Object(Closure))
-#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\BootProviders.php(17): Illuminate\\Foundation\\Application->boot()
-#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(286): Illuminate\\Foundation\\Bootstrap\\BootProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
-#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(447): Illuminate\\Foundation\\Application->bootstrapWith(Array)
-#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(199): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
-#25 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
-#26 {main}
-"} 
-[2025-06-12 15:34:11] local.ERROR: syntax error, unexpected token "<<", expecting end of file {"exception":"[object] (ParseError(code: 0): syntax error, unexpected token \"<<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\routes\\web.php:19)
-[stacktrace]
-#0 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(511): Illuminate\\Routing\\RouteFileRegistrar->register('C:\\\\xampp\\\\htdocs...')
-#1 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\Router.php(465): Illuminate\\Routing\\Router->loadRoutes('C:\\\\xampp\\\\htdocs...')
-#2 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Routing\\RouteRegistrar.php(194): Illuminate\\Routing\\Router->group(Array, 'C:\\\\xampp\\\\htdocs...')
-#3 C:\\xampp\\htdocs\\sugs\\admin\\app\\Providers\\RouteServiceProvider.php(37): Illuminate\\Routing\\RouteRegistrar->group('C:\\\\xampp\\\\htdocs...')
-#4 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): App\\Providers\\RouteServiceProvider->App\\Providers\\{closure}()
-#5 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#6 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#7 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#8 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#9 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(120): Illuminate\\Container\\Container->call(Object(Closure))
-#10 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider.php(45): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->loadRoutes()
-#11 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(36): Illuminate\\Foundation\\Support\\Providers\\RouteServiceProvider->Illuminate\\Foundation\\Support\\Providers\\{closure}()
-#12 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Util.php(41): Illuminate\\Container\\BoundMethod::Illuminate\\Container\\{closure}()
-#13 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(81): Illuminate\\Container\\Util::unwrapIfClosure(Object(Closure))
-#14 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\BoundMethod.php(37): Illuminate\\Container\\BoundMethod::callBoundMethod(Object(Illuminate\\Foundation\\Application), Object(Closure), Object(Closure))
-#15 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Container\\Container.php(662): Illuminate\\Container\\BoundMethod::call(Object(Illuminate\\Foundation\\Application), Object(Closure), Array, NULL)
-#16 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Support\\ServiceProvider.php(119): Illuminate\\Container\\Container->call(Object(Closure))
-#17 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1062): Illuminate\\Support\\ServiceProvider->callBootedCallbacks()
-#18 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1040): Illuminate\\Foundation\\Application->bootProvider(Object(App\\Providers\\RouteServiceProvider))
-#19 [internal function]: Illuminate\\Foundation\\Application->Illuminate\\Foundation\\{closure}(Object(App\\Providers\\RouteServiceProvider), 29)
-#20 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(1041): array_walk(Array, Object(Closure))
-#21 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Bootstrap\\BootProviders.php(17): Illuminate\\Foundation\\Application->boot()
-#22 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Application.php(286): Illuminate\\Foundation\\Bootstrap\\BootProviders->bootstrap(Object(Illuminate\\Foundation\\Application))
-#23 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(447): Illuminate\\Foundation\\Application->bootstrapWith(Array)
-#24 C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\Kernel.php(199): Illuminate\\Foundation\\Console\\Kernel->bootstrap()
-#25 Command line code(1): Illuminate\\Foundation\\Console\\Kernel->handle(Object(Symfony\\Component\\Console\\Input\\ArgvInput), Object(Symfony\\Component\\Console\\Output\\ConsoleOutput))
-#26 {main}
-"} 
-[2025-06-12 15:35:11] local.ERROR: syntax error, unexpected token "<<", expecting "function" or "const" {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<<\", expecting \"function\" or \"const\" at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:33)
+[2025-06-12 16:10:15] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:36:11] local.ERROR: syntax error, unexpected token "<<", expecting "function" or "const" {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<<\", expecting \"function\" or \"const\" at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:33)
+[2025-06-12 16:10:23] local.INFO: tada data:  {"user_id":1,"visiting_to":"Patna","purpose_of_visit":"Demo","outcome_achieved":"Meeting","date_of_departure":"2025-05-09","date_of_return":"2025-05-09","miscellaneous":[]} 
+[2025-06-12 16:11:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:37:11] local.ERROR: syntax error, unexpected token "<<", expecting "function" or "const" {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<<\", expecting \"function\" or \"const\" at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:33)
+[2025-06-12 16:12:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:37:28] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:12:18] local.INFO: tada data:  {"user_id":1,"visiting_to":"Patna","purpose_of_visit":"Demo","outcome_achieved":"Meeting","date_of_departure":"2025-05-09","date_of_return":"2025-05-09","miscellaneous":[]} 
+[2025-06-12 16:12:42] local.INFO: tada data:  {"user_id":11,"visiting_to":"Patna","purpose_of_visit":"Demo","outcome_achieved":"Meeting","date_of_departure":"2025-05-09","date_of_return":"2025-05-09","miscellaneous":[]} 
+[2025-06-12 16:13:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:37:33] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:14:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:38:09] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:14:51] local.INFO: tada data:  {"user_id":11,"visiting_to":"Patna","purpose_of_visit":"Demo","outcome_achieved":"Meeting","date_of_departure":"2025-05-09","date_of_return":"2025-05-09","miscellaneous":[],"journeys":[]} 
+[2025-06-12 16:15:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:38:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:16:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:38:28] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:17:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:38:35] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:18:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 
-[2025-06-12 15:39:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[2025-06-12 16:19:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-12 16:20:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-12 16:21:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-12 16:22:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-12 16:23:11] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-12 16:24:12] local.ERROR: syntax error, unexpected token "<", expecting end of file {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): syntax error, unexpected token \"<\", expecting end of file at C:\\xampp\\htdocs\\sugs\\admin\\app\\Models\\Meet.php:35)
 [stacktrace]
 #0 {main}
 "} 

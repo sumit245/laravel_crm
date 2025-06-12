@@ -15,6 +15,7 @@ use App\Models\UserCategory;
 use App\Models\Vehicle;
 use DB;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB as FacadesDB;
 use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
@@ -132,8 +133,6 @@ class ConveyanceController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('tada data: ', $request->all());
-
 
         try {
             // Step 1: Create main TADA entry
@@ -148,39 +147,43 @@ class ConveyanceController extends Controller
             ]);
 
             // Step 2: Save journeys
-            foreach ($request->journeys as $journey) {
-                Journey::create([
-                    'tada_id' => $tada->id,
-                    'tickets_provided_by_company' => $journey['tickets_provided_by_company'],
-                    'from' => $journey['from'],
-                    'to' => $journey['to'],
-                    'date_of_journey' => date('Y-m-d H:i:s', strtotime($journey['date_of_journey'])),
-                    'mode_of_transport' => $journey['mode_of_transport'],
-                    'ticket' => $journey['ticket'], // just a string path
-                    'amount' => $journey['amount']
-                ]);
+            if ($request->journeys && is_array($request->journeys)) {
+                foreach ($request->journeys as $journey) {
+                    Journey::create([
+                        'tada_id' => $tada->id,
+                        'tickets_provided_by_company' => $journey['tickets_provided_by_company'],
+                        'from' => $journey['from'],
+                        'to' => $journey['to'],
+                        'date_of_journey' => date('Y-m-d H:i:s', strtotime($journey['date_of_journey'])),
+                        'mode_of_transport' => $journey['mode_of_transport'],
+                        'ticket' => $journey['ticket'], // just a string path
+                        'amount' => $journey['amount']
+                    ]);
+                }
             }
 
             // Step 3: Save hotel expenses
-            foreach ($request->hotel_expenses as $expense) {
-                HotelExpense::create([
-                    'tada_id' => $tada->id,
-                    'guest_house_available' => $expense['guest_house_available'],
-                    'certificate_by_district_incharge' => $expense['certificate_by_district_incharge'] ?? null,
-                    'check_in_date' => $expense['check_in_date'],
-                    'check_out_date' => $expense['check_out_date'],
-                    'breakfast_included' => $expense['breakfast_included'] ?? null,
-                    'hotel_bill' => $expense['hotel_bill'] ?? null,
-                    'amount' => $expense['amount'] ?? null,
-                    'dining_cost' => $expense['dining_cost'] ?? null,
-                ]);
+            if ($request->hotel_expenses && is_array($request->hotel_expenses)) {
+                foreach ($request->hotel_expenses as $expense) {
+                    HotelExpense::create([
+                        'tada_id' => $tada->id,
+                        'guest_house_available' => $expense['guest_house_available'],
+                        'certificate_by_district_incharge' => $expense['certificate_by_district_incharge'] ?? null,
+                        'check_in_date' => $expense['check_in_date'],
+                        'check_out_date' => $expense['check_out_date'],
+                        'breakfast_included' => $expense['breakfast_included'] ?? null,
+                        'hotel_bill' => $expense['hotel_bill'] ?? null,
+                        'amount' => $expense['amount'] ?? null,
+                        'dining_cost' => $expense['dining_cost'] ?? null,
+                    ]);
+                }
             }
 
-            DB::commit();
+            FacadesDB::commit();
 
             return response()->json(['message' => 'TADA record created successfully.'], 201);
         } catch (\Exception $e) {
-            DB::rollback();
+            FacadesDB::rollback();
             return response()->json(['error' => 'Failed to save TADA: ' . $e->getMessage()], 500);
         }
     }

@@ -13,14 +13,14 @@ return new class extends Migration
     {
         Schema::table('tadas', function (Blueprint $table) {
             // Drop old columns
-            $table->dropColumn(['objective_tour', 'outcome_achieve']);
+            // $table->dropColumn(['objective_tour', 'outcome_achieve']);
 
             // Add new columns
-            $table->string('visiting_to')->nullable()->after('status');
-            $table->string('purpose_of_visit')->nullable()->after('visiting_to');
-            $table->string('outcome_achieved')->nullable()->after('purpose_of_visit');
-            $table->date('date_of_departure')->nullable()->after('outcome_achieved');
-            $table->date('date_of_return')->nullable()->after('date_of_departure');
+            // $table->string('visiting_to')->nullable()->after('outcome_achieve');
+            // $table->string('purpose_of_visit')->nullable()->after('visiting_to');
+            // $table->string('outcome_achieved')->nullable()->after('purpose_of_visit');
+            // $table->date('date_of_departure')->nullable()->after('outcome_achieved');
+            // $table->date('date_of_return')->nullable()->after('date_of_departure');
         });
     }
 
