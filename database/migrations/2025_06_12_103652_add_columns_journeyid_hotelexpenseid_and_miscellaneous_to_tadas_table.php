@@ -13,19 +13,19 @@ return new class extends Migration
     {
         Schema::table('tadas', function (Blueprint $table) {
             //
-            $table->json('miscellaneous')->nullable()->after('outcome_achieve');
+            // $table->json('miscellaneous')->nullable()->after('outcome_achieve');
 
-            $table->unsignedBigInteger('journies_id')->nullable()->after('miscellaneous');
-            $table->foreign('journies_id')
-                  ->references('id')
-                  ->on('journies')
-                  ->onDelete('set null');
+            // $table->unsignedBigInteger('journies_id')->nullable()->after('miscellaneous');
+            // $table->foreign('journies_id')
+            //     ->references('id')
+            //     ->on('journies')
+            //     ->onDelete('set null');
 
-            $table->unsignedBigInteger('hotel_id')->nullable()->after('journies_id');
-            $table->foreign('hotel_id')
-                  ->references('id')
-                  ->on('hotelexpenses')
-                  ->onDelete('set null');
+            // $table->unsignedBigInteger('hotel_id')->nullable()->after('journies_id');
+            // $table->foreign('hotel_id')
+            //     ->references('id')
+            //     ->on('hotelexpenses')
+            //     ->onDelete('set null');
         });
     }
 
