@@ -15,7 +15,11 @@ use App\Models\UserCategory;
 use App\Models\Vehicle;
 use DB;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\DB as FacadesDB;
+
+use Log;
+
 use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
