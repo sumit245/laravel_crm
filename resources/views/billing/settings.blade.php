@@ -26,6 +26,16 @@
               aria-selected="false">
               <i class="bi bi-tags me-2"></i> Category Settings
             </button>
+            <button class="nav-link px-4 py-3 text-start" id="v-pills-city-tab" data-bs-toggle="pill"
+              data-bs-target="#v-pills-city" type="button" role="tab" aria-controls="v-pills-city"
+              aria-selected="false">
+              <i class="bi bi-buildings me-2"></i> City Category
+            </button>
+            <button class="nav-link px-4 py-3 text-start" id="v-pills-allowed-expense-tab" data-bs-toggle="pill"
+             data-bs-target="#v-pills-allowed-expense" type="button" role="tab" aria-controls="v-pills-allowed-expense"
+                aria-selected="false">
+             <i class="bi bi-cash-stack me-2"></i> Allowed Expenses
+            </button>
           </div>
         </div>
       </div>
@@ -206,6 +216,89 @@
               </div>
             </div>
           </div>
+
+          <!-- City Category Settings Tab -->
+          <div class="tab-pane fade" id="v-pills-city" role="tabpanel" aria-labelledby="v-pills-city-tab">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="mb-0"><i class="bi bi-buildings me-2"></i>City Categories</h4>
+            </div>
+
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <x-data-table id="cityCategoryTable" class="table-bordered table-striped table-sm table">
+                    <x-slot:thead class="table-light">
+                      <tr>
+                        <th><input type="checkbox" id="selectAllCity" /></th>
+                        <th>City Name</th>
+                        <th>Categories</th>
+                        <th>Actions</th>
+                      </tr>
+                    </x-slot:thead>
+                    <x-slot:tbody>
+                      <!-- Example Row -->
+                      <tr>
+                        <td><input type="checkbox" class="cityCheckbox" /></td>
+                        <td>New Delhi</td>
+                        <td>Category A, Category B</td>
+                        <td>
+                          <a href="{{ route('billing.editcitycategory') }}" class="btn btn-icon btn-warning">
+                            <i class="mdi mdi-pencil"></i>
+                          </a>
+                        </td>
+                      </tr>
+                      <!-- Repeat rows as needed -->
+                    </x-slot:tbody>
+                  </x-data-table>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Allowed Expenses Settings Tab -->
+          <div class="tab-pane fade" id="v-pills-allowed-expense" role="tabpanel" aria-labelledby="v-pills-allowed-expense-tab">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+              <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Allowed Expenses</h4>
+            </div>
+
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <div class="table-responsive">
+                  <x-data-table id="allowedExpenseTable" class="table table-bordered table-striped table-sm">
+                    <x-slot:thead class="table-light">
+                      <tr>
+                        <th>
+                          <input type="checkbox" id="selectAllExpense" />
+                        </th>
+                        <th>City Category</th>
+                        <th>User Category</th>
+                        <th>Hotel Bill Upto</th>
+                        <th>Actions</th>
+                      </tr>
+                    </x-slot:thead>
+                    <x-slot:tbody>
+                      <!-- Example Row -->
+                      <tr>
+                        <td>
+                          <input type="checkbox" class="expenseCheckbox" />
+                        </td>
+                        <td>Metro City</td>
+                        <td>Manager</td>
+                        <td>₹5000</td>
+                        <td>
+                          <a href="{{ route('billing.editallowedexpense') }}" class="btn btn-icon btn-warning">
+                            <i class="mdi mdi-pencil"></i>
+                          </a>
+                        </td>
+                      </tr>
+                      <!-- Add more rows as needed -->
+                    </x-slot:tbody>
+                  </x-data-table>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -718,6 +811,7 @@
       });
 
     });
+    
   </script>
 @endpush
 

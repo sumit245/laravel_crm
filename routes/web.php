@@ -219,3 +219,11 @@ Route::get('/meets/{meet}/edit', [MeetController::class, 'edit'])->name('meets.e
 Route::put('/meets/{meet}', [MeetController::class, 'update'])->name('meets.update');
 // Delete a meeting (optional)
 Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
+
+
+Route::get('/settings/edit-city-category', function () {
+    return view('billing.editCityCategory');
+})->name('billing.editcitycategory');
+Route::get('/settings/edit-allowed-expense', function () {
+    return view('billing.editAllowedExpense');
+})->name('billing.editallowedexpense');
