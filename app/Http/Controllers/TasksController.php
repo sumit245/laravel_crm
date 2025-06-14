@@ -77,6 +77,7 @@ class TasksController extends Controller
                     'engineer_id' => $request->engineer_id,
                     'start_date'  => $request->start_date,
                     'end_date'    => $request->end_date,
+                    'billed'      => false, //explicitly setting the value of billing
                     'manager_id' => auth()->id(), // Automatically assign the logged-in Project Manager
                 ]);
             }
