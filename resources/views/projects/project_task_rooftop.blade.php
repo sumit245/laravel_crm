@@ -116,7 +116,7 @@
           <td>{{ $target->activity }}</td>
           <td>
             @if ($target && $target->engineer)
-              {{ $target->engineer->firstName }}
+              {{ $target->engineer->firstName }} {{ $target->engineer->lastName }}
             @else
               Not Assigned
             @endif
