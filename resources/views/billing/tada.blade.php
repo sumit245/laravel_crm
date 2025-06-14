@@ -52,15 +52,9 @@
             <thead class="table-white">
               <tr>
                 <th>User</th>
-                <th>From</th>
-                <th>To</th>
-                <th>Kilometer</th>
+                <th>Visiting to</th>
+                
                 <th>Date</th>
-                <!-- <th>Time</th> -->
-                <th>Vehicle</th>
-                <th>Rate</th>
-                <th>Total</th>
-                <th>Bills</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -69,15 +63,8 @@
               @foreach ($tadas as $tada)
                 <tr>
                   <td>{{ $tada->user->firstName ?? "N/A" }}</td>
-                  <td>{{ $tada->from_city ?? "N/A" }}</td>
-                  <td>{{ $tada->to_city ?? "N/A" }}</td>
-                  <td>{{ $tada->total_km ?? "N/A" }}</td>
+                  <td>{{ $tada->visiting_to ?? "N/A" }}</td>
                   <td>{{ $tada->created_at ?? "N/A" }}</td>
-                  <!-- <td>{{ $tada->time ?? "N/A" }}</td> -->
-                  <td>{{ $tada->category }}</td>
-                  <td>{{ $tada->rate_per_km }}</td>
-                  <td>{{ $tada->rate_per_km * $tada->total_km ?? "N/A" }}</td>
-                  <td>{{ $tada->from ?? "N/A" }}</td>
                   <!-- <td>Pending</td>
                                 <td>
                                 <a href="{{ route("view.bills") }}" class="btn btn-sm btn-outline-primary" >

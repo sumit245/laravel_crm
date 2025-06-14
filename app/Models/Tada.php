@@ -40,5 +40,8 @@ class Tada extends Model
         return $this->hasMany(HotelExpense::class);
     }
 
+    public function usercategory(){
+        return $this->belongsTo(UserCategory::class);
+    }
 
 }

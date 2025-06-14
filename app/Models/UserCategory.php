@@ -19,6 +19,10 @@ class UserCategory extends Model
     ];
 
     public $timestamps = true;
+    
+    public function cities(){
+        return $this->hasMany(City::class);
+    }
 
     public function vehicle()
     {
