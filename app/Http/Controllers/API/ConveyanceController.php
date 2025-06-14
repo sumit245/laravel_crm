@@ -32,27 +32,7 @@ class ConveyanceController extends Controller
     {
         try {
             //code...
-            $tadas = Tada::select([
-                'meeting_visit',
-                'user_id',
-                'start_journey as start_date',
-                'end_journey as end_date',
-                'start_journey_pnr',
-                'end_journey_pnr',
-                'visit_approve',
-                'transport',
-                'objective_tour',
-                'meeting_visit',
-                'outcome_achieve',
-                'from_city as source',
-                'to_city as destination',
-                'category as categories',
-                'description_category as descriptions',
-                'total_km',
-                'rate_per_km as km_rate',
-                'Rent as rent',
-                'vehicle_no as vehicle_number',
-            ])->get();
+            $tadas = Tada::with(['journey', 'hotelExpense'])->get();
 
             return response()->json([
                 'status' => true,
@@ -122,6 +102,19 @@ class ConveyanceController extends Controller
     {
         $vehicle = Vehicle::where('id', $id)->get();
         return response()->json($vehicle);
+    }
+
+    public function allowExpense(){
+        $allow = City::select([
+            'category',
+            'user_category_id',
+            'room_max_price'
+        ])->get();
+        return response()->json([
+                'status' => true,
+                'message' => 'Allow Expense fetched successfully',
+                'data' => $allow
+            ]);
     }
 
     /**
@@ -239,14 +232,32 @@ class ConveyanceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($userId)
     {
-        //
+        try {
+            // Get all TADA records for this user with related journeys and hotel expenses
+            $tadas = Tada::with(['journey', 'hotelExpense'])
+                        ->where('user_id', $userId)
+                        ->get();
 
+            // Decode miscellaneous JSON for each TADA record
+            $tadas->transform(function ($tada) {
+                $tada->miscellaneous = json_decode($tada->miscellaneous);
+                return $tada;
+            });
+
+            return response()->json([
+                'user_id' => $userId,
+                'tadas' => $tadas
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve TADA: ' . $e->getMessage()], 500);
+        }
     }
 
-    public function showConveyance(string $id)
-    {
+
+     public function showConveyance(string $id){
         try {
             $conveyance = Conveyance::where('user_id', $id)->get();
             $data = $conveyance->map(function ($conv) {

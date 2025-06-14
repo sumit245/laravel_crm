@@ -36,7 +36,7 @@ class Tada extends Model
         return $this->hasMany(Journey::class);
     }
 
-    public function hotel(){
+    public function hotelExpense(){
         return $this->hasMany(HotelExpense::class);
     }
 
