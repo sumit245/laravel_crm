@@ -86,6 +86,7 @@
         <form id="replaceItemForm" method="POST" action="{{ route("inventory.replace") }}">
           @csrf
           <input type="hidden" name="item_id" id="replace_item_id">
+          <input type="hidden" name="old_serial_number" id="old_serial_number">
           <div class="modal-body">
             <div class="d-flex">
               <div>
@@ -149,6 +150,7 @@
 
         var modal = $(this)
         modal.find('#modal-item-code').text(item_code)
+        modal.find("#old_serial_number").val(item_code)
         modal.find('#modal-item-name').text(item_name)
         modal.find('#modal-manufacturer').text(manufacturer)
         modal.find('#modal-serial-number').text(serial_number)
@@ -198,40 +200,40 @@
 
 
       // Handle form submission
-      $('#replaceItemForm').on('submit', function(event) {
-        event.preventDefault(); // Prevent the default form submission
+      // $('#replaceItemForm').on('submit', function(event) {
+      //   event.preventDefault(); // Prevent the default form submission
 
-        var form = $(this);
-        var url = form.attr('action');
-        var formData = form.serialize();
-
-        $.ajax({
-          type: "POST",
-          url: url,
-          data: formData,
-          dataType: 'json', // Expect JSON response
-          success: function(response) {
-            if (response.success) {
-              // Display success message
-              $('#replace-message').html('<div class="alert alert-success">' + response.message + '</div>');
-              // Optionally, close the modal after a delay
-              setTimeout(function() {
-                $('#itemDetailsModal').modal('hide');
-                location.reload(); // Reload the page to reflect changes
-              }, 2000);
-            } else {
-              // Display error message
-              $('#replace-message').html('<div class="alert alert-danger">' + response.message + '</div>');
-            }
-          },
-          error: function(xhr, status, error) {
-            // Handle AJAX errors
-            console.error(xhr.responseText);
-            $('#replace-message').html(
-              '<div class="alert alert-danger">An error occurred. Please try again.</div>');
-          }
-        });
-      });
+      //   var form = $(this);
+      //   var url = form.attr('action');
+      //   var formData = form.serialize();
+      //   console.log(formData);
+      //   $.ajax({
+      //     type: "POST",
+      //     url: url,
+      //     data: formData,
+      //     dataType: 'json', // Expect JSON response
+      //     success: function(response) {
+      //       if (response.success) {
+      //         // Display success message
+      //         $('#replace-message').html('<div class="alert alert-success">' + response.message + '</div>');
+      //         // Optionally, close the modal after a delay
+      //         setTimeout(function() {
+      //           $('#itemDetailsModal').modal('hide');
+      //           location.reload(); // Reload the page to reflect changes
+      //         }, 2000);
+      //       } else {
+      //         // Display error message
+      //         $('#replace-message').html('<div class="alert alert-danger">' + response.message + '</div>');
+      //       }
+      //     },
+      //     error: function(xhr, status, error) {
+      //       // Handle AJAX errors
+      //       console.error(error);
+      //       $('#replace-message').html(
+      //         '<div class="alert alert-danger">An error occurred. Please try again.</div>');
+      //     }
+      //   });
+      // });
     });
   </script>
 @endsection
