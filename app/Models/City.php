@@ -19,7 +19,14 @@ class City extends Model
         'name', 
         'state_id',
         'tier',
+        'category',
+        'user_category_id',
         'room_min_price',
         'room_max_price'
     ];
+
+    public function usercategory(){
+        return $this->belongsTo(UserCategory::class, 'user_category_id', 'id');
+    }
+
 }

@@ -126,7 +126,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
     // Delete Categories
     Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');
-
+    // City category and Allow expense
+    Route::get('/settings/edit-city-category', function () {
+    return view('billing.editCityCategory');
+        })->name('billing.editcitycategory');
+    Route::get('/settings/allowed-expense/{id}',[ConvenienceController::class, 'editAllowedExpense'])->name('billing.allowedexpense');
+    Route::post('/settings/update-allowed-expense/{id}',[ConvenienceController::class, 'updateAllowedExpense'])->name('billing.updateallowedexpense');
+    
+        
     //Convenience Details
 
     // View Bills Details

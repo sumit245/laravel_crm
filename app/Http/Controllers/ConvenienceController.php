@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
 use App\Models\Conveyance;
 use App\Models\dailyfare;
+use App\Models\HotelExpense;
+use App\Models\Journey;
 use App\Models\Tada;
 use App\Models\travelfare;
 use App\Models\User;
@@ -63,22 +66,17 @@ class ConvenienceController extends Controller
     public function tadaView()
     {
         $tadas = Tada::get();
-        $count_trip = Tada::count();
-        $total_km = Tada::sum('total_km');
-        $dailyamount = dailyfare::sum('amount');
-        $travelfare = travelfare::sum('amount');
-        $total_amount = $dailyamount + $travelfare;
         $pendingclaimcount = Tada::where('status', null)->count();
-        return view('billing.tada', compact('tadas', 'count_trip', 'total_km', 'dailyamount', 'travelfare', 'total_amount', 'pendingclaimcount'));
+        return view('billing.tada', compact('tadas', 'pendingclaimcount'));
     }
 
     public function viewtadaDetails(String $id)
     {
-        $tadas = Tada::with('travelfare', 'dailyfare', 'user')->where('user_id', $id)->first();
-        $travelfares = travelfare::where('tada_id', $tadas->id)->get();
-        $dailyfares = dailyfare::where('tada_id', $tadas->id)->get();
-        $dailyamount = dailyfare::sum('amount');
-        $travelfare = travelfare::sum('amount');
+        $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('user_id', $id)->first();
+        $travelfares = Journey::where('tada_id', $tadas->id)->get();
+        $dailyfares = HotelExpense::where('tada_id', $tadas->id)->get();
+        $dailyamount = HotelExpense::sum('amount');
+        $travelfare = Journey::sum('amount');
         $conveyance = $dailyamount + $travelfare;
         return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance'));
     }
@@ -119,7 +117,9 @@ class ConvenienceController extends Controller
         $categories = UserCategory::get();
         $vehicleNames = $vehicles->pluck('name', 'id')->toArray();
 
-        return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames'));
+        $cities = City::with('usercategory')->get();
+
+        return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames', 'cities'));
     }
 
     // Add vehicle function
@@ -302,6 +302,39 @@ class ConvenienceController extends Controller
         $dc->delete();
         return redirect()->back()->with('success', 'Category deleted successfully!');
     }
+
+    public function editAllowedExpense($id){
+        $city = City::with('usercategory')->findOrFail($id);
+        $usercategory = UserCategory::where('id', $city->user_category_id)->first();
+        $usercategories = UserCategory::get();
+        return view('billing.editAllowedExpense', compact('city', 'usercategory', 'usercategories'));
+    }
+
+    public function updateAllowedExpense(Request $request, $id)
+{
+    // Validate the request data
+    $validated = $request->validate([
+        'city_category' => 'required|in:0,1,2',
+        'user_category' => 'required|exists:user_categories,id',
+        'hotel_bill' => 'required|numeric|min:0',
+    ]);
+
+    // Find the city
+    $city = City::findOrFail($id);
+
+    // Update city model fields
+    $city->category = $validated['city_category'];
+    $city->user_category_id = $validated['user_category']; // related to UserCategory
+    $city->room_max_price = $validated['hotel_bill'];
+
+    // Save the city
+    $city->save();
+
+    // Redirect back with success message
+    return redirect()->route('billing.settings')
+                     ->with('success', 'Allowed expense updated successfully.');
+}
+
 
 
 
