@@ -76,7 +76,7 @@ class User extends Authenticatable
     }
     public function usercategory()
     {
-        return $this->belongsTo(UserCategory::class, 'category', 'id');
+        return $this->belongsTo(UserCategory::class, 'category');
     }
     /**
      * The attributes that should be hidden for serialization.
