@@ -15,7 +15,11 @@ use App\Models\UserCategory;
 use App\Models\Vehicle;
 use DB;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\DB as FacadesDB;
+
+use Log;
+
 use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
@@ -28,27 +32,7 @@ class ConveyanceController extends Controller
     {
         try {
             //code...
-            $tadas = Tada::select([
-                'meeting_visit',
-                'user_id',
-                'start_journey as start_date',
-                'end_journey as end_date',
-                'start_journey_pnr',
-                'end_journey_pnr',
-                'visit_approve',
-                'transport',
-                'objective_tour',
-                'meeting_visit',
-                'outcome_achieve',
-                'from_city as source',
-                'to_city as destination',
-                'category as categories',
-                'description_category as descriptions',
-                'total_km',
-                'rate_per_km as km_rate',
-                'Rent as rent',
-                'vehicle_no as vehicle_number',
-            ])->get();
+            $tadas = Tada::with(['journey', 'hotelExpense'])->get();
 
             return response()->json([
                 'status' => true,
@@ -119,6 +103,64 @@ class ConveyanceController extends Controller
         $vehicle = Vehicle::where('id', $id)->get();
         return response()->json($vehicle);
     }
+
+    public function allowExpense(Request $request)
+    {
+        try {
+            $userId = $request->user_id;
+            $city = $request->city;
+            Log::info($request->user_id);
+            // Fetch city and user records
+            $cityRecord = City::where('name', $city)->first();
+            if (!$cityRecord) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'City not found.',
+                    'city' => $city
+                ], 404);
+            }
+            Log::info($cityRecord);
+
+            $user = User::find($userId);
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found.',
+                    'user_id' => $userId
+                ], 404);
+            }
+
+            // Fetch allowed expense
+            $allowedExpense = UserCategory::where('category_code', $user->usercategory->category_code)
+                ->where('city_category', $cityRecord->category)
+                ->first();
+            
+            // if ($allowedExpense->isEmpty()) {
+            // return response()->json([
+            //         'status' => false,
+            //         'message' => 'No allowed expense data found for this user and city category.',
+            //         'user_category' => $user->category,
+            //         'city_category' => $cityRecord->category
+            //     ], 404);
+            // }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Allow Expense fetched successfully',
+                'city_category' => $cityRecord->category,
+                'user_category' => $user->usercategory ? $user->usercategory->category_code : null,  
+                'allowed_expense' => $allowedExpense->dailyamount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while fetching allowed expense.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     /**
      * Show the form for creating a new resource.
@@ -235,14 +277,32 @@ class ConveyanceController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($userId)
     {
-        //
+        try {
+            // Get all TADA records for this user with related journeys and hotel expenses
+            $tadas = Tada::with(['journey', 'hotelExpense'])
+                        ->where('user_id', $userId)
+                        ->get();
 
+            // Decode miscellaneous JSON for each TADA record
+            $tadas->transform(function ($tada) {
+                $tada->miscellaneous = json_decode($tada->miscellaneous);
+                return $tada;
+            });
+
+            return response()->json([
+                'user_id' => $userId,
+                'tadas' => $tadas
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve TADA: ' . $e->getMessage()], 500);
+        }
     }
 
-    public function showConveyance(string $id)
-    {
+
+     public function showConveyance(string $id){
         try {
             $conveyance = Conveyance::where('user_id', $id)->get();
             $data = $conveyance->map(function ($conv) {

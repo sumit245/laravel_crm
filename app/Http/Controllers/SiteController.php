@@ -220,7 +220,7 @@ class SiteController extends Controller
         }
 
         $site = Site::findOrFail($id);
-        return view('sites.edit', compact('site'));
+        return view('sites.edit', compact('site', 'projectId' ));
     }
 
     public function update(Request $request, string $id)
