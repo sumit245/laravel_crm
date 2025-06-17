@@ -191,8 +191,8 @@
                 <h6 class="fw-bold mb-3">3. Conveyance</h6>
                 <input type="text" class="form-control mb-3" value="{{ $conveyance }}" readonly>
 
-                <h6 class="fw-bold mb-3">4. Postage, T/Call & Telegram</h6>
-                <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly>
+                <!-- <h6 class="fw-bold mb-3">4. Postage, T/Call & Telegram</h6>
+                <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly> -->
 
                 <h6 class="fw-bold mb-3">5. Other Expenses</h6>
                 <input type="text" class="form-control mb-3" value="770" readonly>
