@@ -72,7 +72,7 @@ class ConvenienceController extends Controller
 
     public function viewtadaDetails(String $id)
     {
-        $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('user_id', $id)->first();
+        $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('id', $id)->first();
         $travelfares = Journey::where('tada_id', $tadas->id)->get();
         $dailyfares = HotelExpense::where('tada_id', $tadas->id)->get();
         $dailyamount = HotelExpense::sum('amount');
