@@ -104,63 +104,7 @@ class ConveyanceController extends Controller
         return response()->json($vehicle);
     }
 
-    public function allowExpense(Request $request)
-    {
-        try {
-            $userId = $request->user_id;
-            $city = $request->city;
-            Log::info($request->user_id);
-            // Fetch city and user records
-            $cityRecord = City::where('name', $city)->first();
-            if (!$cityRecord) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'City not found.',
-                    'city' => $city
-                ], 404);
-            }
-            Log::info($cityRecord);
-
-            $user = User::find($userId);
-            if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'User not found.',
-                    'user_id' => $userId
-                ], 404);
-            }
-
-            // Fetch allowed expense
-            $allowedExpense = UserCategory::where('category_code', $user->usercategory->category_code)
-                ->where('city_category', $cityRecord->category)
-                ->first();
-            
-            // if ($allowedExpense->isEmpty()) {
-            // return response()->json([
-            //         'status' => false,
-            //         'message' => 'No allowed expense data found for this user and city category.',
-            //         'user_category' => $user->category,
-            //         'city_category' => $cityRecord->category
-            //     ], 404);
-            // }
-
-            return response()->json([
-                'status' => true,
-                'message' => 'Allow Expense fetched successfully',
-                'city_category' => $cityRecord->category,
-                'user_category' => $user->usercategory ? $user->usercategory->category_code : null,  
-                'allowed_expense' => $allowedExpense->dailyamount,
-                'travel_class' => $allowedExpense->travel_class
-            ]);
-
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'An error occurred while fetching allowed expense.',
-                'error' => $e->getMessage()
-            ], 500);
-        }
-    }
+     
 
 
     /**
@@ -186,12 +130,12 @@ class ConveyanceController extends Controller
                 'outcome_achieved' => $request->outcome_achieved,
                 'date_of_departure' => date('Y-m-d H:i:s', strtotime($request->date_of_departure)),
                 'date_of_return' => date('Y-m-d H:i:s', strtotime($request->date_of_return)),
-                'miscellaneous' => json_encode($request->miscallaneous_expenses), // store as JSON
+                'miscellaneous' => json_encode($request->expenseEntries), // store as JSON
             ]);
 
             // Step 2: Save journeys
-            if ($request->journeys && is_array($request->journeys)) {
-                foreach ($request->journeys as $journey) {
+            if ($request->ticketEntries && is_array($request->ticketEntries)) {
+                foreach ($request->ticketEntries as $journey) {
                     Journey::create([
                         'tada_id' => $tada->id,
                         'tickets_provided_by_company' => $journey['tickets_provided_by_company'],
@@ -206,8 +150,8 @@ class ConveyanceController extends Controller
             }
 
             // Step 3: Save hotel expenses
-            if ($request->hotel_expenses && is_array($request->hotel_expenses)) {
-                foreach ($request->hotel_expenses as $expense) {
+            if ($request->guestHouseEntries && is_array($request->guestHouseEntries)) {
+                foreach ($request->guestHouseEntries as $expense) {
                     HotelExpense::create([
                         'tada_id' => $tada->id,
                         'guest_house_available' => $expense['guest_house_available'],
