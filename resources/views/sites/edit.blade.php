@@ -59,6 +59,11 @@
         <input type="text" class="form-control" id="mukhiya_contact" name="mukhiya_contact" value="{{ $streetlight->mukhiya_contact ?? '' }}">
     </div>
 
+    <div class="form-group">
+        <label for="total_poles">Total Poles</label>
+        <input type="text" class="form-control" id="total_poles" name="total_poles" value="{{ $streetlight->total_poles ?? '' }}">
+    </div>
+
     <button type="submit" class="btn btn-primary">Update</button>
 </form>
 
