@@ -195,14 +195,14 @@
                 <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly> -->
 
                 <h6 class="fw-bold mb-3">4. Other Expenses</h6>
-                <input type="text" class="form-control mb-3" value="770" readonly>
+                <input type="text" class="form-control mb-3" value="{{ $otherExpense }}" readonly>
 
                 <div class="row mt-3">
                     <div class="col-md-6">
                         <h5 class="fw-bold">Total Amount:</h5>
                     </div>
                     <div class="col-md-6 text-end">
-                        <h5 class="fw-bold text-success">Rs. {{ $conveyance }}</h5>
+                        <h5 class="fw-bold text-success">Rs. {{ $totalamount }}</h5>
                     </div>
                 </div>
             </div>
@@ -224,26 +224,26 @@
 
         {{-- Advance and Balance Section --}}
         <div class="row">
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
                 <label class="form-label"><strong>Advance (Rs):</strong></label>
                 <input type="number" class="form-control" placeholder="Enter amount">
-            </div>
+            </div> -->
             <div class="col-md-4">
                 <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
-                <input type="number" class="form-control" value="6998" readonly>
+                <input type="number" class="form-control" value="{{ $totalamount }}" readonly>
             </div>
-            <div class="col-md-4">
+            <!-- <div class="col-md-4">
                 <label class="form-label"><strong>Balance (Rs):</strong></label>
                 <input type="number" class="form-control" placeholder="To be filled after calculation">
-            </div>
+            </div> -->
         </div>
 
-        <div class="row mt-3">
+        <!-- <div class="row mt-3">
             <div class="col-md-4">
                 <label class="form-label"><strong>Deposited (Rs):</strong></label>
                 <input type="number" class="form-control" placeholder="Enter amount deposited">
             </div>
-        </div>
+        </div> -->
 
     {{-- Conveyance & Telephone Expenses --}}
     <div class="card mb-4 mt-4">
