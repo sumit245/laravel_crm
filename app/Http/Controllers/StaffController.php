@@ -473,7 +473,6 @@ class StaffController extends Controller
             })->map(function ($task) {
                 return $task->site;
             })->unique('id')->values();
-            $vendorPoleCountsToday = [];
 
             $vendorPoleCountsToday[$vendorId] = [
                 'vendor_name'  => $vendorName,

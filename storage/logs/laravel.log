@@ -14,3 +14,15 @@
   'authentication_code' => '$ugsDa$h@2025',
   'agreement_checkbox' => 'on',
 )  
+[2025-06-18 10:20:12] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-18 10:21:15] local.INFO: []  
+[2025-06-18 10:21:15] local.INFO: [{"id":160,"name":"Danny Kappor","vendor_name":"","image":null,"role":"Site Engineer","totalTasks":1,"completedTasks":0,"performance":0,"medal":"none"}]  
+[2025-06-18 10:21:15] local.INFO: []  
+[2025-06-18 10:39:46] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"1","rate":"5.00","total_value":"5.00","make":"2000","model":"ML21"},{"item_code":"SL02","item":"Luminary","total_quantity":"2","rate":"10.00","total_value":"20.00","make":"2000","model":"ML22"},{"item_code":"SL03","item":"Battery","total_quantity":"1","rate":"100.00","total_value":"100.00","make":"2025","model":"ML23"},{"item_code":"SL04","item":"Structure","total_quantity":"2","rate":"1.00","total_value":"2.00","make":"2000","model":"ML20"}]  
+[2025-06-18 11:21:04] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\sugs\\admin\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
