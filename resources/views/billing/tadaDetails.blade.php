@@ -219,31 +219,8 @@
                 <input type="text" class="form-control" placeholder="Enter name/signature">
             </div>
         </div>
-
+        
         <hr class="my-4">
-
-        {{-- Advance and Balance Section --}}
-        <div class="row">
-            <!-- <div class="col-md-4">
-                <label class="form-label"><strong>Advance (Rs):</strong></label>
-                <input type="number" class="form-control" placeholder="Enter amount">
-            </div> -->
-            <div class="col-md-4">
-                <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
-                <input type="number" class="form-control" value="{{ $totalamount }}" readonly>
-            </div>
-            <!-- <div class="col-md-4">
-                <label class="form-label"><strong>Balance (Rs):</strong></label>
-                <input type="number" class="form-control" placeholder="To be filled after calculation">
-            </div> -->
-        </div>
-
-        <!-- <div class="row mt-3">
-            <div class="col-md-4">
-                <label class="form-label"><strong>Deposited (Rs):</strong></label>
-                <input type="number" class="form-control" placeholder="Enter amount deposited">
-            </div>
-        </div> -->
 
     {{-- Conveyance & Telephone Expenses --}}
     <div class="card mb-4 mt-4">
@@ -269,7 +246,12 @@
             </table>
         </div>
     </div>
-
+    <div class="row">
+        <div class="col-md-4">
+            <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
+            <input type="number" class="form-control" value="{{ $totalamount }}" readonly>
+        </div>
+    </div>
     {{-- Other Expenses --}}
     
 
