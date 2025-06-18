@@ -94,7 +94,7 @@
 
                   </td>
                   <td class="action-btns">
-                    <a href="{{ route("billing.tadaDetails", $tada->user_id) }}" class="btn btn-info btn-sm"
+                    <a href="{{ route("billing.tadaDetails", $tada->id) }}" class="btn btn-info btn-sm"
                       title="View Details">
                       <i class="mdi mdi-eye"></i>
                     </a>
