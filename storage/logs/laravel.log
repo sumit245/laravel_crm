@@ -28,3 +28,37 @@
 [2025-06-16 09:24:47] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
 [2025-06-16 09:33:56] local.INFO: 68  
 [2025-06-16 09:33:56] local.INFO: {"id":87,"name":"Madhepura","state_id":4,"tier":null,"category":"0","user_category_id":null,"room_min_price":"500.00","room_max_price":"1000.00","created_at":null,"updated_at":null}  
+[2025-06-17 06:12:15] local.INFO: []  
+[2025-06-17 06:12:15] local.INFO: []  
+[2025-06-17 06:12:15] local.INFO: []  
+[2025-06-17 06:18:14] local.INFO: 68andcity=Patna  
+[2025-06-17 06:18:53] local.INFO: 68  
+[2025-06-17 06:18:53] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-17 07:11:11] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-17 09:39:58] local.INFO: []  
+[2025-06-17 09:39:58] local.INFO: []  
+[2025-06-17 09:39:58] local.INFO: []  
+[2025-06-17 09:41:54] local.INFO: Request Data: Update category {"_token":"4lrlhHA8IVQQ0q9n4EaqhX5Gt69g98MsVvAUAXRV","_method":"POST","category_id":"12","category_code":"M1","vehicle_id":["2","6"]} 
+[2025-06-17 10:30:12] local.INFO: 68  
+[2025-06-17 10:30:26] local.INFO: 68  
+[2025-06-17 10:39:20] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at C:\\xampp\\htdocs\\laravel_crm\\vendor\\laravel\\framework\\src\\Illuminate\\Foundation\\Console\\ServeCommand.php:95)
+[stacktrace]
+#0 {main}
+"} 
+[2025-06-18 06:05:20] local.INFO: 68  
+[2025-06-18 06:05:20] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-18 06:08:10] local.INFO: 68  
+[2025-06-18 06:08:10] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-18 06:08:35] local.INFO: 68  
+[2025-06-18 06:08:35] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-18 06:08:53] local.INFO: 68  
+[2025-06-18 06:08:53] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-18 06:11:38] local.INFO: 68  
+[2025-06-18 06:11:38] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-18 06:12:19] local.INFO: 68  
+[2025-06-18 06:12:19] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  
+[2025-06-18 06:12:39] local.INFO: 68  
+[2025-06-18 06:12:39] local.INFO: {"id":93,"name":"Patna","state_id":4,"tier":"1","category":"2","user_category_id":null,"room_min_price":"2500.00","room_max_price":"4000.00","created_at":null,"updated_at":null}  

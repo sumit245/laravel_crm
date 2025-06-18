@@ -149,7 +149,8 @@ class ConveyanceController extends Controller
                 'message' => 'Allow Expense fetched successfully',
                 'city_category' => $cityRecord->category,
                 'user_category' => $user->usercategory ? $user->usercategory->category_code : null,  
-                'allowed_expense' => $allowedExpense->dailyamount
+                'allowed_expense' => $allowedExpense->dailyamount,
+                'travel_class' => $allowedExpense->travel_class
             ]);
 
         } catch (\Exception $e) {
