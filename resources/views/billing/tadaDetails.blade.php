@@ -252,73 +252,26 @@
             <table class="table table-bordered">
                 <thead class="table-light">
                     <tr>
+                        <th>Description</th>
                         <th>Date</th>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>By</th>
-                        <th>Amount (₹)</th>
+                        <th>Amount</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>Residence</td>
-                        <td>Delhi Airport</td>
-                        <td>Taxi</td>
-                        <td>362</td>
-                    </tr>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>Patna Airport</td>
-                        <td>ClarkInn Hotel</td>
-                        <td>Taxi</td>
-                        <td>500</td>
-                    </tr>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>ClarkInn Hotel</td>
-                        <td>Patna Airport</td>
-                        <td>Auto</td>
-                        <td>400</td>
-                    </tr>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>Delhi Airport</td>
-                        <td>Residence</td>
-                        <td>Taxi</td>
-                        <td>929</td>
-                    </tr>
+                    @foreach(json_decode($tadas->miscellaneous, true) as $extra)
+        <tr>
+            <td>{{ $extra['description'] }}</td>
+            <td>{{ \Carbon\Carbon::parse($extra['date_of_expense'])->format('d M Y, h:i A') }}</td>
+            <td>₹{{ number_format($extra['amount'], 2) }}</td>
+        </tr>
+        @endforeach
                 </tbody>
             </table>
         </div>
     </div>
 
     {{-- Other Expenses --}}
-    <div class="card mb-4">
-        <div class="card-header fw-bold">Other Expenses</div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Place</th>
-                        <th>Date</th>
-                        <th>Particulars</th>
-                        <th>Bill No.</th>
-                        <th>Amount (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Patna</td>
-                        <td>15/09/2024</td>
-                        <td>Fooding Expenses</td>
-                        <td>158964</td>
-                        <td>770</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    
 
     {{-- Notes --}}
     <div class="card">
