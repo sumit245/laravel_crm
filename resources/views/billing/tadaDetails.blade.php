@@ -194,7 +194,7 @@
                 <!-- <h6 class="fw-bold mb-3">4. Postage, T/Call & Telegram</h6>
                 <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly> -->
 
-                <h6 class="fw-bold mb-3">5. Other Expenses</h6>
+                <h6 class="fw-bold mb-3">4. Other Expenses</h6>
                 <input type="text" class="form-control mb-3" value="770" readonly>
 
                 <div class="row mt-3">
