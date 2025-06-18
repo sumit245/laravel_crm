@@ -8,25 +8,25 @@
       <div class="col-md-3 col-sm-6">
         <div class="card-summary">
           <h6>Total Trips</h6>
-          <div class="value">{{ $count_trip ?? 0 }}</div>
+          <div class="value">{{ $trips ?? 0 }}</div>
         </div>
       </div>
-      <div class="col-md-3 col-sm-6">
+      <!-- <div class="col-md-3 col-sm-6">
         <div class="card-summary">
           <h6>Total KM</h6>
           <div class="value">{{ $total_km  ?? 0 }}</div>
+        </div>
+      </div> -->
+      <div class="col-md-3 col-sm-6">
+        <div class="card-summary">
+          <h6>Pending Claims</h6>
+          <div class="value">{{ $pendingclaimcount ?? 0 }}</div>
         </div>
       </div>
       <div class="col-md-3 col-sm-6">
         <div class="card-summary">
           <h6>Total Expense</h6>
           <div class="value">Rs.{{ $total_amount ?? 0 }}</div>
-        </div>
-      </div>
-      <div class="col-md-3 col-sm-6">
-        <div class="card-summary">
-          <h6>Pending Claims</h6>
-          <div class="value">{{ $pendingclaimcount ?? 0 }}</div>
         </div>
       </div>
     </div>
