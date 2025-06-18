@@ -271,9 +271,6 @@ class ConveyanceController extends Controller
         }
     }
 
-
-
-
     /**
      * Display the specified resource.
      */
