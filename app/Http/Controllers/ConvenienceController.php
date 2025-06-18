@@ -75,10 +75,15 @@ class ConvenienceController extends Controller
         $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('id', $id)->first();
         $travelfares = Journey::where('tada_id', $tadas->id)->get();
         $dailyfares = HotelExpense::where('tada_id', $tadas->id)->get();
-        $dailyamount = HotelExpense::sum('amount');
-        $travelfare = Journey::sum('amount');
-        $conveyance = $dailyamount + $travelfare;
-        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance'));
+        $miscData = json_decode($tadas->miscellaneous, true);
+        $otherExpense = collect($miscData)->sum('amount');
+        $travelfare = collect($travelfares)->sum('amount');
+        $hotelfare = collect($dailyfares)->sum('amount');
+        $hoteldiningcost = collect($dailyfares)->sum('dining_cost');
+
+        $conveyance = $travelfare + $hotelfare + $hoteldiningcost;
+        $totalamount = $conveyance + $otherExpense;
+        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance', 'otherExpense', 'totalamount'));
     }
 
     public function updateTadaStatus(Request $request, $id)
