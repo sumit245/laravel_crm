@@ -238,7 +238,8 @@ class SiteController extends Controller
                     'block',
                     'panchayat',
                     'ward',
-                    'mukhiya_contact'
+                    'mukhiya_contact',
+                    'total_poles'
                 ]));
 
                 return redirect()->route('projects.show', $request->project_id)
