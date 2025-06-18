@@ -436,53 +436,54 @@ class StaffController extends Controller
             ];
             // === Today's Data ===
             $today = now()->toDateString();
-        $todayTasks = $tasks->filter(function ($task) use ($today) {
-            return $task->start_date === $today || $task->end_date === $today;
-        });
+            $todayTasks = $tasks->filter(function ($task) use ($today) {
+                return $task->start_date === $today || $task->end_date === $today;
+            });
 
-        $todayTaskIds = $todayTasks->pluck('id');
+            $todayTaskIds = $todayTasks->pluck('id');
 
-        $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
-            ->where('isSurveyDone', 1)->count();
+            $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
+                ->where('isSurveyDone', 1)->count();
 
-        $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
-            ->where('isInstallationDone', 1)->count();
+            $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
+                ->where('isInstallationDone', 1)->count();
 
-         
-        $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
-            return $task->end_date >= $today;
-        });
 
-        $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
-            // Only count if end_date is today or in future
-            if ($task->end_date >= $today) {
-                return $carry + (optional($task->site)->total_poles ?? 0);
-            }
-            return $carry;
-        }, 0);
-        $backLogPoles = $tasks->reduce(function ($carry, $task) use ($today) {
-            // Only count if end_date is today or in future
-            if ($task->end_date < $today) {
-                return $carry + (optional($task->site)->total_poles ?? 0);
-            }
-            return $carry;
-        }, 0);
+            $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
+                return $task->end_date >= $today;
+            });
 
-        $backlogSites = $tasks->filter(function ($task) use ($today) {
-            return $task->end_date < $today && $task->site;
-        })->map(function ($task) {
-            return $task->site;
-        })->unique('id')->values();
+            $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+                // Only count if end_date is today or in future
+                if ($task->end_date >= $today) {
+                    return $carry + (optional($task->site)->total_poles ?? 0);
+                }
+                return $carry;
+            }, 0);
+            $backLogPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+                // Only count if end_date is today or in future
+                if ($task->end_date < $today) {
+                    return $carry + (optional($task->site)->total_poles ?? 0);
+                }
+                return $carry;
+            }, 0);
 
-        $vendorPoleCountsToday[$vendorId] = [
-            'vendor_name'  => $vendorName,
-            'survey'       => $todaySurvey,
-            'install'      => $todayInstall,
-            'tasks'        => $todayTasks->count(),
-            'total_poles'  => $totalPoles,
-            'today_target' => $todayTotalPoles,
-            'backlog'      => $backLogPoles,
-            'backlog_sites' => $backlogSites,
+            $backlogSites = $tasks->filter(function ($task) use ($today) {
+                return $task->end_date < $today && $task->site;
+            })->map(function ($task) {
+                return $task->site;
+            })->unique('id')->values();
+            $vendorPoleCountsToday = [];
+
+            $vendorPoleCountsToday[$vendorId] = [
+                'vendor_name'  => $vendorName,
+                'survey'       => $todaySurvey,
+                'install'      => $todayInstall,
+                'tasks'        => $todayTasks->count(),
+                'total_poles'  => $totalPoles,
+                'today_target' => $todayTotalPoles,
+                'backlog'      => $backLogPoles,
+                'backlog_sites' => $backlogSites,
             ];
         }
 
@@ -500,7 +501,7 @@ class StaffController extends Controller
             ->unique();
 
         $engineerPoleCounts = [];
-
+        $engineerPoleCountsToday = [];
         foreach ($engineerids as $engineerId) {
             // Get all tasks for this engineer under this manager
             $tasks = StreetlightTask::where('manager_id', $managerid)
@@ -522,7 +523,7 @@ class StaffController extends Controller
             // Optional: fetch engineer name if needed in view
             $engineer = optional($tasks->first()->engineer);
             $engineerName = trim(($engineer->firstName ?? '') . ' ' . ($engineer->lastName ?? ''));
-            
+
             // Add to final array
             $engineerPoleCounts[$engineerId] = [
                 'id'           => $engineerId,
@@ -587,8 +588,4 @@ class StaffController extends Controller
 
         return view('engineer', compact('engineerids', 'engineerPoleCounts', 'engineerPoleCountsToday'));
     }
-
-        
-
-
 }

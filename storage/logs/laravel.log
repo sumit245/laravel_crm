@@ -1,0 +1,16 @@
+[2025-06-18 09:26:02] local.INFO: array (
+  '_token' => 'FoZgmewcACz2jU9abdN8oIU5u8YlPuDWojRzMClz',
+  'item_id' => '3695',
+  'old_serial_number' => 'SL03',
+  'new_serial_number' => '6',
+  'authentication_code' => '$ugsDa$h@2025',
+  'agreement_checkbox' => 'on',
+)  
+[2025-06-18 09:27:35] local.INFO: array (
+  '_token' => 'FoZgmewcACz2jU9abdN8oIU5u8YlPuDWojRzMClz',
+  'item_id' => '3695',
+  'old_serial_number' => '4',
+  'new_serial_number' => '6',
+  'authentication_code' => '$ugsDa$h@2025',
+  'agreement_checkbox' => 'on',
+)  
