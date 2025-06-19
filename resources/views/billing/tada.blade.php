@@ -51,6 +51,7 @@
                 <th>User</th>
                 <th>Visiting to</th>
                 <th>Date</th>
+                <th>Amount</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -64,6 +65,7 @@
                   <td>{{ $tada->user->firstName ?? "N/A" }}</td>
                   <td>{{ $tada->visiting_to ?? "N/A" }}</td>
                   <td>{{ $tada->created_at ?? "N/A" }}</td>
+                  <td>{{ $tada->amount ?? 0 }}</td>
                   <td>
                     @if ($tada->status === null)
                       <span class="badge badge-status badge-pending">Pending</span>

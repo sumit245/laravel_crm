@@ -128,6 +128,7 @@ class ConveyanceController extends Controller
                 'visiting_to' => $request->visiting_to,
                 'purpose_of_visit' => $request->purpose_of_visit,
                 'outcome_achieved' => $request->outcome_achieved,
+                'amount' => $request->amount,
                 'date_of_departure' => date('Y-m-d H:i:s', strtotime($request->date_of_departure)),
                 'date_of_return' => date('Y-m-d H:i:s', strtotime($request->date_of_return)),
                 'miscellaneous' => json_encode($request->expenseEntries), // store as JSON
@@ -160,6 +161,7 @@ class ConveyanceController extends Controller
                         'check_out_date' => $expense['check_out_date'],
                         'breakfast_included' => $expense['breakfast_included'] ?? null,
                         'hotel_bill' => $expense['hotel_bill'] ?? null,
+                        'hotel_bill_no' => $expense['hotel_bill_no'] ?? null,
                         'amount' => $expense['amount'] ?? null,
                         'dining_cost' => $expense['dining_cost'] ?? null,
                     ]);
