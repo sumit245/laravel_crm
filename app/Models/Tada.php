@@ -21,7 +21,7 @@ class Tada extends Model
         'miscellaneous',
         'journey_id',
         'hotel_id',
-        
+        'amount'
     ];
 
     

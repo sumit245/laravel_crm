@@ -19,6 +19,7 @@ class HotelExpense extends Model
         'hotel_bill',
         'amount',
         'dining_cost',
+        'hotel_bill_no'
     ];
 
     public function tada(){
