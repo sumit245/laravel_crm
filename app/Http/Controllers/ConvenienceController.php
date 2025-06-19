@@ -67,18 +67,40 @@ class ConvenienceController extends Controller
     {
         $tadas = Tada::get();
         $pendingclaimcount = Tada::where('status', null)->count();
-        return view('billing.tada', compact('tadas', 'pendingclaimcount'));
+        $trips = Tada::count();
+        $totalMiscAmount = 0;
+
+        foreach ($tadas as $tada) {
+            if (!empty($tada->miscellaneous)) {
+                $miscItems = json_decode($tada->miscellaneous, true);
+                if (is_array($miscItems)) {
+                    foreach ($miscItems as $item) {
+                        $totalMiscAmount += isset($item['amount']) ? $item['amount'] : 0;
+                    }
+                }
+            }
+        }
+        $hotelamount = HotelExpense::sum('amount');
+        $diningcost = HotelExpense::sum('dining_cost');
+        $travelcost = Journey::sum('amount');
+        $total_amount = $hotelamount + $diningcost + $travelcost + $totalMiscAmount;
+        return view('billing.tada', compact('tadas', 'pendingclaimcount', 'trips', 'total_amount'));
     }
 
     public function viewtadaDetails(String $id)
     {
-        $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('user_id', $id)->first();
+        $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('id', $id)->first();
         $travelfares = Journey::where('tada_id', $tadas->id)->get();
         $dailyfares = HotelExpense::where('tada_id', $tadas->id)->get();
-        $dailyamount = HotelExpense::sum('amount');
-        $travelfare = Journey::sum('amount');
-        $conveyance = $dailyamount + $travelfare;
-        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance'));
+        $miscData = json_decode($tadas->miscellaneous, true);
+        $otherExpense = collect($miscData)->sum('amount');
+        $travelfare = collect($travelfares)->sum('amount');
+        $hotelfare = collect($dailyfares)->sum('amount');
+        $hoteldiningcost = collect($dailyfares)->sum('dining_cost');
+
+        $conveyance = $travelfare + $hotelfare + $hoteldiningcost;
+        $totalamount = $conveyance + $otherExpense;
+        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance', 'otherExpense', 'totalamount'));
     }
 
     public function updateTadaStatus(Request $request, $id)

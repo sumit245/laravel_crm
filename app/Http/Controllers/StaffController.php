@@ -500,7 +500,7 @@ class StaffController extends Controller
             ->unique();
 
         $engineerPoleCounts = [];
-        $engineerPoleCountsToday = [];
+
         foreach ($engineerids as $engineerId) {
             // Get all tasks for this engineer under this manager
             $tasks = StreetlightTask::where('manager_id', $managerid)
