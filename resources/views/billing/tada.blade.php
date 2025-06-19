@@ -107,42 +107,6 @@
       </div>
     </div>
 
-    {{-- Details Modal --}}
-    <div class="modal fade" id="detailsModal" tabindex="-1" aria-labelledby="detailsModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content border-0 shadow">
-          <div class="modal-header bg-light">
-            <h5 class="modal-title fw-bold" id="detailsModalLabel">TADA Details</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="container">
-              <div class="row mb-3">
-                <div class="col-md-4"><strong>From</strong><br><span>Madhepura</span></div>
-                <div class="col-md-4"><strong>To</strong><br><span>Delhi</span></div>
-                <div class="col-md-4"><strong>Kilometer</strong><br><span>986Kms</span></div>
-              </div>
-              <div class="row mb-3">
-                <div class="col-md-4"><strong>Mode of Transport</strong><br><span>Train</span></div>
-                <div class="col-md-4"><strong>Date</strong><br><span>5 April 2025</span></div>
-                <div class="col-md-4"><strong>Time</strong><br><span>18:00</span></div>
-              </div>
-              <div class="row mb-3">
-                <div class="col-md-4"><strong>Trip Price</strong><br><span>1980</span></div>
-                <div class="col-md-4"><strong>Total</strong><br><span>2785</span></div>
-                <div class="col-md-4"><strong>Status</strong><br>
-                  <span class="badge badge-status badge-pending">Pending</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer bg-light">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
     {{-- Updated Bills Modal --}}
     <div class="modal fade" id="billsModal" tabindex="-1" aria-labelledby="billsModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-lg modal-dialog-centered">
