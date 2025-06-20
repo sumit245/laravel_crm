@@ -72,7 +72,7 @@
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex">
                     <label class="form-label"><strong>Date:</strong></label>
-                    <div class="d-flex justify-content-md-end gap-1 mt-1">
+                    <div class="d-flex justify-content-end gap-1 mt-1">
                         @php
                             // Format the date as dd-mm-yy
                             $formattedDate = '';
@@ -108,12 +108,12 @@
                 </div>
             </div>
 
-            <div class="row g-3">
+            <div class="row">
                 <div class="col-md-6 d-flex align-items-center">
                     <label class="form-label me-2 mb-0"><strong>Departure On:</strong></label>
                     <input class="form-control w-auto" value="{{ $tadas->date_of_departure ?? 'na' }}" name="departure_date" readonly>
                 </div>
-                <div class="col-md-6 d-flex align-items-center">
+                <div class="col-md-6 d-flex justify-content-end">
                     <label class="form-label me-2 mb-0"><strong>Returned On:</strong></label>
                     <input class="form-control w-auto" value="{{ $tadas->date_of_return }}" name="return_date" readonly>
                 </div>
@@ -124,13 +124,7 @@
     {{-- Place Visited --}}
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row mb-3">
-                <label class="col-md-3 col-form-label"><strong>Place Visited:</strong></label>
-                <div class="col-md-9">
-                    <input type="text" class="form-control" value="{{ $tadas->visiting_to ?? "N/A" }}" name="place_visited" readonly>
-                </div>
-            </div>
-
+            
             {{-- Travelling Fare Table --}}
             <div class="table-responsive">
                 <h6 class="fw-bold mb-2">1. Travelling Fare:</h6>
