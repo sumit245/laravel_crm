@@ -241,8 +241,6 @@
                         </th>
                         <th>City Name</th>
                         <th>City Category</th>
-                        <th>User Category</th>
-                        <th>Hotel Bill Upto</th>
                         <th>Actions</th>
                       </tr>
                     </x-slot:thead>
@@ -256,8 +254,6 @@
                         
                         <td>{{ $city->name }}</td>
                         <td>{{ $city->category }}</td>
-                        <td>{{ $city->usercategory->category_code ?? "N/A" }}</td>
-                        <td>{{ $city->room_max_price }}</td>
                         <td>
                           <a href="{{ route('billing.allowedexpense', $city->id) }}" class="btn btn-icon btn-warning">
                               <i class="mdi mdi-pencil"></i>

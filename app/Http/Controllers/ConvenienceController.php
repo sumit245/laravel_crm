@@ -366,29 +366,27 @@ class ConvenienceController extends Controller
     }
 
     public function updateAllowedExpense(Request $request, $id)
-{
-    // Validate the request data
-    $validated = $request->validate([
-        'city_category' => 'required|in:0,1,2',
-        'user_category' => 'required|exists:user_categories,id',
-        'hotel_bill' => 'required|numeric|min:0',
-    ]);
+    {
+        // Validate the request data
+        $validated = $request->validate([
+            'city_name' => 'string',
+            'city_category' => 'required|in:0,1,2',
+        ]);
 
-    // Find the city
-    $city = City::findOrFail($id);
+        // Find the city
+        $city = City::findOrFail($id);
 
-    // Update city model fields
-    $city->category = $validated['city_category'];
-    $city->user_category_id = $validated['user_category']; // related to UserCategory
-    $city->room_max_price = $validated['hotel_bill'];
+        // Update city model fields
+        $city->category = $validated['city_category'];
+        $city->name = $validated['city_name'];
 
-    // Save the city
-    $city->save();
+        // Save the city
+        $city->save();
 
-    // Redirect back with success message
-    return redirect()->route('billing.settings')
-                     ->with('success', 'Allowed expense updated successfully.');
-}
+        // Redirect back with success message
+        return redirect()->route('billing.settings')
+                        ->with('success', 'Allowed expense updated successfully.');
+    }
 
 
 
