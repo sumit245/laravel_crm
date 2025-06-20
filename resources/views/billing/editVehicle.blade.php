@@ -36,17 +36,14 @@
           <!-- Category -->
           <div class="col-md-6 mb-3">
             <label for="category" class="form-label fw-bold">Category <span class="text-danger">*</span></label>
-            <select class="form-select" id="category" name="category" required>
-              <option value="" disabled {{ !isset($ev->category) ? "selected" : "" }}>Select Category</option>
-              <option value="Car" {{ old("category", $ev->category ?? "") == "Car" ? "selected" : "" }}>Car</option>
-              <option value="Bike" {{ old("category", $ev->category ?? "") == "Bike" ? "selected" : "" }}>Bike
-              </option>
-              <option value="Public Transport" {{ old("category", $ev->category ?? "") == "Auto" ? "selected" : "" }}>
-                Public Transport</option>
-            </select>
-            <div class="invalid-feedback">Please select a category</div>
+
+            {{-- Disabled visible input for display only --}}
+            <input type="text" class="form-control" value="{{ $ev->category ?? 'N/A' }}" disabled>
+
+            {{-- Hidden input to actually submit the value --}}
+            <input type="hidden" name="category" value="{{ $ev->category }}">
           </div>
-          <!-- Sub-Category -->
+                    <!-- Sub-Category -->
           <div class="col-md-6 mb-3">
             <label for="subcategory" class="form-label fw-bold">Icon</label>
             <input type="text" class="form-control" id="subcategory" name="icon"

@@ -1,5 +1,3 @@
-billing/setting.blade.php
-
 @extends("layouts.main")
 
 @section("content")
@@ -328,9 +326,8 @@ billing/setting.blade.php
               </div>
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="subCategory" class="form-label fw-bold">Sub Category</label>
-                  <input type="text" class="form-control" name="icon" id="subCategory"
-                    placeholder="motorcycle">
+                  <label for="sub_category" class="form-label fw-bold">Sub Category</label>
+                  <input type="text" class="form-control" name="sub_category" id="subCategory" placeholder="motorcycle">
                   <div class="invalid-feedback">Please enter a sub category.</div>
                 </div>
                </div>
@@ -377,6 +374,33 @@ billing/setting.blade.php
       </div>
     </div>
   </div>
+
+  @if(session('success'))
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: "{{ session('success') }}",
+        confirmButtonColor: '#0d6efd'
+      });
+    });
+  </script>
+@endif
+
+@if(session('error'))
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: "{{ session('error') }}",
+        confirmButtonColor: '#dc3545'
+      });
+    });
+  </script>
+@endif
+
 @endsection
 
 @push("scripts")
