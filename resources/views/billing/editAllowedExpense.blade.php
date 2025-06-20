@@ -15,7 +15,7 @@
          @method('POST')
         <div class="mb-3">
           <label for="city_name" class="form-label fw-bold">City Name</label>
-          <input type="text" class="form-control" name="city_name" value="{{ $city->name }}">
+          <input type="text" class="form-control" name="city_name" id="city_name" value="{{ old('city_name', $city->name) }}">
         </div>
 
         <!-- City Category -->
