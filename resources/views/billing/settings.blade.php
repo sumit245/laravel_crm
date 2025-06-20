@@ -29,7 +29,7 @@
             <button class="nav-link px-4 py-3 text-start" id="v-pills-allowed-expense-tab" data-bs-toggle="pill"
              data-bs-target="#v-pills-allowed-expense" type="button" role="tab" aria-controls="v-pills-allowed-expense"
                 aria-selected="false">
-             <i class="bi bi-cash-stack me-2"></i> Allowed Expenses
+             <i class="bi bi-cash-stack me-2"></i> City Category
             </button>
           </div>
         </div>
