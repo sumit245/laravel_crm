@@ -62,7 +62,7 @@
                   <td>
                     <input type="checkbox" class="checkboxItem" value="{{ $tada->id }}">
                   </td>
-                  <td>{{ $tada->user->firstName ?? "N/A" }}</td>
+                  <td>{{ $tada->user->firstName ?? "N/A" }} {{ $tada->user->lastName ?? "N/A" }}</td>
                   <td>{{ $tada->visiting_to ?? "N/A" }}</td>
                   <td>{{ $tada->created_at ?? "N/A" }}</td>
                   <td>{{ $tada->amount ?? 0 }}</td>

@@ -172,7 +172,8 @@
                         <tr>
                             <th>Check In</th>
                             <th>Check Out</th>
-                            <th>Dining Cost</th>
+                            <th>Hotel Bill Number</th>
+                            <th>Other Charges</th>
                             <th>Amount (Rs.)</th>
                         </tr>
                     </thead>
@@ -181,30 +182,19 @@
                         <tr>
                             <td>{{ $daily->check_in_date ?? "N/A" }}</td>
                             <td>{{ $daily->check_out_date?? "N/A" }}</td>
-                            <td>{{ $daily->dining_cost ?? "N/A" }}</td>
+                            <td>{{ $daily->hotel_bill_no }}</td>
+                            <td>{{ $daily->other_charges ?? "N/A" }}</td>
                             <td>{{ $daily->amount ?? "N/A" }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+                <h6 class="fw-bold mb-3">3. Travel Expense</h6>
+                <input type="text" class="form-control mb-3" value="{{ $travelfare }}" readonly>
 
-                <h6 class="fw-bold mb-3">3. Conveyance</h6>
-                <input type="text" class="form-control mb-3" value="{{ $conveyance }}" readonly>
-
-                <!-- <h6 class="fw-bold mb-3">4. Postage, T/Call & Telegram</h6>
-                <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly> -->
-
-                <h6 class="fw-bold mb-3">4. Other Expenses</h6>
-                <input type="text" class="form-control mb-3" value="{{ $otherExpense }}" readonly>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Total Amount:</h5>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <h5 class="fw-bold text-success">Rs. {{ $totalamount }}</h5>
-                    </div>
-                </div>
+                <h6 class="fw-bold mb-3">4. Hotel Expense</h6>
+                <input type="text" class="form-control mb-3" value="{{ $hotelExpense }}" readonly>
+          
             </div>
         </div>
 
@@ -246,10 +236,12 @@
             </table>
         </div>
     </div>
-    <div class="row">
+    <div class="row"></div>
+        <h6 class="fw-bold mb-3">5. Other Expenses</h6>
+        <input type="text" class="form-control mb-3" value="{{ $otherExpense }}" readonly>
         <div class="col-md-4">
             <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
-            <input type="number" class="form-control" value="{{ $totalamount }}" readonly>
+            <input type="text" class="form-control" value="₹{{ $totalamount }}" readonly>
         </div>
     </div>
     {{-- Other Expenses --}}

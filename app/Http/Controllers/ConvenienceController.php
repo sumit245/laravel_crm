@@ -96,11 +96,11 @@ class ConvenienceController extends Controller
         $otherExpense = collect($miscData)->sum('amount');
         $travelfare = collect($travelfares)->sum('amount');
         $hotelfare = collect($dailyfares)->sum('amount');
-        $hoteldiningcost = collect($dailyfares)->sum('dining_cost');
-
-        $conveyance = $travelfare + $hotelfare + $hoteldiningcost;
+        $hotelOtherCharges = collect($dailyfares)->sum('other_charges');
+        $hotelExpense = $hotelfare + $hotelOtherCharges;
+        $conveyance = $travelfare + $hotelExpense;
         $totalamount = $conveyance + $otherExpense;
-        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance', 'otherExpense', 'totalamount'));
+        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'hotelExpense', 'travelfare', 'otherExpense', 'totalamount'));
     }
 
     // public function updateTadaStatus(Request $request, $id)
@@ -195,7 +195,6 @@ class ConvenienceController extends Controller
         // Validate the required fields: 'category' and 'rate'
         $validatedData = $request->validate([
             'vehicle_name' => 'nullable|string|max:100',  // Optional field
-            'category' => 'required|string',  // Category is required as a string
             'subcategory' => 'nullable|string|max:50',  // Optional field
             'rate' => 'required|numeric',  // Rate is required and must be numeric
         ]);
@@ -205,17 +204,11 @@ class ConvenienceController extends Controller
             $vehicle = Vehicle::findOrFail($id);
 
             // Update the fields using the update method
-            $vehicle->update([
-                'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
-                'category' => $validatedData['category'],  // Directly assign the incoming category value
-                'sub_category' => $validatedData['subcategory'],  // Nullable field
-                'rate' => $validatedData['rate'],  // Required field
-            ]);
+            $vehicle->update($validatedData);
 
             // Redirect to the settings page with a success message
             return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
         } catch (\Exception $e) {
-            // Log the error message
             // Return to the same page with an error message
             return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
         }
