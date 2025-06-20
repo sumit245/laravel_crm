@@ -160,21 +160,23 @@ class ConvenienceController extends Controller
     // Add vehicle function
     public function addVehicle(Request $request)
     {
+        // Check if category already exists
+        $existingCategory = Vehicle::where('category', $request->category)->first();
 
+        if ($existingCategory) {
+            return redirect()->back()->with('error', 'This category already exists. Please use a different category.');
+        }
+
+        // Validate the input
         $validatedData = $request->validate([
             'vehicle_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
-            'sub_category' => 'nullable|string|max:255', // "not required" should be "nullable"
+            'sub_category' => 'nullable|string|max:255',
             'rate' => 'required|numeric',
         ]);
 
-        // Create a new vehicle record
-        $vehicle = new Vehicle();
-        $vehicle->vehicle_name = $validatedData['vehicle_name'];
-        $vehicle->category = $validatedData['category'];
-        $vehicle->sub_category = $validatedData['sub_category'] ?? null; // in case it's not filled
-        $vehicle->rate = $validatedData['rate'];
-        $vehicle->save();
+        // Save the vehicle
+        Vehicle::create($validatedData);
 
         return redirect()->back()->with('success', 'Vehicle added successfully!');
     }
@@ -219,6 +221,13 @@ class ConvenienceController extends Controller
         }
     }
 
+    public function deleteVehicle(Request $request)
+    {
+        $dv = Vehicle::find($request->id);
+        $dv->delete();
+        return redirect()->back()->with('success', 'Vehicle deleted successfully!');
+    }
+
 
 
     // User Edit
@@ -229,13 +238,6 @@ class ConvenienceController extends Controller
         return view('billing.editUser', compact('ue', 'uc'));
     }
 
-    // Delete Vehicle
-    public function deleteVehicle(Request $request)
-    {
-        $dv = Vehicle::find($request->id);
-        $dv->delete();
-        return redirect()->back()->with('success', 'Vehicle deleted successfully!');
-    }
 
     public function updateUser(Request $request)
     {
@@ -259,49 +261,46 @@ class ConvenienceController extends Controller
     }
     // Add Category
     public function addCategory(Request $request)
-{
-    Log::info('Request Data: Add category', $request->all());
+    {
+        $validatedData = $request->validate([
+            'category' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'vehicle_id' => 'required|array',
+            'vehicle_id.*' => 'exists:vehicles,id',
+            'city_category' => 'required|numeric',
+            'daily_amount' => 'required|numeric'
+        ]);
 
-    $validatedData = $request->validate([
-        'category' => 'required|string|max:255',
-        'name' => 'required|string|max:255',
-        'description' => 'nullable|string',
-        'vehicle_id' => 'required|array',
-        'vehicle_id.*' => 'exists:vehicles,id',
-        'city_category' => 'required|numeric',
-        'daily_amount' => 'required|numeric'
-    ]);
+        // Custom check: ensure category + city combination is unique
+        $existing = UserCategory::where('category_code', $validatedData['category'])
+            ->where('city_category', $validatedData['city_category'])
+            ->exists();
 
-    // Custom check: ensure category + city combination is unique
-    $existing = UserCategory::where('category_code', $validatedData['category'])
-        ->where('city_category', $validatedData['city_category'])
-        ->exists();
+        if ($existing) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['category' => 'User category and city category already exists.']);
+        }
 
-    if ($existing) {
-        return redirect()->back()
-            ->withInput()
-            ->withErrors(['category' => 'User category and city category already exists.']);
-    }
+        try {
+            // Save the new category
+            $category = new UserCategory();
+            $category->category_code = $validatedData['category'];
+            $category->name = $validatedData['name'];
+            $category->description = $validatedData['description'] ?? null;
+            $category->allowed_vehicles = json_encode($validatedData['vehicle_id']);
+            $category->city_category = $validatedData['city_category'];
+            $category->dailyamount = $validatedData['daily_amount'];
+            $category->save();
 
-    try {
-        // Save the new category
-        $category = new UserCategory();
-        $category->category_code = $validatedData['category'];
-        $category->name = $validatedData['name'];
-        $category->description = $validatedData['description'] ?? null;
-        $category->allowed_vehicles = json_encode($validatedData['vehicle_id']);
-        $category->city_category = $validatedData['city_category'];
-        $category->dailyamount = $validatedData['daily_amount'];
-        $category->save();
+            return redirect()->route('billing.settings', ['tab' => 'category'])->with('success', 'Category added successfully.');
 
-        return redirect()->route('billing.settings', ['tab' => 'category'])->with('success', 'Category added successfully.');
-
-    } catch (\Exception $e) {
-        Log::error('Error saving category: ' . $e->getMessage());
-        return redirect()->back()
-            ->withInput()
-            ->withErrors(['error' => 'An unexpected error occurred while saving the category. Please try again.']);
-    }
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'An unexpected error occurred while saving the category. Please try again.']);
+        }
     }
 
 
@@ -316,16 +315,12 @@ class ConvenienceController extends Controller
     public function updateCategory(Request $request)
     {
         try {
-            Log::info('Request Data: Update category', $request->all());
-
             $validatedData = $request->validate([
                 'daily_amount' => 'required|numeric',
                 'vehicle_id' => 'required|array',
                 'vehicle_id.*' => 'exists:vehicles,id',
             ]);
-
             $category = UserCategory::find($request->category_id);
-
             if (!$category) {
                 return redirect()->back()->with('error', 'Category not found.');
             }
@@ -336,7 +331,6 @@ class ConvenienceController extends Controller
 
             return redirect()->route('billing.settings')->with('success', 'Category updated successfully!');
         } catch (\Exception $e) {
-            \Log::error('Error updating category: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while updating the category.');
         }
     }
