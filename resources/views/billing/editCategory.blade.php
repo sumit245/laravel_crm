@@ -14,7 +14,7 @@
                 {{-- Category Dropdown --}}
                 <div class="mb-3">
                 <label for="category_code" class="form-label">Category</label>
-                    <input type="text" name="category_code" id="category_code" class="form-control" value="{{ old('category_code', $uc->category_code) }}">
+                    <input type="text" name="category_code" id="category_code" class="form-control" value="{{ old('category_code', $uc->category_code) }}" readonly>
                 </div>
 
                 {{-- Allowed Vehicles Dropdown --}}
@@ -30,7 +30,32 @@
                     <small class="form-text text-muted">You can select multiple vehicles</small>
                 </div>
 
+                <!-- City Category -->
+                @php
+                    $cityLabels = [
+                        0 => 'Tier-3',
+                        1 => 'Non-Metro',
+                        2 => 'Metro',
+                    ];
+                @endphp
 
+                <div class="mb-3">
+                    <label for="city_category" class="form-label">City Category</label>
+                    <input 
+                        type="text" 
+                        name="city_category" 
+                        id="city_category" 
+                        class="form-control" 
+                        value="{{ $cityLabels[$uc->city_category] ?? 'Unknown' }}" 
+                        readonly
+                    >
+                </div>
+                <!-- Daily Amount -->
+                <div class="mb-3">
+                    <label for="daily_amount" class="form-label">Daily Amount</label>
+                    <input type="number" name="daily_amount" id="daily_amount" class="form-control" required
+                        value="{{ old('dailyamount') ?? ($uc->dailyamount ?? '') }}">
+                </div>
                 <button type="submit" class="btn btn-primary">Update Category</button>
             </form>
         </div>
