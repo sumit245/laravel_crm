@@ -142,6 +142,7 @@ class ConveyanceController extends Controller
                         'tickets_provided_by_company' => $journey['tickets_provided_by_company'],
                         'from' => $journey['from'],
                         'to' => $journey['to'],
+                        'pnr' => $journey['pnr'],
                         'date_of_journey' => date('Y-m-d H:i:s', strtotime($journey['date_of_journey'])),
                         'mode_of_transport' => $journey['mode_of_transport'],
                         'ticket' => $journey['ticket'], // just a string path
@@ -161,7 +162,7 @@ class ConveyanceController extends Controller
                         'check_out_date' => $expense['check_out_date'],
                         'breakfast_included' => $expense['breakfast_included'] ?? null,
                         'hotel_bill' => $expense['hotel_bill'] ?? null,
-                        'hotel_bill_no' => $expense['hotel_bill_no'] ?? null,
+                        'hotel_bill_no' => $expense['bill_number'] ?? null,
                         'amount' => $expense['amount'] ?? null,
                         'dining_cost' => $expense['dining_cost'] ?? null,
                     ]);
