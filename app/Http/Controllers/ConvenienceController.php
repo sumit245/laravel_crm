@@ -316,11 +316,12 @@ class ConvenienceController extends Controller
     public function updateCategory(Request $request)
     {
         try {
-            \Log::info('Request Data: Update category', $request->all());
+            Log::info('Request Data: Update category', $request->all());
 
             $validatedData = $request->validate([
-                'category_code' => 'required|string|max:255',
+                'daily_amount' => 'required|numeric',
                 'vehicle_id' => 'required|array',
+                'vehicle_id.*' => 'exists:vehicles,id',
             ]);
 
             $category = UserCategory::find($request->category_id);
@@ -329,9 +330,8 @@ class ConvenienceController extends Controller
                 return redirect()->back()->with('error', 'Category not found.');
             }
 
-            $category->category_code = $validatedData['category_code'];
-            $category->allowed_vehicles = $validatedData['vehicle_id'];
-
+            $category->dailyamount = $validatedData['daily_amount'];
+            $category->allowed_vehicles = json_encode($validatedData['vehicle_id']); // Store as JSON if needed
             $category->save();
 
             return redirect()->route('billing.settings')->with('success', 'Category updated successfully!');

@@ -163,7 +163,7 @@ class ConveyanceController extends Controller
                         'breakfast_included' => $expense['breakfast_included'] ?? null,
                         'hotel_bill' => $expense['hotel_bill'] ?? null,
                         'hotel_bill_no' => $expense['bill_number'] ?? null,
-                        'other_charges' => $expense['other_expense'] ?? null,
+                        'other_charges' => $expense['other_charges'] ?? null,
                         'amount' => $expense['amount'] ?? null,
                     ]);
                 }
