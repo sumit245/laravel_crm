@@ -26,7 +26,7 @@
       <div class="col-md-3 col-sm-6">
         <div class="card-summary">
           <h6>Total Expense</h6>
-          <div class="value">Rs.{{ $total_amount ?? 0 }}</div>
+          <div class="value">Rs.{{ $grandTotalAmount ?? 0 }}</div>
         </div>
       </div>
     </div>
@@ -57,32 +57,34 @@
               </tr>
             </thead>
             <tbody>
-              @foreach ($tadas as $tada)
-                <tr>
-                  <td>
-                    <input type="checkbox" class="checkboxItem" value="{{ $tada->id }}">
-                  </td>
-                  <td>{{ $tada->user->firstName ?? "N/A" }} {{ $tada->user->lastName ?? "N/A" }}</td>
-                  <td>{{ $tada->visiting_to ?? "N/A" }}</td>
-                  <td>{{ $tada->created_at ?? "N/A" }}</td>
-                  <td>{{ $tada->amount ?? 0 }}</td>
-                  <td>
-                    @if ($tada->status === null)
-                      <span class="badge badge-status badge-pending">Pending</span>
-                    @elseif($tada->status == 0)
-                      <span class="badge badge-status badge-rejected" style="background-color: red; color: white">Rejected</span>
-                    @elseif($tada->status == 1)
-                      <span class="badge badge-status badge-success" style="background-color: mediumseagreen; color: #212529">Accepted</span>
-                    @endif
-                  </td>
-                  <td class="action-btns">
-                    <a href="{{ route('billing.tadaDetails', $tada->id) }}" class="btn btn-info btn-sm" title="View Details">
-                      <i class="mdi mdi-eye"></i>
-                    </a>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
+  @foreach ($tadasWithTotals as $data)
+    @php $tada = $data['tada']; @endphp
+    <tr>
+      <td>
+        <input type="checkbox" class="checkboxItem" value="{{ $tada->id }}">
+      </td>
+      <td>{{ $tada->user->firstName ?? 'N/A' }} {{ $tada->user->lastName ?? 'N/A' }}</td>
+      <td>{{ $tada->visiting_to ?? 'N/A' }}</td>
+      <td>{{ $tada->created_at ? $tada->created_at->format('d M Y') : 'N/A' }}</td>
+      <td>₹{{ number_format($data['total_amount'], 2) }}</td>
+      <td>
+        @if ($tada->status === null)
+          <span class="badge badge-status badge-pending">Pending</span>
+        @elseif($tada->status == 0)
+          <span class="badge badge-status badge-rejected" style="background-color: red; color: white">Rejected</span>
+        @elseif($tada->status == 1)
+          <span class="badge badge-status badge-success" style="background-color: mediumseagreen; color: #212529">Accepted</span>
+        @endif
+      </td>
+      <td class="action-btns">
+        <a href="{{ route('billing.tadaDetails', $tada->id) }}" class="btn btn-info btn-sm" title="View Details">
+          <i class="mdi mdi-eye"></i>
+        </a>
+      </td>
+    </tr>
+  @endforeach
+</tbody>
+
           </table>
         </div>
       </div>
