@@ -227,7 +227,7 @@
           <!-- Allowed Expenses Settings Tab -->
           <div class="tab-pane fade" id="v-pills-allowed-expense" role="tabpanel" aria-labelledby="v-pills-allowed-expense-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Allowed Expenses</h4>
+              <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>City Category</h4>
             </div>
 
             <div class="card shadow-sm">
