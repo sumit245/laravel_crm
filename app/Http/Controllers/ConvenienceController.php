@@ -65,27 +65,48 @@ class ConvenienceController extends Controller
     // Tada view
     public function tadaView()
     {
-        $tadas = Tada::get();
-        $pendingclaimcount = Tada::where('status', null)->count();
-        $trips = Tada::count();
-        $totalMiscAmount = 0;
+        $tadas = Tada::with(['user', 'journey', 'hotelExpense'])->get();
+        $pendingclaimcount = Tada::whereNull('status')->count();
+        $trips = $tadas->count();
+
+        $tadasWithTotals = [];
+        $grandTotalAmount = 0; // New variable to track total for all users
 
         foreach ($tadas as $tada) {
+            // Sum Journey amounts
+            $journeyTotal = $tada->journey->sum('amount');
+
+            // Sum Hotel amounts and other charges
+            $hotelTotal = $tada->hotelExpense->sum('amount');
+            $otherChargesTotal = $tada->hotelExpense->sum('other_charges');
+
+            // Sum Miscellaneous (JSON field)
+            $miscTotal = 0;
             if (!empty($tada->miscellaneous)) {
                 $miscItems = json_decode($tada->miscellaneous, true);
                 if (is_array($miscItems)) {
                     foreach ($miscItems as $item) {
-                        $totalMiscAmount += isset($item['amount']) ? $item['amount'] : 0;
+                        $miscTotal += isset($item['amount']) ? $item['amount'] : 0;
                     }
                 }
             }
+
+            $totalAmount = $journeyTotal + $hotelTotal + $otherChargesTotal + $miscTotal;
+
+            // Accumulate grand total
+            $grandTotalAmount += $totalAmount;
+
+            // Append total to each TADA
+            $tadasWithTotals[] = [
+                'tada' => $tada,
+                'total_amount' => $totalAmount
+            ];
         }
-        $hotelamount = HotelExpense::sum('amount');
-        $diningcost = HotelExpense::sum('dining_cost');
-        $travelcost = Journey::sum('amount');
-        $total_amount = $hotelamount + $diningcost + $travelcost + $totalMiscAmount;
-        return view('billing.tada', compact('tadas', 'pendingclaimcount', 'trips', 'total_amount'));
+
+        return view('billing.tada', compact('tadasWithTotals', 'pendingclaimcount', 'trips', 'grandTotalAmount'));
     }
+
+
 
     public function viewtadaDetails(String $id)
     {
