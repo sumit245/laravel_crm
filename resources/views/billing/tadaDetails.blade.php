@@ -174,7 +174,8 @@
                             <th>Check Out</th>
                             <th>Hotel Bill Number</th>
                             <th>Other Charges</th>
-                            <th>Amount (Rs.)</th>
+                            <th>Hotel Charges (Rs.)</th>
+                            <th>Total(incl. Taxes)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -183,8 +184,9 @@
                             <td>{{ $daily->check_in_date ?? "N/A" }}</td>
                             <td>{{ $daily->check_out_date?? "N/A" }}</td>
                             <td>{{ $daily->hotel_bill_no }}</td>
-                            <td>{{ $daily->other_charges ?? "N/A" }}</td>
-                            <td>{{ $daily->amount ?? "N/A" }}</td>
+                            <td>{{ $daily->other_charges ?? 0 }}</td>
+                            <td>{{ $daily->amount ?? 0 }}</td>
+                            <td>{{ ($daily->other_charges ?? 0) + ($daily->amount ?? 0) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -198,23 +200,11 @@
             </div>
         </div>
 
-        {{-- Signature Section --}}
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <label class="form-label"><strong>Checked By:</strong></label>
-                <input type="text" class="form-control" placeholder="Enter name/signature">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label"><strong>Signature of Dept. Head:</strong></label>
-                <input type="text" class="form-control" placeholder="Enter name/signature">
-            </div>
-        </div>
-        
         <hr class="my-4">
 
     {{-- Conveyance & Telephone Expenses --}}
     <div class="card mb-4 mt-4">
-        <div class="card-header fw-bold">Conveyance & Telephone Expenses</div>
+        <div class="card-header fw-bold">Miscellaneous Expenses</div>
         <div class="card-body">
             <table class="table table-bordered">
                 <thead class="table-light">
@@ -237,15 +227,25 @@
         </div>
     </div>
     <div class="row"></div>
-        <h6 class="fw-bold mb-3">5. Other Expenses</h6>
-        <input type="text" class="form-control mb-3" value="{{ $otherExpense }}" readonly>
+        <h6 class="fw-bold mb-3">5. Miscellaneous Expenses</h6>
+        <input type="text" class="form-control mb-3" value="₹{{ $otherExpense }}" readonly>
         <div class="col-md-4">
             <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
             <input type="text" class="form-control" value="₹{{ $totalamount }}" readonly>
         </div>
     </div>
-    {{-- Other Expenses --}}
     
+        {{-- Signature Section --}}
+        <div class="row m-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label"><strong>Checked By:</strong></label>
+                <input type="text" class="form-control" placeholder="Enter name/signature">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label"><strong>Signature of Dept. Head:</strong></label>
+                <input type="text" class="form-control" placeholder="Enter name/signature">
+            </div>
+        </div>
 
     {{-- Notes --}}
     <div class="card">

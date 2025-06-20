@@ -1,36 +1,36 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container mt-2">
-
+  <div class="container mt-2 row">
     {{-- Summary Cards --}}
-    <div class="row mb-4">
-      <div class="col-md-3 col-sm-6">
-        <div class="card-summary">
-          <h6>Total Trips</h6>
-          <div class="value">{{ $trips ?? 0 }}</div>
-        </div>
-      </div>
-      <!-- <div class="col-md-3 col-sm-6">
-        <div class="card-summary">
-          <h6>Total KM</h6>
-          <div class="value">{{ $total_km  ?? 0 }}</div>
-        </div>
-      </div> -->
-      <div class="col-md-3 col-sm-6">
-        <div class="card-summary">
-          <h6>Pending Claims</h6>
-          <div class="value">{{ $pendingclaimcount ?? 0 }}</div>
-        </div>
-      </div>
-      <div class="col-md-3 col-sm-6">
+      <div class="col-md-3 col-sm-3">
         <div class="card-summary">
           <h6>Total Expense</h6>
           <div class="value">Rs.{{ $grandTotalAmount ?? 0 }}</div>
         </div>
       </div>
-    </div>
-
+    
+    <div class="col-md-3 col-sm-3">
+        <div class="card-summary">
+          <h6>Pending Claims</h6>
+          <div class="value">{{ $pendingclaimcount ?? 0 }}</div>
+        </div>
+      </div>
+      <!-- Accepted -->
+       <div class="col-md-3 col-sm-3">
+        <div class="card-summary">
+          <h6>Accepted Claims</h6>
+          <div class="value">{{ $acceptedClaim ?? 0 }}</div>
+        </div>
+      </div>
+      <!-- Rejected -->
+       <div class="col-md-3 col-sm-3">
+        <div class="card-summary">
+          <h6>Rejected Claims</h6>
+          <div class="value">{{ $rejectedClaim ?? 0 }}</div>
+        </div>
+      </div>
+  </div>
     {{-- Approve / Reject Buttons --}}
     <div class="d-flex justify-content-end mb-3">
       <button id="approveBtn" class="btn btn-success btn-sm" style="display: none;">Accept</button>
