@@ -36,18 +36,17 @@
           <!-- Category -->
           <div class="col-md-6 mb-3">
             <label for="category" class="form-label fw-bold">Category <span class="text-danger">*</span></label>
-
             {{-- Disabled visible input for display only --}}
             <input type="text" class="form-control" value="{{ $ev->category ?? 'N/A' }}" disabled>
 
             {{-- Hidden input to actually submit the value --}}
             <input type="hidden" name="category" value="{{ $ev->category }}">
           </div>
-                    <!-- Sub-Category -->
+            <!-- Sub-Category -->
           <div class="col-md-6 mb-3">
-            <label for="subcategory" class="form-label fw-bold">Icon</label>
-            <input type="text" class="form-control" id="subcategory" name="icon"
-              value="{{ old("subcategory", $ev->subcategory ?? "") }}" placeholder="e.g., motorcycle, car, bus, train">
+            <label for="subcategory" class="form-label fw-bold">Sub Category</label>
+            <input type="text" class="form-control" id="subcategory" name="sub_category"
+              value="{{ old("sub_category", $ev->sub_category ?? "") }}">
           </div>
           <!-- Active Status -->
 
@@ -62,4 +61,16 @@
       </form>
     </div>
   </div>
+  @if($errors->has('error'))
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: "{{ $errors->first('error') }}",
+        confirmButtonColor: '#dc3545'
+      });
+    });
+  </script>
+@endif
 @endsection

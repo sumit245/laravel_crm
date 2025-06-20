@@ -189,21 +189,9 @@ class ConveyanceController extends Controller
                 'vehicle_category' => 'integer',
                 'user_id'          => 'integer',
                 'amount'           => 'nullable|numeric'
-                // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
             ]);
 
-            // Upload image to S3 if present
-            // if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            //     $file = $request->file('image');
-
-            //     $uploadedImage = $this->uploadToS3($file); // No folder override
-
-            //     if (!$uploadedImage) {
-            //         throw new \Exception('Failed to upload image to S3');
-            //     }
-
-            //     $data['image'] = $uploadedImage;
-            // }
+            
 
             $conveyance = Conveyance::create($data);
 
@@ -218,9 +206,6 @@ class ConveyanceController extends Controller
             ], 500);
         }
     }
-
-
-
 
     /**
      * Display the specified resource.
