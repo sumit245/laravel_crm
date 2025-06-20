@@ -67,6 +67,8 @@ class ConvenienceController extends Controller
     {
         $tadas = Tada::with(['user', 'journey', 'hotelExpense'])->get();
         $pendingclaimcount = Tada::whereNull('status')->count();
+        $acceptedClaim = Tada::where('status', 1)->count();
+        $rejectedClaim = Tada::where('status', 0)->count();
         $trips = $tadas->count();
 
         $tadasWithTotals = [];
@@ -103,7 +105,7 @@ class ConvenienceController extends Controller
             ];
         }
 
-        return view('billing.tada', compact('tadasWithTotals', 'pendingclaimcount', 'trips', 'grandTotalAmount'));
+        return view('billing.tada', compact('tadasWithTotals', 'pendingclaimcount', 'trips', 'grandTotalAmount', 'rejectedClaim', 'acceptedClaim'));
     }
 
 
@@ -248,22 +250,25 @@ class ConvenienceController extends Controller
     public function editUser(Request $request)
     {
         $ue = User::find($request->id);
-        $uc = UserCategory::get();
+        $uc = UserCategory::select('category_code')->distinct()->get();
+
         return view('billing.editUser', compact('ue', 'uc'));
     }
 
 
     public function updateUser(Request $request)
     {
-
         $request->validate([
             'user_id' => 'required|exists:users,id',
-            'category' => 'integer',
+            'category' => 'required|integer|exists:user_categories,id', // ID of user_category
         ]);
 
         $user = User::findOrFail($request->input('user_id'));
-        $user->category = $request->input('category');
-        $user->update();
+
+        $userCategory = UserCategory::findOrFail($request->input('category'));
+
+        $user->category_code = $userCategory->category_code;
+        $user->save();
 
         return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
     }

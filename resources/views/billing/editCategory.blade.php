@@ -4,7 +4,7 @@
 <div class="content-wrapper p-4">
     <div class="card">
         <div class="card-header bg-primary text-white">
-            <h5 class="card-title mb-0 fw-bold"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
+            <h5 class="card-title mb-0 fw-bold" style="color:white"><i class="bi bi-pencil-square me-2"></i> Edit Category</h5>
         </div>
         <div class="card-body p-4">
             <form action="{{ route('billing.updatecategory') }}" method="POST">

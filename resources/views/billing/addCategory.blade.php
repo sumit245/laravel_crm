@@ -6,7 +6,7 @@
         <div class="col-md-10">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
+                    <h5 class="card-title mb-0 fw-bold text-white"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
                 </div>
                 <div class="card-body p-4">
                     @if ($errors->any())
