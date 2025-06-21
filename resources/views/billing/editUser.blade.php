@@ -35,9 +35,11 @@
     <!-- Category (Editable) -->
     <div class="mb-3">
         <label for="category" class="form-label fw-bold">Category</label>
-        <select class="form-select " id="category" name="category" required>
+        <select class="form-select" id="category" name="category" required>
             @foreach ($uc as $u)
-            <option value="{{$u->id}}">{{ $u->category_code }}</option>
+                <option value="{{ $u->id }}">
+                    {{ $u->category_code }}
+                </option>
             @endforeach
         </select>
     </div>
@@ -55,6 +57,20 @@
 
 @push('scripts')
 <script>
-    
+        @if(session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#0d6efd'
+        });
+    @elseif(session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#dc3545'
+        });
+    @endif
 </script>
 @endpush
