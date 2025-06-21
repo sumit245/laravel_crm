@@ -12,6 +12,7 @@ use App\Models\travelfare;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
+use DB;
 use Illuminate\Http\Request;
 use Log;
 
@@ -239,10 +240,44 @@ class ConvenienceController extends Controller
 
     public function deleteVehicle(Request $request)
     {
-        $dv = Vehicle::find($request->id);
+        $vehicleId = $request->id;
+
+        // Step 1: Delete the vehicle from the vehicles table
+        $dv = Vehicle::findOrFail($vehicleId);
         $dv->delete();
+
+        // Step 2: Loop through all UserCategory entries and remove the vehicle ID from allowed_vehicles
+        $userCategories = UserCategory::all();
+
+        foreach ($userCategories as $category) {
+            $raw = $category->allowed_vehicles;
+
+            $allowed = [];
+
+            if (is_array($category->allowed_vehicles)) {
+                $allowed = $category->allowed_vehicles;
+            } elseif (is_string($category->allowed_vehicles)) {
+                $decoded = json_decode($category->allowed_vehicles, true);
+                $allowed = is_array($decoded) ? $decoded : [$decoded];
+            } else {
+                $allowed = [$category->allowed_vehicles];
+            }
+
+            // Remove the deleted vehicle ID
+            $updatedAllowed = array_filter($allowed, function ($id) use ($vehicleId) {
+                return $id != $vehicleId;
+            });
+
+            // Only update if something was removed
+            if (count($updatedAllowed) !== count($allowed)) {
+                $category->allowed_vehicles = json_encode(array_values($updatedAllowed));
+                $category->save();
+            }
+        }
+
         return redirect()->back()->with('success', 'Vehicle deleted successfully!');
     }
+
 
 
 
@@ -250,7 +285,10 @@ class ConvenienceController extends Controller
     public function editUser(Request $request)
     {
         $ue = User::find($request->id);
-        $uc = UserCategory::select('category_code')->distinct()->get();
+        $uc = DB::table('user_categories')
+                ->select(DB::raw('MIN(id) as id'), 'category_code')
+                ->groupBy('category_code')
+                ->get();
 
         return view('billing.editUser', compact('ue', 'uc'));
     }
@@ -258,20 +296,33 @@ class ConvenienceController extends Controller
 
     public function updateUser(Request $request)
     {
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'category' => 'required|integer|exists:user_categories,id', // ID of user_category
-        ]);
+        try {
+            Log::info('User data: ', $request->all());
 
-        $user = User::findOrFail($request->input('user_id'));
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'category' => 'required|integer|exists:user_categories,id',
+            ]);
 
-        $userCategory = UserCategory::findOrFail($request->input('category'));
+            $user = User::findOrFail($request->input('user_id'));
+            $userCategory = UserCategory::findOrFail($request->input('category'));
 
-        $user->category_code = $userCategory->category_code;
-        $user->save();
+            Log::info($userCategory);
+            $user->category = $userCategory->id;
+            $user->save();
 
-        return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
+            return redirect()
+                ->route('billing.settings')
+                ->with('success', 'User category updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error updating user category: ' . $e->getMessage());
+
+            return redirect()
+                ->back()
+                ->with('error', 'An error occurred while updating the user category.');
+        }
     }
+
 
     public function viewCategory()
     {
