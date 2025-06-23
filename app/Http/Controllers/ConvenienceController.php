@@ -103,33 +103,46 @@ class ConvenienceController extends Controller
         return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance', 'otherExpense', 'totalamount'));
     }
 
-    public function updateTadaStatus(Request $request, $id)
-    {
-        try {
-            // Validate request
-            $validated = $request->validate([
-                'status' => 'required|boolean',
-            ]);
+    // public function updateTadaStatus(Request $request, $id)
+    // {
+    //     try {
+    //         // Validate request
+    //         $validated = $request->validate([
+    //             'status' => 'required|boolean',
+    //         ]);
 
-            // Find the TADA record
-            $tada = Tada::findOrFail($id);
+    //         // Find the TADA record
+    //         $tada = Tada::findOrFail($id);
 
-            // Update the status
-            $tada->status = $validated['status'];
-            $tada->update();
+    //         // Update the status
+    //         $tada->status = $validated['status'];
+    //         $tada->update();
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'TADA status updated successfully',
-                'data' => $tada
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to update TADA status: ' . $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'TADA status updated successfully',
+    //             'data' => $tada
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to update TADA status: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function bulkUpdateStatus(Request $request)
+{
+    $validated = $request->validate([
+        'ids' => 'required|array',
+        'status' => 'required|in:0,1'
+    ]);
+
+    Tada::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+
+    return response()->json(['message' => 'Status updated successfully.']);
+}
+
 
     public function settings()
     {

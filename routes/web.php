@@ -90,7 +90,8 @@ Route::middleware(['auth'])->group(function () {
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     // status update
-    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    // Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    Route::post('/tada/bulk-update-status', [ConvenienceController::class, 'bulkUpdateStatus']);
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle
     Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
