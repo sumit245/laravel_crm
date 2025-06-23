@@ -198,7 +198,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-
+    Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
 
 });
 Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
@@ -222,6 +222,4 @@ Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
 
-Route::get('admin-preview', function () {
-    return view('hrm.adminPreview');
-})->name('admin-preview');
+

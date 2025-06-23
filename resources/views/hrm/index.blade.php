@@ -64,10 +64,10 @@
                   {{ ucfirst($candidate->status) }}
                 </span>
              
-              <a href="#" class="btn btn-icon btn-info" data-toggle="tooltip"
-                title="View Details">
-                <i class="mdi mdi-eye"></i>
+              <a href="{{ route('admin-preview', $candidate->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                  <i class="mdi mdi-eye"></i>
               </a>
+
               <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip"
                 title="Delete Staff" 
                 data-url="#">

@@ -27,14 +27,13 @@
         <h2 class="text-xl font-semibold text-gray-800">Personal Information</h2>
       </div>
       <div class="grid grid-cols-1 gap-4 text-gray-700 md:grid-cols-2">
-        <p><strong>Full Name:</strong> {{ $data["personalInfo"]["name"] ?? "N/A" }}</p>
-        <p><strong>Email:</strong> {{ $data["personalInfo"]["email"] ?? "N/A" }}</p>
-        <p><strong>Phone:</strong> {{ $data["personalInfo"]["phone"] ?? "N/A" }}</p>
-        <p><strong>DOB:</strong> {{ $data["personalInfo"]["dob"] ?? "N/A" }}</p>
-        <p><strong>Gender:</strong> {{ $data["personalInfo"]["gender"] ?? "N/A" }}</p>
-        <p><strong>Marital Status:</strong> {{ $data["personalInfo"]["maritalStatus"] ?? "N/A" }}</p>
-        <p><strong>Nationality:</strong> {{ $data["personalInfo"]["nationality"] ?? "N/A" }}</p>
-        <p><strong>Language:</strong> {{ $data["personalInfo"]["language"] ?? "N/A" }}</p>
+        <p><strong>Full Name:</strong> {{ $candidate->name ?? "N/A" }}</p>
+        <p><strong>Email:</strong> {{ $candidate->email ?? "N/A" }}</p>
+        <p><strong>Phone:</strong> {{ $candidate->phone ?? "N/A" }}</p>
+        <p><strong>Gender:</strong> {{ $candidate->gender ?? "N/A" }}</p>
+        <p><strong>Marital Status:</strong> {{ $candidate->marital_status ?? "N/A" }}</p>
+        <p><strong>Nationality:</strong> {{ $candidate->nationality ?? "N/A" }}</p>
+        <p><strong>Language:</strong> {{ $candidate->language ?? "N/A" }}</p>
       </div>
     </div>
 
@@ -45,13 +44,13 @@
       </div>
       <div class="grid grid-cols-1 gap-4 text-gray-700 md:grid-cols-2">
         <p><strong>Permanent Address:</strong>
-          {{ isset($data["contactInfo"]["permanentAddress"]) ? implode(", ", array_filter($data["contactInfo"]["permanentAddress"])) : "N/A" }}
+          {{ $candidate->permanent_address ?? "N/A" }}
         </p>
         <p><strong>Current Address:</strong>
-          {{ isset($data["contactInfo"]["currentAddress"]) ? implode(", ", array_filter($data["contactInfo"]["currentAddress"])) : "N/A" }}
+          {{ $candidate->address ?? "N/A" }}
         </p>
-        <p><strong>Emergency Contact:</strong> {{ $data["contactInfo"]["emergencyContact"]["name"] ?? "N/A" }}
-          ({{ $data["contactInfo"]["emergencyContact"]["phone"] ?? "N/A" }})</p>
+        <p><strong>Emergency Contact:</strong> {{ $candidate->emergency_contact_name ?? "N/A" }} : 
+          ({{ $candidate->emergency_contact_phone ?? "N/A" }})</p>
       </div>
     </div>
 
@@ -60,17 +59,26 @@
       <div class="mb-3 flex items-center justify-between">
         <h2 class="text-xl font-semibold text-gray-800">Educational Background</h2>
       </div>
-      @forelse ($data['education'] ?? [] as $edu)
-        <div class="mb-4 text-gray-700">
-          <p><strong>Qualification:</strong> {{ $edu["qualification"] ?? "N/A" }}</p>
-          <p><strong>Institution:</strong> {{ $edu["institution"] ?? "N/A" }} ({{ $edu["year"] ?? "N/A" }})</p>
-          <p><strong>Specialization:</strong> {{ $edu["specialization"] ?? "N/A" }}</p>
-          <p><strong>Certifications:</strong> {{ $edu["certifications"] ?? "N/A" }}</p>
-          <hr class="my-2">
-        </div>
-      @empty
-        <p class="text-gray-500">No education records provided.</p>
-      @endforelse
+@if (!empty($education_data))
+    <div class="row">
+        @foreach($education_data as $key => $education)
+            <div class="col-md-6 mb-4">
+                <div class="card shadow-sm border rounded p-3 h-100">
+                    <h6 class="mb-3 text-primary">Education #{{ $key }}</h6>
+                    <p><strong>Qualification:</strong> {{ $education['qualification'] ?? 'N/A' }}</p>
+                    <p><strong>Institution:</strong> {{ $education['institution'] ?? 'N/A' }}</p>
+                    <p><strong>Specialization:</strong> {{ $education['specialization'] ?? 'N/A' }}</p>
+                    <p><strong>Certifications:</strong> {{ $education['certifications'] ?? 'N/A' }}</p>
+                </div>
+            </div>
+        @endforeach
+    </div>
+@else
+    <div class="alert alert-warning" role="alert">
+        No education data available.
+    </div>
+@endif
+
     </div>
 
     {{-- Documents --}}
@@ -121,25 +129,29 @@
         <h2 class="text-xl font-semibold text-gray-800">Additional Information</h2>
       </div>
       <div class="grid grid-cols-1 gap-4 text-gray-700 md:grid-cols-2">
-        <p><strong>Disabilities:</strong> {{ $data["additionalInfo"]["disabilities"] ?? "N/A" }}</p>
-        <p><strong>Currently Employed:</strong> {{ $data["additionalInfo"]["currentlyEmployed"] ?? "N/A" }}</p>
-        <p><strong>Reason for Leaving:</strong> {{ $data["additionalInfo"]["reasonForLeaving"] ?? "N/A" }}</p>
-        <p><strong>Other Info:</strong> {{ $data["additionalInfo"]["otherInfo"] ?? "N/A" }}</p>
+        <p><strong>Disabilities:</strong> {{ $candidate->disabilities ?? "N/A" }}</p>
+        <p><strong>Currently Employed:</strong> {{ $candidate->disabilities ?? "N/A" }}</p>
+        <p><strong>Reason for Leaving:</strong> {{ $candidate->disabilities ?? "N/A" }}</p>
+        <p><strong>Other Info:</strong> {{ $candidate->disabilities ?? "N/A" }}</p>
       </div>
     </div>
 
     {{-- Passport Size Photo --}}
     <div class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-5 shadow-md">
-      <div class="mb-3 flex items-center justify-between">
-        <h2 class="text-xl font-semibold text-gray-800">Passport Size Photo</h2>
-      </div>
-      @if (!empty($data["photo"]))
-        <img src="{{ asset($data["photo"]) }}" alt="Passport Photo"
-          class="h-40 w-32 rounded border object-cover shadow-md">
-      @else
-        <p class="text-gray-500">No photo uploaded.</p>
-      @endif
+        <div class="mb-3 flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-800">Passport Size Photo</h2>
+        </div>
+
+        @if (!empty($candidate->photo_s3_path))
+            <img src="{{ asset($candidate->photo_s3_path) }}" alt="Passport Photo"
+                class="h-40 w-32 rounded border object-cover shadow-md">
+        @else
+            {{-- Show a default avatar if no photo is uploaded --}}
+            <img src="https://ui-avatars.com/api/?name={{ urlencode($candidate->name) }}&size=160&background=ddd&color=555"
+                alt="Default Avatar" class="h-40 w-32 rounded border object-cover shadow-md">
+        @endif
     </div>
+
 
     {{-- Declaration --}}
     <div class="mb-6 rounded-lg border border-gray-200 bg-gray-50 p-5 shadow-md">
@@ -148,8 +160,8 @@
       </div>
       <div class="grid grid-cols-1 gap-4 text-gray-700 md:grid-cols-2">
         <p>I declare the above information is true.</p>
-        <p><strong>Signature:</strong> {{ $data["declaration"]["signature"] ?? "N/A" }}</p>
-        <p><strong>Date:</strong> {{ $data["declaration"]["date"] ?? "N/A" }}</p>
+        <p><strong>Signature:</strong> {{ $candidate->signature ?? "N/A" }}</p>
+        <p><strong>Date:</strong> {{ $candidate->created_at ?? "N/A" }}</p>
       </div>
     </div>
 
