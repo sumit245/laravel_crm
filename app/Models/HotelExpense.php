@@ -17,6 +17,8 @@ class HotelExpense extends Model
         'check_out_date',
         'breakfast_included',
         'hotel_bill',
+        'hotel_bill_no',
+        'other_charges',
         'amount',
         'dining_cost',
     ];

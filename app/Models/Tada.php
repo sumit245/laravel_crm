@@ -18,10 +18,8 @@ class Tada extends Model
         'outcome_achieved',
         'date_of_departure',
         'date_of_return',
-        'miscellaneous',
-        'journey_id',
-        'hotel_id',
-        
+        'miscellaneous',   
+        'amount'
     ];
 
     

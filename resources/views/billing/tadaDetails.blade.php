@@ -72,7 +72,7 @@
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex">
                     <label class="form-label"><strong>Date:</strong></label>
-                    <div class="d-flex justify-content-md-end gap-1 mt-1">
+                    <div class="d-flex justify-content-end gap-1 mt-1">
                         @php
                             // Format the date as dd-mm-yy
                             $formattedDate = '';
@@ -108,12 +108,12 @@
                 </div>
             </div>
 
-            <div class="row g-3">
+            <div class="row">
                 <div class="col-md-6 d-flex align-items-center">
                     <label class="form-label me-2 mb-0"><strong>Departure On:</strong></label>
                     <input class="form-control w-auto" value="{{ $tadas->date_of_departure ?? 'na' }}" name="departure_date" readonly>
                 </div>
-                <div class="col-md-6 d-flex align-items-center">
+                <div class="col-md-6 d-flex justify-content-end">
                     <label class="form-label me-2 mb-0"><strong>Returned On:</strong></label>
                     <input class="form-control w-auto" value="{{ $tadas->date_of_return }}" name="return_date" readonly>
                 </div>
@@ -124,13 +124,7 @@
     {{-- Place Visited --}}
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row mb-3">
-                <label class="col-md-3 col-form-label"><strong>Place Visited:</strong></label>
-                <div class="col-md-9">
-                    <input type="text" class="form-control" value="{{ $tadas->visiting_to ?? "N/A" }}" name="place_visited" readonly>
-                </div>
-            </div>
-
+            
             {{-- Travelling Fare Table --}}
             <div class="table-responsive">
                 <h6 class="fw-bold mb-2">1. Travelling Fare:</h6>
@@ -172,8 +166,10 @@
                         <tr>
                             <th>Check In</th>
                             <th>Check Out</th>
-                            <th>Dining Cost</th>
-                            <th>Amount (Rs.)</th>
+                            <th>Hotel Bill Number</th>
+                            <th>Other Charges</th>
+                            <th>Hotel Charges (Rs.)</th>
+                            <th>Total(incl. Taxes)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -181,35 +177,60 @@
                         <tr>
                             <td>{{ $daily->check_in_date ?? "N/A" }}</td>
                             <td>{{ $daily->check_out_date?? "N/A" }}</td>
-                            <td>{{ $daily->dining_cost ?? "N/A" }}</td>
-                            <td>{{ $daily->amount ?? "N/A" }}</td>
+                            <td>{{ $daily->hotel_bill_no }}</td>
+                            <td>{{ $daily->other_charges ?? 0 }}</td>
+                            <td>{{ $daily->amount ?? 0 }}</td>
+                            <td>{{ ($daily->other_charges ?? 0) + ($daily->amount ?? 0) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+                <h6 class="fw-bold mb-3">3. Travel Expense</h6>
+                <input type="text" class="form-control mb-3" value="{{ $travelfare }}" readonly>
 
-                <h6 class="fw-bold mb-3">3. Conveyance</h6>
-                <input type="text" class="form-control mb-3" value="{{ $conveyance }}" readonly>
-
-                <!-- <h6 class="fw-bold mb-3">4. Postage, T/Call & Telegram</h6>
-                <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly> -->
-
-                <h6 class="fw-bold mb-3">5. Other Expenses</h6>
-                <input type="text" class="form-control mb-3" value="770" readonly>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Total Amount:</h5>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <h5 class="fw-bold text-success">Rs. {{ $conveyance }}</h5>
-                    </div>
-                </div>
+                <h6 class="fw-bold mb-3">4. Hotel Expense</h6>
+                <input type="text" class="form-control mb-3" value="{{ $hotelExpense }}" readonly>
+          
             </div>
         </div>
 
+        <hr class="my-4">
+
+    {{-- Conveyance & Telephone Expenses --}}
+    <div class="card mb-4 mt-4">
+        <div class="card-header fw-bold">Miscellaneous Expenses</div>
+        <div class="card-body">
+            <table class="table table-bordered">
+                <thead class="table-light">
+                    <tr>
+                        <th>Description</th>
+                        <th>Date</th>
+                        <th>Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(json_decode($tadas->miscellaneous, true) as $extra)
+        <tr>
+            <td>{{ $extra['description'] }}</td>
+            <td>{{ \Carbon\Carbon::parse($extra['date_of_expense'])->format('d M Y, h:i A') }}</td>
+            <td>₹{{ number_format($extra['amount'], 2) }}</td>
+        </tr>
+        @endforeach
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="row"></div>
+        <h6 class="fw-bold mb-3">5. Miscellaneous Expenses</h6>
+        <input type="text" class="form-control mb-3" value="₹{{ $otherExpense }}" readonly>
+        <div class="col-md-4">
+            <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
+            <input type="text" class="form-control" value="₹{{ $totalamount }}" readonly>
+        </div>
+    </div>
+    
         {{-- Signature Section --}}
-        <div class="row mt-4">
+        <div class="row m-3 mb-4">
             <div class="col-md-6">
                 <label class="form-label"><strong>Checked By:</strong></label>
                 <input type="text" class="form-control" placeholder="Enter name/signature">
@@ -219,106 +240,6 @@
                 <input type="text" class="form-control" placeholder="Enter name/signature">
             </div>
         </div>
-
-        <hr class="my-4">
-
-        {{-- Advance and Balance Section --}}
-        <div class="row">
-            <div class="col-md-4">
-                <label class="form-label"><strong>Advance (Rs):</strong></label>
-                <input type="number" class="form-control" placeholder="Enter amount">
-            </div>
-            <div class="col-md-4">
-                <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
-                <input type="number" class="form-control" value="6998" readonly>
-            </div>
-            <div class="col-md-4">
-                <label class="form-label"><strong>Balance (Rs):</strong></label>
-                <input type="number" class="form-control" placeholder="To be filled after calculation">
-            </div>
-        </div>
-
-        <div class="row mt-3">
-            <div class="col-md-4">
-                <label class="form-label"><strong>Deposited (Rs):</strong></label>
-                <input type="number" class="form-control" placeholder="Enter amount deposited">
-            </div>
-        </div>
-
-    {{-- Conveyance & Telephone Expenses --}}
-    <div class="card mb-4 mt-4">
-        <div class="card-header fw-bold">Conveyance & Telephone Expenses</div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>From</th>
-                        <th>To</th>
-                        <th>By</th>
-                        <th>Amount (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>Residence</td>
-                        <td>Delhi Airport</td>
-                        <td>Taxi</td>
-                        <td>362</td>
-                    </tr>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>Patna Airport</td>
-                        <td>ClarkInn Hotel</td>
-                        <td>Taxi</td>
-                        <td>500</td>
-                    </tr>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>ClarkInn Hotel</td>
-                        <td>Patna Airport</td>
-                        <td>Auto</td>
-                        <td>400</td>
-                    </tr>
-                    <tr>
-                        <td>15/09/2024</td>
-                        <td>Delhi Airport</td>
-                        <td>Residence</td>
-                        <td>Taxi</td>
-                        <td>929</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    {{-- Other Expenses --}}
-    <div class="card mb-4">
-        <div class="card-header fw-bold">Other Expenses</div>
-        <div class="card-body">
-            <table class="table table-bordered">
-                <thead class="table-light">
-                    <tr>
-                        <th>Place</th>
-                        <th>Date</th>
-                        <th>Particulars</th>
-                        <th>Bill No.</th>
-                        <th>Amount (₹)</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>Patna</td>
-                        <td>15/09/2024</td>
-                        <td>Fooding Expenses</td>
-                        <td>158964</td>
-                        <td>770</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
 
     {{-- Notes --}}
     <div class="card">

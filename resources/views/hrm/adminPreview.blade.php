@@ -2,7 +2,6 @@
 
 @section("content")
   <div class="container relative mx-auto max-w-5xl rounded-lg bg-white p-6 shadow-lg">
-
     {{-- Logo + Heading --}}
     <div class="mb-6 flex flex-col items-center justify-center text-center">
       <img src="https://sugs-assets.s3.ap-south-1.amazonaws.com/logo.png" alt="Sugs LLoyd Limited" class="img-fluid mb-2">
