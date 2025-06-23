@@ -2,7 +2,7 @@
 
 @section("content")
   <div class="container mt-4">
-    <di class="card mb-4">
+    <div class="card mb-4 p-2">
       <div class="card-header d-flex justify-content-between align-items-center">
         <h5>Task Details</h5>
         <a href="{{ route("tasks.index") }}" class="btn btn-sm btn-secondary">
@@ -11,30 +11,6 @@
       </div>
 
       <div class="card-body">
-
-        <!-- ✅ JICR Report Form -->
-        <!-- <h6 class="border-bottom mb-3 pb-1"><strong>JICR Report</strong></h6>
-        <div class="bg-light mb-4 rounded border p-3">
-          <form id="jicrForm" action="{{-- route('jicr.generate') }}" method="GET">
-          <input type="hidden" name="district" value="{{ $site->district }}">
-          <input type="hidden" name="block" value="{{ $site->block }}">
-          <input type="hidden" name="panchayat" value="{{ $site->panchayat --}}">
-
-            <div class="row">
-              <div class="col-md-3 mb-2">
-                <label for="fromDate" class="form-label">From Date</label>
-                <input type="date" id="fromDate" name="from_date" class="form-control" required>
-              </div>
-              <div class="col-md-3 mb-2">
-                <label for="toDate" class="form-label">To Date</label>
-                <input type="date" id="toDate" name="to_date" class="form-control" required>
-              </div>
-              <div class="col-md-2 d-flex align-items-end mb-2">
-                <button type="submit" class="btn btn-primary w-100">Generate</button>
-              </div>
-            </div>
-          </form> -->
-
         @if (!empty($showReport) && isset($data))
           <div class="mt-3">
             @include("jicr.show", ["data" => $data])
@@ -42,7 +18,7 @@
         @endif
       </div>
 
-      <!-- ✅ Task Information -->
+      <!--  Task Information -->
       <h6 class="border-bottom mb-3 pb-1"><strong>Task Information</strong></h6>
       <div class="row mb-3">
         <div class="col-md-4">
@@ -61,9 +37,9 @@
 
       <div class="row mb-3">
         <!-- <div class="col-md-4">
-            <strong>Task Name:</strong>
-            <p>{{-- $task->activity --}}</p>
-          </div> -->
+              <strong>Task Name:</strong>
+              <p>{{-- $task->activity --}}</p>
+            </div> -->
         <div class="col-md-4">
           <strong>Start Date:</strong>
           <p>{{ $tasks->start_date }}</p>
@@ -77,16 +53,16 @@
           <p><span class="badge bg-success">{{ $tasks->status }}</span></p>
         </div>
         <!-- <div class="col-md-4 mt-1">
-            <strong>Priority:</strong>
-            <p>{{-- ucfirst($task->priority) --}}</p>
-          </div> -->
+              <strong>Priority:</strong>
+              <p>{{-- ucfirst($task->priority) --}}</p>
+            </div> -->
         <div class="col-md-4 mt-1">
           <strong>Description:</strong>
           <p>{{ $task->description ?? "N/A" }}</p>
         </div>
       </div>
 
-      <!-- ✅ Site Information -->
+      <!--  Site Information -->
       <h6 class="border-bottom mb-3 mt-3 pb-1"><strong>Site Information</strong></h6>
       <div class="row mb-3">
         <div class="col-md-4">
@@ -115,7 +91,7 @@
         </div>
       </div>
 
-      <!-- ✅ Material & Rejection -->
+      <!-- Material & Rejection -->
       <h6 class="border-bottom mb-3 mt-3 pb-1"><strong>Material & Rejection</strong></h6>
       <div class="row mb-4">
         <div class="col-md-4">
@@ -128,7 +104,7 @@
         </div>
       </div>
 
-      <!-- ✅ Location Info -->
+      <!--  Location Info -->
       <h6 class="border-bottom mb-3 mt-3 pb-1"><strong>Location Information</strong></h6>
       <div class="row mb-3">
         <div class="col-md-4">
@@ -141,73 +117,59 @@
         </div>
       </div>
 
-      <!-- ✅ File Attachments -->
-      <h6 class="border-bottom mb-3 mt-3 pb-1"><strong>Attached Files</strong></h6>
-      <div class="row">
-        @forelse ($tasks->image as $file)
-          @php
-            $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
-          @endphp
-          <div class="col-md-3 col-sm-4 col-6 mb-4">
-            <div class="card h-100 shadow-sm">
-              <div class="card-body d-flex justify-content-center align-items-center"
-                style="height: 180px; overflow: hidden; background-color: #f8f9fa;">
-                @if ($extension === "pdf")
-                  <div class="w-100 pdf-thumbnail text-center" data-pdf-url="{{ $file }}">
-                    <span class="text-muted">Loading PDF...</span>
-                  </div>
-                  <div class="w-100 pdf-thumbnail text-center" data-pdf-url="{{ $file }}">
-                    <span class="text-muted">Loading PDF...</span>
-                  </div>
-                @else
-                  <a href="{{ $file }}" target="_blank" class="d-block">
-                    <img src="{{ $file }}" alt="Attachment" class="img-fluid" style="max-height: 160px;">
-                    <img src="{{ $file }}" alt="Attachment" class="img-fluid" style="max-height: 160px;">
-                  </a>
-                @endif
-              </div>
-              <div class="card-footer bg-white text-center">
-                <a href="{{ $file }}" target="_blank" class="text-decoration-none small">
-                  {{ $extension === "pdf" ? "View PDF" : "View Image" }}
-                </a>
-              </div>
+      <!--  File Attachments -->
+      <!-- Attached Files -->
+<h6 class="border-bottom mb-3 mt-3 pb-1"><strong>Attached Files</strong></h6>
+<div class="row">
+  @forelse ($tasks->image as $file)
+    @php
+      $extension = strtolower(pathinfo($file, PATHINFO_EXTENSION));
+    @endphp
+    <div class="col-md-3 col-sm-4 col-6 mb-4">
+      <div class="card h-100 shadow-sm">
+        <div class="card-body d-flex justify-content-center align-items-center"
+             style="height: 180px; overflow: hidden; background-color: #f8f9fa;">
+          @if ($extension === "pdf")
+            <div class="w-100 pdf-thumbnail text-center" data-pdf-url="{{ $file }}">
+              <span class="text-muted">Loading PDF...</span>
             </div>
-            <div class="card-footer bg-white text-center">
-              <a href="{{ $file }}" target="_blank" class="text-decoration-none small">
-                {{ $extension === "pdf" ? "View PDF" : "View Image" }}
-              </a>
-            </div>
-          </div>
+          @else
+            <a href="{{ $file }}" target="_blank" class="d-block">
+              <img src="{{ $file }}" alt="Attachment" class="img-fluid" style="max-height: 160px;">
+            </a>
+          @endif
+        </div>
+        <div class="card-footer bg-white text-center">
+          <a href="{{ $file }}" target="_blank" class="text-decoration-none small">
+            {{ $extension === "pdf" ? "View PDF" : "View Image" }}
+          </a>
+        </div>
       </div>
-    @empty
-      <div class="col-12">
-        <p class="text-muted">No attachments available.</p>
-      </div>
-      @endforelse
-  </div>
-@empty
-  <div class="col-12">
-    <p class="text-muted">No attachments available.</p>
-  </div>
+    </div>
+  @empty
+    <div class="col-12">
+      <p class="text-muted">No attachments available.</p>
+    </div>
   @endforelse
-  </div>
+</div>
+
 
   </div>
 
-  <!-- ✅ Footer with Actions -->
+  <!--  Footer with Actions -->
   <!-- <div class="card-footer d-flex justify-content-end">
-        <a href="{{-- route("tasks.edit", $task->id) }}" class="btn btn-sm btn-warning mx-2">
+          <a href="{{-- route("tasks.edit", $task->id) }}" class="btn btn-sm btn-warning mx-2">
         <i class="mdi mdi-pencil"></i> Edit
       </a>
       <form action="{{ route("tasks.destroy", $task->id) --}}" method="POST"
-              onsubmit="return confirm('Are you sure you want to delete this task?');">
-          @csrf
-          @method("DELETE")
-          <button type="submit" class="btn btn-sm btn-danger">
-            <i class="mdi mdi-delete"></i> Delete
-          </button>
-        </form>
-      </div> -->
+                onsubmit="return confirm('Are you sure you want to delete this task?');">
+            @csrf
+            @method("DELETE")
+            <button type="submit" class="btn btn-sm btn-danger">
+              <i class="mdi mdi-delete"></i> Delete
+            </button>
+          </form>
+        </div> -->
   </div>
   </div>
 @endsection

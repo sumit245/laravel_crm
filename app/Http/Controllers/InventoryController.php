@@ -8,11 +8,13 @@ use App\Imports\InventroyStreetLight;
 use App\Models\Inventory;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Stores;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -669,6 +671,99 @@ class InventoryController extends Controller
 
     public function replaceItem(Request $request)
     {
-        Log::info($request);
+        $request->validate([
+            'item_id' => 'required|integer',
+            'old_serial_number' => 'required',
+            'new_serial_number' => 'required|string',
+            'authentication_code' => 'required|string',
+            'agreement_checkbox' => 'required|accepted',
+        ]);
+        // Step 0: Check Authentication
+	Log::info(env('REPLACEMENT_AUTH_CODE'));
+        if ($request->authentication_code !== env('REPLACEMENT_AUTH_CODE')) {
+            return back()->withInput()->with('replace_error', 'Invalid authentication code.');
+        }
+        DB::beginTransaction();
+
+        try {
+
+            $oldDispatch = InventoryDispatch::findOrFail($request->item_id);
+            $newSerial = $request->new_serial_number;
+
+            // ---------- Step 1: Handle inventory_dispatch ----------
+            $newDispatch = InventoryDispatch::where('serial_number', $newSerial)->first();
+
+            if (!$newDispatch) {
+                // Clone from old
+                $newDispatch = $oldDispatch->replicate();
+                $newDispatch->serial_number = $newSerial;
+                $newDispatch->save();
+            } else {
+                // Update newDispatch with oldDispatch values (except ID & serial_number)
+                $newDispatch->fill($oldDispatch->only([
+                    'vendor_id',
+                    'total_quantity',
+                    'total_value',
+                    'rate',
+                    'store_id',
+                    'store_incharge_id',
+                    'project_id',
+                    'isDispatched',
+                    'is_consumed',
+                    'project_id',
+                    'streetlight_pole_id'
+                ]));
+                $newDispatch->save();
+            }
+
+            // ---------- Step 2: Handle inventory_streetlight ----------
+            $newStreet = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
+
+            if ($newStreet) {
+                $newStreet->quantity = 0;
+                $newStreet->save();
+            } else {
+                $oldStreet = InventroyStreetLightModel::where('serial_number', $oldDispatch->serial_number)->first();
+                if ($oldStreet) {
+                    $newStreet = $oldStreet->replicate();
+                    $newStreet->serial_number = $newSerial;
+                    $newStreet->quantity = 0;
+                    $newStreet->save();
+                }
+            }
+
+            // ---------- Step 3: Delete old item from dispatch ----------
+            $oldDispatch->delete();
+
+            // ---------- Step 4: Update quantity of old item in streetlight ----------
+            if (isset($oldStreet)) {
+                $oldStreet->quantity = 1;
+                $oldStreet->save();
+            }
+
+            // ---------- Step 5: Update pole columns ----------
+            $pole = Pole::find($newDispatch->streetlight_pole_id);
+
+            if ($pole) {
+                switch ($newDispatch->item_code) {
+                    case 'SL01':
+                        $pole->panel_qr = $newSerial;
+                        break;
+                    case 'SL02':
+                        $pole->luminary_qr = $newSerial;
+                        break;
+                    case 'SL03':
+                        $pole->battery_qr = $newSerial;
+                        break;
+                }
+                $pole->save();
+            }
+            DB::commit();
+            return back()->with('success', 'Item replaced successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::info($e->getMessage());
+            return back()->withInput()->with('replace_error', 'Failed to replace item: ' . $e->getMessage());
+        }
     }
 }
