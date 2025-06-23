@@ -1,5 +1,3 @@
-billing/setting.blade.php
-
 @extends("layouts.main")
 
 @section("content")
@@ -28,15 +26,10 @@ billing/setting.blade.php
               aria-selected="false">
               <i class="bi bi-tags me-2"></i> Category Settings
             </button>
-            <button class="nav-link px-4 py-3 text-start" id="v-pills-city-tab" data-bs-toggle="pill"
-              data-bs-target="#v-pills-city" type="button" role="tab" aria-controls="v-pills-city"
-              aria-selected="false">
-              <i class="bi bi-buildings me-2"></i> City Category
-            </button>
             <button class="nav-link px-4 py-3 text-start" id="v-pills-allowed-expense-tab" data-bs-toggle="pill"
              data-bs-target="#v-pills-allowed-expense" type="button" role="tab" aria-controls="v-pills-allowed-expense"
                 aria-selected="false">
-             <i class="bi bi-cash-stack me-2"></i> Allowed Expenses
+             <i class="bi bi-cash-stack me-2"></i> City Category
             </button>
           </div>
         </div>
@@ -59,44 +52,44 @@ billing/setting.blade.php
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
-                  <table id="vehicleTable" class="table-bordered table-striped table-sm table">
-                    <thead class="table-light">
-                      <tr>
-                        <!-- <th>#</th> -->
-                        <th>Vehicle Name</th>
-                        <th>Category</th>
-                        <th>Sub Category</th>
-                        <th>Rate/KM</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      @foreach ($vehicles as $vehicle)
-                        <tr>
-                          <!-- <td>{{ $vehicle->id }}</td> -->
-                          <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
-                          <td>{{ $vehicle->category ?? "N/A" }}</td>
-                          <td>{{ $vehicle->sub_category }}</td>
-                          <td>{{ $vehicle->rate }}</td>
-                          <td>
-                            <a href="{{ route("billing.editvehicle", $vehicle->id) }}" class="btn btn-icon btn-warning"
-                              title="Edit Vehicle">
-                              <i class="mdi mdi-pencil"></i>
-                            </a>
-                            <form action="{{ route("billing.deletevehicle", $vehicle->id) }}" method="POST"
-                              style="display:inline;">
-                              @csrf
-                              @method("DELETE")
-                              <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
-                                onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
-                                <i class="mdi mdi-delete"></i>
-                              </button>
-                            </form>
-                          </td>
-                        </tr>
-                      @endforeach
-                    </tbody>
-                  </table>
+                  <x-data-table id="vehicleTable" class="table table-bordered table-striped table-sm display nowrap" style="width:100%">
+  <x-slot:thead class="table-light">
+    <tr>
+      <th>Vehicle Name</th>
+      <th>Category</th>
+      <th>Sub Category</th>
+      <th>Rate/KM</th>
+      <th>Actions</th>
+    </tr>
+  </x-slot:thead>
+
+  <x-slot:tbody>
+    @foreach ($vehicles as $vehicle)
+      <tr>
+        <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
+        <td>{{ $vehicle->category ?? "N/A" }}</td>
+        <td>{{ $vehicle->sub_category }}</td>
+        <td>{{ $vehicle->rate }}</td>
+        <td>
+          <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
+            <i class="mdi mdi-pencil"></i>
+          </a>
+          <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
+              onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
+              <i class="mdi mdi-delete"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+    @endforeach
+  </x-slot:tbody>
+</x-data-table>
+
+
+
                 </div>
               </div>
             </div>
@@ -161,13 +154,22 @@ billing/setting.blade.php
 
             <div class="card shadow-sm">
               <div class="card-body">
+                @if (request('tab') === 'category' && session('success'))
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="bi bi-check-circle me-2"></i>
+                        {{ session('success') }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                @endif
                 <div class="table-responsive">
                   <x-data-table id="categoryTable" class="table-bordered table-striped table-sm table">
                     <x-slot:thead class="table-light">
                       <tr>
                         <!-- <th>#</th> -->
-                        <th>Category Name</th>
+                        <th>User Category</th>
                         <th>Vehicles Allowed</th>
+                        <th>City Category</th>
+                        <th>Daily Amount</th>
                         <th>Actions</th>
                       </tr>
                     </x-slot:thead>
@@ -195,6 +197,8 @@ billing/setting.blade.php
                             @endphp
 
                           </td>
+                          <td>{{ $cat->city_category ?? 'Define' }}</td>
+                          <td>{{ $cat->dailyamount ?? "null" }}</td>
                           <td>
                             <a href="{{ route("billing.editcategory", $cat->id) }}" class="btn btn-icon btn-warning">
                               <i class="mdi mdi-pencil"></i>
@@ -219,48 +223,11 @@ billing/setting.blade.php
             </div>
           </div>
 
-          <!-- City Category Settings Tab -->
-          <div class="tab-pane fade" id="v-pills-city" role="tabpanel" aria-labelledby="v-pills-city-tab">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0"><i class="bi bi-buildings me-2"></i>City Categories</h4>
-            </div>
-
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <x-data-table id="cityCategoryTable" class="table-bordered table-striped table-sm table">
-                    <x-slot:thead class="table-light">
-                      <tr>
-                        <th><input type="checkbox" id="selectAllCity" /></th>
-                        <th>City Name</th>
-                        <th>Categories</th>
-                        <th>Actions</th>
-                      </tr>
-                    </x-slot:thead>
-                    <x-slot:tbody>
-                      <!-- Example Row -->
-                      <tr>
-                        <td><input type="checkbox" class="cityCheckbox" /></td>
-                        <td>New Delhi</td>
-                        <td>Category A, Category B</td>
-                        <td>
-                          <a href="{{ route('billing.editcitycategory') }}" class="btn btn-icon btn-warning">
-                            <i class="mdi mdi-pencil"></i>
-                          </a>
-                        </td>
-                      </tr>
-                      <!-- Repeat rows as needed -->
-                    </x-slot:tbody>
-                  </x-data-table>
-                </div>
-              </div>
-            </div>
-          </div>
 
           <!-- Allowed Expenses Settings Tab -->
           <div class="tab-pane fade" id="v-pills-allowed-expense" role="tabpanel" aria-labelledby="v-pills-allowed-expense-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>Allowed Expenses</h4>
+              <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>City Category</h4>
             </div>
 
             <div class="card shadow-sm">
@@ -274,8 +241,6 @@ billing/setting.blade.php
                         </th>
                         <th>City Name</th>
                         <th>City Category</th>
-                        <th>User Category</th>
-                        <th>Hotel Bill Upto</th>
                         <th>Actions</th>
                       </tr>
                     </x-slot:thead>
@@ -289,8 +254,6 @@ billing/setting.blade.php
                         
                         <td>{{ $city->name }}</td>
                         <td>{{ $city->category }}</td>
-                        <td>{{ $city->usercategory->category_code ?? "N/A" }}</td>
-                        <td>{{ $city->room_max_price }}</td>
                         <td>
                           <a href="{{ route('billing.allowedexpense', $city->id) }}" class="btn btn-icon btn-warning">
                               <i class="mdi mdi-pencil"></i>
@@ -359,9 +322,8 @@ billing/setting.blade.php
               </div>
               <div class="col-md-6">
                 <div class="mb-3">
-                  <label for="subCategory" class="form-label fw-bold">Sub Category</label>
-                  <input type="text" class="form-control" name="icon" id="subCategory"
-                    placeholder="motorcycle">
+                  <label for="sub_category" class="form-label fw-bold">Sub Category</label>
+                  <input type="text" class="form-control" name="sub_category" id="subCategory" placeholder="motorcycle">
                   <div class="invalid-feedback">Please enter a sub category.</div>
                 </div>
                </div>
@@ -376,55 +338,12 @@ billing/setting.blade.php
               </div>
           </form>
         </div>
-
       </div>
     </div>
   </div>
   </div>
 
-  <!-- Add Category Modal -->
-  <div class="modal fade" id="addCategoryModal" tabindex="-1" aria-labelledby="addCategoryModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog">
-      <div class="modal-content shadow">
-        <div class="modal-header bg-primary text-white">
-          <h5 class="modal-title fw-bold" id="addCategoryModalLabel"><i class="bi bi-plus-circle me-2"></i> Add New
-            Category</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
-            aria-label="Close"></button>
-        </div>
-        <div class="modal-body p-4">
-          <form id="addCategoryForm" action="{{ route("billing.addcategory") }}" method="POST">
-            @csrf
-            @method("POST")
-            <div class="mb-3">
-              <label for="categoryName" class="form-label fw-bold">Category Name</label>
-              <input class="form-control" id="categoryName" name="category" required>
-              </input>
-            </div>
-
-            <div class="mb-3">
-              <label for="vehiclesAllowed" class="form-label fw-bold">Allowed Vehicles</label>
-              <select class="form-select" id="vehiclesAllowed" name="vehicle_id[]" multiple="multiple" required>
-                @foreach ($vehicles as $vehicle)
-                  <option value="{{ $vehicle->id }}">{{ $vehicle->id }}</option>
-                @endforeach
-              </select>
-            </div>
-
-            <div class="modal-footer bg-light">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                <i class="bi bi-x-circle me-1"></i> Cancel
-              </button>
-              <button type="submit" class="btn btn-primary" id="saveCategoryBtn">
-                <i class="bi bi-save me-1"></i> Save Category
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    </div>
-  </div>
+  
 
   <!-- Delete Confirmation Modal -->
   <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
@@ -451,6 +370,33 @@ billing/setting.blade.php
       </div>
     </div>
   </div>
+
+  @if(session('success'))
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      Swal.fire({
+        icon: 'success',
+        title: 'Success!',
+        text: "{{ session('success') }}",
+        confirmButtonColor: '#0d6efd'
+      });
+    });
+  </script>
+@endif
+
+@if(session('error'))
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      Swal.fire({
+        icon: 'error',
+        title: 'Error!',
+        text: "{{ session('error') }}",
+        confirmButtonColor: '#dc3545'
+      });
+    });
+  </script>
+@endif
+
 @endsection
 
 @push("scripts")
@@ -475,40 +421,7 @@ billing/setting.blade.php
 
 
       // Initialize DataTables
-      $('#vehicleTable').DataTable({
-        dom: "<'row'<'col-sm-12'f>>" +
-          "<'row'<'col-sm-12'tr>>" +
-          "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-        buttons: [{
-            extend: 'excel',
-            text: '<i class="mdi mdi-file-excel text-light"></i>',
-            className: 'btn btn-icon btn-dark',
-            titleAttr: 'Export to Excel'
-          },
-          {
-            extend: 'pdf',
-            text: '<i class="mdi mdi-file-pdf"></i>',
-            className: 'btn btn-icon btn-danger',
-            titleAttr: 'Export to PDF'
-          },
-          {
-            extend: 'print',
-            text: '<i class="mdi mdi-printer"></i>',
-            className: 'btn btn-icon btn-info',
-            titleAttr: 'Print Table'
-          }
-        ],
-        paging: true,
-        pageLength: 50,
-        searching: true,
-        ordering: true,
-        responsive: true,
-        language: {
-          search: '',
-          searchPlaceholder: 'Search Vehicles'
-        }
-      });
-
+      
       $('#userTable').DataTable({
         dom: "<'row'<'col-sm-12'f>>" +
           "<'row'<'col-sm-12'tr>>" +
@@ -817,6 +730,12 @@ billing/setting.blade.php
         $(this).next('.select2-container').css('border', '');
       });
 
+    });
+    $(document).ready(function () {
+        const tab = new URLSearchParams(window.location.search).get('tab');
+        if (tab === 'category') {
+            $('#category-tab').tab('show'); // Or your relevant method
+        }
     });
     
   </script>

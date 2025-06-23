@@ -14,8 +14,8 @@
          @csrf
          @method('POST')
         <div class="mb-3">
-          <label class="form-label fw-bold">City Name</label>
-          <input type="text" class="form-control" value="{{ $city->name }}" disabled>
+          <label for="city_name" class="form-label fw-bold">City Name</label>
+          <input type="text" class="form-control" name="city_name" id="city_name" value="{{ old('city_name', $city->name) }}">
         </div>
 
         <!-- City Category -->
@@ -35,42 +35,6 @@
               Tier 3 City
             </option>
           </select>
-        </div>
-
-
-        <!-- User Category -->
-        <div class="mb-3">
-          <label for="user_category" class="form-label fw-bold">User Category</label>
-          <select id="user_category" name="user_category" class="form-select" required>
-            <option value="" disabled {{ old('user_category', $usercategory->id ?? '') === '' ? 'selected' : '' }}>
-              Select User Category
-            </option>
-
-            @foreach ($usercategories as $category)
-              <option value="{{ $category->id }}"
-                {{ old('user_category', $usercategory->id ?? '') == $category->id ? 'selected' : '' }}>
-                {{ $category->category_code }}
-              </option>
-            @endforeach
-          </select>
-        </div>
-
-
-
-        <!-- Hotel Bill Upto -->
-        <div class="mb-3">
-          <label for="hotel_bill" class="form-label fw-bold">Hotel Bill Upto (₹)</label>
-          <input
-            type="number"
-            id="hotel_bill"
-            name="hotel_bill"
-            class="form-control"
-            min="0"
-            step="0.01"
-            placeholder="Enter maximum allowed amount"
-            value="{{ old('hotel_bill', $city->room_max_price ?? '') }}"
-            required
-          >
         </div>
 
         <!-- Submit Button -->
