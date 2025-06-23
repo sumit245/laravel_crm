@@ -180,22 +180,73 @@ class PreviewController extends Controller
             return redirect()->route('hrm.apply')->with('error', 'No form data found. Please fill the form first.');
         }
 
-        // Prepare data for Candidate model
+        if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
+            $photoFile = $request->file('photo');
+            $photoFilename = time() . '_photo_' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
+            $photoPath = Storage::disk('s3')->putFileAs('candidate_photos', $photoFile, $photoFilename);
+            $photoUrl = Storage::disk('s3')->url($photoPath);
+            $data['photo'] = $photoUrl;
+            $data['photo_name'] = $photoFile->getClientOriginalName();
+            $data['photo_s3_path'] = $photoPath;
+        }
+
+        if ($request->hasFile('signature') && $request->file('signature')->isValid()) {
+            $signatureFile = $request->file('signature');
+            $signatureFilename = time() . '_signature_' . uniqid() . '.' . $signatureFile->getClientOriginalExtension();
+            $signaturePath = Storage::disk('s3')->putFileAs('candidate_signatures', $signatureFile, $signatureFilename);
+            $signatureUrl = Storage::disk('s3')->url($signaturePath);
+            $data['signature'] = $signatureUrl;
+        }
+
+        $uploadedDocuments = [];
+        if ($request->hasFile('document_paths')) {
+            foreach ($request->file('document_paths') as $index => $docFile) {
+                if ($docFile->isValid()) {
+                    $docFilename = time() . '_doc_' . $index . '_' . uniqid() . '.' . $docFile->getClientOriginalExtension();
+                    $docPath = Storage::disk('s3')->putFileAs('candidate_documents', $docFile, $docFilename);
+                    $docUrl = Storage::disk('s3')->url($docPath);
+                    $uploadedDocuments[] = $docUrl;
+                }
+            }
+        }
+        $data['document_paths'] = $uploadedDocuments;
+
         $candidateData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
-            'date_of_offer' => now()->format('Y-m-d'), // Current date as offer date
+            'date_of_offer' => now()->format('Y-m-d'),
             'address' => $data['current_address'],
             'designation' => $data['position_applied_for'],
             'department' => $data['department'],
-            'location' => explode(',', $data['current_address'])[2] ?? '', // Extract city from address
+            'location' => explode(',', $data['current_address'])[2] ?? '',
             'doj' => $data['date_of_joining'],
-            'ctc' => 0, // Default value, update as needed
+            'ctc' => $data['ctc'] ?? 0,
             'experience' => $data['experience'],
-            'last_salary' => 0, // Default value, update as needed
-            'document_path' => json_encode($data['document_paths'] ?? []),
-            'status' => 'pending'
+            'last_salary' => $data['last_salary'] ?? 0,
+            'document_path' => json_encode($uploadedDocuments),
+            'status' => 'pending',
+
+            // NEW fields storing uploaded data
+            'gender' => $data['gender'] ?? null,
+            'marital_status' => $data['marital_status'] ?? null,
+            'nationality' => $data['nationality'] ?? null,
+            'language' => $data['language'] ?? null,
+            'permanent_address' => $data['permanent_address'] ?? null,
+            'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
+            'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
+            'education' => $data['education'] ?? null,
+            'previous_employer' => $data['previous_employer'] ?? null,
+            'notice_period' => $data['notice_period'] ?? null,
+            'disabilities' => $data['disabilities'] ?? null,
+            'currently_employed' => $data['currently_employed'] ?? null,
+            'reason_for_leaving' => $data['reason_for_leaving'] ?? null,
+            'other_info' => $data['other_info'] ?? null,
+            'photo' => $data['photo'] ?? null,
+            'signature' => $data['signature'] ?? null,
+            'photo_name' => $data['photo_name'] ?? null,
+            'photo_s3_path' => $data['photo_s3_path'] ?? null,
+            'document_paths' => json_encode($data['document_paths'] ?? []),
         ];
 
         // Create the candidate record

@@ -33,12 +33,8 @@
 
     {{-- Approve / Reject Buttons --}}
     <div class="d-flex justify-content-end mb-3">
-      <button id="approveBtn" class="btn btn-success me-2" style="display:none;">
-        <i class="mdi mdi-check-circle-outline fs-5 me-2"></i> Approve
-      </button>
-      <button id="rejectBtn" class="btn btn-danger" style="display:none;">
-        <i class="mdi mdi-close-circle-outline fs-5 me-2"></i> Reject
-      </button>
+      <button id="approveBtn" class="btn btn-success btn-sm" style="display: none;">Accept</button>
+      <button id="rejectBtn" class="btn btn-danger btn-sm" style="display: none;">Reject</button>
     </div>
 
     {{-- TADA Table --}}
@@ -51,10 +47,11 @@
           <table id="tadaTable" class="table-bordered table-striped table-sm mt-4 table">
             <thead class="table-white">
               <tr>
+                <th><input type="checkbox" id="selectAll"></th> {{-- Select All --}}
                 <th>User</th>
                 <th>Visiting to</th>
-                
                 <th>Date</th>
+                <th>Amount</th>
                 <th>Status</th>
                 <th>Actions</th>
               </tr>
@@ -62,40 +59,24 @@
             <tbody>
               @foreach ($tadas as $tada)
                 <tr>
+                  <td>
+                    <input type="checkbox" class="checkboxItem" value="{{ $tada->id }}">
+                  </td>
                   <td>{{ $tada->user->firstName ?? "N/A" }}</td>
                   <td>{{ $tada->visiting_to ?? "N/A" }}</td>
                   <td>{{ $tada->created_at ?? "N/A" }}</td>
-                  <!-- <td>Pending</td>
-                                <td>
-                                <a href="{{ route("view.bills") }}" class="btn btn-sm btn-outline-primary" >
-                                   <i class="bi bi-eye"></i> View Bills
-                                </a>
-                                </td>  -->
+                  <td>{{ $tada->amount ?? 0 }}</td>
                   <td>
                     @if ($tada->status === null)
                       <span class="badge badge-status badge-pending">Pending</span>
-                      <div class="mt-2">
-                        <button type="button" class="badge badge-status badge-success accept-tada"
-                          data-id="{{ $tada->id }}" title="Accept">
-                          <i class="mdi mdi-check"></i> Accept
-                        </button>
-                        <button type="button" class="badge badge-status badge-rejected reject-tada"
-                          data-id="{{ $tada->id }}" title="Reject">
-                          <i class="mdi mdi-close"></i> Reject
-                        </button>
-                      </div>
                     @elseif($tada->status == 0)
-                      <span class="badge badge-status badge-rejected"
-                        style="background-color: red; color: white">Rejected</span>
+                      <span class="badge badge-status badge-rejected" style="background-color: red; color: white">Rejected</span>
                     @elseif($tada->status == 1)
-                      <span class="badge badge-status badge-success"
-                        style="background-color: mediumseagreen; color: #212529"> Accepted</span>
+                      <span class="badge badge-status badge-success" style="background-color: mediumseagreen; color: #212529">Accepted</span>
                     @endif
-
                   </td>
                   <td class="action-btns">
-                    <a href="{{ route("billing.tadaDetails", $tada->id) }}" class="btn btn-info btn-sm"
-                      title="View Details">
+                    <a href="{{ route('billing.tadaDetails', $tada->id) }}" class="btn btn-info btn-sm" title="View Details">
                       <i class="mdi mdi-eye"></i>
                     </a>
                   </td>
@@ -162,63 +143,70 @@
 
 @push("scripts")
   <script>
-    $(document).ready(function() {
-      $('#tadaTable').DataTable({
-        dom: "<'row d-flex align-items-center justify-content-between'" +
-          "<'col-md-6 d-flex align-items-center' f>" +
-          "<'col-md-6 d-flex justify-content-end' B>" +
-          ">" +
-          "<'row'<'col-sm-12'tr>>" +
-          "<'row'<'col-sm-5 d-flex align-items-center' i><'col-sm-7 d-flex justify-content-start' p>>",
-        buttons: [{
-            extend: 'excel',
-            text: '<i class="mdi mdi-file-excel"></i>',
-            className: 'btn btn-sm btn-success',
-            titleAttr: 'Export to Excel'
-          },
-          {
-            extend: 'pdf',
-            text: '<i class="mdi mdi-file-pdf"></i>',
-            className: 'btn btn-sm btn-danger',
-            titleAttr: 'Export to PDF'
-          },
-          {
-            extend: 'print',
-            text: '<i class="mdi mdi-printer"></i>',
-            className: 'btn btn-sm btn-info',
-            titleAttr: 'Print Table'
-          }
-        ],
-        paging: true,
-        pageLength: 50,
-        searching: true,
-        ordering: true,
-        order: [
-          [4, 'desc']
-        ],
-        responsive: true,
-        language: {
-          search: '',
-          searchPlaceholder: 'Search TADA Records'
+  $(document).ready(function () {
+    // Initialize DataTable
+    const table = $('#tadaTable').DataTable({
+      dom: "<'row d-flex align-items-center justify-content-between'" +
+        "<'col-md-6 d-flex align-items-center' f>" +
+        "<'col-md-6 d-flex justify-content-end' B>" +
+        ">" +
+        "<'row'<'col-sm-12'tr>>" +
+        "<'row'<'col-sm-5 d-flex align-items-center' i><'col-sm-7 d-flex justify-content-start' p>>",
+      buttons: [
+        {
+          extend: 'excel',
+          text: '<i class="mdi mdi-file-excel"></i>',
+          className: 'btn btn-sm btn-success',
+          titleAttr: 'Export to Excel'
+        },
+        {
+          extend: 'pdf',
+          text: '<i class="mdi mdi-file-pdf"></i>',
+          className: 'btn btn-sm btn-danger',
+          titleAttr: 'Export to PDF'
+        },
+        {
+          extend: 'print',
+          text: '<i class="mdi mdi-printer"></i>',
+          className: 'btn btn-sm btn-info',
+          titleAttr: 'Print Table'
         }
+      ],
+      paging: true,
+      pageLength: 50,
+      searching: true,
+      ordering: true,
+      order: [[4, 'desc']],
+      responsive: true,
+      language: {
+        search: '',
+        searchPlaceholder: 'Search TADA Records'
+      },
+      drawCallback: function () {
+        bindActionButtons(); // Re-bind click events on pagination/search
+      }
+    });
+
+    // Style the search input
+    $('.dataTables_filter input').addClass('form-control form-control-sm');
+
+    // Bind accept/reject buttons
+    function bindActionButtons() {
+      $('.accept-tada').off('click').on('click', function () {
+        const tadaId = $(this).data('id');
+        updateTadaStatus(tadaId, 1);
       });
 
-      $('.dataTables_filter input').addClass('form-control form-control-sm');
-    });
+      $('.reject-tada').off('click').on('click', function () {
+        const tadaId = $(this).data('id');
+        updateTadaStatus(tadaId, 0);
+      });
+    }
 
-    // Approve and Reject buttons Begins
-    $('.accept-tada').on('click', function() {
-      const tadaId = $(this).data('id');
-      updateTadaStatus(tadaId, 1);
-    });
+    bindActionButtons(); // initial bind
 
-    $('.reject-tada').on('click', function() {
-      const tadaId = $(this).data('id');
-      updateTadaStatus(tadaId, 0);
-    });
-
+    // Update status via AJAX
     function updateTadaStatus(tadaId, status) {
-      // Show confirmation dialog
       const action = status === 1 ? 'accept' : 'reject';
 
       Swal.fire({
@@ -231,7 +219,6 @@
         confirmButtonText: `Yes, ${action} it!`
       }).then((result) => {
         if (result.isConfirmed) {
-          // Send AJAX request to update status
           $.ajax({
             url: `/tada/update-status/${tadaId}`,
             type: 'POST',
@@ -239,46 +226,86 @@
               status: status,
               _token: $('meta[name="csrf-token"]').attr('content')
             },
-            success: function(response) {
-              Swal.fire(
-                'Updated!',
-                `TADA record has been ${action}ed.`,
-                'success'
-              ).then(() => {
-                // Reload the page to reflect changes
+            success: function () {
+              Swal.fire('Updated!', `TADA record has been ${action}ed.`, 'success').then(() => {
                 location.reload();
               });
             },
-            error: function(xhr) {
-              Swal.fire(
-                'Error!',
-                `Failed to ${action} TADA record.`,
-                'error'
-              );
+            error: function (xhr) {
+              Swal.fire('Error!', `Failed to ${action} TADA record.`, 'error');
               console.error(xhr.responseText);
             }
           });
         }
       });
     }
-    // Approve and Reject buttons Ends
 
-    // Checkbox logic
-    document.getElementById('selectAll').addEventListener('change', function(e) {
-      document.querySelectorAll('.checkboxItem').forEach(cb => cb.checked = e.target.checked);
+    // Bulk checkbox logic
+    $('#selectAll').on('change', function () {
+      $('.checkboxItem').prop('checked', this.checked);
       toggleApproveRejectButtons();
     });
 
-    document.querySelectorAll('.checkboxItem').forEach(cb => {
-      cb.addEventListener('change', toggleApproveRejectButtons);
+    $(document).on('change', '.checkboxItem', function () {
+      toggleApproveRejectButtons();
     });
 
     function toggleApproveRejectButtons() {
-      const selected = document.querySelectorAll('.checkboxItem:checked').length;
-      document.getElementById('approveBtn').style.display = selected ? 'inline-block' : 'none';
-      document.getElementById('rejectBtn').style.display = selected ? 'inline-block' : 'none';
+      const selected = $('.checkboxItem:checked').length;
+      $('#approveBtn, #rejectBtn').toggle(selected > 0);
     }
-  </script>
+
+    // Bulk update
+    $('#approveBtn').on('click', function () {
+      bulkUpdateStatus(1);
+    });
+
+    $('#rejectBtn').on('click', function () {
+      bulkUpdateStatus(0);
+    });
+
+    function bulkUpdateStatus(status) {
+      const action = status === 1 ? 'accept' : 'reject';
+      const selectedIds = $('.checkboxItem:checked').map(function () {
+        return $(this).val();
+      }).get();
+
+      if (selectedIds.length === 0) return;
+
+      Swal.fire({
+        title: `Confirm ${action}?`,
+        text: `Are you sure you want to ${action} selected TADA records?`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: status === 1 ? '#28a745' : '#dc3545',
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: `Yes, ${action} them!`
+      }).then((result) => {
+        if (result.isConfirmed) {
+          $.ajax({
+            url: `/tada/bulk-update-status`,
+            type: 'POST',
+            data: {
+              ids: selectedIds,
+              status: status,
+              _token: $('meta[name="csrf-token"]').attr('content')
+            },
+            success: function () {
+              Swal.fire('Updated!', `TADA records have been ${action}ed.`, 'success').then(() => {
+                location.reload();
+              });
+            },
+            error: function (xhr) {
+              Swal.fire('Error!', `Failed to ${action} records.`, 'error');
+              console.error(xhr.responseText);
+            }
+          });
+        }
+      });
+    }
+  });
+</script>
+
 @endpush
 
 @push("styles")
