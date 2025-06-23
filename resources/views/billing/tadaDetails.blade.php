@@ -72,7 +72,7 @@
                 </div>
                 <div class="col-md-4 text-md-end mt-3 mt-md-0 d-flex">
                     <label class="form-label"><strong>Date:</strong></label>
-                    <div class="d-flex justify-content-md-end gap-1 mt-1">
+                    <div class="d-flex justify-content-end gap-1 mt-1">
                         @php
                             // Format the date as dd-mm-yy
                             $formattedDate = '';
@@ -108,12 +108,12 @@
                 </div>
             </div>
 
-            <div class="row g-3">
+            <div class="row">
                 <div class="col-md-6 d-flex align-items-center">
                     <label class="form-label me-2 mb-0"><strong>Departure On:</strong></label>
                     <input class="form-control w-auto" value="{{ $tadas->date_of_departure ?? 'na' }}" name="departure_date" readonly>
                 </div>
-                <div class="col-md-6 d-flex align-items-center">
+                <div class="col-md-6 d-flex justify-content-end">
                     <label class="form-label me-2 mb-0"><strong>Returned On:</strong></label>
                     <input class="form-control w-auto" value="{{ $tadas->date_of_return }}" name="return_date" readonly>
                 </div>
@@ -124,13 +124,7 @@
     {{-- Place Visited --}}
     <div class="card mb-4">
         <div class="card-body">
-            <div class="row mb-3">
-                <label class="col-md-3 col-form-label"><strong>Place Visited:</strong></label>
-                <div class="col-md-9">
-                    <input type="text" class="form-control" value="{{ $tadas->visiting_to ?? "N/A" }}" name="place_visited" readonly>
-                </div>
-            </div>
-
+            
             {{-- Travelling Fare Table --}}
             <div class="table-responsive">
                 <h6 class="fw-bold mb-2">1. Travelling Fare:</h6>
@@ -172,8 +166,10 @@
                         <tr>
                             <th>Check In</th>
                             <th>Check Out</th>
-                            <th>Dining Cost</th>
-                            <th>Amount (Rs.)</th>
+                            <th>Hotel Bill Number</th>
+                            <th>Other Charges</th>
+                            <th>Hotel Charges (Rs.)</th>
+                            <th>Total(incl. Taxes)</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -181,50 +177,28 @@
                         <tr>
                             <td>{{ $daily->check_in_date ?? "N/A" }}</td>
                             <td>{{ $daily->check_out_date?? "N/A" }}</td>
-                            <td>{{ $daily->dining_cost ?? "N/A" }}</td>
-                            <td>{{ $daily->amount ?? "N/A" }}</td>
+                            <td>{{ $daily->hotel_bill_no }}</td>
+                            <td>{{ $daily->other_charges ?? 0 }}</td>
+                            <td>{{ $daily->amount ?? 0 }}</td>
+                            <td>{{ ($daily->other_charges ?? 0) + ($daily->amount ?? 0) }}</td>
                         </tr>
                         @endforeach
                     </tbody>
                 </table>
+                <h6 class="fw-bold mb-3">3. Travel Expense</h6>
+                <input type="text" class="form-control mb-3" value="{{ $travelfare }}" readonly>
 
-                <h6 class="fw-bold mb-3">3. Conveyance</h6>
-                <input type="text" class="form-control mb-3" value="{{ $conveyance }}" readonly>
-
-                <!-- <h6 class="fw-bold mb-3">4. Postage, T/Call & Telegram</h6>
-                <input type="text" class="form-control mb-3" placeholder="Enter amount (Receipt Required)" readonly> -->
-
-                <h6 class="fw-bold mb-3">4. Other Expenses</h6>
-                <input type="text" class="form-control mb-3" value="{{ $otherExpense }}" readonly>
-
-                <div class="row mt-3">
-                    <div class="col-md-6">
-                        <h5 class="fw-bold">Total Amount:</h5>
-                    </div>
-                    <div class="col-md-6 text-end">
-                        <h5 class="fw-bold text-success">Rs. {{ $totalamount }}</h5>
-                    </div>
-                </div>
+                <h6 class="fw-bold mb-3">4. Hotel Expense</h6>
+                <input type="text" class="form-control mb-3" value="{{ $hotelExpense }}" readonly>
+          
             </div>
         </div>
 
-        {{-- Signature Section --}}
-        <div class="row mt-4">
-            <div class="col-md-6">
-                <label class="form-label"><strong>Checked By:</strong></label>
-                <input type="text" class="form-control" placeholder="Enter name/signature">
-            </div>
-            <div class="col-md-6">
-                <label class="form-label"><strong>Signature of Dept. Head:</strong></label>
-                <input type="text" class="form-control" placeholder="Enter name/signature">
-            </div>
-        </div>
-        
         <hr class="my-4">
 
     {{-- Conveyance & Telephone Expenses --}}
     <div class="card mb-4 mt-4">
-        <div class="card-header fw-bold">Conveyance & Telephone Expenses</div>
+        <div class="card-header fw-bold">Miscellaneous Expenses</div>
         <div class="card-body">
             <table class="table table-bordered">
                 <thead class="table-light">
@@ -246,14 +220,26 @@
             </table>
         </div>
     </div>
-    <div class="row">
+    <div class="row"></div>
+        <h6 class="fw-bold mb-3">5. Miscellaneous Expenses</h6>
+        <input type="text" class="form-control mb-3" value="₹{{ $otherExpense }}" readonly>
         <div class="col-md-4">
             <label class="form-label"><strong>Bill Amount (Rs):</strong></label>
-            <input type="number" class="form-control" value="{{ $totalamount }}" readonly>
+            <input type="text" class="form-control" value="₹{{ $totalamount }}" readonly>
         </div>
     </div>
-    {{-- Other Expenses --}}
     
+        {{-- Signature Section --}}
+        <div class="row m-3 mb-4">
+            <div class="col-md-6">
+                <label class="form-label"><strong>Checked By:</strong></label>
+                <input type="text" class="form-control" placeholder="Enter name/signature">
+            </div>
+            <div class="col-md-6">
+                <label class="form-label"><strong>Signature of Dept. Head:</strong></label>
+                <input type="text" class="form-control" placeholder="Enter name/signature">
+            </div>
+        </div>
 
     {{-- Notes --}}
     <div class="card">

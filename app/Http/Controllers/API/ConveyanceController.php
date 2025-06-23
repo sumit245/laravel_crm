@@ -142,6 +142,7 @@ class ConveyanceController extends Controller
                         'tickets_provided_by_company' => $journey['tickets_provided_by_company'],
                         'from' => $journey['from'],
                         'to' => $journey['to'],
+                        'pnr' => $journey['pnr'],
                         'date_of_journey' => date('Y-m-d H:i:s', strtotime($journey['date_of_journey'])),
                         'mode_of_transport' => $journey['mode_of_transport'],
                         'ticket' => $journey['ticket'], // just a string path
@@ -161,9 +162,9 @@ class ConveyanceController extends Controller
                         'check_out_date' => $expense['check_out_date'],
                         'breakfast_included' => $expense['breakfast_included'] ?? null,
                         'hotel_bill' => $expense['hotel_bill'] ?? null,
-                        'hotel_bill_no' => $expense['hotel_bill_no'] ?? null,
+                        'hotel_bill_no' => $expense['bill_number'] ?? null,
+                        'other_charges' => $expense['other_charges'] ?? null,
                         'amount' => $expense['amount'] ?? null,
-                        'dining_cost' => $expense['dining_cost'] ?? null,
                     ]);
                 }
             }
@@ -188,21 +189,9 @@ class ConveyanceController extends Controller
                 'vehicle_category' => 'integer',
                 'user_id'          => 'integer',
                 'amount'           => 'nullable|numeric'
-                // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
             ]);
 
-            // Upload image to S3 if present
-            // if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            //     $file = $request->file('image');
-
-            //     $uploadedImage = $this->uploadToS3($file); // No folder override
-
-            //     if (!$uploadedImage) {
-            //         throw new \Exception('Failed to upload image to S3');
-            //     }
-
-            //     $data['image'] = $uploadedImage;
-            // }
+            
 
             $conveyance = Conveyance::create($data);
 
@@ -313,6 +302,62 @@ class ConveyanceController extends Controller
             ]);
         }
     }
+    public function allowExpense(Request $request)
+    {
+        try {
+            $userId = $request->user_id;
+            $city = $request->city;
+            Log::info($request->user_id);
+            // Fetch city and user records
+            $cityRecord = City::where('name', $city)->first();
+            if (!$cityRecord) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'City not found.',
+                    'city' => $city
+                ], 404);
+            }
+            Log::info($cityRecord);
+
+            $user = User::find($userId);
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found.',
+                    'user_id' => $userId
+                ], 404);
+            }
+
+            // Fetch allowed expense
+            $allowedExpense = UserCategory::where('category_code', $user->usercategory->category_code)
+                ->where('city_category', $cityRecord->category)
+                ->first();
+            
+            // if ($allowedExpense->isEmpty()) {
+            // return response()->json([
+            //         'status' => false,
+            //         'message' => 'No allowed expense data found for this user and city category.',
+            //         'user_category' => $user->category,
+            //         'city_category' => $cityRecord->category
+            //     ], 404);
+            // }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Allow Expense fetched successfully',
+                'city_category' => $cityRecord->category,
+                'user_category' => $user->usercategory ? $user->usercategory->category_code : null,  
+                'allowed_expense' => $allowedExpense->dailyamount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while fetching allowed expense.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -334,4 +379,5 @@ class ConveyanceController extends Controller
     {
         //
     }
+
 }

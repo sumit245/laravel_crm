@@ -1,36 +1,36 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="container mt-2">
-
+  <div class="container mt-2 row">
     {{-- Summary Cards --}}
-    <div class="row mb-4">
-      <div class="col-md-3 col-sm-6">
+      <div class="col-md-3 col-sm-3">
         <div class="card-summary">
-          <h6>Total Trips</h6>
-          <div class="value">{{ $trips ?? 0 }}</div>
+          <h6>Total Expense</h6>
+          <div class="value">Rs.{{ $grandTotalAmount ?? 0 }}</div>
         </div>
       </div>
-      <!-- <div class="col-md-3 col-sm-6">
-        <div class="card-summary">
-          <h6>Total KM</h6>
-          <div class="value">{{ $total_km  ?? 0 }}</div>
-        </div>
-      </div> -->
-      <div class="col-md-3 col-sm-6">
+    
+    <div class="col-md-3 col-sm-3">
         <div class="card-summary">
           <h6>Pending Claims</h6>
           <div class="value">{{ $pendingclaimcount ?? 0 }}</div>
         </div>
       </div>
-      <div class="col-md-3 col-sm-6">
+      <!-- Accepted -->
+       <div class="col-md-3 col-sm-3">
         <div class="card-summary">
-          <h6>Total Expense</h6>
-          <div class="value">Rs.{{ $total_amount ?? 0 }}</div>
+          <h6>Accepted Claims</h6>
+          <div class="value">{{ $acceptedClaim ?? 0 }}</div>
         </div>
       </div>
-    </div>
-
+      <!-- Rejected -->
+       <div class="col-md-3 col-sm-3">
+        <div class="card-summary">
+          <h6>Rejected Claims</h6>
+          <div class="value">{{ $rejectedClaim ?? 0 }}</div>
+        </div>
+      </div>
+  </div>
     {{-- Approve / Reject Buttons --}}
     <div class="d-flex justify-content-end mb-3">
       <button id="approveBtn" class="btn btn-success btn-sm" style="display: none;">Accept</button>
@@ -57,32 +57,34 @@
               </tr>
             </thead>
             <tbody>
-              @foreach ($tadas as $tada)
-                <tr>
-                  <td>
-                    <input type="checkbox" class="checkboxItem" value="{{ $tada->id }}">
-                  </td>
-                  <td>{{ $tada->user->firstName ?? "N/A" }}</td>
-                  <td>{{ $tada->visiting_to ?? "N/A" }}</td>
-                  <td>{{ $tada->created_at ?? "N/A" }}</td>
-                  <td>{{ $tada->amount ?? 0 }}</td>
-                  <td>
-                    @if ($tada->status === null)
-                      <span class="badge badge-status badge-pending">Pending</span>
-                    @elseif($tada->status == 0)
-                      <span class="badge badge-status badge-rejected" style="background-color: red; color: white">Rejected</span>
-                    @elseif($tada->status == 1)
-                      <span class="badge badge-status badge-success" style="background-color: mediumseagreen; color: #212529">Accepted</span>
-                    @endif
-                  </td>
-                  <td class="action-btns">
-                    <a href="{{ route('billing.tadaDetails', $tada->id) }}" class="btn btn-info btn-sm" title="View Details">
-                      <i class="mdi mdi-eye"></i>
-                    </a>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
+  @foreach ($tadasWithTotals as $data)
+    @php $tada = $data['tada']; @endphp
+    <tr>
+      <td>
+        <input type="checkbox" class="checkboxItem" value="{{ $tada->id }}">
+      </td>
+      <td>{{ $tada->user->firstName ?? 'N/A' }} {{ $tada->user->lastName ?? 'N/A' }}</td>
+      <td>{{ $tada->visiting_to ?? 'N/A' }}</td>
+      <td>{{ $tada->created_at ? $tada->created_at->format('d M Y') : 'N/A' }}</td>
+      <td>₹{{ number_format($data['total_amount'], 2) }}</td>
+      <td>
+        @if ($tada->status === null)
+          <span class="badge badge-status badge-pending">Pending</span>
+        @elseif($tada->status == 0)
+          <span class="badge badge-status badge-rejected" style="background-color: red; color: white">Rejected</span>
+        @elseif($tada->status == 1)
+          <span class="badge badge-status badge-success" style="background-color: mediumseagreen; color: #212529">Accepted</span>
+        @endif
+      </td>
+      <td class="action-btns">
+        <a href="{{ route('billing.tadaDetails', $tada->id) }}" class="btn btn-info btn-sm" title="View Details">
+          <i class="mdi mdi-eye"></i>
+        </a>
+      </td>
+    </tr>
+  @endforeach
+</tbody>
+
           </table>
         </div>
       </div>
