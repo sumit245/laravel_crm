@@ -258,4 +258,17 @@ class PreviewController extends Controller
         // Redirect to success page
         return redirect()->route('hrm.success')->with('success', 'Your application has been submitted successfully!');
     }
+
+    public function adminPreview($id){
+        $candidate = Candidate::findOrFail($id);
+        $education_json = $candidate->education;
+
+    // Ensure it's decoded as an array of entries (preserving keys like "1", "2")
+        $education_data = is_string($education_json)
+        ? json_decode($education_json, true)
+        : $education_json;
+
+        return view('hrm.adminPreview', compact('candidate', 'education_data'));
+    }
+
 }
