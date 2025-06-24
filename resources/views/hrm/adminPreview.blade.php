@@ -300,37 +300,37 @@
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Full Name:</span>
-            <span class="data-value">{{ $data["personalInfo"]["name"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->name ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Email:</span>
-            <span class="data-value">{{ $data["personalInfo"]["email"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->email ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Phone:</span>
-            <span class="data-value">{{ $data["personalInfo"]["phone"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->phone ?? "N/A" }}</span>
           </div>
           <div class="data-row">
-            <span class="data-label">Date of Birth:</span>
-            <span class="data-value">{{ $data["personalInfo"]["dob"] ?? "N/A" }}</span>
+            <span class="data-label">Date of Offer:</span>
+            <span class="data-value">{{ $candidate->date_of_offer ?? "N/A" }}</span>
           </div>
         </div>
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Gender:</span>
-            <span class="data-value">{{ $data["personalInfo"]["gender"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->gender ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Marital Status:</span>
-            <span class="data-value">{{ $data["personalInfo"]["maritalStatus"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->marital_status ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Nationality:</span>
-            <span class="data-value">{{ $data["personalInfo"]["nationality"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->nationality ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Preferred Language:</span>
-            <span class="data-value">{{ $data["personalInfo"]["language"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->language ?? "N/A" }}</span>
           </div>
         </div>
       </div>
@@ -348,21 +348,20 @@
           <div class="data-row">
             <span class="data-label">Permanent Address:</span>
             <span class="data-value">
-              {{ isset($data["contactInfo"]["permanentAddress"]) ? implode(", ", array_filter($data["contactInfo"]["permanentAddress"])) : "N/A" }}
+              {{ $candidate->permanent_address ?? "N/A" }}
             </span>
           </div>
           <div class="data-row">
             <span class="data-label">Current Address:</span>
             <span class="data-value">
-              {{ isset($data["contactInfo"]["currentAddress"]) ? implode(", ", array_filter($data["contactInfo"]["currentAddress"])) : "N/A" }}
+              {{ $candidate->address ?? "N/A" }}
             </span>
           </div>
         </div>
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Emergency Contact:</span>
-            <span class="data-value">{{ $data["contactInfo"]["emergencyContact"]["name"] ?? "N/A" }}
-              ({{ $data["contactInfo"]["emergencyContact"]["phone"] ?? "N/A" }})</span>
+            <span class="data-value">{{ $candidate->emergency_contact_name ?? "N/A"}} - {{  $candidate->emergency_contact_phone ?? "N/A" }}</span>
           </div>
         </div>
       </div>
@@ -375,40 +374,47 @@
       <i class="fas fa-graduation-cap me-2"></i>Educational Background
     </div>
     <div class="card-body">
-      @forelse ($data['education'] ?? [] as $index => $edu)
-        <div class="border-bottom mb-4 pb-3">
-          <h5 style="color: #667eea; font-weight: 600;">Education #{{ $index + 1 }}</h5>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="data-row">
-                <span class="data-label">Qualification:</span>
-                <span class="data-value">{{ $edu["qualification"] ?? "N/A" }}</span>
-              </div>
-              <div class="data-row">
-                <span class="data-label">Institution:</span>
-                <span class="data-value">{{ $edu["institution"] ?? "N/A" }}</span>
-              </div>
+      @php
+          $educationData = is_string($candidate->education)
+              ? json_decode($candidate->education, true)
+              : $candidate->education;
+      @endphp
+
+    @forelse ($educationData ?? [] as $index => $edu)
+      <div class="border-bottom mb-4 pb-3">
+        <h5 style="color: #667eea; font-weight: 600;">Education #{{ $index }}</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Qualification:</span>
+              <span class="data-value">{{ $edu["qualification"] ?? "N/A" }}</span>
             </div>
-            <div class="col-md-6">
-              <div class="data-row">
-                <span class="data-label">Year:</span>
-                <span class="data-value">{{ $edu["year"] ?? "N/A" }}</span>
-              </div>
-              <div class="data-row">
-                <span class="data-label">Specialization:</span>
-                <span class="data-value">{{ $edu["specialization"] ?? "N/A" }}</span>
-              </div>
-              <div class="data-row">
-                <span class="data-label">Certifications:</span>
-                <span class="data-value">{{ $edu["certifications"] ?? "N/A" }}</span>
-              </div>
+            <div class="data-row">
+              <span class="data-label">Institution:</span>
+              <span class="data-value">{{ $edu["institution"] ?? "N/A" }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Year:</span>
+              <span class="data-value">{{ $edu["year"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Specialization:</span>
+              <span class="data-value">{{ $edu["specialization"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Certifications:</span>
+              <span class="data-value">{{ $edu["certifications"] ?? "N/A" }}</span>
             </div>
           </div>
         </div>
-      @empty
-        <p class="text-muted">No educational information provided.</p>
-      @endforelse
-    </div>
+      </div>
+    @empty
+      <p class="text-muted">No educational information provided.</p>
+    @endforelse
+  </div>
+
   </div>
 
   <!-- Documents with Google Drive Style Thumbnails -->
@@ -494,21 +500,21 @@
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Disabilities:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["disabilities"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->disabilities ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Currently Employed:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["currentlyEmployed"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->currently_employed ?? "N/A" }}</span>
           </div>
         </div>
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Reason for Leaving:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["reasonForLeaving"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->reason_for_leaving ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Other Info:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["otherInfo"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->other_info ?? "N/A" }}</span>
           </div>
         </div>
       </div>
@@ -521,12 +527,12 @@
       <i class="fas fa-camera me-2"></i>Passport Size Photo
     </div>
     <div class="card-body">
-      @if (!empty($data["photo"]))
+      @if (!empty($candidate->photo_s3_path))
         <div class="passport-photo-container">
-          <img src="{{ asset($data["photo"]) }}" alt="Passport Photo">
+          <img src="{{ asset($candidate->photo_s3_path) }}" alt="Passport Photo">
         </div>
         <div class="text-center mt-3">
-          <a href="{{ asset($data["photo"]) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+          <a href="{{ asset($candidate->photo_s3_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
             <i class="fas fa-expand me-1"></i> View Full Size
           </a>
         </div>
