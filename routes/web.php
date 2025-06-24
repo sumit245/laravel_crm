@@ -200,6 +200,8 @@ Route::middleware(['auth'])->group(function () {
     // Route for hiring software HRM
     Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
+    Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
+
 });
 Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
 Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');

@@ -123,23 +123,30 @@
               <!-- <td>₹{{ number_format($candidate->last_salary, 2) }}</td> -->
               <td>
                 <span class="badge 
-                  @if ($candidate->status === 'pending') bg-warning 
-                  @elseif ($candidate->status === 'emailed') bg-info 
-                  @elseif ($candidate->status === 'hired') bg-success 
-                  @elseif ($candidate->status === 'rejected') bg-danger 
+                  @if ($candidate->status == 0) bg-warning 
+                  @elseif ($candidate->status == 1) bg-info 
+                  @elseif ($candidate->status == 2) bg-success 
                   @endif">
-                  {{ ucfirst($candidate->status) }}
+                  @if ($candidate->status == 0)
+                    Pending
+                  @elseif ($candidate->status == 1)
+                    Emailed
+                  @elseif ($candidate->status == 2)
+                    Success
+                  @endif
                 </span>
              
               <a href="{{ route('admin-preview', $candidate->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
                   <i class="mdi mdi-eye"></i>
               </a>
 
-              <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip"
-                title="Delete Staff" 
-                data-url="#">
-                <i class="mdi mdi-delete"></i>
-              </button>
+              <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this candidate?');" style="display:inline;">
+                @csrf
+                @method('DELETE')
+                <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip" title="Delete Staff">
+                  <i class="mdi mdi-delete"></i>
+                </button>
+              </form>
             </td>
               <td class="text-center">
                 <span class="badge 
