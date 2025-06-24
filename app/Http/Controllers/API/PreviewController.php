@@ -271,4 +271,26 @@ class PreviewController extends Controller
         return view('hrm.adminPreview', compact('candidate', 'education_data'));
     }
 
+    public function bulkUpdate(Request $request)
+    {
+        $candidateIds = $request->input('selected_candidates', []);
+        $action = $request->input('action');
+
+        if (empty($candidateIds)) {
+            return redirect()->back()->with('error', 'No candidates selected.');
+        }
+
+        $responseValue = null;
+        if ($action === 'accept') {
+            $responseValue = 1;
+        } elseif ($action === 'reject') {
+            $responseValue = 0;
+        }
+
+        Candidate::whereIn('id', $candidateIds)->update(['company_response' => $responseValue]);
+
+        return redirect()->back()->with('success', 'Candidates updated successfully.');
+    }
+
+
 }
