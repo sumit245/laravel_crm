@@ -111,4 +111,14 @@ class CandidateController extends Controller
 
         return redirect()->back()->with('success', 'Documents uploaded and details extracted successfully.');
     }
+
+    public function destroy($id)
+    {
+        $candidate = Candidate::findOrFail($id); // fetch by id
+
+        $candidate->delete();
+
+        return redirect()->back()->with('success', 'Candidate deleted successfully.');
+    }
+
 }
