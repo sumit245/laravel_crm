@@ -14,11 +14,35 @@ use Smalot\PdfParser\Parser; // Install with: composer require smalot/pdfparser
 class CandidateController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
-        $candidates = Candidate::paginate(10); // Paginate results
-        return view('hrm.index', compact('candidates')); // Create this Blade file
+        $query = Candidate::query();
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        if ($request->filled('designation')) {
+            $query->where('designation', $request->designation);
+        }
+
+        if ($request->filled('department')) {
+            $query->where('department', $request->department);
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
+
+        $candidates = $query->paginate(10)->appends($request->query());
+
+        return view('hrm.index', compact('candidates'));
     }
+
 
     public function importCandidates(Request $request)
     {
