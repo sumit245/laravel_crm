@@ -36,17 +36,33 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
+        // Admin, Project Manager, Coordinator,
         $selectedProjectId = $this->getSelectedProject($request, $user);
+        // 10
         $project = Project::findOrFail($selectedProjectId);
+        // {project_name:BREDA, project_type:1 ... with all relations declared in Project Model}
+
         $dateRange = $this->getDateRange($request->query('date_filter', 'today'));
+        //[12-05-2025, 30-05-2025] 
 
         // Determine task and site models based on project type
         $isStreetLightProject = $project->project_type == 1;
+        // true
+
         $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
+        // StreetlightTask model with all its relations
+
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
+        // Streetlight model with all its relations
 
         // Get site statistics
         $siteStats = $this->getSiteStatistics($siteModel, $taskModel, $selectedProjectId, $dateRange, $isStreetLightProject);
+        // {
+        //     "total_sites" :225,
+        //     "total_poles" :2250,
+        //     "surveyed_poles":225,
+        //     "installed_poles":0
+        // }
 
         // Get pole statistics for streetlight projects
         $poleStats = $isStreetLightProject ?
@@ -61,12 +77,16 @@ class HomeController extends Controller
             $dateRange,
             $isStreetLightProject
         );
+        // TODO:modify this callback
 
         // Get user counts
         $userCounts = $this->getUserCounts($user, $selectedProjectId);
 
+
         // Prepare statistics array
         $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
+
+        // TODO: make it more efficient
         return view('dashboard', array_merge(
             compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
             $siteStats,
@@ -75,6 +95,7 @@ class HomeController extends Controller
         ));
     }
 
+    // Start working from here
     private function calculateRolePerformances($user, $projectId, $taskModel, $dateRange, $isStreetLightProject)
     {
         $roles = ['Project Manager' => 2, 'Site Engineer' => 1, 'Vendor' => 3];
@@ -127,21 +148,6 @@ class HomeController extends Controller
                 $q->where($this->getRoleColumn($user->role), $user->id)
                     ->whereBetween('created_at', $dateRange);
             })->sum('total_poles');
-            Log::info('Now: ' . now());
-            Log::info('SubDay: ' . now()->subDay());
-
-
-            $poleSurveyd = Pole::whereHas('task', function ($q) use ($projectId, $user) {
-                $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id);
-            })
-                ->where('isSurveyDone', true)
-                ->whereBetween('updated_at', $dateRange) // Pole updated in last 24 hours
-                ->whereBetween('updated_at', $dateRange) // Pole updated in last 24 hours
-                ->get();
-
-            Log::info($poleSurveyd);
-
 
             // Get surveyed and installed poles by this user in date range
             $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user,) {
@@ -149,8 +155,6 @@ class HomeController extends Controller
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isSurveyDone', true)
                 ->whereBetween('updated_at', $dateRange)->count();
-
-
 
             $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
                 $q->where('project_id', $projectId)
@@ -160,6 +164,8 @@ class HomeController extends Controller
 
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
+            $performanceSurvey = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
+            $performanceinstallation = $totalPoles > 0 ? ($installedPoles / $totalPoles) * 100 : 0;
 
             return (object)[
                 'id' => $user->id,
@@ -171,7 +177,9 @@ class HomeController extends Controller
                 'surveyedPoles' => $surveyedPoles,
                 'installedPoles' => $installedPoles,
                 'performance' => $performance,
-                'medal' => $surveyedPoles > 0 ? null : 'none'
+                'performanceSurvey' => $performanceSurvey,
+                'performanceInstallation' => $performanceinstallation,
+                // 'medal' => $surveyedPoles > 0 ? null : 'none'
             ];
         } else {
             $tasksQuery = $taskModel::where('project_id', $projectId)
@@ -206,6 +214,7 @@ class HomeController extends Controller
             3 => 'vendor_id'
         ][$role];
     }
+    // Till Here
 
     private function getSelectedProject(Request $request, User $user)
     {
@@ -226,6 +235,8 @@ class HomeController extends Controller
             });
         })->first()->id;
     }
+
+
 
     private function getSiteStatistics($siteModel, $taskModel, $projectId, $dateRange, $isStreetLightProject)
     {
@@ -278,11 +289,12 @@ class HomeController extends Controller
         $totalSurvey = Pole::whereHas('task.site', function ($q) use ($projectId) {
             $q->where('project_id', $projectId);
         })->where('isSurveyDone', true)->count();
+        $totalInstalled = Pole::whereHas('task.site', function ($q) use ($projectId) {
+            $q->where('project_id', $projectId);
+        })->where('isInstallationDone', 1)->count();
         return [
             'totalSurveyedPoles' => $totalSurvey,
-            'totalInstalledPoles' => Pole::whereHas('task.site', function ($q) use ($projectId) {
-                $q->where('project_id', $projectId);
-            })->where('isInstallationDone', 1)->count()
+            'totalInstalledPoles' => $totalInstalled
         ];
     }
 
@@ -373,29 +385,16 @@ class HomeController extends Controller
                 return [now()->startOfMonth(), now()->endOfMonth()];
             case 'all_time':
                 return [Carbon::createFromTimestamp(0), now()];
-            case 'all_time':
-                return [Carbon::createFromTimestamp(0), now()];
             case 'custom':
                 $start = request()->start_date;
                 $end = request()->end_date;
-
-                // Optional: fallback if missing
-                if (!$start || !$end) {
-                    return [now()->subDay(), now()];
-                }
-
-                return [
-                    \Carbon\Carbon::parse($start)->startOfDay(),
-                    \Carbon\Carbon::parse($end)->endOfDay()
-                ];
-                // case 'custom':
-                //     return [request()->start_date, request()->end_date];
+                return [Carbon::parse($start)->startOfDay(), Carbon::parse($end)->endOfDay()];
             default:
-                // Return all time data
                 return [now()->subDay(), now()]; // Last 24 hours
         }
     }
 
+    
 
     public function exportToExcel()
     {

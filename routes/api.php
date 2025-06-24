@@ -46,7 +46,6 @@ Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEng
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
 Route::apiResource('streetlight', StreetlightController::class);
 
-
 Route::apiResource('inventories', InventoryController::class);
 Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
 Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
@@ -68,7 +67,7 @@ Route::apiResource('tadas', ConveyanceController::class);
 Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
 Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
 Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
-Route::get('all-vehicles', [ConveyanceController::class, 'getVehicles']);
+Route::get('all-vehicles/{id}', [ConveyanceController::class, 'getVehicles']);
 Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicle']);
 Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
 Route::get('check-price', [ConveyanceController::class, 'checkPrice']);

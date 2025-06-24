@@ -57,7 +57,6 @@ class VendorController extends Controller
      */
     public function store(Request $request)
     {
-        Log::info('Received request vendor data:', $request->all());
         // Validate the incoming data without requiring a username
         $validated = $request->validate([
             'name'          => 'required|string|max:255',
@@ -220,7 +219,6 @@ class VendorController extends Controller
                 'email'         => 'required|email',
             ]);
             $vendor = User::find($id)->update($validated);
-            Log::info('Vendor Edit' . $vendor);
             return redirect()->route('uservendors.show', $id)->with('success', 'Vendor updated successfully.');
         } catch (\Exception $e) {
             // Catch database or other errors

@@ -31,3 +31,4 @@ class Meet extends Model
         return User::whereIn('id', $this->user_ids)->get();
     }
 }
+

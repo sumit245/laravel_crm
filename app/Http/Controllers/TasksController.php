@@ -34,7 +34,6 @@ class TasksController extends Controller
             ->limit(5)
             ->get();
         // Query the top 5 vendors based on completed tasks today
-        Log::info($topEngineers);
         $topVendors = Task::whereDate('end_date', $today)
             ->where('status', 'Completed') // Only count completed tasks
             ->groupBy('vendor_id')
@@ -104,8 +103,7 @@ class TasksController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        //
-        Log::info("Project type " . $request->project_type);
+
         if ($request->project_type != 1) {
             $tasks = Task::with('site', 'engineer', 'manager', 'vendor')->find($id)->first();
             $images      = json_decode($tasks->image, true); // Ensure it's an array
@@ -118,7 +116,7 @@ class TasksController extends Controller
             // Add the full URLs to the image key
             $tasks->image = $fullUrls;
 
-            return view('tasks.show', compact( 'tasks'));
+            return view('tasks.show', compact('tasks'));
         } else {
             $streetlightTask = StreetlightTask::findOrFail($id);
             $manager = $streetlightTask->manager;
@@ -142,76 +140,74 @@ class TasksController extends Controller
     public function edit(string $id, Request $request)
     {
         // Target in streetlight project is being edited
-        Log::info("Edit target", $request->all() ,  $id);
+        Log::info("Edit target", $request->all(),  $id);
         $projectId = request()->query('project_id');
-        if($projectId==11){
+        if ($projectId == 11) {
             $tasks = StreetlightTask::with(['site', 'engineer', 'vendor']) // eager load relationships
                 ->findOrFail($id);
             // Get all engineers and vendors from the users table based on role
             $engineers = User::where('role', 1)->get();
             $vendors = User::where('role', 3)->get();
 
-    
-        return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
+
+            return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
         }
-        
     }
 
-    public function editrooftop(string $id){
-       
-        
+    public function editrooftop(string $id)
+    {
+
+
         //code...
-           $taskId = (int) $id;
-        
+        $taskId = (int) $id;
+
         $task = Task::where('id', $taskId)
-                ->first();
+            ->first();
         $engineers = User::where('role', 1)->get();
         $sites = Site::all();
         Log::error($task);
-            return view('tasks.editRooftop', compact('task', 'engineers', 'sites'));
-       
-     }
-
-     /**
- * Update the specified rooftop task in storage.
- *
- * @param  \Illuminate\Http\Request  $request
- * @param  string  $id
- * @return \Illuminate\Http\Response
- */
-public function updateRooftop(Request $request, string $id)
-{
-    try {
-        // Convert string ID to integer
-        $taskId = (int) $id;
-        
-        // Validate the request data
-        $validatedData = $request->validate([
-            'site_id' => 'required|exists:sites,id',
-            'activity' => 'required|string',
-            'engineer_id' => 'required|exists:users,id',
-        ]);
-        
-        // Find the task
-        $task = Task::findOrFail($taskId);
-        
-        // Update the task with validated data
-        $task->update($validatedData);
-        
-        // Redirect with success message
-        return redirect()->route('projects.show', $task->project_id=10)
-                         ->with('success', 'Task updated successfully');
-                         
-    } catch (\Exception $e) {
-        // Log the error
-        \Log::error('Error updating rooftop task: ' . $e->getMessage());
-        
-        // Redirect with error message
-        return redirect()->back()
-                         ->withInput()
-                         ->with('error', 'Failed to update task: ' . $e->getMessage());
+        return view('tasks.editRooftop', compact('task', 'engineers', 'sites'));
     }
-}
+
+    /**
+     * Update the specified rooftop task in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $id
+     * @return \Illuminate\Http\Response
+     */
+    public function updateRooftop(Request $request, string $id)
+    {
+        try {
+            // Convert string ID to integer
+            $taskId = (int) $id;
+
+            // Validate the request data
+            $validatedData = $request->validate([
+                'site_id' => 'required|exists:sites,id',
+                'activity' => 'required|string',
+                'engineer_id' => 'required|exists:users,id',
+            ]);
+
+            // Find the task
+            $task = Task::findOrFail($taskId);
+
+            // Update the task with validated data
+            $task->update($validatedData);
+
+            // Redirect with success message
+            return redirect()->route('projects.show', $task->project_id = 10)
+                ->with('success', 'Task updated successfully');
+        } catch (\Exception $e) {
+            // Log the error
+            \Log::error('Error updating rooftop task: ' . $e->getMessage());
+
+            // Redirect with error message
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Failed to update task: ' . $e->getMessage());
+        }
+    }
 
 
     /**
@@ -221,23 +217,23 @@ public function updateRooftop(Request $request, string $id)
     {
         Log::info("Update target", $request->all());
         $projectId = $request->input('project_id');
-    
+
         if ($projectId == 11) {
             $request->validate([
                 'engineer_id' => 'required|exists:users,id',
                 'vendor_id' => 'required|exists:users,id',
                 'billed' => 'required|boolean',
             ]);
-    
+
             try {
                 $task = StreetlightTask::findOrFail($id);
-    
+
                 $task->engineer_id = $request->engineer_id;
                 $task->vendor_id = $request->vendor_id;
                 $task->billed = $request->billed;
-    
+
                 $task->save();
-    
+
                 return redirect()->route('projects.show', $projectId)
                     ->with('success', 'Task updated successfully.');
             } catch (\Exception $e) {
@@ -246,7 +242,7 @@ public function updateRooftop(Request $request, string $id)
             }
         }
     }
-    
+
 
     /**
      * Remove the specified resource from storage.
@@ -258,7 +254,7 @@ public function updateRooftop(Request $request, string $id)
             $task = Task::findOrFail($id);
             $task->delete();
             return redirect()->back()
-                    ->with('success', 'Task Deleted successfully.');
+                ->with('success', 'Task Deleted successfully.');
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
         }
