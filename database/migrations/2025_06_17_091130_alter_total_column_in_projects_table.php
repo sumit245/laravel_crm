@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('user_categories', function (Blueprint $table) {
+        Schema::table('projects', function (Blueprint $table) {
             //
-            $table->dropForeign(['city_category_id']);
-            $table->dropColumn('city_category_id');
-            $table->enum('city_category', ['0', '1', '2'])->nullable()->after('description');
+            $table->decimal('total', 20, 2)->change();
         });
     }
 
@@ -24,8 +22,9 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('usercategory', function (Blueprint $table) {
+        Schema::table('projects', function (Blueprint $table) {
             //
+            $table->decimal('total', 10, 2)->change();
         });
     }
 };
