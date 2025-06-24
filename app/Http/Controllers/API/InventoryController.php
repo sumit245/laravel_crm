@@ -11,6 +11,7 @@ use App\Models\Project;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -148,6 +149,71 @@ class InventoryController extends Controller
                 'message' => 'Something went wrong!',
                 'error' => $e->getMessage()
             ], 500);
+        }
+    }
+
+
+    public function replaceItem(Request $request)
+    {
+        Log::info($request->all());
+        $request->validate([
+            'old_serial_number' => 'required|string',
+            'new_serial_number' => 'required|string|different:old_serial_number',
+            'auth_code' => 'required|string',
+
+        ]);
+
+        // Step 0: Validate auth code
+        $expectedCode = env('REPLACEMENT_AUTH_CODE'); // Define this in .env
+        if ($request->auth_code !== $expectedCode) {
+            return back()->with('error', 'Invalid authentication code.');
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Step 1: Get old item
+            $oldItem = InventroyStreetLightModel::where('serial_number', $request->old_serial_number)->firstOrFail();
+            $storeId = $oldItem->store_id;
+
+            // Step 2: Check if new item exists in same store
+            $newItem = InventroyStreetLightModel::where('serial_number', $request->new_serial_number)
+                ->where('store_id', $storeId)
+                ->first();
+
+            if (!$newItem) {
+                // Insert new item with same details as old one, except serial number
+                $newItem = $oldItem->replicate();
+                $newItem->serial_number = $request->new_serial_number;
+                $newItem->quantity = 0; // Set default
+                $newItem->save();
+            }
+
+            // Step 3: Check if new item is already dispatched
+            $alreadyDispatched = InventoryDispatch::where('serial_number', $request->new_serial_number)->exists();
+
+            if (!$alreadyDispatched) {
+                $oldDispatch = InventoryDispatch::where('serial_number', $request->old_serial_number)->first();
+                if ($oldDispatch) {
+                    $newDispatch = $oldDispatch->replicate();
+                    $newDispatch->serial_number = $request->new_serial_number;
+                    $newDispatch->save();
+                }
+            }
+
+            // Step 4: Delete old dispatch
+            InventoryDispatch::where('serial_number', $request->old_serial_number)->delete();
+
+            // Step 5: Update quantity fields
+            $oldItem->update(['quantity' => 1]);
+            $newItem->update(['quantity' => 0]);
+
+            DB::commit();
+
+            return back()->with('success', 'Serial number replaced successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Replacement failed: ' . $e->getMessage());
         }
     }
 }
