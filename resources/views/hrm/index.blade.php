@@ -4,32 +4,42 @@
   <div class="container-fluid p-3">
     <div class="d-flex justify-content-between mb-3">
       <h3 class="fw-bold">New Hiring</h3>
-      <form action="{{ route("send.emails") }}" method="POST">
-        @csrf
-        <button type="submit" class="btn btn-sm btn-primary">Send Emails</button>
-      </form>
     </div>
 
-    <!-- Upload Excel Form -->
-    <form action="{{ route("import.candidates") }}" method="POST" enctype="multipart/form-data" class="mb-3">
-      @csrf
-      <div class="input-group">
-        <input type="file" name="file" class="form-control form-control-sm" required>
-        <button type="submit" class="btn btn-sm btn-primary" title="Import Candidates">
-          <i class="mdi mdi-upload"></i> Import Candidates
-        </button>
+    <!-- Import Candidates and Send Emails in one line -->
+    <div class="row mb-3">
+      <div class="col-md-10">
+        <form action="{{ route("import.candidates") }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <div class="input-group">
+            <input type="file" name="file" class="form-control form-control-sm" required>
+            <button type="submit" class="btn btn-sm btn-primary" title="Import Candidates">
+              <i class="mdi mdi-upload"></i> Import Candidates
+            </button>
+          </div>
+        </form>
+        
       </div>
-    </form>
+      <div class="col-md-2 d-flex align-items-end">
+        <form action="{{ route("send.emails") }}" method="POST" class="w-100">
+          @csrf
+          <button type="submit" class="btn btn-sm btn-primary w-100">
+            <i class="mdi mdi-email-send"></i> Send Emails
+          </button>
+        </form>
+      </div>
+    </div>
+
     <!-- Apply Filter -->
     <form method="GET" action="{{ route('candidates.index') }}" class="row g-3 mb-4">
       <div class="col-md-3">
         <label>From Date</label>
-        <input type="date" name="from_date" value="{{ request('from_date') }}" class="form-control">
+        <input type="date" name="from_date" id="from_date" value="{{ request('from_date') }}" class="form-control">
       </div>
 
       <div class="col-md-3">
         <label>To Date</label>
-        <input type="date" name="to_date" value="{{ request('to_date') }}" class="form-control">
+        <input type="date" name="to_date" id="to_date" value="{{ request('to_date') }}" class="form-control">
       </div>
 
       <div class="col-md-2">
@@ -140,13 +150,18 @@
                   <i class="mdi mdi-eye"></i>
               </a>
 
-              <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this candidate?');" style="display:inline;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip" title="Delete Staff">
+              @if ($candidate->id)
+                <button
+                  type="button"
+                  class="btn btn-icon btn-danger delete-staff"
+                  data-toggle="tooltip"
+                  title="Delete Staff"
+                  data-url="{{ route('candidates.destroy', $candidate->id) }}"
+                  onclick="deleteCandidate(this)"
+                >
                   <i class="mdi mdi-delete"></i>
                 </button>
-              </form>
+              @endif
             </td>
               <td class="text-center">
                 <span class="badge 
@@ -171,14 +186,31 @@
     </div>
 
     <!-- Pagination -->
-    <div class="d-flex justify-content-center mt-3">
+    <!-- <div class="d-flex justify-content-center mt-3">
       {{ $candidates->links() }}
-    </div>
+    </div> -->
   </div>
+
+
 @endsection
 
 @push('scripts')
 <script>
+    @if (session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: {!! json_encode(session('success')) !!}
+    });
+  @endif
+
+  @if (session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: {!! json_encode(session('error')) !!}
+    });
+  @endif
    $(document).ready(function () {
     $('.select2').select2({
       placeholder: 'Select an option',
@@ -208,6 +240,65 @@
     const checkboxes = document.querySelectorAll('.candidate-checkbox');
     checkboxes.forEach(checkbox => checkbox.checked = this.checked);
   });
+
+  // Auto-show date/time picker
+  ['from_date', 'to_date'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', function () {
+        this.showPicker && this.showPicker();
+      });
+    }
+  });
+  function deleteCandidate(button) {
+  const url = button.getAttribute('data-url');
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You won’t be able to revert this!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: 'Candidate has been deleted.',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload(); // or remove row from DOM
+          });
+        } else {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Delete failed');
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Delete Failed',
+          text: error.message || 'Something went wrong.',
+        });
+      });
+    }
+  });
+}
+
 </script>
 @endpush
 
@@ -219,6 +310,12 @@
   table.dataTable tfoot td {
       text-align: center;
   }
+
+  .form-control:read-only,  .select2-container--default .select2-selection--single:read-only{
+    background: none;
+  }
+   .select2-container--default .select2-selection--single:read-only{
+    padding: 0;
+   }
 </style>
 @endpush
-
