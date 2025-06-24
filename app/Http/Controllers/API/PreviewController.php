@@ -225,7 +225,7 @@ class PreviewController extends Controller
             'experience' => $data['experience'],
             'last_salary' => $data['last_salary'] ?? 0,
             'document_path' => json_encode($uploadedDocuments),
-            'status' => 2,
+            'status' => (int) 2,
 
             // NEW fields storing uploaded data
             'gender' => $data['gender'] ?? null,
