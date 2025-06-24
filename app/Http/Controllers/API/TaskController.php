@@ -392,11 +392,6 @@ class TaskController extends Controller
             ]);
             $site = Streetlight::findOrFail($task->site_id);
             RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
-
-            Log::info("InventoryDispatch updated: {$affected} rows", [
-                'serials' => $serials,
-                'pole_id' => $pole->id
-            ]);
         }
 
         Log::info('Pole Submitted:', $pole->toArray());
@@ -456,7 +451,6 @@ class TaskController extends Controller
             ->where('isInstallationDone', 0)
             ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
             ->get();
-        Log::info($surveyed_poles);
         // Transform the data to match the desired output structure
         $transformed_poles = $surveyed_poles->map(function ($pole) {
             return [
@@ -685,15 +679,10 @@ class TaskController extends Controller
     {
         // Fetch the pole with the given ID along with its relationships
         $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
-        Log::info("Pole details", [$pole]);
-
         $surveyImages = $this->processImagesFromJson($pole->survey_image);
         $submissionImages = $this->processImagesFromJson($pole->submission_image);
-
         // Fetch related users from the latest task
         $latestTask = $pole->task()->first();
-        Log::info("Latest Task", [$latestTask]);
-
         $installer = $latestTask?->vendor;
         $projectManager = $latestTask?->manager;
         $siteEngineer = $latestTask?->engineer;
@@ -719,7 +708,6 @@ class TaskController extends Controller
         // Check S3 config is present before attempting to generate URLs
         $bucket = config('filesystems.disks.s3.bucket');
         if (empty($bucket)) {
-            Log::error('S3 bucket is not configured!');
             return $imageUrls;
         }
 

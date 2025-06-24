@@ -98,6 +98,7 @@
 </div>
 
   @foreach ($rolePerformances as $role => $users)
+    @if($role == 'Project Manager')
     <h4 class="text-primary mb-3">{{ $role }}</h4>
     <div class="row">
       @forelse ($users as $index => $user)
@@ -143,46 +144,55 @@
 
             <!-- Action buttons -->
             <div class="action-buttons mt-3">
-             @if ($user->role === 'Project Manager')
-               <button class="btn btn-sm btn-outline-success" onclick="showVendors({{ $user->id }}, '{{ $user->name }}', {{ json_encode($user->vendors ?? []) }})">
-                 Vendors
-               </button>
-               <button class="btn btn-sm btn-outline-info" onclick="showSiteEngineers({{ $user->id }}, '{{ $user->name }}', {{ json_encode($user->siteEngineers ?? []) }})">
-                 Engineers
-               </button>
-                 @endif
+               <a href="{{ route('vendor.data', ['id' => $user->id]) }}" 
+                  class="btn btn-sm btn-outline-success">
+                  Vendors
+                </a>
+
+               <a href="{{ route('engineer.data', ['id' => $user->id]) }}" 
+                  class="btn btn-sm btn-outline-success">
+                  Engineers
+                </a>
                <a href="{{ route('staff.show', $user->id) }}" class="btn btn-sm btn-primary">
                  Details
              </a>
             </div>
           </div>
         </div>
-      @empty
-        <p class="text-muted">No data for {{ $role }}</p>
-      @endforelse
-    </div>
-  @endforeach
-</div>
-
-<!-- Vendors Modal -->
-<div class="modal fade" id="vendorsModal" tabindex="-1" aria-labelledby="vendorsModalLabel" aria-hidden="true">
+        <!--  -->
+    <div class="modal fade" id="vendorsModal-{{ $user->id }}" tabindex="-1" aria-labelledby="vendorsModalLabel-{{ $user->id }}" aria-hidden="true">
   <div class="modal-dialog modal-lg">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="vendorsModalLabel">Vendors</h5>
+        <h5 class="modal-title" id="vendorsModalLabel-{{ $user->id }}">Vendors for {{ $user->name }}</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div id="vendorsContent">
-          <!-- Vendors will be loaded here -->
-        </div>
+        @if (!empty($user->vendors))
+          <ul>
+            @foreach ($vendorIds as $id)
+              <li>{{ $vendorIds[$id] }}</li>
+            @endforeach
+          </ul>
+        @else
+          <p>No vendors available.</p>
+        @endif
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
   </div>
+    </div>
+    <!--  -->
+      @empty
+        <p class="text-muted">No data for {{ $role }}</p>
+      @endforelse
+    </div>
+  @endif
+  @endforeach
 </div>
+
 
 <!-- Site Engineers Modal -->
 <div class="modal fade" id="siteEngineersModal" tabindex="-1" aria-labelledby="siteEngineersModalLabel" aria-hidden="true">
@@ -282,85 +292,7 @@
     return true;
   }
 
-  function showVendors(userId, userName, vendors) {
-    document.getElementById('vendorsModalLabel').textContent = userName + ' - Vendors';
-    
-    let content = '';
-    if (vendors && vendors.length > 0) {
-      content = `<h6 class="mb-3"><i class="fas fa-users me-2"></i>Vendors (${vendors.length})</h6>`;
-      vendors.forEach(vendor => {
-        const statusClass = vendor.status === 'Active' ? 'bg-success' : 'bg-secondary';
-        content += `
-          <div class="vendor-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <div>
-                <h6 class="mb-1">${vendor.name}</h6>
-                <span class="badge ${statusClass}">${vendor.status}</span>
-              </div>
-              <div class="text-end">
-                <small class="text-muted">${vendor.projects} Projects</small>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-6">
-                <small><strong>Contact:</strong> ${vendor.contact}</small>
-              </div>
-              <div class="col-md-6">
-                <small><strong>Email:</strong> ${vendor.email}</small>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-    } else {
-      content = '<p class="text-muted">No vendors assigned to this manager.</p>';
-    }
-    
-    document.getElementById('vendorsContent').innerHTML = content;
-    
-    var modal = new bootstrap.Modal(document.getElementById('vendorsModal'));
-    modal.show();
-  }
-
-  function showSiteEngineers(userId, userName, engineers) {
-    document.getElementById('siteEngineersModalLabel').textContent = userName + ' - Site Engineers';
-    
-    let content = '';
-    if (engineers && engineers.length > 0) {
-      content = `<h6 class="mb-3"><i class="fas fa-map-pin me-2"></i>Site Engineers (${engineers.length})</h6>`;
-      engineers.forEach(engineer => {
-        content += `
-          <div class="engineer-card">
-            <div class="d-flex justify-content-between align-items-start mb-3">
-              <div>
-                <h6 class="mb-1">${engineer.name}</h6>
-                <span class="badge bg-outline-primary">${engineer.experience}</span>
-              </div>
-              <div class="text-end">
-                <small class="text-muted">${engineer.sites} Sites</small>
-              </div>
-            </div>
-            <div class="row">
-              <div class="col-md-6">
-                <small><strong>Contact:</strong> ${engineer.contact}</small>
-              </div>
-              <div class="col-md-6">
-                <small><strong>Email:</strong> ${engineer.email}</small>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-    } else {
-      content = '<p class="text-muted">No site engineers assigned to this manager.</p>';
-    }
-    
-    document.getElementById('siteEngineersContent').innerHTML = content;
-    
-    var modal = new bootstrap.Modal(document.getElementById('siteEngineersModal'));
-    modal.show();
-  }
-
+  
   // Initialize on page load
   document.addEventListener('DOMContentLoaded', function() {
     updateEndDateMin();

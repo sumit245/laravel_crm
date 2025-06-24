@@ -482,9 +482,6 @@ class InventoryController extends Controller
                     "isDispatched" => true
 
                 ]);
-                Log::info("Dispatching item");
-                Log::info($dispatch);
-
                 // Reduce stock from inventory
                 $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
@@ -668,5 +665,10 @@ class InventoryController extends Controller
             Log::error('Failed to return inventory item', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to return inventory item');
         }
+    }
+
+    public function replaceItem(Request $request)
+    {
+        Log::info($request);
     }
 }

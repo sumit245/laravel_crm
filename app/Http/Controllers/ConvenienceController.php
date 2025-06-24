@@ -87,7 +87,6 @@ class ConvenienceController extends Controller
     {
         try {
             // Validate request
-            Log::info('Received request to update TADA status', $request->all());
             $validated = $request->validate([
                 'status' => 'required|boolean',
             ]);

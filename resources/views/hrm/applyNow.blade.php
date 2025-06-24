@@ -875,6 +875,14 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+
+                                            <div class="card-body">
+                                                <button type="button" class="btn btn-success" onclick="addEducationEntry()">
+                                                    <i class="fas fa-plus-circle me-2"></i> Add More Education
+                                                </button>
+                                            </div>
+                                            
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
                                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="education">Previous</button>
@@ -1069,6 +1077,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
                                 </form>
                             </div>
                         </div>
@@ -1520,7 +1529,7 @@
     });
 
     const dobInput = document.getElementById('dob');
-    const dojInput = document.getElementById('date_of_joining');
+     const dojInput = document.getElementById('date_of_joining');
 
     // Optional: You can auto-focus it when the page loads or on a specific user action
     dobInput.addEventListener('click', function () {
