@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Imports\CandidatesImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -48,9 +49,24 @@ class CandidateController extends Controller
     {
         $request->validate(['file' => 'required|mimes:xlsx,csv']);
 
-        Excel::import(new CandidatesImport, $request->file('file'));
+        try {
+            Excel::import(new CandidatesImport, $request->file('file'));
 
-        return redirect()->back()->with('success', 'Candidates imported successfully.');
+            return redirect()->back()->with('success', 'Candidates imported successfully.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Check if it's a duplicate entry error
+            if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'Duplicate entry')) {
+                // Try to extract the duplicate email from the error message
+                preg_match("/Duplicate entry '([^']+)'/", $e->getMessage(), $matches);
+                $duplicateValue = $matches[1] ?? 'an existing email';
+
+                return redirect()->back()->with('error', "Import failed: Duplicate email found – $duplicateValue");
+            }
+
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
     }
 
     public function sendEmails()
@@ -114,11 +130,14 @@ class CandidateController extends Controller
 
     public function destroy($id)
     {
-        $candidate = Candidate::findOrFail($id); // fetch by id
-
+        $candidate = Candidate::findOrFail($id);
         $candidate->delete();
 
-        return redirect()->back()->with('success', 'Candidate deleted successfully.');
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Deleted successfully']);
+        }
+
+        return redirect()->back()->with('success', 'Candidate deleted.');
     }
 
 }
