@@ -418,77 +418,85 @@
   </div>
 
   <!-- Documents with Google Drive Style Thumbnails -->
-  <div class="card">
-    <div class="card-header">
-      <i class="fas fa-file-alt me-2"></i>Uploaded Documents
-    </div>
-    <div class="card-body">
-      @if (!empty($documents))
-        <div class="row">
-          @foreach ($documents as $docName => $docPath)
-            <div class="col-md-4 mb-4">
-              <div class="document-item">
-                <div class="document-title">
-                  <i class="fas fa-file me-2"></i>{{ ucfirst(str_replace("_", " ", $docName)) }}
-                </div>
-                
-                @if ($docPath)
-                  @php $fileExtension = pathinfo($docPath, PATHINFO_EXTENSION); @endphp
-                  
-                  <div class="document-thumbnail text-center">
-                    @if (in_array(strtolower($fileExtension), ["jpg", "jpeg", "png", "gif", "bmp", "webp"]))
-                      {{-- Image Thumbnail --}}
-                      <img src="{{ asset($docPath) }}" alt="{{ $docName }}" class="img-fluid">
-                    @elseif (strtolower($fileExtension) === "pdf")
-                      {{-- PDF Thumbnail --}}
-                      <div class="file-thumbnail pdf-thumbnail">
-                        <i class="fas fa-file-pdf file-icon"></i>
-                        <div class="file-extension">PDF</div>
-                      </div>
-                    @elseif (in_array(strtolower($fileExtension), ["doc", "docx"]))
-                      {{-- Word Document Thumbnail --}}
-                      <div class="file-thumbnail word-thumbnail">
-                        <i class="fas fa-file-word file-icon"></i>
-                        <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
-                      </div>
-                    @elseif (in_array(strtolower($fileExtension), ["xls", "xlsx"]))
-                      {{-- Excel Document Thumbnail --}}
-                      <div class="file-thumbnail excel-thumbnail">
-                        <i class="fas fa-file-excel file-icon"></i>
-                        <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
-                      </div>
-                    @else
-                      {{-- Other File Types --}}
-                      <div class="file-thumbnail">
-                        <i class="fas fa-file file-icon text-secondary"></i>
-                        <div class="file-extension text-secondary">{{ strtoupper($fileExtension) }}</div>
-                      </div>
-                    @endif
-                  </div>
-                  
-                  <div class="document-actions">
-                    <a href="{{ asset($docPath) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                      <i class="fas fa-eye me-1"></i> View
-                    </a>
-                    <a href="{{ asset($docPath) }}" download class="btn btn-sm btn-outline-primary">
-                      <i class="fas fa-download me-1"></i> Download
-                    </a>
-                  </div>
-                @else
-                  <div class="text-center text-muted py-4">
-                    <i class="fas fa-file-slash" style="font-size: 2rem;"></i>
-                    <p class="mt-2">Not uploaded</p>
-                  </div>
-                @endif
-              </div>
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-file-alt me-2"></i>Uploaded Documents
+  </div>
+  <div class="card-body">
+      @php
+          $paths1 = is_string($candidate->document_paths) ? json_decode($candidate->document_paths, true) : ($candidate->document_paths ?? []);
+          $paths2 = is_string($candidate->document_path) ? json_decode($candidate->document_path, true) : ($candidate->document_path ?? []);
+          $allDocuments = array_merge($paths1 ?: [], $paths2 ?: []);
+      @endphp
+
+    @if (!empty($allDocuments))
+      <div class="row">
+        @foreach ($allDocuments as $docName => $docPath)
+  @php
+    // If key is numeric, name it as Document #index
+    $label = is_numeric($docName) ? "Document #" . ($loop->iteration) : ucfirst(str_replace("_", " ", $docName));
+  @endphp
+
+  <div class="col-md-4 mb-4">
+    <div class="document-item">
+      <div class="document-title">
+        <i class="fas fa-file me-2"></i>{{ $label }}
+      </div>
+
+      @if (!empty($docPath))
+        @php $fileExtension = pathinfo($docPath, PATHINFO_EXTENSION); @endphp
+
+        <div class="document-thumbnail text-center">
+          @if (in_array(strtolower($fileExtension), ["jpg", "jpeg", "png", "gif", "bmp", "webp"]))
+            <img src="{{ $docPath }}" alt="{{ $label }}" class="img-fluid">
+          @elseif (strtolower($fileExtension) === "pdf")
+            <div class="file-thumbnail pdf-thumbnail">
+              <i class="fas fa-file-pdf file-icon"></i>
+              <div class="file-extension">PDF</div>
             </div>
-          @endforeach
+          @elseif (in_array(strtolower($fileExtension), ["doc", "docx"]))
+            <div class="file-thumbnail word-thumbnail">
+              <i class="fas fa-file-word file-icon"></i>
+              <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
+            </div>
+          @elseif (in_array(strtolower($fileExtension), ["xls", "xlsx"]))
+            <div class="file-thumbnail excel-thumbnail">
+              <i class="fas fa-file-excel file-icon"></i>
+              <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
+            </div>
+          @else
+            <div class="file-thumbnail">
+              <i class="fas fa-file file-icon text-secondary"></i>
+              <div class="file-extension text-secondary">{{ strtoupper($fileExtension) }}</div>
+            </div>
+          @endif
+        </div>
+
+        <div class="document-actions mt-2">
+          <a href="{{ $docPath }}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-eye me-1"></i> View
+          </a>
+          <a href="{{ $docPath }}" download class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-download me-1"></i> Download
+          </a>
         </div>
       @else
-        <p class="text-muted">No documents uploaded.</p>
+        <div class="text-center text-muted py-4">
+          <i class="fas fa-file-slash" style="font-size: 2rem;"></i>
+          <p class="mt-2">Not uploaded</p>
+        </div>
       @endif
     </div>
   </div>
+@endforeach
+
+      </div>
+    @else
+      <p class="text-muted">No documents uploaded.</p>
+    @endif
+  </div>
+</div>
+
 
   <!-- Additional Information -->
   <div class="card">
