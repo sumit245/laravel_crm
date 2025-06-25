@@ -558,6 +558,24 @@
         </div>
       </form>
     </div>
+    
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+        <strong>Error:</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+{{-- Optional: Display validation errors --}}
+@if ($errors->any())
+    <div class="alert alert-warning">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
