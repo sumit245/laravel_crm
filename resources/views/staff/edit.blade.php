@@ -50,7 +50,19 @@
           </div>
         </div>
       </div>
-
+      <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="manager" class="form-label">Team Lead</label>
+                <select name="manager_id" class="form-select" id="manager">
+                  <option value="">-- Select Project Manager --</option>
+                  @foreach ($projectEngineers as $teamLead)
+                    <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+          </div>
       <div class="form-group">
         <label for="name">Name</label>
         <input type="text" id="name" name="name" class="form-control" value="{{ old("name", $staff->name) }}"
