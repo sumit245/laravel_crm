@@ -172,7 +172,8 @@ class PreviewController extends Controller
 
     public function submitFinal(Request $request)
     {
-        // Get data from session
+        try {
+            // Get data from session
         $data = session('employee_form_data', []);
 
         // If no data in session, redirect back to form
@@ -257,6 +258,18 @@ class PreviewController extends Controller
 
         // Redirect to success page
         return redirect()->route('hrm.success')->with('success', 'Your application has been submitted successfully!');
+
+        } catch (\Throwable $th) {
+    if (
+        str_contains($th->getMessage(), 'Integrity constraint violation') &&
+        str_contains($th->getMessage(), 'candidates_email_unique')
+    ) {
+        return redirect()->route('hrm.success')->with('error', 'This email has already been used to submit an application.');
+    }
+
+    return redirect()->route('hrm.success')->with('error', 'Something went wrong while submitting your application. Please try again or contact HR.');
+}
+        
     }
 
     public function adminPreview($id){
