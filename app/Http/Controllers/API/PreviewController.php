@@ -8,6 +8,8 @@ use App\Models\Candidate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
+use Log;
+use PHPUnit\Event\Code\Throwable;
 
 
 
@@ -20,8 +22,10 @@ class PreviewController extends Controller
 
     public function storeAndPreview(Request $request)
     {
+        Log::info($request->all());
         // Validate the form data
-        $validated = $request->validate([
+        try{
+            $validated = $request->validate([
             'name' => 'required|string|max:50',
             'email' => 'required|email',
             'phone' => 'required|string|max:15',
@@ -48,10 +52,9 @@ class PreviewController extends Controller
             // Education (array)
             'education' => 'required|array',
             // Employment Details
+            'employment' => 'required|array',
             'position_applied_for' => 'required|string',
             'department' => 'required|string',
-            'date_of_joining' => 'required|date',
-            'previous_employer' => 'required|string',
             'experience' => 'required|numeric|min:0|max:50',
             'notice_period' => 'required|string',
             // Additional Information
@@ -124,11 +127,9 @@ class PreviewController extends Controller
             // Employment Details
             'position_applied_for' => $request->position_applied_for,
             'department' => $request->department,
-            'date_of_joining' => $request->date_of_joining,
-            'previous_employer' => $request->previous_employer,
             'experience' => $request->experience,
             'notice_period' => $request->notice_period,
-
+            'employment' => $request->employment,
             // Additional Information
             'disabilities' => $request->disabilities,
             'currently_employed' => $request->currently_employed,
@@ -155,6 +156,11 @@ class PreviewController extends Controller
 
         // Return the preview view with the data
         return view('hrm.preview', ['data' => $formData]);
+        }
+        catch (\Throwable $th) {
+            Log::error('Error storing preview form: ' . $th->getMessage());
+            return back()->with('error', 'An error occurred while processing your application. Please review the form and try again.');
+    }
     }
 
     public function preview()
