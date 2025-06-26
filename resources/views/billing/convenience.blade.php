@@ -65,26 +65,7 @@
                 <option value="3">Chicago, IL</option>
             </select>
         </div> -->
-    <div class="col-md-3">
-      <h3 class="fw-bold">Performance Overview</h3>
-      <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
-        <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
-        <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
-        <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
-        <option value="all_time" {{ request("date_filter") == "all_time" ? "selected" : "" }}>All Time</option>
-        <option value="custom" {{ request("date_filter") == "custom" ? "selected" : "" }}>Custom Range</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Approve/Reject Actions Button -->
-  <div class="d-flex justify-content-end mb-3">
-    <button id="approveBtn" class="btn btn-body-tertiary bg-secondary me-2" style="display:none;">
-      <i class="mdi mdi-check-circle-outline text-success fs-5 me-2 text-black"></i>Approve
-    </button>
-    <button id="rejectBtn" class="btn btn-danger me-2" style="display:none;">
-      <i class="mdi mdi-close-circle-outline fs-5 me-2"></i>Reject
-    </button>
+   
   </div>
 
   <!-- DataTable -->
@@ -102,7 +83,8 @@
 
               <th><input type="checkbox" id="selectAll" /></th>
               <th>Name</th>
-              <th>Employee Id</th>
+              <!-- <th>Employee Id</th> -->
+               <th>Date</th>
               <!-- <th>Department</th> -->
               <th>Distance</th>
               <th>Amount</th>
@@ -115,7 +97,8 @@
               <tr>
                 <td><input type="checkbox" class="checkboxItem" /></td>
                 <td>{{ $row->user->firstName ?? "N/A" }} {{ $row->user->lastName ?? "N/A" }}</td>
-                <td>{{ $row->user->id ?? "N/A" }}</td>
+                <!-- <td>{{ $row->user->id ?? "N/A" }}</td> -->
+                 <td>{{ \Carbon\Carbon::parse($row->created_at)->format('d-m-Y') }}</td>
                 <!-- <td>{{ $row->department ?? "N/A" }}</td> -->
                 <td>{{ $row->kilometer ?? "N/A" }}</td>
                 <td>{{ $row->amount ?? 0 }}</td>
@@ -129,7 +112,7 @@
                   @endif
                 </td>
                 <td>
-                  <a href="{{ route("convenience.details", $row->user_id) }}" class="btn btn-sm btn-info"
+                  <a href="{{ route("convenience.details", $row->id) }}" class="btn btn-sm btn-info"
                     data-toggle="tooltip" title="View Details">
                     <i class="mdi mdi-eye"></i>
                   </a>
@@ -158,6 +141,13 @@
             @endforeach
           </x-slot:tbody>
         </x-data-table>
+        <form action="{{ route('conveyance.bulkAction') }}" method="POST" id="bulkActionForm">
+          @csrf
+          <input type="hidden" name="action_type" id="action_type">
+
+          <button type="submit" class="btn btn-success btn-sm" onclick="submitBulkAction('accept')">Bulk Accept</button>
+          <button type="submit" class="btn btn-danger btn-sm" onclick="submitBulkAction('reject')">Bulk Reject</button>
+        </form>
       </div>
     </div>
   </div>
@@ -183,6 +173,25 @@
 
 @push("scripts")
   <script>
+    // Select all checkboxes
+  document.getElementById('selectAll').addEventListener('change', function () {
+    const checkboxes = document.querySelectorAll('.checkboxItem');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+  });
+
+  // Set the action type and submit form
+  function submitBulkAction(type) {
+    event.preventDefault();
+
+    const selected = document.querySelectorAll('.checkboxItem:checked');
+    if (selected.length === 0) {
+      alert('Please select at least one entry.');
+      return;
+    }
+
+    document.getElementById('action_type').value = type;
+    document.getElementById('bulkActionForm').submit();
+  }
     $(document).ready(function() {
       $(document).on('click', '.action-btn', function(e) {
         e.preventDefault();

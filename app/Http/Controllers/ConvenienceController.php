@@ -41,7 +41,7 @@ class ConvenienceController extends Controller
     public function showdetailsconveyance($id)
     {
 
-        $details = Conveyance::with(['user', 'vehicle'])->where('user_id', $id)->get();
+        $details = Conveyance::with(['user', 'vehicle'])->where('id', $id)->get();
         $appliedAmount = Conveyance::where('user_id', $id)->sum('amount');
         $disbursedAmount = Conveyance::where('user_id', $id)->where('status', 1)->sum('amount');
         $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount');
@@ -62,6 +62,22 @@ class ConvenienceController extends Controller
 
         return back()->with('success', 'Status updated to Accepted.');
     }
+
+    public function bulkAction(Request $request)
+{
+    $ids = $request->input('ids', []);
+    $action = $request->input('action_type');
+
+    if (empty($ids) || !in_array($action, ['accept', 'reject'])) {
+        return redirect()->back()->with('error', 'Invalid action or no records selected.');
+    }
+
+    $status = $action === 'accept' ? 1 : 0;
+
+    Conveyance::whereIn('id', $ids)->update(['status' => $status]);
+
+    return redirect()->back()->with('success', 'Selected conveyance requests have been ' . $action . 'ed.');
+}
 
     // Tada view
     public function tadaView()
