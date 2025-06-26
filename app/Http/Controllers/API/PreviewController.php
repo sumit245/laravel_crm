@@ -227,7 +227,8 @@ class PreviewController extends Controller
             'designation' => $data['position_applied_for'],
             'department' => $data['department'],
             'location' => explode(',', $data['current_address'])[2] ?? '',
-            'doj' => $data['date_of_joining'],
+            'dob' => $data['dob'],
+            // 'doj' => $data['date_of_joining'],
             'ctc' => $data['ctc'] ?? 0,
             'experience' => $data['experience'],
             'last_salary' => $data['last_salary'] ?? 0,
@@ -243,8 +244,9 @@ class PreviewController extends Controller
             'emergency_contact_name' => $data['emergency_contact_name'] ?? null,
             'emergency_contact_phone' => $data['emergency_contact_phone'] ?? null,
             'education' => $data['education'] ?? null,
-            'previous_employer' => $data['previous_employer'] ?? null,
+            // 'previous_employer' => $data['previous_employer'] ?? null,
             'notice_period' => $data['notice_period'] ?? null,
+            'employment' => $data['employment'] ?? null,
             'disabilities' => $data['disabilities'] ?? null,
             'currently_employed' => $data['currently_employed'] ?? null,
             'reason_for_leaving' => $data['reason_for_leaving'] ?? null,
@@ -266,15 +268,18 @@ class PreviewController extends Controller
         return redirect()->route('hrm.success')->with('success', 'Your application has been submitted successfully!');
 
         } catch (\Throwable $th) {
-    if (
-        str_contains($th->getMessage(), 'Integrity constraint violation') &&
-        str_contains($th->getMessage(), 'candidates_email_unique')
-    ) {
-        return redirect()->route('hrm.success')->with('error', 'This email has already been used to submit an application.');
-    }
+            Log::error('Error while saving candidate application: ' . $th->getMessage(), [
+                'trace' => $th->getTraceAsString()
+            ]);
+        if (
+            str_contains($th->getMessage(), 'Integrity constraint violation') &&
+            str_contains($th->getMessage(), 'candidates_email_unique')
+        ) {
+            return redirect()->route('hrm.success')->with('error', 'This email has already been used to submit an application.');
+        }
 
-    return redirect()->route('hrm.success')->with('error', 'Something went wrong while submitting your application. Please try again or contact HR.');
-}
+        return redirect()->route('hrm.success')->with('error', 'Something went wrong while submitting your application. Please try again or contact HR.');
+    }
         
     }
 
