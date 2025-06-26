@@ -64,20 +64,27 @@ class ConvenienceController extends Controller
     }
 
     public function bulkAction(Request $request)
-{
-    $ids = $request->input('ids', []);
-    $action = $request->input('action_type');
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'action_type' => 'required|string|in:accept,reject',
+            ]);
 
-    if (empty($ids) || !in_array($action, ['accept', 'reject'])) {
-        return redirect()->back()->with('error', 'Invalid action or no records selected.');
+            $status = $request->action_type === 'accept' ? 1 : 0;
+
+            Conveyance::whereIn('id', $request->ids)->update(['status' => $status]);
+
+            return redirect()->back()->with('success', 'Bulk action completed successfully.');
+        } catch (\Throwable $th) {
+            \Log::error('Bulk conveyance action failed: ' . $th->getMessage(), [
+                'request_data' => $request->all(),
+                'exception' => $th
+            ]);
+
+            return redirect()->back()->with('error', 'An error occurred while processing bulk action.');
+        }
     }
-
-    $status = $action === 'accept' ? 1 : 0;
-
-    Conveyance::whereIn('id', $ids)->update(['status' => $status]);
-
-    return redirect()->back()->with('success', 'Selected conveyance requests have been ' . $action . 'ed.');
-}
 
     // Tada view
     public function tadaView()

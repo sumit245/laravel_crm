@@ -119,7 +119,7 @@
                             <td>{{ $detail->from ?? 'N/A' }}</td>
                             <td>{{ $detail->kilometer ?? 'N/A' }}</td>
                             <td>{{ $detail->amount ?? 'N/A' }}</td>
-                            <td>
+                            <td class="text-center">
                                 @if ($detail->status === null)
                                     <span class="badge bg-warning text-dark">Pending</span>
                                 @elseif ($detail->status == 1)
@@ -128,7 +128,7 @@
                                     <span class="badge bg-danger">Rejected</span>
                                 @endif
                             </td>
-                            <td>
+                            <td class="text-center">
                                 @if ($detail->status === null)
                                     <form action="{{ route("conveyance.accept", $detail->id) }}" method="POST"
                                     style="display: inline-block;" class="action-form" data-action="accept">

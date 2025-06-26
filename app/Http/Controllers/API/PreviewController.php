@@ -22,7 +22,7 @@ class PreviewController extends Controller
 
     public function storeAndPreview(Request $request)
     {
-        Log::info($request->all());
+        // Log::info($request->all());
         // Validate the form data
         try{
             $validated = $request->validate([
@@ -268,9 +268,7 @@ class PreviewController extends Controller
         return redirect()->route('hrm.success')->with('success', 'Your application has been submitted successfully!');
 
         } catch (\Throwable $th) {
-            Log::error('Error while saving candidate application: ' . $th->getMessage(), [
-                'trace' => $th->getTraceAsString()
-            ]);
+            // Log::error('Error while saving candidate application: ' . $th->getMessage());
         if (
             str_contains($th->getMessage(), 'Integrity constraint violation') &&
             str_contains($th->getMessage(), 'candidates_email_unique')
