@@ -217,11 +217,12 @@ class PreviewController extends Controller
             }
         }
         $data['document_paths'] = $uploadedDocuments;
-
+        Log::info($data['employment']);
         $candidateData = [
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
+            
             'date_of_offer' => now()->format('Y-m-d'),
             'address' => $data['current_address'],
             'designation' => $data['position_applied_for'],
@@ -246,7 +247,7 @@ class PreviewController extends Controller
             'education' => $data['education'] ?? null,
             // 'previous_employer' => $data['previous_employer'] ?? null,
             'notice_period' => $data['notice_period'] ?? null,
-            'employment' => $data['employment'] ?? null,
+            'previous_employment' => json_encode($data['employment']) ?? null,
             'disabilities' => $data['disabilities'] ?? null,
             'currently_employed' => $data['currently_employed'] ?? null,
             'reason_for_leaving' => $data['reason_for_leaving'] ?? null,
@@ -268,7 +269,7 @@ class PreviewController extends Controller
         return redirect()->route('hrm.success')->with('success', 'Your application has been submitted successfully!');
 
         } catch (\Throwable $th) {
-            // Log::error('Error while saving candidate application: ' . $th->getMessage());
+            Log::error('Error while saving candidate application: ' . $th->getMessage());
         if (
             str_contains($th->getMessage(), 'Integrity constraint violation') &&
             str_contains($th->getMessage(), 'candidates_email_unique')
