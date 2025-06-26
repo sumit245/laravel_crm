@@ -15188,3 +15188,65 @@
 [2025-06-26 11:22:48] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"1802","rate":"2094.00","total_value":"3767353.00","make":"test","model":"test"},{"item_code":"SL02","item":"Luminary","total_quantity":"2890","rate":"2500.00","total_value":"7225000.00","make":"2025","model":"SSL20W"},{"item_code":"SL03","item":"Battery ","total_quantity":"3523","rate":"6000.00","total_value":"21138000.00","make":"2025","model":"LiFePO454Ah"}]  
 [2025-06-26 11:24:58] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"1802","rate":"2094.00","total_value":"3767353.00","make":"test","model":"test"},{"item_code":"SL02","item":"Luminary","total_quantity":"2890","rate":"2500.00","total_value":"7225000.00","make":"2025","model":"SSL20W"},{"item_code":"SL03","item":"Battery ","total_quantity":"3523","rate":"6000.00","total_value":"21138000.00","make":"2025","model":"LiFePO454Ah"}]  
 [2025-06-26 11:25:56] local.INFO: [{"item_code":"SL01","item":"Module","total_quantity":"1802","rate":"2094.00","total_value":"3767353.00","make":"test","model":"test"},{"item_code":"SL02","item":"Luminary","total_quantity":"2890","rate":"2500.00","total_value":"7225000.00","make":"2025","model":"SSL20W"},{"item_code":"SL03","item":"Battery ","total_quantity":"3523","rate":"6000.00","total_value":"21138000.00","make":"2025","model":"LiFePO454Ah"}]  
+[2025-06-26 11:44:53] local.INFO: array (
+  0 => 
+  array (
+    'previous_employer' => 'DnD',
+    'designation' => 'Majduur',
+    'department' => 'IT',
+    'date_of_joining' => '2019-06-22',
+    'experience' => '0.3',
+  ),
+)  
+[2025-06-26 11:44:53] local.ERROR: Error while saving candidate application: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'asdh@test.com' for key 'candidates_email_unique' (Connection: mysql, SQL: insert into `candidates` (`name`, `email`, `phone`, `date_of_offer`, `address`, `designation`, `department`, `location`, `dob`, `ctc`, `experience`, `last_salary`, `document_path`, `status`, `gender`, `marital_status`, `nationality`, `language`, `permanent_address`, `emergency_contact_name`, `emergency_contact_phone`, `education`, `notice_period`, `previous_employment`, `disabilities`, `currently_employed`, `reason_for_leaving`, `other_info`, `signature`, `photo_name`, `photo_s3_path`, `document_paths`, `updated_at`, `created_at`) values (asd, asdh@test.com, 9876543210, 2025-06-26, 12, qwe, ghaza, as, asd - 123123, dfdf, fddfd,  ghaza, 2007-06-19, 0, 0.1, 0, "[]", 2, Male, Single, Indian, English, 12, qwe, ghaza, as, asd - 123123, asd, 9876543210, {"1":{"qualification":"High School","institution":"nb","year":"1982","specialization":"jhb","certifications":null}}, 15, [{"previous_employer":"DnD","designation":"Majduur","department":"IT","date_of_joining":"2019-06-22","experience":"0.3"}], No, Yes, nhi, as, sdf, ?, ?, "[]", 2025-06-26 11:44:53, 2025-06-26 11:44:53))  
+[2025-06-26 11:45:06] local.INFO: array (
+  0 => 
+  array (
+    'previous_employer' => 'DnD',
+    'designation' => 'Majduur',
+    'department' => 'IT',
+    'date_of_joining' => '2019-06-22',
+    'experience' => '0.3',
+  ),
+)  
+[2025-06-26 11:45:06] local.ERROR: Error while saving candidate application: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'asdh@test.com' for key 'candidates_email_unique' (Connection: mysql, SQL: insert into `candidates` (`name`, `email`, `phone`, `date_of_offer`, `address`, `designation`, `department`, `location`, `dob`, `ctc`, `experience`, `last_salary`, `document_path`, `status`, `gender`, `marital_status`, `nationality`, `language`, `permanent_address`, `emergency_contact_name`, `emergency_contact_phone`, `education`, `notice_period`, `previous_employment`, `disabilities`, `currently_employed`, `reason_for_leaving`, `other_info`, `signature`, `photo_name`, `photo_s3_path`, `document_paths`, `updated_at`, `created_at`) values (asd, asdh@test.com, 9876543210, 2025-06-26, 12, qwe, ghaza, as, asd - 123123, dfdf, fddfd,  ghaza, 2007-06-19, 0, 0.1, 0, "[]", 2, Male, Single, Indian, English, 12, qwe, ghaza, as, asd - 123123, asd, 9876543210, {"1":{"qualification":"High School","institution":"nb","year":"1982","specialization":"jhb","certifications":null}}, 15, [{"previous_employer":"DnD","designation":"Majduur","department":"IT","date_of_joining":"2019-06-22","experience":"0.3"}], No, Yes, nhi, as, sdf, ?, ?, "[]", 2025-06-26 11:45:06, 2025-06-26 11:45:06))  
+[2025-06-26 11:47:56] local.INFO: array (
+  0 => 
+  array (
+    'previous_employer' => 'DnD',
+    'designation' => 'Majduur',
+    'department' => 'IT',
+    'date_of_joining' => '2019-06-22',
+    'experience' => '0.3',
+  ),
+  1 => 
+  array (
+    'previous_employer' => 'as',
+    'designation' => 'asd',
+    'department' => 'asd',
+    'date_of_joining' => '2025-06-10',
+    'experience' => '2',
+  ),
+)  
+[2025-06-26 11:47:56] local.ERROR: Error while saving candidate application: SQLSTATE[23000]: Integrity constraint violation: 1062 Duplicate entry 'adh@test.com' for key 'candidates_email_unique' (Connection: mysql, SQL: insert into `candidates` (`name`, `email`, `phone`, `date_of_offer`, `address`, `designation`, `department`, `location`, `dob`, `ctc`, `experience`, `last_salary`, `document_path`, `status`, `gender`, `marital_status`, `nationality`, `language`, `permanent_address`, `emergency_contact_name`, `emergency_contact_phone`, `education`, `notice_period`, `previous_employment`, `disabilities`, `currently_employed`, `reason_for_leaving`, `other_info`, `signature`, `photo_name`, `photo_s3_path`, `document_paths`, `updated_at`, `created_at`) values (asd, adh@test.com, 9876543210, 2025-06-26, 12, qwe, ghaza, as, asd - 123123, dfdf, fddfd,  ghaza, 2007-06-19, 0, 0.1, 0, "[]", 2, Male, Single, Indian, Hindi, 12, qwe, ghaza, as, asd - 123123, asd, 9876543210, {"1":{"qualification":"High School","institution":"nb","year":"1982","specialization":"jhb","certifications":null}}, 15, [{"previous_employer":"DnD","designation":"Majduur","department":"IT","date_of_joining":"2019-06-22","experience":"0.3"},{"previous_employer":"as","designation":"asd","department":"asd","date_of_joining":"2025-06-10","experience":"2"}], No, Yes, nhi, as, sdf, ?, ?, "[]", 2025-06-26 11:47:56, 2025-06-26 11:47:56))  
+[2025-06-26 11:48:16] local.INFO: array (
+  0 => 
+  array (
+    'previous_employer' => 'DnD',
+    'designation' => 'Majduur',
+    'department' => 'IT',
+    'date_of_joining' => '2019-06-22',
+    'experience' => '0.3',
+  ),
+  1 => 
+  array (
+    'previous_employer' => 'as',
+    'designation' => 'asd',
+    'department' => 'asd',
+    'date_of_joining' => '2025-06-10',
+    'experience' => '2',
+  ),
+)  
+[2025-06-26 11:48:51] local.INFO: []  
+[2025-06-26 11:48:51] local.INFO: []  
+[2025-06-26 11:48:51] local.INFO: []  

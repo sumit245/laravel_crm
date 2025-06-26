@@ -113,7 +113,7 @@
                 </td>
                 <td class="text-center">
                   <a href="{{ route("convenience.details", $row->id) }}" class="btn btn-sm btn-info"
-                    data-toggle="tooltip" title="View Details">
+                     >
                     <i class="mdi mdi-eye"></i>
                   </a>
                   <!-- @if ($row->status === null)
