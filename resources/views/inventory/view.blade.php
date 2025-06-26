@@ -97,6 +97,7 @@
       <table id="inventoryTable" class="table-striped table-bordered mt-4 table">
         <thead>
           <tr>
+             <th><input type="checkbox" id="selectAllInventory" /></th> <!-- Master checkbox -->
             <th>Item Code</th>
             <th>Item Name</th>
             <th>Manufacturer</th>
@@ -111,7 +112,10 @@
         </thead>
         <tbody>
           @foreach ($inventory as $item)
-            <tr>
+            <tr data-id="{{$item->id}}">
+              <td>
+                <input type="checkbox" class="inventoryCheckbox" value="{{ $item->id }}" />
+              </td>
               <td>{{ $item->item_code }}</td>
               <td>{{ $item->item }}</td>
               <td>{{ $item->manufacturer }}</td>
@@ -128,6 +132,13 @@
           @endforeach
         </tbody>
       </table>
+      <form id="bulkDeleteForm" action="{{ route('inventory.bulkDelete') }}" method="POST">
+        @csrf
+        <input type="hidden" name="ids[]" id="bulkDeleteIds">
+        <div id="bulkDeleteBtnContainer" class="mt-3" style="display: none;">
+          <button type="button" class="btn btn-danger btn-sm" onclick="submitBulkDelete()">Bulk Delete</button>
+        </div>
+      </form>
     </div>
   </div>
 
@@ -201,6 +212,85 @@
         }
       });
     });
+
+     // Select All checkbox logic
+    $('#selectAllInventory').on('change', function () {
+      $('.inventoryCheckbox').prop('checked', this.checked);
+    });
+
+    // Keep "select all" in sync when any single checkbox changes
+    $(document).on('change', '.inventoryCheckbox', function () {
+      const total = $('.inventoryCheckbox').length;
+      const checked = $('.inventoryCheckbox:checked').length;
+      $('#selectAllInventory').prop('checked', total === checked);
+    });
+    function toggleBulkDeleteButton() {
+    const anyChecked = document.querySelectorAll('.inventoryCheckbox:checked').length > 0;
+    document.getElementById('bulkDeleteBtnContainer').style.display = anyChecked ? 'block' : 'none';
+  }
+
+  // Add listener for checkbox change
+  document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.inventoryCheckbox').forEach(cb => {
+      cb.addEventListener('change', toggleBulkDeleteButton);
+    });
+
+    // Optional: also toggle on page load in case checkboxes are pre-checked
+    toggleBulkDeleteButton();
+  });
+    function submitBulkDelete() {
+    const selected = [];
+
+    $('.inventoryCheckbox:checked').each(function () {
+      const row = $(this).closest('tr');
+      const id = row.data('id');
+      if (id) selected.push(id);
+    });
+
+    if (selected.length === 0) {
+      Swal.fire('No items selected', 'Please select at least one item to delete.', 'warning');
+      return;
+    }
+
+    Swal.fire({
+      title: 'Are you sure?',
+      text: `You are about to delete ${selected.length} item(s). This action cannot be undone.`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#6c757d',
+      confirmButtonText: 'Yes, delete them!',
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Populate hidden input and submit
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'ids';
+        input.value = JSON.stringify(selected);
+
+        const form = document.getElementById('bulkDeleteForm');
+        form.appendChild(input);
+        form.submit();
+      }
+    });
+  }
+  @if (session('success'))
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: '{{ session('success') }}',
+        confirmButtonColor: '#28a745',
+      });
+  @endif
+
+  @if (session('error'))
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '{{ session('error') }}',
+        confirmButtonColor: '#dc3545',
+      });
+  @endif
 
     // Export to CSV function
     function exportToCSV() {
