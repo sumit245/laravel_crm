@@ -238,8 +238,7 @@ class StreetlightController extends Controller
         $assignedSiteIds = DB::table('streetlight_tasks')->pluck('site_id')->toArray();
         $panchayats = Streetlight::where('block', $block)
         ->whereNotIn('id', $assignedSiteIds)
-            ->distinct()
-            ->pluck('panchayat');
+            ->distinct()->get();
         return response()->json($panchayats);
     }
 }
