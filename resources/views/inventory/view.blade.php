@@ -134,14 +134,13 @@
       </table>
       @if (Auth::user()->role == 0)
       <form id="bulkDeleteForm" action="{{ route('inventory.bulkDelete') }}" method="POST">
-          @csrf
+        @csrf
           <input type="hidden" name="ids[]" id="bulkDeleteIds">
           <div id="bulkDeleteBtnContainer" class="mt-3" style="display: none;">
           <button type="button" class="btn btn-danger btn-sm" onclick="submitBulkDelete()">Bulk Delete</button>
         </div>
       </form>
       @endif
-      
     </div>
   </div>
 

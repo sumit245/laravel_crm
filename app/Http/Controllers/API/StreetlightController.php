@@ -174,7 +174,9 @@ class StreetlightController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
+        $usedSiteIds = StreetlightTask::pluck('site_id'); // IDs already used in tasks
         $sites = Streetlight::where('panchayat', 'LIKE', "%{$search}%")
+            ->whereNotIn('id', $usedSiteIds) // Exclude already used sites
             ->limit(10) // Limit results to improve performance
             ->get(['id', 'panchayat']);
         return response()->json($sites->map(function ($site) {
