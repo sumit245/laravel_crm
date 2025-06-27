@@ -220,7 +220,7 @@ class SiteController extends Controller
         }
 
         $site = Site::findOrFail($id);
-        return view('sites.edit', compact('site'));
+        return view('sites.edit', compact('site', 'projectId' ));
     }
 
     public function update(Request $request, string $id)
@@ -238,7 +238,8 @@ class SiteController extends Controller
                     'block',
                     'panchayat',
                     'ward',
-                    'mukhiya_contact'
+                    'mukhiya_contact',
+                    'total_poles'
                 ]));
 
                 return redirect()->route('projects.show', $request->project_id)

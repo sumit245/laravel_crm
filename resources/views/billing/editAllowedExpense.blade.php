@@ -9,46 +9,32 @@
 
   <div class="card shadow-sm">
     <div class="card-body">
-      <form>
+      <form action="{{ route('billing.updateallowedexpense', $city->id) }}" method="POST">
+        <!-- City Name -->
+         @csrf
+         @method('POST')
+        <div class="mb-3">
+          <label for="city_name" class="form-label fw-bold">City Name</label>
+          <input type="text" class="form-control" name="city_name" id="city_name" value="{{ old('city_name', $city->name) }}">
+        </div>
+
         <!-- City Category -->
         <div class="mb-3">
           <label for="city_category" class="form-label fw-bold">City Category</label>
           <select id="city_category" name="city_category" class="form-select" required>
-            <option value="" disabled selected>Select City Category</option>
-            <option value="1">Metro City</option>
-            <option value="2">Tier 1 City</option>
-            <option value="3">Tier 2 City</option>
-            <option value="4">Tourist Destination</option>
-            <option value="5">Industrial Hub</option>
+            <option value="" disabled {{ old('city_category', $city->category ?? '') === '' ? 'selected' : '' }}>
+              Select City Category
+            </option>
+            <option value="2" {{ old('city_category', $city->category ?? '') == 2 ? 'selected' : '' }}>
+              Metro City
+            </option>
+            <option value="1" {{ old('city_category', $city->category ?? '') == 1 ? 'selected' : '' }}>
+              Non Metro City
+            </option>
+            <option value="0" {{ old('city_category', $city->category ?? '') == 0 ? 'selected' : '' }}>
+              Tier 3 City
+            </option>
           </select>
-        </div>
-
-        <!-- User Category -->
-        <div class="mb-3">
-          <label for="user_category" class="form-label fw-bold">User Category</label>
-          <select id="user_category" name="user_category" class="form-select" required>
-            <option value="" disabled selected>Select User Category</option>
-            <option value="1">M1</option>
-            <option value="2">M2</option>
-            <option value="3">M3</option>
-            <option value="4">M4</option>
-            <option value="5">M5</option>
-          </select>
-        </div>
-
-        <!-- Hotel Bill Upto -->
-        <div class="mb-3">
-          <label for="hotel_bill" class="form-label fw-bold">Hotel Bill Upto (₹)</label>
-          <input
-            type="number"
-            id="hotel_bill"
-            name="hotel_bill"
-            class="form-control"
-            min="0"
-            step="0.01"
-            placeholder="Enter maximum allowed amount"
-            required
-          >
         </div>
 
         <!-- Submit Button -->

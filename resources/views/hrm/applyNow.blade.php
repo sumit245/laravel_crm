@@ -63,6 +63,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             padding-top: 20px;
             z-index: 1000;
+            transition: transform 0.3s ease;
         }
         
         /* Adjust main content to accommodate fixed sidebar */
@@ -70,17 +71,85 @@
             padding: 0;
             background-color: #f0f0f0;
             margin-left: 16.666667%;
+            transition: margin-left 0.3s ease;
         }
         
-        @media (max-width: 767.98px) {
+        /* Mobile sidebar toggle button */
+        .mobile-sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background-color: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .mobile-sidebar-toggle:hover {
+            background-color: #5e35b1;
+        }
+        
+        /* Mobile sidebar overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 991.98px) {
+
             .side-nav {
-                position: relative;
-                width: 100%;
-                min-height: auto;
+                width: 280px;
+                transform: translateX(-100%);
+            }
+            
+            .top-logo-header{
+               
+            }
+            
+            
+            .side-nav.show {
+                transform: translateX(0);
             }
             
             .main-content {
                 margin-left: 0;
+            }
+            
+            .mobile-sidebar-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 767.98px) {
+            .side-nav {
+                width: 100%;
+                transform: translateX(-100%);
+            }
+            
+            .mobile-sidebar-toggle {
+                top: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
             }
         }
         
@@ -138,6 +207,7 @@
             transition: all 0.2s ease;
             border-radius: 0 24px 24px 0;
             margin-bottom: 4px;
+            cursor: pointer;
         }
         
         .form-tabs .nav-link:hover {
@@ -297,6 +367,7 @@
             padding: 8px 24px;
             border-radius: 4px;
             transition: all 0.2s;
+            cursor: pointer;
         }
         
         .btn-primary {
@@ -397,23 +468,34 @@
            white-space: nowrap;
         }
         
-        /* Responsive Adjustments */
+        /* Top Logo Header Styles */
+        .top-logo-header {
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+            display: none;
+        }
+        
+        .top-logo-header img {
+            max-height: 100px;
+            width: auto;
+            
+        }
+        
+        .company-tagline {
+            color: white;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        /* Mobile specific adjustments */
         @media (max-width: 767.98px) {
-            .side-nav {
-                min-height: auto;
-                position: relative;
-            }
-            
-            .form-tabs {
-                display: flex;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .form-tabs .nav-item {
-                flex: 0 0 auto;
+            .main-content {
+                padding-top: 70px; /* Add space for mobile toggle button */
             }
             
             .card-header {
@@ -426,6 +508,38 @@
             
             .card-footer {
                 padding: 12px 16px;
+            }
+            
+            .section-title {
+                font-size: 0.9rem;
+            }
+            
+            .section-number {
+                width: 20px;
+                height: 20px;
+                font-size: 0.7rem;
+                margin-right: 8px;
+            }
+            
+            .progress-indicator {
+                margin: 16px;
+            }
+            
+            .logo-container img {
+                max-height: 60px;
+            }
+            
+            .top-logo-header {
+                padding: 15px 0;
+            }
+            
+            .top-logo-header img {
+                max-height: 70px;
+            }
+            
+            .company-tagline {
+                font-size: 14px;
+                margin-top: 8px;
             }
         }
         
@@ -500,12 +614,27 @@
 
 <body>
     <div class="container-scroller">
+        <!-- Top Logo Header -->
+        <div class="top-logo-header">
+            <div class="container-fluid">
+                <img src="{{ asset('images/logo.png') }}" alt="Sugs Lloyd Ltd Logo">
+            </div>
+        </div>
+        
+        <!-- Mobile Sidebar Toggle Button -->
+        <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
         <div class="container-fluid page-body-wrapper">
             <div class="main-panel">
                 <div class="container-fluid p-0">
                     <div class="row g-0">
                         <!-- Side Navigation Tabs -->
-                        <div class="col-md-3 col-lg-2 side-nav">
+                        <div class="col-md-3 col-lg-2 side-nav" id="sideNav">
                             <div class="logo-container">
                                 <img src="{{ asset('images/logo.png') }}" alt="Sugs Lloyd Ltd Logo" class="img-fluid" style="max-height: 80px;">
                             </div>
@@ -1103,6 +1232,44 @@
         const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info', 'photo', 'declaration'];
         let completedSections = [];
 
+        // Mobile sidebar functionality
+        const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+        const sideNav = document.getElementById('sideNav');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        // Toggle mobile sidebar
+        if (mobileSidebarToggle) {
+            mobileSidebarToggle.addEventListener('click', function() {
+                sideNav.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+        }
+
+        // Close sidebar when clicking overlay
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sideNav.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+        }
+
+        // Close sidebar when clicking on a nav link (mobile)
+        document.querySelectorAll('.form-tabs .nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 991.98) {
+                    sideNav.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                }
+            });
+        });
+
+        // Close sidebar on window resize if desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 991.98) {
+                sideNav.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            }
+        });
         
         // Function to update progress bar
         function updateProgress() {
@@ -1121,7 +1288,9 @@
                 
                 // Update tab status
                 const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
-                tabLink.classList.add('completed');
+                if (tabLink) {
+                    tabLink.classList.add('completed');
+                }
                 
                 updateProgress();
             }

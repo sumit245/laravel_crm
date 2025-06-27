@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\City;
 use App\Models\Conveyance;
 use App\Models\dailyfare;
+use App\Models\HotelExpense;
+use App\Models\Journey;
 use App\Models\Tada;
 use App\Models\travelfare;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Models\Vehicle;
+use DB;
 use Illuminate\Http\Request;
 use Log;
 
@@ -62,54 +66,107 @@ class ConvenienceController extends Controller
     // Tada view
     public function tadaView()
     {
-        $tadas = Tada::get();
-        $count_trip = Tada::count();
-        $total_km = Tada::sum('total_km');
-        $dailyamount = dailyfare::sum('amount');
-        $travelfare = travelfare::sum('amount');
-        $total_amount = $dailyamount + $travelfare;
-        $pendingclaimcount = Tada::where('status', null)->count();
-        return view('billing.tada', compact('tadas', 'count_trip', 'total_km', 'dailyamount', 'travelfare', 'total_amount', 'pendingclaimcount'));
+        $tadas = Tada::with(['user', 'journey', 'hotelExpense'])->get();
+        $pendingclaimcount = Tada::whereNull('status')->count();
+        $acceptedClaim = Tada::where('status', 1)->count();
+        $rejectedClaim = Tada::where('status', 0)->count();
+        $trips = $tadas->count();
+
+        $tadasWithTotals = [];
+        $grandTotalAmount = 0; // New variable to track total for all users
+
+        foreach ($tadas as $tada) {
+            // Sum Journey amounts
+            $journeyTotal = $tada->journey->sum('amount');
+
+            // Sum Hotel amounts and other charges
+            $hotelTotal = $tada->hotelExpense->sum('amount');
+            $otherChargesTotal = $tada->hotelExpense->sum('other_charges');
+
+            // Sum Miscellaneous (JSON field)
+            $miscTotal = 0;
+            if (!empty($tada->miscellaneous)) {
+                $miscItems = json_decode($tada->miscellaneous, true);
+                if (is_array($miscItems)) {
+                    foreach ($miscItems as $item) {
+                        $miscTotal += isset($item['amount']) ? $item['amount'] : 0;
+                    }
+                }
+            }
+
+            $totalAmount = $journeyTotal + $hotelTotal + $otherChargesTotal + $miscTotal;
+
+            // Accumulate grand total
+            $grandTotalAmount += $totalAmount;
+
+            // Append total to each TADA
+            $tadasWithTotals[] = [
+                'tada' => $tada,
+                'total_amount' => $totalAmount
+            ];
+        }
+
+        return view('billing.tada', compact('tadasWithTotals', 'pendingclaimcount', 'trips', 'grandTotalAmount', 'rejectedClaim', 'acceptedClaim'));
     }
+
+
 
     public function viewtadaDetails(String $id)
     {
-        $tadas = Tada::with('travelfare', 'dailyfare', 'user')->where('user_id', $id)->first();
-        $travelfares = travelfare::where('tada_id', $tadas->id)->get();
-        $dailyfares = dailyfare::where('tada_id', $tadas->id)->get();
-        $dailyamount = dailyfare::sum('amount');
-        $travelfare = travelfare::sum('amount');
-        $conveyance = $dailyamount + $travelfare;
-        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'conveyance'));
+        $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('id', $id)->first();
+        $travelfares = Journey::where('tada_id', $tadas->id)->get();
+        $dailyfares = HotelExpense::where('tada_id', $tadas->id)->get();
+        $miscData = json_decode($tadas->miscellaneous, true);
+        $otherExpense = collect($miscData)->sum('amount');
+        $travelfare = collect($travelfares)->sum('amount');
+        $hotelfare = collect($dailyfares)->sum('amount');
+        $hotelOtherCharges = collect($dailyfares)->sum('other_charges');
+        $hotelExpense = $hotelfare + $hotelOtherCharges;
+        $conveyance = $travelfare + $hotelExpense;
+        $totalamount = $conveyance + $otherExpense;
+        return view('billing.tadaDetails', compact('tadas', 'travelfares', 'dailyfares', 'hotelExpense', 'travelfare', 'otherExpense', 'totalamount'));
     }
 
-    public function updateTadaStatus(Request $request, $id)
-    {
-        try {
-            // Validate request
-            $validated = $request->validate([
-                'status' => 'required|boolean',
-            ]);
+    // public function updateTadaStatus(Request $request, $id)
+    // {
+    //     try {
+    //         // Validate request
+    //         $validated = $request->validate([
+    //             'status' => 'required|boolean',
+    //         ]);
 
-            // Find the TADA record
-            $tada = Tada::findOrFail($id);
+    //         // Find the TADA record
+    //         $tada = Tada::findOrFail($id);
 
-            // Update the status
-            $tada->status = $validated['status'];
-            $tada->update();
+    //         // Update the status
+    //         $tada->status = $validated['status'];
+    //         $tada->update();
 
-            return response()->json([
-                'status' => 'success',
-                'message' => 'TADA status updated successfully',
-                'data' => $tada
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Failed to update TADA status: ' . $e->getMessage()
-            ], 500);
-        }
-    }
+    //         return response()->json([
+    //             'status' => 'success',
+    //             'message' => 'TADA status updated successfully',
+    //             'data' => $tada
+    //         ]);
+    //     } catch (\Exception $e) {
+    //         return response()->json([
+    //             'status' => 'error',
+    //             'message' => 'Failed to update TADA status: ' . $e->getMessage()
+    //         ], 500);
+    //     }
+    // }
+
+    public function bulkUpdateStatus(Request $request)
+{
+    $validated = $request->validate([
+        'ids' => 'required|array',
+        'status' => 'required|in:0,1'
+    ]);
+
+    Tada::whereIn('id', $validated['ids'])->update(['status' => $validated['status']]);
+
+    return response()->json(['message' => 'Status updated successfully.']);
+}
+
 
     public function settings()
     {
@@ -119,27 +176,31 @@ class ConvenienceController extends Controller
         $categories = UserCategory::get();
         $vehicleNames = $vehicles->pluck('name', 'id')->toArray();
 
-        return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames'));
+        $cities = City::with('usercategory')->get();
+
+        return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames', 'cities'));
     }
 
     // Add vehicle function
     public function addVehicle(Request $request)
     {
+        // Check if category already exists
+        $existingCategory = Vehicle::where('category', $request->category)->first();
 
+        if ($existingCategory) {
+            return redirect()->back()->with('error', 'This category already exists. Please use a different category.');
+        }
+
+        // Validate the input
         $validatedData = $request->validate([
             'vehicle_name' => 'required|string|max:255',
             'category' => 'required|string|max:255',
-            'sub_category' => 'nullable|string|max:255', // "not required" should be "nullable"
+            'sub_category' => 'nullable|string|max:255',
             'rate' => 'required|numeric',
         ]);
 
-        // Create a new vehicle record
-        $vehicle = new Vehicle();
-        $vehicle->vehicle_name = $validatedData['vehicle_name'];
-        $vehicle->category = $validatedData['category'];
-        $vehicle->sub_category = $validatedData['sub_category'] ?? null; // in case it's not filled
-        $vehicle->rate = $validatedData['rate'];
-        $vehicle->save();
+        // Save the vehicle
+        Vehicle::create($validatedData);
 
         return redirect()->back()->with('success', 'Vehicle added successfully!');
     }
@@ -158,7 +219,6 @@ class ConvenienceController extends Controller
         // Validate the required fields: 'category' and 'rate'
         $validatedData = $request->validate([
             'vehicle_name' => 'nullable|string|max:100',  // Optional field
-            'category' => 'required|string',  // Category is required as a string
             'subcategory' => 'nullable|string|max:50',  // Optional field
             'rate' => 'required|numeric',  // Rate is required and must be numeric
         ]);
@@ -168,21 +228,56 @@ class ConvenienceController extends Controller
             $vehicle = Vehicle::findOrFail($id);
 
             // Update the fields using the update method
-            $vehicle->update([
-                'vehicle_name' => $validatedData['vehicle_name'] ?? $vehicle->vehicle_name, // Update only if provided
-                'category' => $validatedData['category'],  // Directly assign the incoming category value
-                'sub_category' => $validatedData['subcategory'],  // Nullable field
-                'rate' => $validatedData['rate'],  // Required field
-            ]);
+            $vehicle->update($validatedData);
 
             // Redirect to the settings page with a success message
             return redirect()->route('billing.settings')->with('success', 'Vehicle updated successfully!');
         } catch (\Exception $e) {
-            // Log the error message
             // Return to the same page with an error message
             return redirect()->back()->withErrors(['error' => 'An error occurred while updating the vehicle. Please try again.']);
         }
     }
+
+    public function deleteVehicle(Request $request)
+    {
+        $vehicleId = $request->id;
+
+        // Step 1: Delete the vehicle from the vehicles table
+        $dv = Vehicle::findOrFail($vehicleId);
+        $dv->delete();
+
+        // Step 2: Loop through all UserCategory entries and remove the vehicle ID from allowed_vehicles
+        $userCategories = UserCategory::all();
+
+        foreach ($userCategories as $category) {
+            $raw = $category->allowed_vehicles;
+
+            $allowed = [];
+
+            if (is_array($category->allowed_vehicles)) {
+                $allowed = $category->allowed_vehicles;
+            } elseif (is_string($category->allowed_vehicles)) {
+                $decoded = json_decode($category->allowed_vehicles, true);
+                $allowed = is_array($decoded) ? $decoded : [$decoded];
+            } else {
+                $allowed = [$category->allowed_vehicles];
+            }
+
+            // Remove the deleted vehicle ID
+            $updatedAllowed = array_filter($allowed, function ($id) use ($vehicleId) {
+                return $id != $vehicleId;
+            });
+
+            // Only update if something was removed
+            if (count($updatedAllowed) !== count($allowed)) {
+                $category->allowed_vehicles = json_encode(array_values($updatedAllowed));
+                $category->save();
+            }
+        }
+
+        return redirect()->back()->with('success', 'Vehicle deleted successfully!');
+    }
+
 
 
 
@@ -190,32 +285,44 @@ class ConvenienceController extends Controller
     public function editUser(Request $request)
     {
         $ue = User::find($request->id);
-        $uc = UserCategory::get();
+        $uc = DB::table('user_categories')
+                ->select(DB::raw('MIN(id) as id'), 'category_code')
+                ->groupBy('category_code')
+                ->get();
+
         return view('billing.editUser', compact('ue', 'uc'));
     }
 
-    // Delete Vehicle
-    public function deleteVehicle(Request $request)
-    {
-        $dv = Vehicle::find($request->id);
-        $dv->delete();
-        return redirect()->back()->with('success', 'Vehicle deleted successfully!');
-    }
 
     public function updateUser(Request $request)
     {
+        try {
+            Log::info('User data: ', $request->all());
 
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'category' => 'integer',
-        ]);
+            $request->validate([
+                'user_id' => 'required|exists:users,id',
+                'category' => 'required|integer|exists:user_categories,id',
+            ]);
 
-        $user = User::findOrFail($request->input('user_id'));
-        $user->category = $request->input('category');
-        $user->update();
+            $user = User::findOrFail($request->input('user_id'));
+            $userCategory = UserCategory::findOrFail($request->input('category'));
 
-        return redirect()->route('billing.settings')->with('success', 'User category updated successfully!');
+            Log::info($userCategory);
+            $user->category = $userCategory->id;
+            $user->save();
+
+            return redirect()
+                ->route('billing.settings')
+                ->with('success', 'User category updated successfully!');
+        } catch (\Exception $e) {
+            Log::error('Error updating user category: ' . $e->getMessage());
+
+            return redirect()
+                ->back()
+                ->with('error', 'An error occurred while updating the user category.');
+        }
     }
+
 
     public function viewCategory()
     {
@@ -225,38 +332,47 @@ class ConvenienceController extends Controller
     // Add Category
     public function addCategory(Request $request)
     {
-        \Log::info('Request Data: Add category', $request->all());
         $validatedData = $request->validate([
             'category' => 'required|string|max:255',
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'room_min_price' => 'nullable|numeric|min:0',
-            'room_max_price' => 'nullable|numeric|min:0',
             'vehicle_id' => 'required|array',
             'vehicle_id.*' => 'exists:vehicles,id',
+            'city_category' => 'required|numeric',
+            'daily_amount' => 'required|numeric'
         ]);
 
-        // Validate that min price is less than max price if both are provided
-        if (!empty($validatedData['room_min_price']) && !empty($validatedData['room_max_price'])) {
-            if ($validatedData['room_min_price'] > $validatedData['room_max_price']) {
-                return redirect()->back()
-                    ->withInput()
-                    ->withErrors(['room_min_price' => 'Minimum price cannot be greater than maximum price']);
-            }
+        // Custom check: ensure category + city combination is unique
+        $existing = UserCategory::where('category_code', $validatedData['category'])
+            ->where('city_category', $validatedData['city_category'])
+            ->exists();
+
+        if ($existing) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['category' => 'User category and city category already exists.']);
         }
 
-        // Save the new category
-        $category = new UserCategory(); // Assuming your model is UserCategory
-        $category->category_code = $validatedData['category'];
-        $category->name = $validatedData['name'];
-        $category->description = $validatedData['description'] ?? null;
-        $category->room_min_price = $validatedData['room_min_price'] ?? null;
-        $category->room_max_price = $validatedData['room_max_price'] ?? null;
-        $category->allowed_vehicles = json_encode($validatedData['vehicle_id']); // Store as JSON
-        $category->save();
+        try {
+            // Save the new category
+            $category = new UserCategory();
+            $category->category_code = $validatedData['category'];
+            $category->name = $validatedData['name'];
+            $category->description = $validatedData['description'] ?? null;
+            $category->allowed_vehicles = json_encode($validatedData['vehicle_id']);
+            $category->city_category = $validatedData['city_category'];
+            $category->dailyamount = $validatedData['daily_amount'];
+            $category->save();
 
-        return redirect()->route('billing.settings')->with('success', 'Category added successfully.');
+            return redirect()->route('billing.settings', ['tab' => 'category'])->with('success', 'Category added successfully.');
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->withErrors(['error' => 'An unexpected error occurred while saving the category. Please try again.']);
+        }
     }
+
 
 
     public function editCategory(Request $request)
@@ -269,27 +385,22 @@ class ConvenienceController extends Controller
     public function updateCategory(Request $request)
     {
         try {
-            \Log::info('Request Data: Update category', $request->all());
-
             $validatedData = $request->validate([
-                'category_code' => 'required|string|max:255',
+                'daily_amount' => 'required|numeric',
                 'vehicle_id' => 'required|array',
+                'vehicle_id.*' => 'exists:vehicles,id',
             ]);
-
             $category = UserCategory::find($request->category_id);
-
             if (!$category) {
                 return redirect()->back()->with('error', 'Category not found.');
             }
 
-            $category->category_code = $validatedData['category_code'];
-            $category->allowed_vehicles = $validatedData['vehicle_id'];
-
+            $category->dailyamount = $validatedData['daily_amount'];
+            $category->allowed_vehicles = json_encode($validatedData['vehicle_id']); // Store as JSON if needed
             $category->save();
 
             return redirect()->route('billing.settings')->with('success', 'Category updated successfully!');
         } catch (\Exception $e) {
-            \Log::error('Error updating category: ' . $e->getMessage());
             return redirect()->back()->with('error', 'An error occurred while updating the category.');
         }
     }
@@ -302,6 +413,37 @@ class ConvenienceController extends Controller
         $dc->delete();
         return redirect()->back()->with('success', 'Category deleted successfully!');
     }
+
+    public function editAllowedExpense($id){
+        $city = City::with('usercategory')->findOrFail($id);
+        $usercategory = UserCategory::where('id', $city->user_category_id)->first();
+        $usercategories = UserCategory::get();
+        return view('billing.editAllowedExpense', compact('city', 'usercategory', 'usercategories'));
+    }
+
+    public function updateAllowedExpense(Request $request, $id)
+    {
+        // Validate the request data
+        $validated = $request->validate([
+            'city_name' => 'string',
+            'city_category' => 'required|in:0,1,2',
+        ]);
+
+        // Find the city
+        $city = City::findOrFail($id);
+
+        // Update city model fields
+        $city->category = $validated['city_category'];
+        $city->name = $validated['city_name'];
+
+        // Save the city
+        $city->save();
+
+        // Redirect back with success message
+        return redirect()->route('billing.settings')
+                        ->with('success', 'Allowed expense updated successfully.');
+    }
+
 
 
 

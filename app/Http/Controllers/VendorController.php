@@ -170,29 +170,10 @@ class VendorController extends Controller
     {
         //
         $vendor = User::find($id);
+        $projectEngineers = User::where('role',2)->get();
         $projects = Project::all();
-        return view('uservendors.edit', compact('vendor', 'projects'));
+        return view('uservendors.edit', compact('vendor', 'projects', 'projectEngineers'));
     }
-
-    // This is only for viewing the page both these method are not in use made a common method
-    // in staff controller app
-    // public function changePassword(Request $request, $id){
-    //     $vendor = User::findOrFail($id);
-    //     return view('uservendors.change-password', compact('vendor'));
-    // }
-    // Update the vendor's password
-    // public function updatePassword(Request $request, $id)
-    // {
-    //     $request->validate([
-    //         'password' => 'required|min:8|confirmed',
-    //     ]);
-
-    //     User::where('id', $id)->update([
-    //         'password' => bcrypt($request->password),
-    //     ]);
-
-    //     return redirect()->route('uservendors.index')->with('success', 'Password updated successfully.');
-    // }
 
     /**
      * Update the specified resource in storage.
@@ -202,6 +183,8 @@ class VendorController extends Controller
 
         try {
             $validated = $request->validate([
+                'project_id' => 'required|numeric',
+                'manager_id' => 'required|numeric',
                 'name'          => 'required|string|max:255',
                 'firstName'     => 'required|string',
                 'lastName'      => 'required|string',
