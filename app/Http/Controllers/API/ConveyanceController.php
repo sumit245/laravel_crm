@@ -15,7 +15,11 @@ use App\Models\UserCategory;
 use App\Models\Vehicle;
 use DB;
 use Illuminate\Http\Request;
+
 use Illuminate\Support\Facades\DB as FacadesDB;
+
+use Log;
+
 use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
@@ -28,27 +32,7 @@ class ConveyanceController extends Controller
     {
         try {
             //code...
-            $tadas = Tada::select([
-                'meeting_visit',
-                'user_id',
-                'start_journey as start_date',
-                'end_journey as end_date',
-                'start_journey_pnr',
-                'end_journey_pnr',
-                'visit_approve',
-                'transport',
-                'objective_tour',
-                'meeting_visit',
-                'outcome_achieve',
-                'from_city as source',
-                'to_city as destination',
-                'category as categories',
-                'description_category as descriptions',
-                'total_km',
-                'rate_per_km as km_rate',
-                'Rent as rent',
-                'vehicle_no as vehicle_number',
-            ])->get();
+            $tadas = Tada::with(['journey', 'hotelExpense'])->get();
 
             return response()->json([
                 'status' => true,
@@ -120,6 +104,9 @@ class ConveyanceController extends Controller
         return response()->json($vehicle);
     }
 
+     
+
+
     /**
      * Show the form for creating a new resource.
      */
@@ -141,19 +128,21 @@ class ConveyanceController extends Controller
                 'visiting_to' => $request->visiting_to,
                 'purpose_of_visit' => $request->purpose_of_visit,
                 'outcome_achieved' => $request->outcome_achieved,
+                'amount' => $request->amount,
                 'date_of_departure' => date('Y-m-d H:i:s', strtotime($request->date_of_departure)),
                 'date_of_return' => date('Y-m-d H:i:s', strtotime($request->date_of_return)),
-                'miscellaneous' => json_encode($request->miscallaneous_expenses), // store as JSON
+                'miscellaneous' => json_encode($request->expenseEntries), // store as JSON
             ]);
 
             // Step 2: Save journeys
-            if ($request->journeys && is_array($request->journeys)) {
-                foreach ($request->journeys as $journey) {
+            if ($request->ticketEntries && is_array($request->ticketEntries)) {
+                foreach ($request->ticketEntries as $journey) {
                     Journey::create([
                         'tada_id' => $tada->id,
                         'tickets_provided_by_company' => $journey['tickets_provided_by_company'],
                         'from' => $journey['from'],
                         'to' => $journey['to'],
+                        'pnr' => $journey['pnr'],
                         'date_of_journey' => date('Y-m-d H:i:s', strtotime($journey['date_of_journey'])),
                         'mode_of_transport' => $journey['mode_of_transport'],
                         'ticket' => $journey['ticket'], // just a string path
@@ -163,8 +152,8 @@ class ConveyanceController extends Controller
             }
 
             // Step 3: Save hotel expenses
-            if ($request->hotel_expenses && is_array($request->hotel_expenses)) {
-                foreach ($request->hotel_expenses as $expense) {
+            if ($request->guestHouseEntries && is_array($request->guestHouseEntries)) {
+                foreach ($request->guestHouseEntries as $expense) {
                     HotelExpense::create([
                         'tada_id' => $tada->id,
                         'guest_house_available' => $expense['guest_house_available'],
@@ -173,8 +162,9 @@ class ConveyanceController extends Controller
                         'check_out_date' => $expense['check_out_date'],
                         'breakfast_included' => $expense['breakfast_included'] ?? null,
                         'hotel_bill' => $expense['hotel_bill'] ?? null,
+                        'hotel_bill_no' => $expense['bill_number'] ?? null,
+                        'other_charges' => $expense['other_charges'] ?? null,
                         'amount' => $expense['amount'] ?? null,
-                        'dining_cost' => $expense['dining_cost'] ?? null,
                     ]);
                 }
             }
@@ -199,21 +189,9 @@ class ConveyanceController extends Controller
                 'vehicle_category' => 'integer',
                 'user_id'          => 'integer',
                 'amount'           => 'nullable|numeric'
-                // 'image'            => 'nullable|image|mimes:jpeg,png,jpg|max:4048',
             ]);
 
-            // Upload image to S3 if present
-            // if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            //     $file = $request->file('image');
-
-            //     $uploadedImage = $this->uploadToS3($file); // No folder override
-
-            //     if (!$uploadedImage) {
-            //         throw new \Exception('Failed to upload image to S3');
-            //     }
-
-            //     $data['image'] = $uploadedImage;
-            // }
+            
 
             $conveyance = Conveyance::create($data);
 
@@ -229,20 +207,35 @@ class ConveyanceController extends Controller
         }
     }
 
-
-
-
     /**
      * Display the specified resource.
      */
-    public function show(string $id)
+    public function show($userId)
     {
-        //
+        try {
+            // Get all TADA records for this user with related journeys and hotel expenses
+            $tadas = Tada::with(['journey', 'hotelExpense'])
+                        ->where('user_id', $userId)
+                        ->get();
 
+            // Decode miscellaneous JSON for each TADA record
+            $tadas->transform(function ($tada) {
+                $tada->miscellaneous = json_decode($tada->miscellaneous);
+                return $tada;
+            });
+
+            return response()->json([
+                'user_id' => $userId,
+                'tadas' => $tadas
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to retrieve TADA: ' . $e->getMessage()], 500);
+        }
     }
 
-    public function showConveyance(string $id)
-    {
+
+     public function showConveyance(string $id){
         try {
             $conveyance = Conveyance::where('user_id', $id)->get();
             $data = $conveyance->map(function ($conv) {
@@ -309,6 +302,62 @@ class ConveyanceController extends Controller
             ]);
         }
     }
+    public function allowExpense(Request $request)
+    {
+        try {
+            $userId = $request->user_id;
+            $city = $request->city;
+            Log::info($request->user_id);
+            // Fetch city and user records
+            $cityRecord = City::where('name', $city)->first();
+            if (!$cityRecord) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'City not found.',
+                    'city' => $city
+                ], 404);
+            }
+            Log::info($cityRecord);
+
+            $user = User::find($userId);
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'User not found.',
+                    'user_id' => $userId
+                ], 404);
+            }
+
+            // Fetch allowed expense
+            $allowedExpense = UserCategory::where('category_code', $user->usercategory->category_code)
+                ->where('city_category', $cityRecord->category)
+                ->first();
+            
+            // if ($allowedExpense->isEmpty()) {
+            // return response()->json([
+            //         'status' => false,
+            //         'message' => 'No allowed expense data found for this user and city category.',
+            //         'user_category' => $user->category,
+            //         'city_category' => $cityRecord->category
+            //     ], 404);
+            // }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Allow Expense fetched successfully',
+                'city_category' => $cityRecord->category,
+                'user_category' => $user->usercategory ? $user->usercategory->category_code : null,  
+                'allowed_expense' => $allowedExpense->dailyamount
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'An error occurred while fetching allowed expense.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
     /**
      * Show the form for editing the specified resource.
@@ -330,4 +379,5 @@ class ConveyanceController extends Controller
     {
         //
     }
+
 }

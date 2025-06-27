@@ -15,6 +15,7 @@ class Journey extends Model
         'tada_id',
         'from',
         'to',
+        'pnr',
         'ticket',
         'mode_of_transport',
         'date_of_journey',

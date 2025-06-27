@@ -90,7 +90,8 @@ Route::middleware(['auth'])->group(function () {
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     // status update
-    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    // Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    Route::post('/tada/bulk-update-status', [ConvenienceController::class, 'bulkUpdateStatus']);
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle
     Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
@@ -126,7 +127,14 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
     // Delete Categories
     Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');
-
+    // City category and Allow expense
+    Route::get('/settings/edit-city-category', function () {
+    return view('billing.editCityCategory');
+        })->name('billing.editcitycategory');
+    Route::get('/settings/allowed-expense/{id}',[ConvenienceController::class, 'editAllowedExpense'])->name('billing.allowedexpense');
+    Route::post('/settings/update-allowed-expense/{id}',[ConvenienceController::class, 'updateAllowedExpense'])->name('billing.updateallowedexpense');
+    
+        
     //Convenience Details
 
     // View Bills Details
@@ -190,7 +198,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-
+    Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
+    Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
+    Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 
 });
 Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
@@ -214,14 +224,4 @@ Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
 
-Route::get('admin-preview', function () {
-    return view('hrm.adminPreview');
-})->name('admin-preview');
 
-
-Route::get('/settings/edit-city-category', function () {
-    return view('billing.editCityCategory');
-})->name('billing.editcitycategory');
-Route::get('/settings/edit-allowed-expense', function () {
-    return view('billing.editAllowedExpense');
-})->name('billing.editallowedexpense');

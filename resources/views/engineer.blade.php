@@ -165,9 +165,9 @@
                     <div class="metric">👤 Tasks: <strong>{{ $overallData['tasks'] }}</strong></div>
                     
                     <div class="action-buttons mt-3">
-                        <button class="btn btn-sm btn-outline-primary" onclick="showEngineerDetails('{{ $overallData['engineer_name'] }}', {{ $engineerId }})">
-                            View Details
-                        </button>
+                        <a href="{{ route('staff.show', $overallData['id']) }}" class="btn btn-sm btn-primary">
+                            Details
+                        </a>
                     </div>
 
                     @if($backlogCount > 0)

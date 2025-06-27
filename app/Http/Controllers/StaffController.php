@@ -587,8 +587,4 @@ class StaffController extends Controller
 
         return view('engineer', compact('engineerids', 'engineerPoleCounts', 'engineerPoleCountsToday'));
     }
-
-        
-
-
 }

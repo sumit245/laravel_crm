@@ -538,52 +538,6 @@
       @endif
     </div>
   </div>
-
-  <!-- Simple Admin Action Buttons -->
-  <div class="admin-actions">
-    <div class="d-flex justify-content-center align-items-center">
-      <!-- Approve Form -->
-        @csrf
-        <input type="hidden" name="application_id" value="{{ $data['id'] ?? '' }}">
-        <button type="submit" class="btn btn-approve">
-          <i class="fas fa-check-circle me-2"></i>
-          Approve
-        </button>
-      </form>
-
-      <!-- Reject Form -->
-        @csrf
-        <input type="hidden" name="application_id" value="{{ $data['id'] ?? '' }}">
-        <button type="submit" class="btn btn-reject">
-          <i class="fas fa-times-circle me-2"></i>
-          Reject
-        </button>
-      </form>
-    </div>
-  </div>
 </div>
 
-<script>
-// Simple confirmation dialogs
-document.addEventListener('DOMContentLoaded', function() {
-  const approveBtn = document.querySelector('.btn-approve');
-  const rejectBtn = document.querySelector('.btn-reject');
-  
-  if (approveBtn) {
-    approveBtn.addEventListener('click', function(e) {
-      if (!confirm('Are you sure you want to approve this application?')) {
-        e.preventDefault();
-      }
-    });
-  }
-  
-  if (rejectBtn) {
-    rejectBtn.addEventListener('click', function(e) {
-      if (!confirm('Are you sure you want to reject this application?')) {
-        e.preventDefault();
-      }
-    });
-  }
-});
-</script>
 @endsection
