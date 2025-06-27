@@ -417,6 +417,82 @@
 
   </div>
 
+  <!-- Employment Details -->
+   <div class="card">
+  <div class="card-header">
+    <i class="fas fa-briefcase me-2"></i>Employment Details
+  </div>
+  <div class="card-body">
+    @php
+      $employmentData = is_string($candidate->previous_employment)
+          ? json_decode($candidate->previous_employment, true)
+          : $candidate->previous_employment;
+    @endphp
+
+    {{-- Primary Employment Info --}}
+    <div class="mb-4 pb-2 border-bottom">
+      <h5 style="color: #667eea; font-weight: 600;">Current Employment</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="data-row">
+            <span class="data-label">Position Applied For:</span>
+            <span class="data-value">{{ $candidate->designation ?? 'N/A' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Department:</span>
+            <span class="data-value">{{ $candidate->department ?? 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="data-row">
+            <span class="data-label">Total Experience (Years):</span>
+            <span class="data-value">{{ $candidate->experience ?? 'N/A' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Notice Period:</span>
+            <span class="data-value">{{ $candidate->notice_period ?? 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    {{-- Previous Employment Loop --}}
+    @forelse ($employmentData ?? [] as $index => $job)
+      <div class="border-bottom mb-4 pb-3">
+        <h5 style="color: #667eea; font-weight: 600;">Previous Employment #{{ $index + 1 }}</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Previous Employer:</span>
+              <span class="data-value">{{ $job["previous_employer"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Designation:</span>
+              <span class="data-value">{{ $job["designation"] ?? "N/A" }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Department:</span>
+              <span class="data-value">{{ $job["department"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Date of Joining:</span>
+              <span class="data-value">{{ \Carbon\Carbon::parse($job["date_of_joining"] ?? null)->format('d-m-Y') ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Experience:</span>
+              <span class="data-value">{{ $job["experience"] ?? "N/A" }} years</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    @empty
+      <p class="text-muted">No previous employment information provided.</p>
+    @endforelse
+  </div>
+</div>
+
   <!-- Documents with Google Drive Style Thumbnails -->
 <div class="card">
   <div class="card-header">
