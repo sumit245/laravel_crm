@@ -88,17 +88,45 @@
 <body>
     <div class="success-container">
         <img src="{{ asset('images/logo.png') }}" alt="Sugs Lloyd Ltd Logo" class="logo">
-        
-        <div class="success-icon">
-            <i class="fas fa-check-circle"></i>
-        </div>
-        
-        <h1 class="success-title">Application Submitted Successfully!</h1>
-        
+
+        {{-- Success Icon --}}
+        @if(session('error'))
+            <div class="error-icon text-danger">
+                <i class="fas fa-exclamation-triangle fa-4x"></i>
+            </div>
+        @else
+            <div class="success-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+        @endif
+
+        {{-- Title --}}
+        <h1 class="success-title">
+            @if(session('error'))
+                Something Went Wrong
+            @else
+                Application Submitted Successfully!
+            @endif
+        </h1>
+
+        {{-- Message --}}
         <p class="success-message">
-            Thank you for completing your employee onboarding application. We have received your information and will review it shortly. You will be contacted for the next steps.
+            @if(session('error'))
+                {{ session('error') }}
+            @else
+                Thank you for completing your employee onboarding application. We have received your information and will review it shortly. You will be contacted for the next steps.
+            @endif
         </p>
-       
+
+        {{-- Optional: Back to form link --}}
+        @if(session('error'))
+            <div class="text-center mt-3">
+                <a href="{{ route('hrm.apply') }}" class="btn btn-warning">
+                    <i class="fas fa-arrow-left me-1"></i> Go Back to Form
+                </a>
+            </div>
+        @endif
     </div>
 </body>
+
 </html>

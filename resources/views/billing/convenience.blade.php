@@ -65,26 +65,7 @@
                 <option value="3">Chicago, IL</option>
             </select>
         </div> -->
-    <div class="col-md-3">
-      <h3 class="fw-bold">Performance Overview</h3>
-      <select class="form-select w-auto" name="date_filter" id="taskFilter" onchange="filterTasks()">
-        <option value="today" {{ request("date_filter") == "today" ? "selected" : "" }}>Today</option>
-        <option value="this_week" {{ request("date_filter") == "this_week" ? "selected" : "" }}>This Week</option>
-        <option value="this_month" {{ request("date_filter") == "this_month" ? "selected" : "" }}>This Month</option>
-        <option value="all_time" {{ request("date_filter") == "all_time" ? "selected" : "" }}>All Time</option>
-        <option value="custom" {{ request("date_filter") == "custom" ? "selected" : "" }}>Custom Range</option>
-      </select>
-    </div>
-  </div>
-
-  <!-- Approve/Reject Actions Button -->
-  <div class="d-flex justify-content-end mb-3">
-    <button id="approveBtn" class="btn btn-body-tertiary bg-secondary me-2" style="display:none;">
-      <i class="mdi mdi-check-circle-outline text-success fs-5 me-2 text-black"></i>Approve
-    </button>
-    <button id="rejectBtn" class="btn btn-danger me-2" style="display:none;">
-      <i class="mdi mdi-close-circle-outline fs-5 me-2"></i>Reject
-    </button>
+   
   </div>
 
   <!-- DataTable -->
@@ -102,7 +83,8 @@
 
               <th><input type="checkbox" id="selectAll" /></th>
               <th>Name</th>
-              <th>Employee Id</th>
+              <!-- <th>Employee Id</th> -->
+               <th>Date</th>
               <!-- <th>Department</th> -->
               <th>Distance</th>
               <th>Amount</th>
@@ -112,14 +94,15 @@
           </x-slot:thead>
           <x-slot:tbody>
             @foreach ($cons as $row)
-              <tr>
+              <tr data-id="{{ $row->id }}">
                 <td><input type="checkbox" class="checkboxItem" /></td>
                 <td>{{ $row->user->firstName ?? "N/A" }} {{ $row->user->lastName ?? "N/A" }}</td>
-                <td>{{ $row->user->id ?? "N/A" }}</td>
+                <!-- <td>{{ $row->user->id ?? "N/A" }}</td> -->
+                 <td>{{ \Carbon\Carbon::parse($row->created_at)->format('d-m-Y') }}</td>
                 <!-- <td>{{ $row->department ?? "N/A" }}</td> -->
                 <td>{{ $row->kilometer ?? "N/A" }}</td>
                 <td>{{ $row->amount ?? 0 }}</td>
-                <td>
+                <td class="text-center">
                   @if ($row->status === null)
                     <span class="badge bg-warning text-dark">Pending</span>
                   @elseif ($row->status == 1)
@@ -128,12 +111,12 @@
                     <span class="badge bg-danger">Rejected</span>
                   @endif
                 </td>
-                <td>
-                  <a href="{{ route("convenience.details", $row->user_id) }}" class="btn btn-sm btn-info"
-                    data-toggle="tooltip" title="View Details">
+                <td class="text-center">
+                  <a href="{{ route("convenience.details", $row->id) }}" class="btn btn-sm btn-info"
+                     >
                     <i class="mdi mdi-eye"></i>
                   </a>
-                  @if ($row->status === null)
+                  <!-- @if ($row->status === null)
                     <form action="{{ route("conveyance.accept", $row->id) }}" method="POST"
                       style="display: inline-block;" class="action-form" data-action="accept">
                       @csrf
@@ -151,13 +134,22 @@
                         <i class="mdi mdi-close"></i>
                       </button>
                     </form>
-                  @endif
+                  @endif -->
 
                 </td>
               </tr>
             @endforeach
           </x-slot:tbody>
         </x-data-table>
+        <form action="{{ route('conveyance.bulkAction') }}" method="POST" id="bulkActionForm">
+          @csrf
+          <input type="hidden" name="action_type" id="action_type">
+            <div id="bulkButtons" style="display: none;">
+              <button type="submit" class="btn btn-success btn-sm" onclick="submitBulkAction('accept')">Accept</button>
+              <button type="submit" class="btn btn-danger btn-sm" onclick="submitBulkAction('reject')">Reject</button>
+            </div>
+        </form>
+        
       </div>
     </div>
   </div>
@@ -182,35 +174,94 @@
 @endsection
 
 @push("scripts")
-  <script>
-    $(document).ready(function() {
-      $(document).on('click', '.action-btn', function(e) {
-        e.preventDefault();
+<script>
+    @if (session('success'))
+      Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: '{{ session('success') }}',
+        confirmButtonColor: '#28a745'
+      });
+    @endif
 
-        const form = $(this).closest('.action-form');
-        const action = form.data('action');
-        const actionText = action === 'accept' ? 'Accept' : 'Reject';
-        const actionColor = action === 'accept' ? '#ffc107' : '#dc3545';
+    @if (session('error'))
+      Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '{{ session('error') }}',
+        confirmButtonColor: '#dc3545'
+      });
+    @endif
+  document.getElementById('selectAll').addEventListener('change', function () {
+    const checkboxes = document.querySelectorAll('.checkboxItem');
+    checkboxes.forEach(cb => cb.checked = this.checked);
+    toggleBulkButtons();
+  });
 
-        Swal.fire({
-          title: `${actionText} this conveyance?`,
-          text: `Are you sure you want to ${action} this conveyance request? This action cannot be undone.`,
-          icon: 'warning',
-          showCancelButton: true,
-          confirmButtonColor: actionColor,
-          cancelButtonColor: '#6c757d',
-          confirmButtonText: `Yes, ${actionText}!`,
-          cancelButtonText: 'Cancel',
-        }).then((result) => {
-          if (result.isConfirmed) {
-            // Submit the form if confirmed
-            form.submit();
-          }
-        });
+  document.querySelectorAll('.checkboxItem').forEach(cb => {
+    cb.addEventListener('change', toggleBulkButtons);
+  });
+
+  function toggleBulkButtons() {
+    const selected = document.querySelectorAll('.checkboxItem:checked');
+    const bulkButtons = document.getElementById('bulkButtons');
+    bulkButtons.style.display = selected.length > 0 ? 'block' : 'none';
+  }
+
+  function submitBulkAction(type) {
+    event.preventDefault();
+
+    const selected = document.querySelectorAll('.checkboxItem:checked');
+    if (selected.length === 0) {
+      alert('Please select at least one entry.');
+      return;
+    }
+
+    // Clear old inputs
+    document.querySelectorAll('input[name="ids[]"]').forEach(e => e.remove());
+
+    // Add selected IDs to form
+    selected.forEach(cb => {
+      const row = cb.closest('tr');
+      const id = row.getAttribute('data-id');
+      const input = document.createElement('input');
+      input.type = 'hidden';
+      input.name = 'ids[]';
+      input.value = id;
+      document.getElementById('bulkActionForm').appendChild(input);
+    });
+
+    document.getElementById('action_type').value = type;
+    document.getElementById('bulkActionForm').submit();
+  }
+
+  $(document).ready(function () {
+    $(document).on('click', '.action-btn', function (e) {
+      e.preventDefault();
+      const form = $(this).closest('.action-form');
+      const action = form.data('action');
+      const actionText = action === 'accept' ? 'Accept' : 'Reject';
+      const actionColor = action === 'accept' ? '#ffc107' : '#dc3545';
+
+      Swal.fire({
+        title: `${actionText} this conveyance?`,
+        text: `Are you sure you want to ${action} this conveyance request? This action cannot be undone.`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: actionColor,
+        cancelButtonColor: '#6c757d',
+        confirmButtonText: `Yes, ${actionText}!`,
+        cancelButtonText: 'Cancel',
+      }).then((result) => {
+        if (result.isConfirmed) {
+          form.submit();
+        }
       });
     });
-  </script>
+  });
+</script>
 @endpush
+
 
 @push("styles")
   <style>

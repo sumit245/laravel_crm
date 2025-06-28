@@ -61,7 +61,7 @@
             <!-- Panchayat Search (Dependent on Block) -->
             <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
-              <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select" style="width: 100%;">
+              <select id="panchayatSearch" name="sites[]" class="form-select" style="width: 100%;">
                 <option value="">Select a Panchayat</option>
               </select>
             </div>
@@ -103,6 +103,7 @@
   </div>
 
   <!-- Table to display targets -->
+   
   <div class="table-responsive mt-3">
     <table id="targetTable" class="table-striped table-bordered table-sm mt-4 table">
       <thead>
@@ -138,6 +139,7 @@
                 class="btn btn-info btn-sm">View</a>
 
               <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-sm">Edit</a>
+              
               <form action="{{ route("tasks.destroystreetlight", $light->id) }}" method="POST" style="display: inline-block;" class="delete-task-form">
                 @csrf
                 @method("DELETE")
@@ -286,26 +288,6 @@
         placeholder: "Select a Panchayat",
         allowClear: true,
         dropdownParent: $('#addTargetModal'),
-        ajax: {
-          url: "{{ route("streetlights.search") }}", // Laravel route
-          dataType: 'json',
-          method: "GET",
-          delay: 250,
-          data: function(params) {
-            return {
-              search: params.term
-            };
-          },
-          processResults: function(data) {
-            console.log(data)
-            return {
-              results: data.map(item => ({
-                id: item.id,
-                text: item.text
-              }))
-            };
-          }
-        }
       });
       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
@@ -342,14 +324,13 @@
 
         if (block) { // You're checking 'district' instead of 'block'
           $.ajax({
-            url: '/jicr/panchayats/' + block,
+            url: '/panchayats-by-block/' + block,
             type: 'GET',
             dataType: 'json',
             success: function(data) {
               console.log(data);
               $.each(data, function(index, panchayat) {
-                $('#panchayatSearch').append('<option value="' + panchayat.panchayat + '">' + panchayat
-                  .panchayat +
+                $('#panchayatSearch').append('<option value="' + panchayat.id + '">' + panchayat.panchayat+
                   '</option>');
               });
             },

@@ -104,6 +104,8 @@ Route::middleware(['auth'])->group(function () {
     // Accept and Reject Conveyance
     Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
     Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
+    Route::post('/conveyance/bulk-action', [ConvenienceController::class, 'bulkAction'])->name('conveyance.bulkAction');
+
 
     // Conveyance details
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
@@ -160,6 +162,8 @@ Route::middleware(['auth'])->group(function () {
     // Inventory Edit
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
+    Route::post('/inventory/bulk-delete', [InventoryController::class, 'bulkDelete'])->name('inventory.bulkDelete');
+
 
     // Dispatch Inventory
     Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
@@ -198,7 +202,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-
+    Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
+    Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
+    Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 
 });
 Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
@@ -222,6 +228,4 @@ Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
 
-Route::get('admin-preview', function () {
-    return view('hrm.adminPreview');
-})->name('admin-preview');
+
