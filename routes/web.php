@@ -228,4 +228,6 @@ Route::get('apply-now', function () {
     return view('hrm.applyNow');
 })->name('apply-now');
 
-
+Route::get('privacy-policy', function(){
+    return view('privacy');
+});
