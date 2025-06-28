@@ -409,6 +409,8 @@
             <h2 class="mb-0">Employment Details</h2>
           </div>
           <div class="card-body">
+            <!--  -->
+            <div class="card-body">
             <div class="row">
               <div class="col-md-6">
                 <div class="data-row">
@@ -418,16 +420,66 @@
                 <div class="data-row">
                   <span class="data-label">Department:</span>
                   <span class="data-value">{{ $data["department"] ?? "N/A" }}</span>
-                  <div class="edit-btn">
-                    <a href="{{ route("hrm.apply") }}#employment">
-                      <i class="fas fa-edit me-2"></i> Edit
-                    </a>
-                  </div>
                 </div>
+                    <div class="data-row">
+                      <span class="data-label">Experience:</span>
+                      <span class="data-value">{{ $data["experience"] ?? 'N/A' }} years</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Notice Period:</span>
+                      <span class="data-value">{{ $data["notice_period"] ?? 'N/A' }}</span>
+                    </div>
               </div>
             </div>
           </div>
+          <hr>
+            <!--  -->
+          <h4>Previous Employer</h4>
+            @if (!empty($data['employment']) && is_array($data['employment']))
+              @foreach ($data['employment'] as $index => $emp)
+                <div class="row mb-3">
+                  <div class="col-md-6">
+                    <div class="data-row">
+                      <span class="data-label">Previous Employer:</span>
+                      <span class="data-value">{{ $emp['previous_employer'] ?? 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Department:</span>
+                      <span class="data-value">{{ $emp['department'] ?? 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Designation</span>
+                      <span class="data-value">{{ $emp['designation'] ?? 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Experience:</span>
+                      <span class="data-value">{{ $emp['experience'] ?? 'N/A' }} years</span>
+                    </div>
+                    
+                    <div class="data-row">
+                      <span class="data-label">Date of Joining:</span>
+                      <span class="data-value">{{ $emp['date_of_joining'] ?? 'N/A' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <hr>
+              @endforeach
+              <div class="edit-btn mt-3">
+                <a href="{{ route('hrm.apply') }}#employment">
+                  <i class="fas fa-edit me-2"></i> Edit
+                </a>
+              </div>
+            @else
+              <p class="text-muted">No employment details provided.</p>
+              <div class="edit-btn">
+                <a href="{{ route('hrm.apply') }}#employment">
+                  <i class="fas fa-edit me-2"></i> Add Employment Details
+                </a>
+              </div>
+            @endif
+          </div>
         </div>
+
 
         <!-- Documents -->
         <div class="card">
@@ -558,6 +610,24 @@
         </div>
       </form>
     </div>
+    
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+        <strong>Error:</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+{{-- Optional: Display validation errors --}}
+@if ($errors->any())
+    <div class="alert alert-warning">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
