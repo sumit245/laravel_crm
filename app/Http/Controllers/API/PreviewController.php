@@ -26,6 +26,7 @@ class PreviewController extends Controller
         // Validate the form data
         try{
             $validated = $request->validate([
+            'id' => 'required',
             'name' => 'required|string|max:50',
             'email' => 'required|email',
             'phone' => 'required|string|max:15',
@@ -106,6 +107,7 @@ class PreviewController extends Controller
         // Store all data in session
         $formData = [
             // Personal Information
+            'id' =>$request->id,
             'name' => $request->name,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -146,7 +148,7 @@ class PreviewController extends Controller
             'date' => $request->date,
 
             // Raw data for form fields
-            // ✅ Safely exclude files
+            // Safely exclude files
             'raw_data' => $request->except(['document_file', 'passport_photo'])
 
         ];
@@ -181,6 +183,8 @@ class PreviewController extends Controller
         try {
             // Get data from session
         $data = session('employee_form_data', []);
+        Log::info($data);
+        $id = $data['id'];
 
         // If no data in session, redirect back to form
         if (empty($data)) {
@@ -260,7 +264,11 @@ class PreviewController extends Controller
         ];
 
         // Create the candidate record
-        $candidate = Candidate::create($candidateData);
+        $candidate = Candidate::find($data['id']); // $id should be defined before
+
+        if ($candidate) {
+            $candidate->update($candidateData);
+        }
 
         // Clear the session data
         session()->forget('employee_form_data');

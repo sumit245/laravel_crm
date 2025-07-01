@@ -265,7 +265,7 @@
 
       <form action="{{ route("hrm.submit") }}" method="POST">
         @csrf
-
+        
         <!-- Personal Information -->
         <div class="card">
           <div class="card-header">

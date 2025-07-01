@@ -224,8 +224,8 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 
 
 // apply now
-Route::get('apply-now', function () {
-    return view('hrm.applyNow');
+Route::get('apply-now/{id}', function ($id) {
+    return view('hrm.applyNow', compact('id'));
 })->name('apply-now');
 
 Route::get('privacy-policy', function(){
