@@ -739,7 +739,7 @@
                                 
                                 <form id="onboarding-form" method="POST" action="{{ route('hrm.store') }}" enctype="multipart/form-data">
                                     @csrf
-                                    
+                                     <input type="hidden" name="id" value="{{ $id }}">
                                     <!-- Personal Information Section -->
                                     <div class="form-section active" id="personal-info">
                                         <div class="card mb-4">

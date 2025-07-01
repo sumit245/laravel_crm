@@ -1,0 +1,250 @@
+[2025-07-01 10:17:16] local.INFO: array (
+  'name' => 'Yashvir Singh',
+  'email' => 'yashvir1089@gmail.com',
+  'phone' => '07018579656',
+  'dob' => '2007-06-26',
+  'gender' => 'Male',
+  'marital_status' => 'Single',
+  'nationality' => 'Indian',
+  'language' => 'English',
+  'permanent_address' => '12, qwe, ghaza, as, asd - 123123',
+  'current_address' => '12, qwe, ghaza, as, asd - 123123',
+  'emergency_contact_name' => 'asd',
+  'emergency_contact_phone' => '9876543210',
+  'education' => 
+  array (
+    1 => 
+    array (
+      'qualification' => 'High School',
+      'institution' => 'nb',
+      'year' => '1982',
+      'specialization' => 'jhb',
+      'certifications' => NULL,
+    ),
+  ),
+  'position_applied_for' => 'dfdf',
+  'department' => 'fddfd',
+  'experience' => '0.1',
+  'notice_period' => '15',
+  'employment' => 
+  array (
+    0 => 
+    array (
+      'previous_employer' => 'DnD',
+      'designation' => 'Majduur',
+      'department' => 'IT',
+      'date_of_joining' => '2019-06-22',
+      'experience' => '0.3',
+    ),
+  ),
+  'disabilities' => 'No',
+  'currently_employed' => 'No',
+  'reason_for_leaving' => NULL,
+  'other_info' => NULL,
+  'documents' => 
+  array (
+    'Aadhar' => 'documents/fRaVzNQceS9BZ1BfcX9TSg5tXb5WKX8bAdyZOt6q.pdf',
+  ),
+  'document_paths' => 
+  array (
+    0 => 'documents/fRaVzNQceS9BZ1BfcX9TSg5tXb5WKX8bAdyZOt6q.pdf',
+  ),
+  'photo' => 'photos/vPxCb7lKaBGQ0QJs2WYrahgoZos0Oc0ndszdFYbQ.jpg',
+  'signature' => 'asd',
+  'date' => '2025-07-01',
+  'raw_data' => 
+  array (
+    '_token' => 'HzPlSASbOzuTCbJVAwHZF6YdnrtPd1HkU1meBqW9',
+    'id' => '4',
+    'name' => 'Yashvir Singh',
+    'email' => 'yashvir1089@gmail.com',
+    'phone' => '07018579656',
+    'dob' => '2007-06-26',
+    'gender' => 'Male',
+    'marital_status' => 'Single',
+    'nationality' => 'Indian',
+    'language' => 'English',
+    'perm_house_no' => '12',
+    'perm_street' => 'qwe',
+    'perm_city' => 'ghaza',
+    'perm_state' => 'as',
+    'perm_country' => 'asd',
+    'perm_zip' => '123123',
+    'curr_house_no' => '12',
+    'curr_street' => 'qwe',
+    'curr_city' => 'ghaza',
+    'curr_state' => 'as',
+    'curr_country' => 'asd',
+    'curr_zip' => '123123',
+    'emergency_contact_name' => 'asd',
+    'emergency_contact_phone' => '9876543210',
+    'education' => 
+    array (
+      1 => 
+      array (
+        'qualification' => 'High School',
+        'institution' => 'nb',
+        'year' => '1982',
+        'specialization' => 'jhb',
+        'certifications' => NULL,
+      ),
+    ),
+    'position_applied_for' => 'dfdf',
+    'department' => 'fddfd',
+    'experience' => '0.1',
+    'notice_period' => '15',
+    'employment' => 
+    array (
+      0 => 
+      array (
+        'previous_employer' => 'DnD',
+        'designation' => 'Majduur',
+        'department' => 'IT',
+        'date_of_joining' => '2019-06-22',
+        'experience' => '0.3',
+      ),
+    ),
+    'document_name' => 
+    array (
+      0 => 'Aadhar',
+    ),
+    'disabilities' => 'No',
+    'currently_employed' => 'No',
+    'reason_for_leaving' => NULL,
+    'other_info' => NULL,
+    'signature' => 'asd',
+    'date' => '2025-07-01',
+    'agree_terms' => 'on',
+  ),
+)  
+[2025-07-01 10:17:16] local.ERROR: Error while saving candidate application: Undefined array key "id"  
+[2025-07-01 10:19:29] local.INFO: array (
+  'id' => '4',
+  'name' => 'Yashvir Singh',
+  'email' => 'yashvir1089@gmail.com',
+  'phone' => '07018579656',
+  'dob' => '2007-06-26',
+  'gender' => 'Male',
+  'marital_status' => 'Single',
+  'nationality' => 'Indian',
+  'language' => 'English',
+  'permanent_address' => '12, qwe, ghaza, as, asd - 123123',
+  'current_address' => '12, qwe, ghaza, as, asd - 123123',
+  'emergency_contact_name' => 'asd',
+  'emergency_contact_phone' => '9876543210',
+  'education' => 
+  array (
+    1 => 
+    array (
+      'qualification' => 'High School',
+      'institution' => 'nb',
+      'year' => '1982',
+      'specialization' => 'jhb',
+      'certifications' => NULL,
+    ),
+  ),
+  'position_applied_for' => 'dfdf',
+  'department' => 'fddfd',
+  'experience' => '0.1',
+  'notice_period' => '15',
+  'employment' => 
+  array (
+    0 => 
+    array (
+      'previous_employer' => 'DnD',
+      'designation' => 'Majduur',
+      'department' => 'IT',
+      'date_of_joining' => '2019-06-22',
+      'experience' => '0.3',
+    ),
+  ),
+  'disabilities' => 'No',
+  'currently_employed' => 'No',
+  'reason_for_leaving' => NULL,
+  'other_info' => NULL,
+  'documents' => 
+  array (
+    'Aadhar' => 'documents/3Rq6jtKQeIQwUoEvizcwdKnnxaKCLDN7XQE03NSG.pdf',
+  ),
+  'document_paths' => 
+  array (
+    0 => 'documents/3Rq6jtKQeIQwUoEvizcwdKnnxaKCLDN7XQE03NSG.pdf',
+  ),
+  'photo' => 'photos/a6EcUvk88XymlN9GSh0x1btHJwjIXABUA5cYieTx.jpg',
+  'signature' => 'asd',
+  'date' => '2025-07-01',
+  'raw_data' => 
+  array (
+    '_token' => 'HzPlSASbOzuTCbJVAwHZF6YdnrtPd1HkU1meBqW9',
+    'id' => '4',
+    'name' => 'Yashvir Singh',
+    'email' => 'yashvir1089@gmail.com',
+    'phone' => '07018579656',
+    'dob' => '2007-06-26',
+    'gender' => 'Male',
+    'marital_status' => 'Single',
+    'nationality' => 'Indian',
+    'language' => 'English',
+    'perm_house_no' => '12',
+    'perm_street' => 'qwe',
+    'perm_city' => 'ghaza',
+    'perm_state' => 'as',
+    'perm_country' => 'asd',
+    'perm_zip' => '123123',
+    'curr_house_no' => '12',
+    'curr_street' => 'qwe',
+    'curr_city' => 'ghaza',
+    'curr_state' => 'as',
+    'curr_country' => 'asd',
+    'curr_zip' => '123123',
+    'emergency_contact_name' => 'asd',
+    'emergency_contact_phone' => '9876543210',
+    'education' => 
+    array (
+      1 => 
+      array (
+        'qualification' => 'High School',
+        'institution' => 'nb',
+        'year' => '1982',
+        'specialization' => 'jhb',
+        'certifications' => NULL,
+      ),
+    ),
+    'position_applied_for' => 'dfdf',
+    'department' => 'fddfd',
+    'experience' => '0.1',
+    'notice_period' => '15',
+    'employment' => 
+    array (
+      0 => 
+      array (
+        'previous_employer' => 'DnD',
+        'designation' => 'Majduur',
+        'department' => 'IT',
+        'date_of_joining' => '2019-06-22',
+        'experience' => '0.3',
+      ),
+    ),
+    'document_name' => 
+    array (
+      0 => 'Aadhar',
+    ),
+    'disabilities' => 'No',
+    'currently_employed' => 'No',
+    'reason_for_leaving' => NULL,
+    'other_info' => NULL,
+    'signature' => 'asd',
+    'date' => '2025-07-01',
+    'agree_terms' => 'on',
+  ),
+)  
+[2025-07-01 10:19:29] local.INFO: array (
+  0 => 
+  array (
+    'previous_employer' => 'DnD',
+    'designation' => 'Majduur',
+    'department' => 'IT',
+    'date_of_joining' => '2019-06-22',
+    'experience' => '0.3',
+  ),
+)  
