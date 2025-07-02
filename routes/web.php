@@ -26,7 +26,7 @@ Route::middleware(['auth'])->group(function () {
     // Home router
 
     Route::get('/vendor-data/{id}', [StaffController::class, 'vendorData'])->name('vendor.data');
-
+    Route::get('/engineer-data/{id}', [StaffController::class, 'engineerData'])->name('engineer.data');
 
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');

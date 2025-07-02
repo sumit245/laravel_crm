@@ -2,7 +2,7 @@
 @section("content")
 
 <style>
-  .vendor-overview-card {
+  .engineer-overview-card {
     border: 1px solid #dee2e6;
     border-radius: 10px;
     padding: 20px;
@@ -11,7 +11,7 @@
     background: #fff;
   }
 
-  .vendor-overview-card:hover {
+  .engineer-overview-card:hover {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
   }
 
@@ -115,15 +115,15 @@
 
 <div class="container my-4">
     <div class="d-flex justify-content-between align-items-center mb-3">
-        <h3 class="fw-bold">Vendors</h3>
-        <small class="text-muted">A quick summary of vendor activity under this manager.</small>
+        <h3 class="fw-bold">Engineers</h3>
+        <small class="text-muted">A quick summary of engineer activity under this manager.</small>
     </div>
 
     <div class="row">
-        @foreach ($vendorPoleCounts as $vendorId => $overallData)
+        @foreach ($engineerPoleCounts as $engineerId => $overallData)
             @php
-                // Get today's data for this vendor
-                $todayData = $vendorPoleCountsToday[$vendorId] ?? null;
+                // Get today's data for this engineer
+                $todayData = $engineerPoleCountsToday[$engineerId] ?? null;
                 
                 // Calculate performance percentage
                 $performancePercentage = $overallData['total_poles'] > 0 
@@ -143,12 +143,12 @@
             @endphp
             
             <div class="col-md-6 mb-4">
-                <div class="vendor-overview-card">
+                <div class="engineer-overview-card">
                     <div class="d-flex align-items-center mb-3">
-                        <img src="/placeholder.svg?height=50&width=50" alt="Vendor Profile" class="profile-img me-3">
+                        <img src="/placeholder.svg?height=50&width=50" alt="Engineer Profile" class="profile-img me-3">
                         <div>
-                            <h6 class="mb-0">{{ $overallData['vendor_name'] }}</h6>
-                            <small class="text-muted">🧾 Vendor Info</small>
+                            <h6 class="mb-0">{{ $overallData['engineer_name'] }}</h6>
+                            <small class="text-muted">👨‍🔧 Engineer Info</small>
                         </div>
                     </div>
 
@@ -161,17 +161,17 @@
                         </div>
                     </div>
 
-                    <!-- <div class="metric">📱 Mobile: <strong>+1-234-567-8901</strong></div>
-                    <div class="metric">👤 Manager: <strong>Manager Name</strong></div>
-                     -->
+                    <div class="metric">📱 ID: <strong>{{ $overallData['id'] }}</strong></div>
+                    <div class="metric">👤 Tasks: <strong>{{ $overallData['tasks'] }}</strong></div>
+                    
                     <div class="action-buttons mt-3">
-                        <a href="{{ route('staff.show', $overallData['id']) }}" class="btn btn-sm btn-primary">
-                            Details
-                        </a>
+                        <button class="btn btn-sm btn-outline-primary" onclick="showEngineerDetails('{{ $overallData['engineer_name'] }}', {{ $engineerId }})">
+                            View Details
+                        </button>
                     </div>
 
                     @if($backlogCount > 0)
-                    <div class="vendor-overview-card mt-4">
+                    <div class="engineer-overview-card mt-4">
                         <div class="d-flex justify-content-between align-items-center mb-3">
                             <h6 class="mb-0 text-dark">📋 <strong>Total Backlog</strong></h6>
                             <span class="badge badge-performance badge-medium">{{ $backlogCount }}</span>
@@ -180,7 +180,7 @@
                         <div class="metric text-dark">⏳ Pending Installations: <strong>{{ $backlogCount }}</strong></div>
 
                         <div class="action-buttons mt-3">
-                            <button class="btn btn-sm btn-outline-dark" onclick="showBacklogModal('{{ $overallData['vendor_name'] }}', {{ $vendorId }})">
+                            <button class="btn btn-sm btn-outline-dark" onclick="showBacklogModal('{{ $overallData['engineer_name'] }}', {{ $engineerId }})">
                                 View Backlog
                             </button>
                         </div>
@@ -193,7 +193,7 @@
 
                     <div class="row mt-4">
                         <div class="col-6">
-                            <div class="vendor-overview-card">
+                            <div class="engineer-overview-card">
                                 <h6 class="text-center mb-3">📅 Today's Stats</h6>
                                 <div class="detail-metric">
                                     <span class="text-muted">Total Poles</span>
@@ -214,7 +214,7 @@
                             </div>
                         </div>
                         <div class="col-6">
-                            <div class="vendor-overview-card">
+                            <div class="engineer-overview-card">
                                 <h6 class="text-center mb-3">📊 Overall Stats</h6>
                                 <div class="detail-metric">
                                     <span class="text-muted">Total Poles</span>
@@ -229,8 +229,8 @@
                                     <strong>{{ $overallData['install'] }}</strong>
                                 </div>
                                 <div class="detail-metric">
-                                    <span class="text-muted">Billed</span>
-                                    <strong>{{ $overallData['billed'] ?? 0 }}</strong>
+                                    <span class="text-muted">Tasks</span>
+                                    <strong>{{ $overallData['tasks'] }}</strong>
                                 </div>
                             </div>
                         </div>
@@ -242,17 +242,17 @@
     </div>
 </div>
 
-<!-- Vendor Details Modal -->
-<div class="modal fade" id="vendorDetailsModal" tabindex="-1" aria-labelledby="vendorDetailsModalLabel" aria-hidden="true">
+<!-- Engineer Details Modal -->
+<div class="modal fade" id="engineerDetailsModal" tabindex="-1" aria-labelledby="engineerDetailsModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="vendorDetailsModalLabel">Vendor Details</h5>
+                <h5 class="modal-title" id="engineerDetailsModalLabel">Engineer Details</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="vendorDetailsContent">
-                    <!-- Vendor details will be loaded here -->
+                <div id="engineerDetailsContent">
+                    <!-- Engineer details will be loaded here -->
                 </div>
             </div>
             <div class="modal-footer">
@@ -297,15 +297,15 @@
 </div>
 
 <script>
-// Store vendor data for JavaScript access with proper backlog sites conversion
-const vendorData = {
-    @foreach ($vendorPoleCounts as $vendorId => $overallData)
-        {{ $vendorId }}: {
+// Store engineer data for JavaScript access with proper backlog sites conversion
+const engineerData = {
+    @foreach ($engineerPoleCounts as $engineerId => $overallData)
+        {{ $engineerId }}: {
             overall: @json($overallData),
-            today: @json($vendorPoleCountsToday[$vendorId] ?? null),
+            today: @json($engineerPoleCountsToday[$engineerId] ?? null),
             backlogSites: [
-                @if(isset($vendorPoleCountsToday[$vendorId]) && isset($vendorPoleCountsToday[$vendorId]['backlog_sites']))
-                    @foreach($vendorPoleCountsToday[$vendorId]['backlog_sites'] as $site)
+                @if(isset($engineerPoleCountsToday[$engineerId]) && isset($engineerPoleCountsToday[$engineerId]['backlog_sites']))
+                    @foreach($engineerPoleCountsToday[$engineerId]['backlog_sites'] as $site)
                         {
                             district: "{{ $site->district }}",
                             block: "{{ $site->block }}",
@@ -320,27 +320,23 @@ const vendorData = {
     @endforeach
 };
 
-function showVendorDetails(vendorName, vendorId) {
-    document.getElementById('vendorDetailsModalLabel').textContent = vendorName + ' - Vendor Details';
+function showEngineerDetails(engineerName, engineerId) {
+    document.getElementById('engineerDetailsModalLabel').textContent = engineerName + ' - Engineer Details';
     
-    const vendor = vendorData[vendorId];
-    const overall = vendor.overall;
-    const today = vendor.today;
+    const engineer = engineerData[engineerId];
+    const overall = engineer.overall;
+    const today = engineer.today;
 
     let content = `
         <div class="supplier-card">
-            <h6 class="mb-3">Vendor Information</h6>
+            <h6 class="mb-3">Engineer Information</h6>
             <div class="detail-metric">
-                <span>Vendor Name</span>
-                <strong>${vendorName}</strong>
+                <span>Engineer Name</span>
+                <strong>${engineerName}</strong>
             </div>
             <div class="detail-metric">
-                <span>Mobile Number</span>
-                <strong>+1-234-567-8901</strong>
-            </div>
-            <div class="detail-metric">
-                <span>Manager</span>
-                <strong>Manager Name</strong>
+                <span>Engineer ID</span>
+                <strong>${overall.id}</strong>
             </div>
         </div>
         
@@ -359,8 +355,8 @@ function showVendorDetails(vendorName, vendorId) {
                 <strong>${overall.install}</strong>
             </div>
             <div class="detail-metric">
-                <span>Billed</span>
-                <strong>${overall.billed || 0}</strong>
+                <span>Total Tasks</span>
+                <strong>${overall.tasks}</strong>
             </div>
         </div>`;
 
@@ -385,33 +381,40 @@ function showVendorDetails(vendorName, vendorId) {
                 <strong>${today.tasks}</strong>
             </div>
             <div class="detail-metric">
-                <span>Backlog Today</span>
+                <span>Today's Target</span>
+                <strong>${today.today_target}</strong>
+            </div>
+            <div class="detail-metric">
+                <span>Backlog</span>
                 <strong>${today.backlog}</strong>
             </div>
         </div>`;
     }
 
-    document.getElementById('vendorDetailsContent').innerHTML = content;
+    document.getElementById('engineerDetailsContent').innerHTML = content;
 
-    var modal = new bootstrap.Modal(document.getElementById('vendorDetailsModal'));
+    var modal = new bootstrap.Modal(document.getElementById('engineerDetailsModal'));
     modal.show();
 }
 
-function showBacklogModal(vendorName, vendorId) {
-    document.getElementById('backlogModalLabel').textContent = vendorName + ' - Backlog Details';
+function showBacklogModal(engineerName, engineerId) {
+    document.getElementById('backlogModalLabel').textContent = engineerName + ' - Backlog Details';
     
+    // Destroy existing DataTable if it exists
     if ($.fn.DataTable.isDataTable('#backlogTable')) {
         $('#backlogTable').DataTable().destroy();
     }
     
+    // Clear existing table data
     const tableBody = document.getElementById('backlogTableBody');
     tableBody.innerHTML = '';
     
-    const vendor = vendorData[vendorId];
-    const backlogSites = vendor.backlogSites;
+    // Get the specific engineer's data
+    const engineer = engineerData[engineerId];
+    const backlogSites = engineer.backlogSites;
     
-    console.log('Vendor ID:', vendorId);
-    console.log('Vendor Name:', vendorName);
+    console.log('Engineer ID:', engineerId);
+    console.log('Engineer Name:', engineerName);
     console.log('Backlog Sites:', backlogSites);
     
     if (backlogSites && backlogSites.length > 0) {
@@ -433,6 +436,7 @@ function showBacklogModal(vendorName, vendorId) {
         tableBody.appendChild(row);
     }
 
+    // Initialize DataTable after populating data
     $('#backlogTable').DataTable({
         paging: true,
         searching: true,
@@ -440,7 +444,7 @@ function showBacklogModal(vendorName, vendorId) {
         info: true,
         order: [[0, 'asc']],
         responsive: true,
-        destroy: true 
+        destroy: true // This ensures clean reinitialization
     });
 
     var modal = new bootstrap.Modal(document.getElementById('backlogModal'));
