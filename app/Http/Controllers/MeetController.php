@@ -98,7 +98,7 @@ class MeetController extends Controller
 
     public function show(Meet $meet)
     {
-        return view('meets.show', compact('meet'));
+        return view('review-meetings.show', compact('meet'));
     }
 
     public function edit(Meet $meet)
