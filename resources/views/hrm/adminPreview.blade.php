@@ -300,37 +300,37 @@
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Full Name:</span>
-            <span class="data-value">{{ $data["personalInfo"]["name"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->name ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Email:</span>
-            <span class="data-value">{{ $data["personalInfo"]["email"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->email ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Phone:</span>
-            <span class="data-value">{{ $data["personalInfo"]["phone"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->phone ?? "N/A" }}</span>
           </div>
           <div class="data-row">
-            <span class="data-label">Date of Birth:</span>
-            <span class="data-value">{{ $data["personalInfo"]["dob"] ?? "N/A" }}</span>
+            <span class="data-label">Date of Offer:</span>
+            <span class="data-value">{{ $candidate->date_of_offer ?? "N/A" }}</span>
           </div>
         </div>
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Gender:</span>
-            <span class="data-value">{{ $data["personalInfo"]["gender"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->gender ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Marital Status:</span>
-            <span class="data-value">{{ $data["personalInfo"]["maritalStatus"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->marital_status ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Nationality:</span>
-            <span class="data-value">{{ $data["personalInfo"]["nationality"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->nationality ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Preferred Language:</span>
-            <span class="data-value">{{ $data["personalInfo"]["language"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->language ?? "N/A" }}</span>
           </div>
         </div>
       </div>
@@ -348,21 +348,20 @@
           <div class="data-row">
             <span class="data-label">Permanent Address:</span>
             <span class="data-value">
-              {{ isset($data["contactInfo"]["permanentAddress"]) ? implode(", ", array_filter($data["contactInfo"]["permanentAddress"])) : "N/A" }}
+              {{ $candidate->permanent_address ?? "N/A" }}
             </span>
           </div>
           <div class="data-row">
             <span class="data-label">Current Address:</span>
             <span class="data-value">
-              {{ isset($data["contactInfo"]["currentAddress"]) ? implode(", ", array_filter($data["contactInfo"]["currentAddress"])) : "N/A" }}
+              {{ $candidate->address ?? "N/A" }}
             </span>
           </div>
         </div>
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Emergency Contact:</span>
-            <span class="data-value">{{ $data["contactInfo"]["emergencyContact"]["name"] ?? "N/A" }}
-              ({{ $data["contactInfo"]["emergencyContact"]["phone"] ?? "N/A" }})</span>
+            <span class="data-value">{{ $candidate->emergency_contact_name ?? "N/A"}} - {{  $candidate->emergency_contact_phone ?? "N/A" }}</span>
           </div>
         </div>
       </div>
@@ -375,114 +374,205 @@
       <i class="fas fa-graduation-cap me-2"></i>Educational Background
     </div>
     <div class="card-body">
-      @forelse ($data['education'] ?? [] as $index => $edu)
-        <div class="border-bottom mb-4 pb-3">
-          <h5 style="color: #667eea; font-weight: 600;">Education #{{ $index + 1 }}</h5>
-          <div class="row">
-            <div class="col-md-6">
-              <div class="data-row">
-                <span class="data-label">Qualification:</span>
-                <span class="data-value">{{ $edu["qualification"] ?? "N/A" }}</span>
-              </div>
-              <div class="data-row">
-                <span class="data-label">Institution:</span>
-                <span class="data-value">{{ $edu["institution"] ?? "N/A" }}</span>
-              </div>
+      @php
+          $educationData = is_string($candidate->education)
+              ? json_decode($candidate->education, true)
+              : $candidate->education;
+      @endphp
+
+    @forelse ($educationData ?? [] as $index => $edu)
+      <div class="border-bottom mb-4 pb-3">
+        <h5 style="color: #667eea; font-weight: 600;">Education #{{ $index }}</h5>
+        <div class="row">
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Qualification:</span>
+              <span class="data-value">{{ $edu["qualification"] ?? "N/A" }}</span>
             </div>
-            <div class="col-md-6">
-              <div class="data-row">
-                <span class="data-label">Year:</span>
-                <span class="data-value">{{ $edu["year"] ?? "N/A" }}</span>
-              </div>
-              <div class="data-row">
-                <span class="data-label">Specialization:</span>
-                <span class="data-value">{{ $edu["specialization"] ?? "N/A" }}</span>
-              </div>
-              <div class="data-row">
-                <span class="data-label">Certifications:</span>
-                <span class="data-value">{{ $edu["certifications"] ?? "N/A" }}</span>
-              </div>
+            <div class="data-row">
+              <span class="data-label">Institution:</span>
+              <span class="data-value">{{ $edu["institution"] ?? "N/A" }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Year:</span>
+              <span class="data-value">{{ $edu["year"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Specialization:</span>
+              <span class="data-value">{{ $edu["specialization"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Certifications:</span>
+              <span class="data-value">{{ $edu["certifications"] ?? "N/A" }}</span>
             </div>
           </div>
         </div>
-      @empty
-        <p class="text-muted">No educational information provided.</p>
-      @endforelse
-    </div>
+      </div>
+    @empty
+      <p class="text-muted">No educational information provided.</p>
+    @endforelse
   </div>
 
-  <!-- Documents with Google Drive Style Thumbnails -->
-  <div class="card">
-    <div class="card-header">
-      <i class="fas fa-file-alt me-2"></i>Uploaded Documents
+  </div>
+
+  <!-- Employment Details -->
+   <div class="card">
+  <div class="card-header">
+    <i class="fas fa-briefcase me-2"></i>Employment Details
+  </div>
+  <div class="card-body">
+    @php
+      $employmentData = is_string($candidate->previous_employment)
+          ? json_decode($candidate->previous_employment, true)
+          : $candidate->previous_employment;
+    @endphp
+
+    {{-- Primary Employment Info --}}
+    <div class="mb-4 pb-2 border-bottom">
+      <h5 style="color: #667eea; font-weight: 600;">Current Employment</h5>
+      <div class="row">
+        <div class="col-md-6">
+          <div class="data-row">
+            <span class="data-label">Position Applied For:</span>
+            <span class="data-value">{{ $candidate->designation ?? 'N/A' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Department:</span>
+            <span class="data-value">{{ $candidate->department ?? 'N/A' }}</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="data-row">
+            <span class="data-label">Total Experience (Years):</span>
+            <span class="data-value">{{ $candidate->experience ?? 'N/A' }}</span>
+          </div>
+          <div class="data-row">
+            <span class="data-label">Notice Period:</span>
+            <span class="data-value">{{ $candidate->notice_period ?? 'N/A' }}</span>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="card-body">
-      @if (!empty($documents))
+
+    {{-- Previous Employment Loop --}}
+    @forelse ($employmentData ?? [] as $index => $job)
+      <div class="border-bottom mb-4 pb-3">
+        <h5 style="color: #667eea; font-weight: 600;">Previous Employment #{{ $index + 1 }}</h5>
         <div class="row">
-          @foreach ($documents as $docName => $docPath)
-            <div class="col-md-4 mb-4">
-              <div class="document-item">
-                <div class="document-title">
-                  <i class="fas fa-file me-2"></i>{{ ucfirst(str_replace("_", " ", $docName)) }}
-                </div>
-                
-                @if ($docPath)
-                  @php $fileExtension = pathinfo($docPath, PATHINFO_EXTENSION); @endphp
-                  
-                  <div class="document-thumbnail text-center">
-                    @if (in_array(strtolower($fileExtension), ["jpg", "jpeg", "png", "gif", "bmp", "webp"]))
-                      {{-- Image Thumbnail --}}
-                      <img src="{{ asset($docPath) }}" alt="{{ $docName }}" class="img-fluid">
-                    @elseif (strtolower($fileExtension) === "pdf")
-                      {{-- PDF Thumbnail --}}
-                      <div class="file-thumbnail pdf-thumbnail">
-                        <i class="fas fa-file-pdf file-icon"></i>
-                        <div class="file-extension">PDF</div>
-                      </div>
-                    @elseif (in_array(strtolower($fileExtension), ["doc", "docx"]))
-                      {{-- Word Document Thumbnail --}}
-                      <div class="file-thumbnail word-thumbnail">
-                        <i class="fas fa-file-word file-icon"></i>
-                        <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
-                      </div>
-                    @elseif (in_array(strtolower($fileExtension), ["xls", "xlsx"]))
-                      {{-- Excel Document Thumbnail --}}
-                      <div class="file-thumbnail excel-thumbnail">
-                        <i class="fas fa-file-excel file-icon"></i>
-                        <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
-                      </div>
-                    @else
-                      {{-- Other File Types --}}
-                      <div class="file-thumbnail">
-                        <i class="fas fa-file file-icon text-secondary"></i>
-                        <div class="file-extension text-secondary">{{ strtoupper($fileExtension) }}</div>
-                      </div>
-                    @endif
-                  </div>
-                  
-                  <div class="document-actions">
-                    <a href="{{ asset($docPath) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                      <i class="fas fa-eye me-1"></i> View
-                    </a>
-                    <a href="{{ asset($docPath) }}" download class="btn btn-sm btn-outline-primary">
-                      <i class="fas fa-download me-1"></i> Download
-                    </a>
-                  </div>
-                @else
-                  <div class="text-center text-muted py-4">
-                    <i class="fas fa-file-slash" style="font-size: 2rem;"></i>
-                    <p class="mt-2">Not uploaded</p>
-                  </div>
-                @endif
-              </div>
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Previous Employer:</span>
+              <span class="data-value">{{ $job["previous_employer"] ?? "N/A" }}</span>
             </div>
-          @endforeach
+            <div class="data-row">
+              <span class="data-label">Designation:</span>
+              <span class="data-value">{{ $job["designation"] ?? "N/A" }}</span>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="data-row">
+              <span class="data-label">Department:</span>
+              <span class="data-value">{{ $job["department"] ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Date of Joining:</span>
+              <span class="data-value">{{ \Carbon\Carbon::parse($job["date_of_joining"] ?? null)->format('d-m-Y') ?? "N/A" }}</span>
+            </div>
+            <div class="data-row">
+              <span class="data-label">Experience:</span>
+              <span class="data-value">{{ $job["experience"] ?? "N/A" }} years</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    @empty
+      <p class="text-muted">No previous employment information provided.</p>
+    @endforelse
+  </div>
+</div>
+
+  <!-- Documents with Google Drive Style Thumbnails -->
+<div class="card">
+  <div class="card-header">
+    <i class="fas fa-file-alt me-2"></i>Uploaded Documents
+  </div>
+  <div class="card-body">
+      @php
+          $paths1 = is_string($candidate->document_paths) ? json_decode($candidate->document_paths, true) : ($candidate->document_paths ?? []);
+          $paths2 = is_string($candidate->document_path) ? json_decode($candidate->document_path, true) : ($candidate->document_path ?? []);
+          $allDocuments = array_merge($paths1 ?: [], $paths2 ?: []);
+      @endphp
+
+    @if (!empty($allDocuments))
+      <div class="row">
+        @foreach ($allDocuments as $docName => $docPath)
+  @php
+    // If key is numeric, name it as Document #index
+    $label = is_numeric($docName) ? "Document #" . ($loop->iteration) : ucfirst(str_replace("_", " ", $docName));
+  @endphp
+
+  <div class="col-md-4 mb-4">
+    <div class="document-item">
+      <div class="document-title">
+        <i class="fas fa-file me-2"></i>{{ $label }}
+      </div>
+
+      @if (!empty($docPath))
+        @php $fileExtension = pathinfo($docPath, PATHINFO_EXTENSION); @endphp
+
+        <div class="document-thumbnail text-center">
+          @if (in_array(strtolower($fileExtension), ["jpg", "jpeg", "png", "gif", "bmp", "webp"]))
+            <img src="{{ $docPath }}" alt="{{ $label }}" class="img-fluid">
+          @elseif (strtolower($fileExtension) === "pdf")
+            <div class="file-thumbnail pdf-thumbnail">
+              <i class="fas fa-file-pdf file-icon"></i>
+              <div class="file-extension">PDF</div>
+            </div>
+          @elseif (in_array(strtolower($fileExtension), ["doc", "docx"]))
+            <div class="file-thumbnail word-thumbnail">
+              <i class="fas fa-file-word file-icon"></i>
+              <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
+            </div>
+          @elseif (in_array(strtolower($fileExtension), ["xls", "xlsx"]))
+            <div class="file-thumbnail excel-thumbnail">
+              <i class="fas fa-file-excel file-icon"></i>
+              <div class="file-extension">{{ strtoupper($fileExtension) }}</div>
+            </div>
+          @else
+            <div class="file-thumbnail">
+              <i class="fas fa-file file-icon text-secondary"></i>
+              <div class="file-extension text-secondary">{{ strtoupper($fileExtension) }}</div>
+            </div>
+          @endif
+        </div>
+
+        <div class="document-actions mt-2">
+          <a href="{{ $docPath }}" target="_blank" class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-eye me-1"></i> View
+          </a>
+          <a href="{{ $docPath }}" download class="btn btn-sm btn-outline-primary">
+            <i class="fas fa-download me-1"></i> Download
+          </a>
         </div>
       @else
-        <p class="text-muted">No documents uploaded.</p>
+        <div class="text-center text-muted py-4">
+          <i class="fas fa-file-slash" style="font-size: 2rem;"></i>
+          <p class="mt-2">Not uploaded</p>
+        </div>
       @endif
     </div>
   </div>
+@endforeach
+
+      </div>
+    @else
+      <p class="text-muted">No documents uploaded.</p>
+    @endif
+  </div>
+</div>
+
 
   <!-- Additional Information -->
   <div class="card">
@@ -494,21 +584,21 @@
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Disabilities:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["disabilities"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->disabilities ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Currently Employed:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["currentlyEmployed"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->currently_employed ?? "N/A" }}</span>
           </div>
         </div>
         <div class="col-md-6">
           <div class="data-row">
             <span class="data-label">Reason for Leaving:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["reasonForLeaving"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->reason_for_leaving ?? "N/A" }}</span>
           </div>
           <div class="data-row">
             <span class="data-label">Other Info:</span>
-            <span class="data-value">{{ $data["additionalInfo"]["otherInfo"] ?? "N/A" }}</span>
+            <span class="data-value">{{ $candidate->other_info ?? "N/A" }}</span>
           </div>
         </div>
       </div>
@@ -521,12 +611,12 @@
       <i class="fas fa-camera me-2"></i>Passport Size Photo
     </div>
     <div class="card-body">
-      @if (!empty($data["photo"]))
+      @if (!empty($candidate->photo_s3_path))
         <div class="passport-photo-container">
-          <img src="{{ asset($data["photo"]) }}" alt="Passport Photo">
+          <img src="{{ asset($candidate->photo_s3_path) }}" alt="Passport Photo">
         </div>
         <div class="text-center mt-3">
-          <a href="{{ asset($data["photo"]) }}" target="_blank" class="btn btn-sm btn-outline-primary">
+          <a href="{{ asset($candidate->photo_s3_path) }}" target="_blank" class="btn btn-sm btn-outline-primary">
             <i class="fas fa-expand me-1"></i> View Full Size
           </a>
         </div>

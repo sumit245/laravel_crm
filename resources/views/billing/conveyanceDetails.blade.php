@@ -15,41 +15,41 @@
         <div class="row ms-0">
            
             <!-- Applied Amount -->
-            <div class="col-md-3 mb-3">
+            <!-- <div class="col-md-3 mb-3">
                 <div class="card text-white bg-primary shadow-sm h-100">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <h6 class="card-title text-white fw-semibold mb-2">Applied Amount</h6>
                         <h4 class="mb-0">{{ $appliedAmount }}</h4>
                     </div>
                 </div>
-            </div>
+            </div> -->
             <!-- Disbursed Amount -->
-            <div class="col-md-3 mb-3">
+            <!-- <div class="col-md-3 mb-3">
                 <div class="card text-white bg-success shadow-sm h-100">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <h6 class="card-title text-white fw-semibold mb-2">Disbursed Amount</h6>
                         <h4 class="mb-0">{{ $disbursedAmount }}</h4>
                     </div>
                 </div>
-            </div>
+            </div> -->
             <!-- Rejected Amount -->
-            <div class="col-md-3 mb-3">
+            <!-- <div class="col-md-3 mb-3">
                 <div class="card text-white bg-danger shadow-sm h-100">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <h6 class="card-title text-white fw-semibold mb-2">Rejected Amount</h6>
                         <h4 class="mb-0">{{ $rejectedAmount}}</h4>
                     </div>
                 </div>
-            </div>
+            </div> -->
             <!-- Due Claim Amount -->
-            <div class="col-md-3 mb-3">
+            <!-- <div class="col-md-3 mb-3">
                 <div class="card text-white bg-warning shadow-sm h-100">
                     <div class="card-body d-flex flex-column justify-content-between">
                         <h6 class="card-title text-white fw-semibold mb-2">Due Claim Amount</h6>
                         <h4 class="mb-0">{{ $dueclaimAmount }}</h4>
                     </div>
                 </div>
-            </div>
+            </div> -->
             
         </div>
     </div>
@@ -100,25 +100,54 @@
                 <table id="travelTable" class="table table-bordered table-striped table-sm table mt-4">
                     <thead class="table-white">
                         <tr>
-                            <th><input type="checkbox" id="selectAll" /></th>
                             <th>Date & Time</th>
                             <th>Vehicle</th>
                             <th>To</th>
                             <th>From</th>
                             <th>Distance (KM)</th>
                             <th>Amount</th>
+                            <th>Status</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
                         @foreach ($details as $detail)
                         <tr>
-                            <td><input type="checkbox" class="checkboxItem" /></td>
-                            <td>{{ $detail->time }}</td>
+                            <td>{{ \Carbon\Carbon::parse($detail->created_at)->format('d-m-Y') }} {{ $detail->time }}</td>
                             <td>{{ $detail->vehicle->category }}</td>
                             <td>{{ $detail->to ?? 'N/A' }}</td>
                             <td>{{ $detail->from ?? 'N/A' }}</td>
                             <td>{{ $detail->kilometer ?? 'N/A' }}</td>
                             <td>{{ $detail->amount ?? 'N/A' }}</td>
+                            <td class="text-center">
+                                @if ($detail->status === null)
+                                    <span class="badge bg-warning text-dark">Pending</span>
+                                @elseif ($detail->status == 1)
+                                    <span class="badge bg-success">Accepted</span>
+                                @elseif ($detail->status == 0)
+                                    <span class="badge bg-danger">Rejected</span>
+                                @endif
+                            </td>
+                            <td class="text-center">
+                                @if ($detail->status === null)
+                                    <form action="{{ route("conveyance.accept", $detail->id) }}" method="POST"
+                                    style="display: inline-block;" class="action-form" data-action="accept">
+                                    @csrf
+                                    <button type="submit" class="btn btn-sm btn-warning action-btn" data-toggle="tooltip"
+                                        title="Accept">
+                                        <i class="mdi mdi-check"></i>
+                                    </button>
+                                    </form>
+
+                                    <form action="{{ route('conveyance.reject', $detail->id) }}" method="POST"
+                                        style="display: inline-block;" class="action-form" data-action="reject">
+                                        @csrf
+                                        <button type="submit" class="btn btn-sm btn-danger action-btn" data-toggle="tooltip" title="Reject">
+                                            <i class="mdi mdi-close"></i>
+                                        </button>
+                                    </form>
+                                @endif
+                            </td>
                         </tr>
                         @endforeach
                     </tbody>
@@ -187,13 +216,8 @@
     document.querySelectorAll('.checkboxItem').forEach(cb => {
         cb.addEventListener('change', toggleApproveRejectButtons);
     });
+  </script>
 
-    function toggleApproveRejectButtons() {
-        const selected = document.querySelectorAll('.checkboxItem:checked').length;
-        document.getElementById('approveBtn').style.display = selected ? 'inline-block' : 'none';
-        document.getElementById('rejectBtn').style.display = selected ? 'inline-block' : 'none';
-    }
-</script>
 @endpush
 
 {{-- Styles --}}

@@ -116,7 +116,7 @@
             }
             
             .top-logo-header{
-               
+               display: block;
             }
             
             
@@ -611,7 +611,6 @@
         }
     </style>
 </head>
-
 <body>
     <div class="container-scroller">
         <!-- Top Logo Header -->
@@ -973,7 +972,7 @@
                                             <div class="card-body">
                                                 <div class="row g-3">
                                                     <div class="col-md-4">
-                                                        <label class="form-label required" for="position_applied_for">Position Applied For</label>
+                                                        <label class="form-label required" for="position_applied_for">Position Applied For (Designation)</label>
                                                         <input type="text" id="position_applied_for" name="position_applied_for" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter the position you are applying for</div>
                                                     </div>
@@ -982,16 +981,12 @@
                                                         <input type="text" id="department" name="department" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter the department</div>
                                                     </div>
-                                                    <div class="col-md-4">
+                                                    <!-- <div class="col-md-4">
                                                         <label class="form-label required" for="date_of_joining">Date of Joining</label>
                                                         <input type="date" id="date_of_joining" name="date_of_joining" class="form-control" required min="{{ date('Y-m-d') }}">
                                                         <div class="invalid-feedback">Please select a valid joining date (must be today or in the future)</div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <label class="form-label required" for="previous_employer">Previous Employer</label>
-                                                        <input type="text" id="previous_employer" name="previous_employer" class="form-control" required>
-                                                        <div class="invalid-feedback">Please enter your previous employer</div>
-                                                    </div>
+                                                    </div> -->
+                                                    
                                                     <div class="col-md-4">
                                                         <label class="form-label required" for="experience">Total Years of Experience</label>
                                                         <input type="number" id="experience" name="experience" step="0.1" min="0" max="50" class="form-control" required>
@@ -1002,13 +997,15 @@
                                                         <input type="text" id="notice_period" name="notice_period" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter your notice period</div>
                                                     </div>
+
                                                 </div>
                                             </div>
 
+                                            <div id="employment-entries"></div>
 
                                             <div class="card-body">
-                                                <button type="button" class="btn btn-success" onclick="addEducationEntry()">
-                                                    <i class="fas fa-plus-circle me-2"></i> Add More Education
+                                                <button type="button" class="btn btn-success" onclick="addEmploymentEntry()">
+                                                    <i class="fas fa-plus-circle me-2"></i> Add Previous Employer
                                                 </button>
                                             </div>
                                             
@@ -1215,7 +1212,6 @@
             </div>
         </div>
     </div>
-    
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset("vendors/select2/select2.min.js") }}"></script>
@@ -1226,7 +1222,7 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
         const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info', 'photo', 'declaration'];
@@ -1601,6 +1597,8 @@
         }
     }
 
+
+
     function removeEducationEntry(id) {
         const entry = document.getElementById(`education-entry-${id}`);
         if (entry) {
@@ -1625,6 +1623,61 @@
     window.onload = function() {
         addEducationEntry();
     };
+
+    let employmentIndex = 0;
+
+    function addEmploymentEntry() {
+        const today = new Date().toISOString().split('T')[0];
+
+        const html = `
+            <div class="card-body row g-3 mb-3 border p-3 bg-light rounded" id="employment-entry-${employmentIndex}">
+                <div class="col-md-4">
+                    <label class="form-label required">Previous Employer</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][previous_employer]" required>
+                    <div class="invalid-feedback">Please enter your previous employer</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Designation</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][designation]" required>
+                    <div class="invalid-feedback">Please enter your designation</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Department</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][department]" required>
+                    <div class="invalid-feedback">Please enter your department</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Date of Joining</label>
+                    <input type="date" class="form-control" name="employment[${employmentIndex}][date_of_joining]" min="1980-01-01" required>
+                    <div class="invalid-feedback">Please enter a valid joining date</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Experience</label>
+                    <input type="number" class="form-control" name="employment[${employmentIndex}][experience]" step="0.1" min="0" max="50" required>
+                    <div class="invalid-feedback">Please enter valid years (0–50)</div>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger" onclick="removeEmploymentEntry(${employmentIndex})">
+                        <i class="fas fa-trash-alt me-2"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('employment-entries').insertAdjacentHTML('beforeend', html);
+        employmentIndex++;
+    }
+
+    function removeEmploymentEntry(index) {
+        const entry = document.getElementById(`employment-entry-${index}`);
+        if (entry) entry.remove();
+    }
+
 </script>
 
 <script>

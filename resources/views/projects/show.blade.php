@@ -13,6 +13,10 @@
             <label class="font-10 text-uppercase mg-b-10 fw-bold">Project Type</label>
             <p class="mg-b-0">{{ $project->project_type == 0 ? "Rooftop Installation" : "Streetlight Installation" }}</p>
           </div>
+          <div class="col-3 col-sm">
+            <label class="font-10 text-uppercase mg-b-10 fw-bold">Work Order Number</label>
+            <p class="mg-b-0">{{ $project->work_order_number }}</p>
+          </div>
         </div>
         <div class="row">
           <!-- Project Details -->
@@ -20,10 +24,7 @@
             <label class="font-10 text-uppercase mg-b-10 fw-bold">Project Name</label>
             <p class="mg-b-0">{{ $project->project_name }}</p>
           </div>
-          <div class="col-3 col-sm">
-            <label class="font-10 text-uppercase mg-b-10 fw-bold">Work Order Number</label>
-            <p class="mg-b-0">{{ $project->work_order_number }}</p>
-          </div>
+
           <div class="col-3 col-sm">
             <label class="font-10 text-uppercase mg-b-10 fw-bold">Start Date</label>
             <p class="mg-b-0">{{ $project->start_date }}</p>
@@ -47,7 +48,7 @@
             <label class="font-10 text-uppercase mg-b-10 fw-bold">Order Value</label>
             <p class="mg-b-0">{{ $project->total }}</p>
           </div>
-          <div class="col-3 col-sm">
+          <div class="col-12 col-sm-12">
             <label class="font-10 text-uppercase mg-b-10 fw-bold">Description</label>
             <p class="mg-b-0">{{ $project->description }}</p>
           </div>

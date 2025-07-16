@@ -18,6 +18,7 @@
             </button>
           </div>
         </form>
+        
       </div>
       <div class="col-md-2 d-flex align-items-end">
         <form action="{{ route("send.emails") }}" method="POST" class="w-100">
@@ -149,13 +150,18 @@
                   <i class="mdi mdi-eye"></i>
               </a>
 
-              <form action="{{ route('candidates.destroy', $candidate->id) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this candidate?');" style="display:inline;">
-                @csrf
-                @method('DELETE')
-                <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip" title="Delete Staff">
+              @if ($candidate->id)
+                <button
+                  type="button"
+                  class="btn btn-icon btn-danger delete-staff"
+                  data-toggle="tooltip"
+                  title="Delete Staff"
+                  data-url="{{ route('candidates.destroy', $candidate->id) }}"
+                  onclick="deleteCandidate(this)"
+                >
                   <i class="mdi mdi-delete"></i>
                 </button>
-              </form>
+              @endif
             </td>
               <td class="text-center">
                 <span class="badge 
@@ -184,10 +190,27 @@
       {{ $candidates->links() }}
     </div> -->
   </div>
+
+
 @endsection
 
 @push('scripts')
 <script>
+    @if (session('success'))
+    Swal.fire({
+      icon: 'success',
+      title: 'Success',
+      text: {!! json_encode(session('success')) !!}
+    });
+  @endif
+
+  @if (session('error'))
+    Swal.fire({
+      icon: 'error',
+      title: 'Error',
+      text: {!! json_encode(session('error')) !!}
+    });
+  @endif
    $(document).ready(function () {
     $('.select2').select2({
       placeholder: 'Select an option',
@@ -227,6 +250,55 @@
       });
     }
   });
+  function deleteCandidate(button) {
+  const url = button.getAttribute('data-url');
+
+  Swal.fire({
+    title: 'Are you sure?',
+    text: 'You won’t be able to revert this!',
+    icon: 'warning',
+    showCancelButton: true,
+    confirmButtonText: 'Yes, delete it!',
+    cancelButtonText: 'Cancel',
+    reverseButtons: true
+  }).then((result) => {
+    if (result.isConfirmed) {
+      fetch(url, {
+        method: 'DELETE',
+        headers: {
+          'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+          'Accept': 'application/json',
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          Swal.fire({
+            icon: 'success',
+            title: 'Deleted!',
+            text: 'Candidate has been deleted.',
+            timer: 2000,
+            showConfirmButton: false
+          }).then(() => {
+            location.reload(); // or remove row from DOM
+          });
+        } else {
+          return response.json().then(data => {
+            throw new Error(data.message || 'Delete failed');
+          });
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+        Swal.fire({
+          icon: 'error',
+          title: 'Delete Failed',
+          text: error.message || 'Something went wrong.',
+        });
+      });
+    }
+  });
+}
+
 </script>
 @endpush
 

@@ -13,11 +13,11 @@ return new class extends Migration
     {
         Schema::table('tadas', function (Blueprint $table) {
             //
-            $table->dropForeign(['journies_id']);
-            $table->dropForeign(['hotel_id']);
-            $table->dropColumn('journies_id');
-            $table->dropColumn('hotel_id');
-            $table->decimal('amount', 10, 2)->nullable()->after('miscellaneous');
+            // $table->dropForeign(['journies_id']);
+            // $table->dropForeign(['hotel_id']);
+            // $table->dropColumn('journies_id');
+            // $table->dropColumn('hotel_id');
+            // $table->decimal('amount', 10, 2)->nullable()->after('miscellaneous');
         });
     }
 
