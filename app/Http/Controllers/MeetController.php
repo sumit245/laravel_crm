@@ -28,9 +28,18 @@ class MeetController extends Controller
 
     public function create()
     {
+        $meets = Meet::latest()->get();
         $projects = Project::all();
-        $users = User::all()->groupBy('role'); // Assuming you have role-based categories
-        return view('review-meetings.create', compact('users'));
+        // $users = User::all()->groupBy('role'); // Assuming you have role-based categories
+        $usersByRole = [
+            'Admins'            => User::where('role', 0)->get(),
+            'Site Engineers'    => User::where('role', 1)->get(),
+            'Project Managers'  => User::where('role', 2)->get(),
+            'Vendors'           => User::where('role', 3)->get(),
+            'Coordinators'      => User::where('role', 4)->get(),
+            // Add more roles as needed
+        ];
+        return view('review-meetings.create', compact('meets', 'usersByRole', 'projects'));
     }
 
     public function store(Request $request)
@@ -41,7 +50,8 @@ class MeetController extends Controller
             'meet_link' => 'required|url',
             'platform' => 'required|string',
             'meet_date' => 'required|date',
-            'meet_time' => 'required',
+            'meet_time_from' => 'required',
+            'meet_time_to' => 'required',
             'type' => 'required|string',
             'user_ids' => 'required|array|min:1',
             'user_ids.*' => 'exists:users,id',

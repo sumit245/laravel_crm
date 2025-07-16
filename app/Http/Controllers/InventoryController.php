@@ -8,11 +8,13 @@ use App\Imports\InventroyStreetLight;
 use App\Models\Inventory;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Stores;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -321,8 +323,8 @@ class InventoryController extends Controller
             $dispatch = InventoryDispatch::where('isDispatched', true)
                 ->where('store_id', $storeId)
                 ->get();
-            
-            
+
+
 
             // Battery Data
             $totalBattery = $inventory->where('item_code', 'SL03')
@@ -482,9 +484,6 @@ class InventoryController extends Controller
                     "isDispatched" => true
 
                 ]);
-                Log::info("Dispatching item");
-                Log::info($dispatch);
-
                 // Reduce stock from inventory
                 $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
@@ -611,12 +610,8 @@ class InventoryController extends Controller
     public function checkQR(Request $request)
     {
         try {
-            $validated = $request->validate([
-                'qr_code'   => 'required|array',
-                'qr_code.*'   => 'required|string|distinct'
-            ]);
             Log::info($request->all());
-            $exists = InventroyStreetLightModel::where('serial_number', $validated)
+            $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)
                 ->where('store_id', $request->store_id) // Ensure it belongs to the same store
                 ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
                 ->where('quantity', '>', 0) // Ensure quantity is greater than 0
@@ -626,7 +621,6 @@ class InventoryController extends Controller
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
-
     // TODO: Streetlight show dispatch inventory code here
     public function showDispatchInventory(Request $request)
     {
@@ -649,10 +643,11 @@ class InventoryController extends Controller
         }
     }
 
-    public function returnInventory(Request $request){
+    public function returnInventory(Request $request)
+    {
         $serial_number = $request->input('serial_number');
-        Log::info('Return inventory',['serial_number'=> $serial_number]);
-        try{
+        Log::info('Return inventory', ['serial_number' => $serial_number]);
+        try {
             $inventory = InventroyStreetLightModel::where('serial_number', $serial_number)->first();
             $dispatch = InventoryDispatch::where('serial_number', $serial_number)->whereNull('streetlight_pole_id')->first();
             if (!$inventory) {
@@ -660,24 +655,133 @@ class InventoryController extends Controller
                 return redirect()->back()->with('error', 'Inventory item not found.');
             }
             $inventory->quantity = 1;
-            $inventory->save();      
+            $inventory->save();
             // Find and delete the corresponding dispatch record by serial number
-            
+
             if ($dispatch) {
                 $dispatch->delete();
             }
-            
+
             return redirect()->back()->with('success', 'Inventory item returned successfully');
-    
-        }
-        catch(\Exception $e){
+        } catch (\Exception $e) {
             Log::error('Failed to return inventory item', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to return inventory item');
         }
-
-        
     }
-        
-    
+
+    public function replaceItem(Request $request)
+    {
+        $request->validate([
+            'item_id' => 'required|integer',
+            'old_serial_number' => 'required',
+            'new_serial_number' => 'required|string',
+            'authentication_code' => 'required|string',
+            'agreement_checkbox' => 'required|accepted',
+        ]);
+        // Step 0: Check Authentication
+        if ($request->authentication_code !== env('REPLACEMENT_AUTH_CODE')) {
+            return back()->withInput()->with('replace_error', 'Invalid authentication code.');
+        }
+        DB::beginTransaction();
+
+        try {
+
+            $oldDispatch = InventoryDispatch::findOrFail($request->item_id);
+            $newSerial = $request->new_serial_number;
+
+            // ---------- Step 1: Handle inventory_dispatch ----------
+            $newDispatch = InventoryDispatch::where('serial_number', $newSerial)->first();
+
+            if (!$newDispatch) {
+                // Clone from old
+                $newDispatch = $oldDispatch->replicate();
+                $newDispatch->serial_number = $newSerial;
+                $newDispatch->save();
+            } else {
+                // Update newDispatch with oldDispatch values (except ID & serial_number)
+                $newDispatch->fill($oldDispatch->only([
+                    'vendor_id',
+                    'total_quantity',
+                    'total_value',
+                    'rate',
+                    'store_id',
+                    'store_incharge_id',
+                    'project_id',
+                    'isDispatched',
+                    'is_consumed',
+                    'project_id',
+                    'streetlight_pole_id'
+                ]));
+                $newDispatch->save();
+            }
+
+            // ---------- Step 2: Handle inventory_streetlight ----------
+            $newStreet = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
+
+            if ($newStreet) {
+                $newStreet->quantity = 0;
+                $newStreet->save();
+            } else {
+                $oldStreet = InventroyStreetLightModel::where('serial_number', $oldDispatch->serial_number)->first();
+                if ($oldStreet) {
+                    $newStreet = $oldStreet->replicate();
+                    $newStreet->serial_number = $newSerial;
+                    $newStreet->quantity = 0;
+                    $newStreet->save();
+                }
+            }
+
+            // ---------- Step 3: Delete old item from dispatch ----------
+            $oldDispatch->delete();
+
+            // ---------- Step 4: Update quantity of old item in streetlight ----------
+            if (isset($oldStreet)) {
+                $oldStreet->quantity = 1;
+                $oldStreet->save();
+            }
+
+            // ---------- Step 5: Update pole columns ----------
+            $pole = Pole::find($newDispatch->streetlight_pole_id);
+
+            if ($pole) {
+                switch ($newDispatch->item_code) {
+                    case 'SL01':
+                        $pole->panel_qr = $newSerial;
+                        break;
+                    case 'SL02':
+                        $pole->luminary_qr = $newSerial;
+                        break;
+                    case 'SL03':
+                        $pole->battery_qr = $newSerial;
+                        break;
+                }
+                $pole->save();
+            }
+            DB::commit();
+            return back()->with('success', 'Item replaced successfully.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::info($e->getMessage());
+            return back()->withInput()->with('replace_error', 'Failed to replace item: ' . $e->getMessage());
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $ids = json_decode($request->input('ids'), true);
+
+            if (!is_array($ids) || empty($ids)) {
+                return redirect()->back()->with('error', 'No valid items selected for deletion.');
+            }
+
+            InventroyStreetLightModel::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
+            } catch (\Throwable $th) {
+                \Log::error("Bulk delete error: " . $th->getMessage());
+                return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+            }
+    }
 
 }

@@ -10,7 +10,7 @@ class Site extends Model
     use HasFactory;
     protected $fillable = [
         'breda_sl_no',
-        'project_id',
+        'project_id', //FIXME:Project id wala comented tha fillable that's why ye null ja raha tha
         'site_name',
         'state',
         'district',
@@ -24,25 +24,24 @@ class Site extends Model
         'division',
         'block',
         'department_name',
-        
-        // 'contact_no',
-        // 'ic_vendor_name',
         'sanction_load',
-        // 'meter_number',
-        // 'load_enhancement_status',
-        // 'site_survey_status',
-        // 'net_meter_sr_no',
+        'contact_no',
+        'ic_vendor_name',
+        'meter_number',
+        'load_enhancement_status',
+        'site_survey_status',
+        'net_meter_sr_no',
         'category',
-        // 'solar_meter_sr_no',
-        // 'material_inspection_date',
-        // 'spp_installation_date',
-        // 'commissioning_date',
-        // 'remarks',
-        // 'site_engineer',
-        // 'survey_latitude',
-        // 'survey_longitude',
-        // 'actual_latitude',
-        // 'actual_longitude'
+        'solar_meter_sr_no',
+        'material_inspection_date',
+        'spp_installation_date',
+        'commissioning_date',
+        'remarks',
+        'site_engineer',
+        'survey_latitude',
+        'survey_longitude',
+        'actual_latitude',
+        'actual_longitude'
     ];
 
     public function project()

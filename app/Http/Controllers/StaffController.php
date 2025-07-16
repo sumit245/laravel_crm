@@ -221,9 +221,13 @@ class StaffController extends Controller
         //
         $staff = User::findOrFail($id);
         $projects = Project::all();
-        $usercategory = UserCategory::all(); 
-            
-        return view('staff.edit', compact('staff', 'projects', 'usercategory')); // Form to edit staff
+        $projectEngineers = User::where('role',2)->get();
+        $usercategory = DB::table('user_categories')
+                ->select(DB::raw('MIN(id) as id'), 'category_code')
+                ->groupBy('category_code')
+                ->get();
+
+        return view('staff.edit', compact('staff', 'projects', 'usercategory', 'projectEngineers')); // Form to edit staff
     }
 
     /**
@@ -234,7 +238,8 @@ class StaffController extends Controller
         //
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
-            'project_id'=> 'nullable|integer',
+            'manager_id' => 'required|numeric',
+            'project_id' => 'nullable|integer',
             'firstName' => 'nullable|string|max:25',
             'lastName'  => 'nullable|string|max:25',
             'email'     => 'required|email|unique:users,email,' . $staff->id,
@@ -278,66 +283,66 @@ class StaffController extends Controller
     }
 
     // Update Profile Picture
-public function updateProfilePicture(Request $request)
-{
-    $request->validate([
-        'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif|max:2048',
-    ]);
+    public function updateProfilePicture(Request $request)
+    {
+        $request->validate([
+            'profile_picture' => 'required|image|mimes:jpeg,png,jpg,gif,heic,heif|max:2048',
+        ]);
 
-    $user = Auth::user();
+        $user = Auth::user();
 
-    try {
-        if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
-            \Log::error('Invalid file upload attempt');
-            return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
+        try {
+            if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
+                \Log::error('Invalid file upload attempt');
+                return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
+            }
+
+            $file = $request->file('profile_picture');
+
+            \Log::info('File upload attempt', [
+                'original_name' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize()
+            ]);
+
+            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+
+            // Attempt S3 upload
+            $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
+
+            if (!$imagePath) {
+                throw new \Exception('S3 upload failed.');
+            }
+
+            $imageUrl = Storage::disk('s3')->url($imagePath);
+
+            \Log::info('Profile picture uploaded to S3', [
+                'user_id' => $user->id,
+                'path' => $imagePath,
+                'url' => $imageUrl
+            ]);
+
+            // Save image URL to user record
+            $user->image = $imageUrl;
+            $user->save();
+            Log::info(('Profile picture URL saved to user record'), [
+                'user_id' => $user->id,
+                'image_url' => $imageUrl
+            ]);
+
+            return redirect()->back()->with('success', 'Profile picture updated successfully!');
+        } catch (\Exception $e) {
+            \Log::error('Profile picture update error: ' . $e->getMessage(), [
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
         }
-
-        $file = $request->file('profile_picture');
-
-        \Log::info('File upload attempt', [
-            'original_name' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize()
-        ]);
-
-        $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
-
-        // Attempt S3 upload
-        $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
-
-        if (!$imagePath) {
-            throw new \Exception('S3 upload failed.');
-        }
-
-        $imageUrl = Storage::disk('s3')->url($imagePath);
-
-        \Log::info('Profile picture uploaded to S3', [
-            'user_id' => $user->id,
-            'path' => $imagePath,
-            'url' => $imageUrl
-        ]);
-
-        // Save image URL to user record
-        $user->image = $imageUrl;
-        $user->save();
-        Log::info(('Profile picture URL saved to user record'), [
-            'user_id' => $user->id,
-            'image_url' => $imageUrl
-        ]);
-
-        return redirect()->back()->with('success', 'Profile picture updated successfully!');
-    } catch (\Exception $e) {
-        \Log::error('Profile picture update error: ' . $e->getMessage(), [
-            'exception' => $e,
-            'trace' => $e->getTraceAsString()
-        ]);
-
-        return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
     }
-}
 
 
-    
+
 
     public function changePassword($id)
     {
@@ -354,7 +359,7 @@ public function updateProfilePicture(Request $request)
         User::where('id', $id)->update([
             'password' => bcrypt($request->password)
         ]);
-        
+
 
         // $staff           = User::findOrFail($id);
         // $staff->password = $request->password;
@@ -435,53 +440,53 @@ public function updateProfilePicture(Request $request)
             ];
             // === Today's Data ===
             $today = now()->toDateString();
-        $todayTasks = $tasks->filter(function ($task) use ($today) {
-            return $task->start_date === $today || $task->end_date === $today;
-        });
+            $todayTasks = $tasks->filter(function ($task) use ($today) {
+                return $task->start_date === $today || $task->end_date === $today;
+            });
 
-        $todayTaskIds = $todayTasks->pluck('id');
+            $todayTaskIds = $todayTasks->pluck('id');
 
-        $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
-            ->where('isSurveyDone', 1)->count();
+            $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
+                ->where('isSurveyDone', 1)->count();
 
-        $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
-            ->where('isInstallationDone', 1)->count();
+            $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
+                ->where('isInstallationDone', 1)->count();
 
-         
-        $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
-            return $task->end_date >= $today;
-        });
 
-        $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
-            // Only count if end_date is today or in future
-            if ($task->end_date >= $today) {
-                return $carry + (optional($task->site)->total_poles ?? 0);
-            }
-            return $carry;
-        }, 0);
-        $backLogPoles = $tasks->reduce(function ($carry, $task) use ($today) {
-            // Only count if end_date is today or in future
-            if ($task->end_date < $today) {
-                return $carry + (optional($task->site)->total_poles ?? 0);
-            }
-            return $carry;
-        }, 0);
+            $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
+                return $task->end_date >= $today;
+            });
 
-        $backlogSites = $tasks->filter(function ($task) use ($today) {
-            return $task->end_date < $today && $task->site;
-        })->map(function ($task) {
-            return $task->site;
-        })->unique('id')->values();
+            $todayTotalPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+                // Only count if end_date is today or in future
+                if ($task->end_date >= $today) {
+                    return $carry + (optional($task->site)->total_poles ?? 0);
+                }
+                return $carry;
+            }, 0);
+            $backLogPoles = $tasks->reduce(function ($carry, $task) use ($today) {
+                // Only count if end_date is today or in future
+                if ($task->end_date < $today) {
+                    return $carry + (optional($task->site)->total_poles ?? 0);
+                }
+                return $carry;
+            }, 0);
 
-        $vendorPoleCountsToday[$vendorId] = [
-            'vendor_name'  => $vendorName,
-            'survey'       => $todaySurvey,
-            'install'      => $todayInstall,
-            'tasks'        => $todayTasks->count(),
-            'total_poles'  => $totalPoles,
-            'today_target' => $todayTotalPoles,
-            'backlog'      => $backLogPoles,
-            'backlog_sites' => $backlogSites,
+            $backlogSites = $tasks->filter(function ($task) use ($today) {
+                return $task->end_date < $today && $task->site;
+            })->map(function ($task) {
+                return $task->site;
+            })->unique('id')->values();
+
+            $vendorPoleCountsToday[$vendorId] = [
+                'vendor_name'  => $vendorName,
+                'survey'       => $todaySurvey,
+                'install'      => $todayInstall,
+                'tasks'        => $todayTasks->count(),
+                'total_poles'  => $totalPoles,
+                'today_target' => $todayTotalPoles,
+                'backlog'      => $backLogPoles,
+                'backlog_sites' => $backlogSites,
             ];
         }
 
@@ -521,7 +526,7 @@ public function updateProfilePicture(Request $request)
             // Optional: fetch engineer name if needed in view
             $engineer = optional($tasks->first()->engineer);
             $engineerName = trim(($engineer->firstName ?? '') . ' ' . ($engineer->lastName ?? ''));
-            
+
             // Add to final array
             $engineerPoleCounts[$engineerId] = [
                 'id'           => $engineerId,
@@ -586,8 +591,4 @@ public function updateProfilePicture(Request $request)
 
         return view('engineer', compact('engineerids', 'engineerPoleCounts', 'engineerPoleCountsToday'));
     }
-
-        
-
-
 }

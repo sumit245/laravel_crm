@@ -28,7 +28,7 @@
   </div>
 
   <!-- Modal for adding a target -->
-   <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
+  <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
         <form action="{{ route("tasks.store") }}" method="POST">
@@ -41,16 +41,17 @@
           <div class="modal-body">
             <div class="form-group mb-3">
               <!-- <label for="siteSearch" class="form-label">Search Site</label>
+              <!-- <label for="siteSearch" class="form-label">Search Site</label>
               <input type="text" id="siteSearch" placeholder="Search Site..." class="form-control">
               <div id="siteList"></div> -->
 
               <label for="siteSearch" class="form-label">Search Site</label>
-                <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
-                    <option value="">Search Site...</option>
-                    @foreach ($sites as $site)
-                        <option value="{{ $site->id }}">{{ $site->site_name }}</option>
-                    @endforeach
-                </select>
+              <select id="siteSearch" name="sites[]" class="form-control" multiple style="width: 100%;">
+                <option value="">Search Site...</option>
+                @foreach ($sites as $site)
+                  <option value="{{ $site->id }}">{{ $site->site_name }}</option>
+                @endforeach
+              </select>
 
               <!-- Selected Sites -->
               <!-- <ul id="selectedSites"></ul> -->
@@ -65,6 +66,7 @@
                 <option value="RMS">RMS</option>
                 <option value="Billing">Billing</option>
                 <option value="Add Team">Add Team</option>
+                <option value="Survey">Survey</option>
                 <option value="Survey">Survey</option>
               </select>
             </div>
@@ -114,7 +116,7 @@
           <td>{{ $target->activity }}</td>
           <td>
             @if ($target && $target->engineer)
-              {{ $target->engineer->firstName }}
+              {{ $target->engineer->firstName }} {{ $target->engineer->lastName }}
             @else
               Not Assigned
             @endif
