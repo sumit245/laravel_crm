@@ -6,9 +6,20 @@
         <div class="col-md-10">
             <div class="card shadow-sm">
                 <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0 fw-bold"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
+                    <h5 class="card-title mb-0 fw-bold text-white"><i class="bi bi-plus-circle me-2"></i> Add New Category</h5>
                 </div>
                 <div class="card-body p-4">
+                    @if ($errors->any())
+                        <div class="alert alert-danger">
+                            <strong><i class="bi bi-exclamation-triangle me-2"></i> There were some problems with your input:</strong>
+                            <ul class="mb-0 mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    
                     <form id="addCategoryForm" action="{{ route('billing.addcategory') }}" method="POST">
                         @csrf
                         @method('POST')
@@ -29,28 +40,7 @@
                             <label for="description" class="form-label fw-bold">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="3"></textarea>
                         </div>
-                        
-                        <!-- New Price Range Fields -->
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="roomMinPrice" class="form-label fw-bold">Room Minimum Price (₹)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">₹</span>
-                                    <input type="number" class="form-control" id="roomMinPrice" name="room_min_price" 
-                                           step="0.01" min="0" placeholder="e.g., 1000.00">
-                                </div>
-                            </div>
-                            
-                            <div class="col-md-6 mb-3">
-                                <label for="roomMaxPrice" class="form-label fw-bold">Room Maximum Price (₹)</label>
-                                <div class="input-group">
-                                    <span class="input-group-text">₹</span>
-                                    <input type="number" class="form-control" id="roomMaxPrice" name="room_max_price" 
-                                           step="0.01" min="0" placeholder="e.g., 5000.00">
-                                </div>
-                            </div>
-                        </div>
-                        
+                        <!-- Vehicles Allowed Field -->
                         <div class="mb-3">
                             <label for="vehiclesAllowed" class="form-label fw-bold">Allowed Vehicles</label>
                             <select class="form-select" id="vehiclesAllowed" name="vehicle_id[]" multiple="multiple" required>
@@ -59,6 +49,23 @@
                                 @endforeach
                             </select>
                         </div>
+
+                        <!-- City Category -->
+                         <div class="mb-3">
+                        <label for="city_category" class="form-label fw-bold">City Category</label>
+                        <select class="form-select" id="city_category" name="city_category" required>
+                            <option value="2">Metro</option>
+                            <option value="1">Non-Metro</option>
+                            <option value="0">Tier-3</option>
+                        </select>
+                        </div>
+
+                        <!-- Daily Amount -->
+                         <div class="mb-3">
+                            <label for="daily_amount" class="form-label fw-bold">Daily Amount</label>
+                            <input type="number" class="form-control" id="daily_amount" name="daily_amount" required>
+                        </div>
+
 
                         <div class="d-flex justify-content-start mt-4">
                             <button type="submit" class="btn btn-primary me-2" id="saveCategoryBtn">

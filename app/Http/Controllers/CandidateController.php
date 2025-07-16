@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use App\Imports\CandidatesImport;
 use Maatwebsite\Excel\Facades\Excel;
@@ -14,19 +15,58 @@ use Smalot\PdfParser\Parser; // Install with: composer require smalot/pdfparser
 class CandidateController extends Controller
 {
     //
-    public function index()
+    public function index(Request $request)
     {
-        $candidates = Candidate::paginate(10); // Paginate results
-        return view('hrm.index', compact('candidates')); // Create this Blade file
+        $query = Candidate::query();
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->from_date);
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->to_date);
+        }
+
+        if ($request->filled('designation')) {
+            $query->where('designation', $request->designation);
+        }
+
+        if ($request->filled('department')) {
+            $query->where('department', $request->department);
+        }
+
+        if ($request->filled('location')) {
+            $query->where('location', $request->location);
+        }
+
+        $candidates = $query->paginate(10)->appends($request->query());
+
+        return view('hrm.index', compact('candidates'));
     }
+
 
     public function importCandidates(Request $request)
     {
         $request->validate(['file' => 'required|mimes:xlsx,csv']);
 
-        Excel::import(new CandidatesImport, $request->file('file'));
+        try {
+            Excel::import(new CandidatesImport, $request->file('file'));
 
-        return redirect()->back()->with('success', 'Candidates imported successfully.');
+            return redirect()->back()->with('success', 'Candidates imported successfully.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            // Check if it's a duplicate entry error
+            if ($e->getCode() == 23000 && str_contains($e->getMessage(), 'Duplicate entry')) {
+                // Try to extract the duplicate email from the error message
+                preg_match("/Duplicate entry '([^']+)'/", $e->getMessage(), $matches);
+                $duplicateValue = $matches[1] ?? 'an existing email';
+
+                return redirect()->back()->with('error', "Import failed: Duplicate email found – $duplicateValue");
+            }
+
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Import failed: ' . $e->getMessage());
+        }
     }
 
     public function sendEmails()
@@ -87,4 +127,17 @@ class CandidateController extends Controller
 
         return redirect()->back()->with('success', 'Documents uploaded and details extracted successfully.');
     }
+
+    public function destroy($id)
+    {
+        $candidate = Candidate::findOrFail($id);
+        $candidate->delete();
+
+        if (request()->expectsJson()) {
+            return response()->json(['message' => 'Deleted successfully']);
+        }
+
+        return redirect()->back()->with('success', 'Candidate deleted.');
+    }
+
 }

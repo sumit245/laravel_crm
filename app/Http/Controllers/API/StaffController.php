@@ -122,7 +122,6 @@ class StaffController extends Controller
 
             $projectType = $project->project_type;
 
-
             // Step 1: Fetch all engineers (non-admin users)
             $engineers = User::where('role', '!=', 0)
                 ->where('manager_id', $managerId)

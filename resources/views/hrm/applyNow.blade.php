@@ -22,6 +22,10 @@
     
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
     
     <style>
         /* Google Forms inspired styles */
@@ -59,6 +63,7 @@
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
             padding-top: 20px;
             z-index: 1000;
+            transition: transform 0.3s ease;
         }
         
         /* Adjust main content to accommodate fixed sidebar */
@@ -66,17 +71,85 @@
             padding: 0;
             background-color: #f0f0f0;
             margin-left: 16.666667%;
+            transition: margin-left 0.3s ease;
         }
         
-        @media (max-width: 767.98px) {
+        /* Mobile sidebar toggle button */
+        .mobile-sidebar-toggle {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1001;
+            background-color: #673ab7;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+        }
+        
+        .mobile-sidebar-toggle:hover {
+            background-color: #5e35b1;
+        }
+        
+        /* Mobile sidebar overlay */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+        
+        /* Mobile responsive adjustments */
+        @media (max-width: 991.98px) {
+
             .side-nav {
-                position: relative;
-                width: 100%;
-                min-height: auto;
+                width: 280px;
+                transform: translateX(-100%);
+            }
+            
+            .top-logo-header{
+               display: block;
+            }
+            
+            
+            .side-nav.show {
+                transform: translateX(0);
             }
             
             .main-content {
                 margin-left: 0;
+            }
+            
+            .mobile-sidebar-toggle {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            .sidebar-overlay.show {
+                display: block;
+            }
+        }
+        
+        @media (max-width: 767.98px) {
+            .side-nav {
+                width: 100%;
+                transform: translateX(-100%);
+            }
+            
+            .mobile-sidebar-toggle {
+                top: 15px;
+                left: 15px;
+                width: 45px;
+                height: 45px;
             }
         }
         
@@ -134,6 +207,7 @@
             transition: all 0.2s ease;
             border-radius: 0 24px 24px 0;
             margin-bottom: 4px;
+            cursor: pointer;
         }
         
         .form-tabs .nav-link:hover {
@@ -246,11 +320,12 @@
         }
         
         .select2-container--bootstrap4 .select2-results__option--highlighted[aria-selected] {
-            background-color: #673ab7;
+            background-color: #dee3df;
         }
         
         .select2-container--bootstrap4 .select2-dropdown {
             border-color: #dadce0;
+            /* background:grey; */
             border-radius: 4px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -292,6 +367,7 @@
             padding: 8px 24px;
             border-radius: 4px;
             transition: all 0.2s;
+            cursor: pointer;
         }
         
         .btn-primary {
@@ -387,24 +463,39 @@
             border-color: #d93025;
             color: white;
         }
+
+        .section-title{
+           white-space: nowrap;
+        }
         
-        /* Responsive Adjustments */
+        /* Top Logo Header Styles */
+        .top-logo-header {
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            z-index: 10;
+            display: none;
+        }
+        
+        .top-logo-header img {
+            max-height: 100px;
+            width: auto;
+            
+        }
+        
+        .company-tagline {
+            color: white;
+            margin-top: 10px;
+            font-size: 16px;
+            font-weight: 300;
+            letter-spacing: 1px;
+        }
+        
+        /* Mobile specific adjustments */
         @media (max-width: 767.98px) {
-            .side-nav {
-                min-height: auto;
-                position: relative;
-            }
-            
-            .form-tabs {
-                display: flex;
-                flex-wrap: nowrap;
-                overflow-x: auto;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            .form-tabs .nav-item {
-                flex: 0 0 auto;
+            .main-content {
+                padding-top: 70px; /* Add space for mobile toggle button */
             }
             
             .card-header {
@@ -417,6 +508,38 @@
             
             .card-footer {
                 padding: 12px 16px;
+            }
+            
+            .section-title {
+                font-size: 0.9rem;
+            }
+            
+            .section-number {
+                width: 20px;
+                height: 20px;
+                font-size: 0.7rem;
+                margin-right: 8px;
+            }
+            
+            .progress-indicator {
+                margin: 16px;
+            }
+            
+            .logo-container img {
+                max-height: 60px;
+            }
+            
+            .top-logo-header {
+                padding: 15px 0;
+            }
+            
+            .top-logo-header img {
+                max-height: 70px;
+            }
+            
+            .company-tagline {
+                font-size: 14px;
+                margin-top: 8px;
             }
         }
         
@@ -478,17 +601,39 @@
             color: #5f6368;
             margin-bottom: 8px;
         }
+        .form-check .form-check-input {
+           float: left;
+           margin-left: 0rem;
+           margin-top: 0px;
+        }
+        .swal2-modal .swal2-icon{
+            margin: 0px;
+        }
     </style>
 </head>
-
 <body>
     <div class="container-scroller">
+        <!-- Top Logo Header -->
+        <div class="top-logo-header">
+            <div class="container-fluid">
+                <img src="{{ asset('images/logo.png') }}" alt="Sugs Lloyd Ltd Logo">
+            </div>
+        </div>
+        
+        <!-- Mobile Sidebar Toggle Button -->
+        <button class="mobile-sidebar-toggle" id="mobileSidebarToggle">
+            <i class="fas fa-bars"></i>
+        </button>
+        
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+        
         <div class="container-fluid page-body-wrapper">
             <div class="main-panel">
                 <div class="container-fluid p-0">
                     <div class="row g-0">
                         <!-- Side Navigation Tabs -->
-                        <div class="col-md-3 col-lg-2 side-nav">
+                        <div class="col-md-3 col-lg-2 side-nav" id="sideNav">
                             <div class="logo-container">
                                 <img src="{{ asset('images/logo.png') }}" alt="Sugs Lloyd Ltd Logo" class="img-fluid" style="max-height: 80px;">
                             </div>
@@ -525,7 +670,7 @@
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link disabled" data-section="education">
-                                        <div class="d-flex align-items-center">
+                                        <div class="d-flex align-items-center g-1">
                                             <span class="section-number">3</span>
                                             <span class="section-title">Educational Background</span>
                                             <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
@@ -594,7 +739,7 @@
                                 
                                 <form id="onboarding-form" method="POST" action="{{ route('hrm.store') }}" enctype="multipart/form-data">
                                     @csrf
-                                    
+                                     <input type="hidden" name="id" value="{{ $id }}">
                                     <!-- Personal Information Section -->
                                     <div class="form-section active" id="personal-info">
                                         <div class="card mb-4">
@@ -662,7 +807,7 @@
                                                     </div>
                                                     <div class="col-md-4">
                                                         <label class="form-label required" for="nationality">Nationality</label>
-                                                        <input type="text" id="nationality" name="nationality" class="form-control" required pattern="^[a-zA-Z\s]{2,50}$" title="Please enter a valid nationality (2-50 characters, letters only)">
+                                                        <input type="text" id="nationality" name="nationality" class="form-control" required pattern="^[a-zA-Z\s]{2,50}$" value="Indian" readonly>
                                                         <div class="invalid-feedback">Please enter a valid nationality (2-50 characters, letters only)</div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -678,8 +823,7 @@
                                                 </div>
                                             </div>
                                             <div class="card-footer">
-                                                <div class="d-flex justify-content-between">
-                                                    <button type="button" class="btn btn-outline-secondary" disabled>Previous</button>
+                                                <div class="d-flex justify-content-end">
                                                     <button type="button" class="btn btn-primary next-section" data-next="contact-info">Next Section</button>
                                                 </div>
                                             </div>
@@ -828,7 +972,7 @@
                                             <div class="card-body">
                                                 <div class="row g-3">
                                                     <div class="col-md-4">
-                                                        <label class="form-label required" for="position_applied_for">Position Applied For</label>
+                                                        <label class="form-label required" for="position_applied_for">Position Applied For (Designation)</label>
                                                         <input type="text" id="position_applied_for" name="position_applied_for" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter the position you are applying for</div>
                                                     </div>
@@ -837,16 +981,12 @@
                                                         <input type="text" id="department" name="department" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter the department</div>
                                                     </div>
-                                                    <div class="col-md-4">
+                                                    <!-- <div class="col-md-4">
                                                         <label class="form-label required" for="date_of_joining">Date of Joining</label>
                                                         <input type="date" id="date_of_joining" name="date_of_joining" class="form-control" required min="{{ date('Y-m-d') }}">
                                                         <div class="invalid-feedback">Please select a valid joining date (must be today or in the future)</div>
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <label class="form-label required" for="previous_employer">Previous Employer</label>
-                                                        <input type="text" id="previous_employer" name="previous_employer" class="form-control" required>
-                                                        <div class="invalid-feedback">Please enter your previous employer</div>
-                                                    </div>
+                                                    </div> -->
+                                                    
                                                     <div class="col-md-4">
                                                         <label class="form-label required" for="experience">Total Years of Experience</label>
                                                         <input type="number" id="experience" name="experience" step="0.1" min="0" max="50" class="form-control" required>
@@ -857,8 +997,18 @@
                                                         <input type="text" id="notice_period" name="notice_period" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter your notice period</div>
                                                     </div>
+
                                                 </div>
                                             </div>
+
+                                            <div id="employment-entries"></div>
+
+                                            <div class="card-body">
+                                                <button type="button" class="btn btn-success" onclick="addEmploymentEntry()">
+                                                    <i class="fas fa-plus-circle me-2"></i> Add Previous Employer
+                                                </button>
+                                            </div>
+                                            
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
                                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="education">Previous</button>
@@ -987,7 +1137,7 @@
                                                         <input type="file" id="passportPhotoInput" name="passport_photo" accept="image/jpeg,image/png" class="form-control" required>
                                                         <div class="invalid-feedback">Please upload a valid passport photo (JPG, PNG, max 2MB)</div>
                                                     </div>
-                                                    <div class="col-md-6 d-flex align-items-end">
+                                                    <div class="col-md-6 align-items-end" id="p_photo" style="display: none;">
                                                         <div class="photo-upload-container">
                                                             <label class="form-label d-block">Preview</label>
                                                             <div class="position-relative d-inline-block">
@@ -1053,6 +1203,7 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
                                 </form>
                             </div>
                         </div>
@@ -1061,7 +1212,6 @@
             </div>
         </div>
     </div>
-    
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset("vendors/select2/select2.min.js") }}"></script>
@@ -1072,12 +1222,50 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <script>
+<script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
         const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info', 'photo', 'declaration'];
         let completedSections = [];
 
+        // Mobile sidebar functionality
+        const mobileSidebarToggle = document.getElementById('mobileSidebarToggle');
+        const sideNav = document.getElementById('sideNav');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+        // Toggle mobile sidebar
+        if (mobileSidebarToggle) {
+            mobileSidebarToggle.addEventListener('click', function() {
+                sideNav.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+            });
+        }
+
+        // Close sidebar when clicking overlay
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sideNav.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            });
+        }
+
+        // Close sidebar when clicking on a nav link (mobile)
+        document.querySelectorAll('.form-tabs .nav-link').forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 991.98) {
+                    sideNav.classList.remove('show');
+                    sidebarOverlay.classList.remove('show');
+                }
+            });
+        });
+
+        // Close sidebar on window resize if desktop
+        window.addEventListener('resize', function() {
+            if (window.innerWidth > 991.98) {
+                sideNav.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+            }
+        });
         
         // Function to update progress bar
         function updateProgress() {
@@ -1096,7 +1284,9 @@
                 
                 // Update tab status
                 const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
-                tabLink.classList.add('completed');
+                if (tabLink) {
+                    tabLink.classList.add('completed');
+                }
                 
                 updateProgress();
             }
@@ -1243,7 +1433,7 @@
                 </div>
                 <div class="col-md-5">
                     <label class="form-label required" for="document_file_${documentCount}">Upload File</label>
-                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.  id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
                     <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
@@ -1281,6 +1471,7 @@
         const photoInput = document.getElementById('passportPhotoInput');
         const photoPreview = document.getElementById('passportPhotoPreview');
         const removeButton = document.getElementById('removePhotoButton');
+        const ppppp = document.getElementById('p_photo');
         
         photoInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -1302,6 +1493,7 @@
                 reader.onload = function(e) {
                     photoPreview.src = e.target.result;
                     removeButton.style.display = 'inline-block';
+                    ppppp.style.display = "block" 
                 };
                 reader.readAsDataURL(file);
             } else {
@@ -1335,32 +1527,6 @@
                 }
             });
         });
-        
-        // Form submission
-        // document.getElementById('onboarding-form').addEventListener('submit', function(e) {
-        //     e.preventDefault();
-            
-        //     // Validate all sections
-        //     let allValid = true;
-        //     sections.forEach(section => {
-        //         if (!validateSection(section)) {
-        //             allValid = false;
-        //         }
-        //     });
-            
-        //     if (allValid) {
-        //         // Submit the form
-        //         this.submit();
-        //     } else {
-        //         Swal.fire({
-        //             title: 'Validation Error',
-        //             text: 'Please fill in all required fields in all sections before submitting.',
-        //             icon: 'error',
-        //             confirmButtonText: 'OK',
-        //             confirmButtonColor: '#673ab7'
-        //         });
-        //     }
-        // });
         
         // Initialize Select2 for enhanced select boxes
         if ($.fn.select2) {
@@ -1399,7 +1565,7 @@
                     <div class="invalid-feedback">Please enter the institution name</div>
                 </div>
                 <div class="col-md-4">
-                    <label class="form-label required" for="education_year_${educationCount}">Year of Graduation</label>
+                    <label class="form-label required" for="education_year_${educationCount}">Passing Year</label>
                     <input type="number" id="education_year_${educationCount}" name="education[${educationCount}][year]" class="form-control" min="1950" max="${new Date().getFullYear()}" required>
                     <div class="invalid-feedback">Please enter a valid graduation year</div>
                 </div>
@@ -1431,6 +1597,8 @@
         }
     }
 
+
+
     function removeEducationEntry(id) {
         const entry = document.getElementById(`education-entry-${id}`);
         if (entry) {
@@ -1455,6 +1623,61 @@
     window.onload = function() {
         addEducationEntry();
     };
+
+    let employmentIndex = 0;
+
+    function addEmploymentEntry() {
+        const today = new Date().toISOString().split('T')[0];
+
+        const html = `
+            <div class="card-body row g-3 mb-3 border p-3 bg-light rounded" id="employment-entry-${employmentIndex}">
+                <div class="col-md-4">
+                    <label class="form-label required">Previous Employer</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][previous_employer]" required>
+                    <div class="invalid-feedback">Please enter your previous employer</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Designation</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][designation]" required>
+                    <div class="invalid-feedback">Please enter your designation</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Department</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][department]" required>
+                    <div class="invalid-feedback">Please enter your department</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Date of Joining</label>
+                    <input type="date" class="form-control" name="employment[${employmentIndex}][date_of_joining]" min="1980-01-01" required>
+                    <div class="invalid-feedback">Please enter a valid joining date</div>
+                </div>
+
+                <div class="col-md-4">
+                    <label class="form-label required">Experience</label>
+                    <input type="number" class="form-control" name="employment[${employmentIndex}][experience]" step="0.1" min="0" max="50" required>
+                    <div class="invalid-feedback">Please enter valid years (0–50)</div>
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger" onclick="removeEmploymentEntry(${employmentIndex})">
+                        <i class="fas fa-trash-alt me-2"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.getElementById('employment-entries').insertAdjacentHTML('beforeend', html);
+        employmentIndex++;
+    }
+
+    function removeEmploymentEntry(index) {
+        const entry = document.getElementById(`employment-entry-${index}`);
+        if (entry) entry.remove();
+    }
+
 </script>
 
 <script>
@@ -1526,6 +1749,19 @@
         // Save form data before submitting
         document.getElementById('onboarding-form').addEventListener('submit', saveFormData);
     });
+
+    const dobInput = document.getElementById('dob');
+     const dojInput = document.getElementById('date_of_joining');
+
+    // Optional: You can auto-focus it when the page loads or on a specific user action
+    dobInput.addEventListener('click', function () {
+        this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
+    });
+
+     dojInput.addEventListener('click', function () {
+        this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
+    });
+
 </script>
 
 </body>

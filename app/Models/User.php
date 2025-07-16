@@ -74,8 +74,9 @@ class User extends Authenticatable
     {
         return $this->belongsToMany(Project::class, 'project_user')->withPivot('role')->withTimestamps();
     }
-    public function usercategory(){
-        return $this->belongsTo(UserCategory::class, 'category', 'id');
+    public function usercategory()
+    {
+        return $this->belongsTo(UserCategory::class, 'category');
     }
     /**
      * The attributes that should be hidden for serialization.

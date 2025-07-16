@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\API\ConveyanceController;
+use App\Http\Controllers\ConveyanceController as ConvenienceController;
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\InventoryController;
 use App\Http\Controllers\InventoryController as InventoryControllers;
@@ -45,7 +46,6 @@ Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEng
 Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
 Route::apiResource('streetlight', StreetlightController::class);
 
-
 Route::apiResource('inventories', InventoryController::class);
 Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
 Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
@@ -63,7 +63,7 @@ Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
 Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
 
 // Conveyance
-Route::apiResource('tadas',ConveyanceController::class);
+Route::apiResource('tadas', ConveyanceController::class);
 Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
 Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
 Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
@@ -71,3 +71,4 @@ Route::get('all-vehicles/{id}', [ConveyanceController::class, 'getVehicles']);
 Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicle']);
 Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
 Route::get('check-price', [ConveyanceController::class, 'checkPrice']);
+Route::get('allow-expense', [ConveyanceController::class, 'allowExpense']);

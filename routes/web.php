@@ -5,7 +5,6 @@ use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
 use App\Http\Controllers\ConvenienceController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\API\HRMController;
 use App\Http\Controllers\InventoryController;
 use App\Http\Controllers\MeetController;
 use App\Http\Controllers\ProjectsController;
@@ -44,32 +43,32 @@ Route::middleware(['auth'])->group(function () {
         Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('staff.profile');
         Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('staff.updateProfilePicture');
     });
-    
+
     Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
     Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
 
     //Meeting Review Extension
-// List all meetings
-Route::get('/meets', [MeetController::class, 'index'])->name('meets.index');
-// Show create form
-Route::get('/meets/create', [MeetController::class, 'create'])->name('meets.create');
-// Store new meeting
-Route::post('/meets', [MeetController::class, 'store'])->name('meets.store');
-// Show a single meeting (optional, if needed)
-Route::get('/meets/{meet}', [MeetController::class, 'show'])->name('meets.show');
-// Show edit form (optional, if you need to edit meetings)
-Route::get('/meets/{meet}/edit', [MeetController::class, 'edit'])->name('meets.edit');
-// Update a meeting (optional)
-Route::put('/meets/{meet}', [MeetController::class, 'update'])->name('meets.update');
-// Delete a meeting (optional)
-Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
+    // List all meetings
+    Route::get('/meets', [MeetController::class, 'index'])->name('meets.index');
+    // Show create form
+    Route::get('/meets/create', [MeetController::class, 'create'])->name('meets.create');
+    // Store new meeting
+    Route::post('/meets', [MeetController::class, 'store'])->name('meets.store');
+    // Show a single meeting (optional, if needed)
+    Route::get('/meets/{meet}', [MeetController::class, 'show'])->name('meets.show');
+    // Show edit form (optional, if you need to edit meetings)
+    Route::get('/meets/{meet}/edit', [MeetController::class, 'edit'])->name('meets.edit');
+    // Update a meeting (optional)
+    Route::put('/meets/{meet}', [MeetController::class, 'update'])->name('meets.update');
+    // Delete a meeting (optional)
+    Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
 
 
     // vendor Router
     Route::resource('uservendors', VendorController::class);
     // Route::post('vendors-updatepassword/{id}', [VendorController::class, 'updatePassword'])->name('vendor.update-password');
     // Route::get('/vendors-change-password/{id}', [VendorController::class, 'changePassword'])->name('vendor.change-password');
-    
+
     // projects Router
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::resource('projects', ProjectsController::class);
@@ -86,10 +85,14 @@ Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.
     // Tada route fixed
     Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
     Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
+    Route::get('/billing/conveyance', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+    // Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
     // Settings Route
     Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     // status update
-    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    // Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    Route::post('/tada/bulk-update-status', [ConvenienceController::class, 'bulkUpdateStatus']);
+    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     //Add Vehicle
     Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
     // Edit Vehicle
@@ -101,11 +104,16 @@ Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.
     // Accept and Reject Conveyance
     Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
     Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
-    
+    Route::post('/conveyance/bulk-action', [ConvenienceController::class, 'bulkAction'])->name('conveyance.bulkAction');
+
+
     // Conveyance details
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
 
 
+    // Conveyance details
+    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
+    Route::delete('/settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('billing.deletevehicle');
     // Billing Edit User
     Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
     // Billing Update User
@@ -114,15 +122,23 @@ Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.
     // Add Categories
     Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
     Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
+    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
     Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
     // Update Categories
     Route::post('/settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('billing.updatecategory');
     // Delete Categories
     Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');
-
-    //Convenience Details
+    // City category and Allow expense
+    Route::get('/settings/edit-city-category', function () {
+    return view('billing.editCityCategory');
+        })->name('billing.editcitycategory');
+    Route::get('/settings/allowed-expense/{id}',[ConvenienceController::class, 'editAllowedExpense'])->name('billing.allowedexpense');
+    Route::post('/settings/update-allowed-expense/{id}',[ConvenienceController::class, 'updateAllowedExpense'])->name('billing.updateallowedexpense');
     
+        
+    //Convenience Details
+
     // View Bills Details
     Route::get('/view-bills', function () {
         return view('billing.viewBills');
@@ -138,12 +154,16 @@ Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.
     Route::post('/inventory/checkQR', [InventoryController::class, 'checkQR'])->name('inventory.checkQR');
     Route::post('/inventory/dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('inventory.dispatchweb');
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
+    Route::post('/inventory/replace', [InventoryController::class, 'replaceItem'])->name('inventory.replace');
+
     // adding inventory data
     // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
     Route::get('/inventory/edit/{id}', [InventoryController::class, 'editInventory'])->name('inventory.editInventory');
     Route::put('/inventory/update/{id}', [InventoryController::class, 'updateInventory'])->name('inventory.updateInventory');
+    Route::post('/inventory/bulk-delete', [InventoryController::class, 'bulkDelete'])->name('inventory.bulkDelete');
+
 
     // Dispatch Inventory
     Route::get('/inventory/dispatch', [InventoryController::class, 'showDispatchInventory'])->name('inventory.showDispatchInventory');
@@ -156,7 +176,7 @@ Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.
     Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
     // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
-    
+
     // Projects Controller
     // Deleting target
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
@@ -182,14 +202,16 @@ Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.
     Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
 
     // Route for hiring software HRM
-   
+    Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
+    Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
+    Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 
 });
- Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
+Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
 Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
 Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
 Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
-Route::get('/apply/success', function() {
+Route::get('/apply/success', function () {
     return view('hrm.success');
 })->name('hrm.success');
 
@@ -202,10 +224,10 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 
 
 // apply now
-Route::get('apply-now', function () {
-    return view('hrm.applyNow');
+Route::get('apply-now/{id}', function ($id) {
+    return view('hrm.applyNow', compact('id'));
 })->name('apply-now');
 
-Route::get('admin-preview', function () {
-    return view('hrm.adminPreview');
-})->name('admin-preview');
+Route::get('privacy-policy', function(){
+    return view('privacy');
+});

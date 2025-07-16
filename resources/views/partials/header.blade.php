@@ -74,7 +74,7 @@
           <a class="dropdown-item" href="#">
             <i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity
           </a>
-          <a class="dropdown-item" href={{route('staff.change-password', Auth::id())}}>
+          <a class="dropdown-item" href={{ route("staff.change-password", Auth::id()) }}>
             <i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Change Password
           </a>
           <form id="logout-form" action="{{ route("logout") }}" method="POST" style="display: none;">

@@ -28,7 +28,8 @@
       <form action="{{ route("sites.import", $project->id) }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="input-group">
-          <input type="file" name="file" style="height: 40px !important;" class="form-control form-control-sm" required>
+          <input type="file" name="file" style="height: 40px !important;" class="form-control form-control-sm"
+            required>
           <button type="submit" class="btn btn-sm btn-primary"
             style="height: 40px !important; align-items:center;justify-content:center;" data-toggle="tooltip"
             title="Import Sites">
@@ -36,11 +37,12 @@
           </button>
         </div>
       </form>
-      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1 mb-4" style="height: 40px !important;">Add Site</a>
+      <a href="{{ route("sites.create", $project->id) }}" class="btn btn-primary mx-1 mb-4"
+        style="height: 40px !important;">Add Site</a>
     </div>
   </div>
 </div>
-  <table id="sitesTable" class="table table-striped table-bordered table-sm mt-4">
+<table id="sitesTable" class="table-striped table-bordered table-sm mt-4 table">
   <thead>
     <tr>
       <th><input type="checkbox" id="selectAll" /></th>
@@ -91,15 +93,18 @@
         @endif
 
         <td>
-          <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon" title="View Details">
+          <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon"
+            title="View Details">
             <i class="mdi mdi-eye"></i>
           </a>
-          <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon" title="Edit Site">
+          <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}"
+            class="btn btn-warning btn-icon" title="Edit Site">
             <i class="mdi mdi-pencil"></i>
           </a>
-          <form action="{{ route('sites.destroy', $site->id) }}?project_id={{ $project->id }}" method="POST" style="display:inline;">
+          <form action="{{ route("sites.destroy", $site->id) }}?project_id={{ $project->id }}" method="POST"
+            style="display:inline;">
             @csrf
-            @method('DELETE')
+            @method("DELETE")
             <button type="submit" class="btn btn-danger btn-icon" title="Delete Site">
               <i class="mdi mdi-delete"></i>
             </button>
@@ -110,73 +115,73 @@
   </tbody>
 </table>
 
-@push('styles')
-<style>
-  /* This forces the search box alignment to the left */
-  div.dataTables_filter {
-    text-align: left !important;
-  }
+@push("styles")
+  <style>
+    /* This forces the search box alignment to the left */
+    div.dataTables_filter {
+      text-align: left !important;
+    }
 
-  div.dataTables_filter label {
-    float: left !important;
-  }
+    div.dataTables_filter label {
+      float: left !important;
+    }
 
-  div.dataTables_filter input {
-    margin-left: 0.5rem;
-  }
-</style>
+    div.dataTables_filter input {
+      margin-left: 0.5rem;
+    }
+  </style>
 @endpush
 
-
-@push('scripts')
-<!-- Include jQuery and DataTables -->
-<script>
-  $(document).ready(function () {
-    const table = $('#sitesTable').DataTable({
-      dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
-        "<'row'<'col-sm-12'tr>>" +
-        "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-      buttons: [
-        {
-          extend: 'print',
-          text: '<i class="mdi mdi-printer"></i>',
-          className: 'btn btn-sm btn-info',
-          titleAttr: 'Print Table'
+@push("scripts")
+  <!-- Include jQuery and DataTables -->
+  <script>
+    $(document).ready(function() {
+      const table = $('#sitesTable').DataTable({
+        dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
+          "<'row'<'col-sm-12'tr>>" +
+          "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+        buttons: [{
+            extend: 'print',
+            text: '<i class="mdi mdi-printer"></i>',
+            className: 'btn btn-sm btn-info',
+            titleAttr: 'Print Table'
+          },
+          {
+            extend: 'excelHtml5',
+            text: '<i class="mdi mdi-file-excel"></i>',
+            className: 'btn btn-sm btn-success',
+            titleAttr: 'Export to Excel'
+          }
+        ],
+        pageLength: 50,
+        searching: true,
+        responsive: true,
+        columnDefs: [{
+            orderable: false,
+            targets: [0, -1]
+          } // checkbox and actions
+        ],
+        language: {
+          search: '',
+          searchPlaceholder: 'Search...'
         },
-        {
-          extend: 'excelHtml5',
-          text: '<i class="mdi mdi-file-excel"></i>',
-          className: 'btn btn-sm btn-success',
-          titleAttr: 'Export to Excel'
+        select: {
+          style: 'multi',
+          selector: 'td:first-child input[type="checkbox"]'
         }
-      ],
-      pageLength: 50,
-      searching: true,
-      responsive: true,
-      columnDefs: [
-        { orderable: false, targets: [0, -1] } // checkbox and actions
-      ],
-      language: {
-        search: '',
-        searchPlaceholder: 'Search...'
-      },
-      select: {
-        style: 'multi',
-        selector: 'td:first-child input[type="checkbox"]'
-      }
-    });
+      });
 
-    $('#selectAll').on('click', function () {
-      const checked = this.checked;
-      $('input.select-checkbox').prop('checked', checked);
-      checked ? table.rows().select() : table.rows().deselect();
-    });
+      $('#selectAll').on('click', function() {
+        const checked = this.checked;
+        $('input.select-checkbox').prop('checked', checked);
+        checked ? table.rows().select() : table.rows().deselect();
+      });
 
-    $('#sitesTable tbody').on('click', 'input.select-checkbox', function () {
-      const total = $('input.select-checkbox').length;
-      const checked = $('input.select-checkbox:checked').length;
-      $('#selectAll').prop('checked', total === checked);
+      $('#sitesTable tbody').on('click', 'input.select-checkbox', function() {
+        const total = $('input.select-checkbox').length;
+        const checked = $('input.select-checkbox:checked').length;
+        $('#selectAll').prop('checked', total === checked);
+      });
     });
-  });
-</script>
+  </script>
 @endpush
