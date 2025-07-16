@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Review & Confirm Your Details - Sugs Lloyd Ltd</title>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-    <link rel="stylesheet" href="{{ asset("css/vertical-layout-light/style.css") }}">
-    <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
-    <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
-    <title>Review & Confirm Your Details - Sugs Lloyd Ltd</title>
+    <title>Review Your Application - Sugs Lloyd Ltd</title>
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
     <link rel="stylesheet" href="{{ asset("css/vertical-layout-light/style.css") }}">
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
@@ -412,6 +407,8 @@
             <h2 class="mb-0">Employment Details</h2>
           </div>
           <div class="card-body">
+            <!--  -->
+            <div class="card-body">
             <div class="row">
               <div class="col-md-6">
                 <div class="data-row">
@@ -422,63 +419,125 @@
                   <span class="data-label">Department:</span>
                   <span class="data-value">{{ $data["department"] ?? "N/A" }}</span>
                 </div>
-                <div class="data-row">
-                  <span class="data-label">Date of Joining:</span>
-                  <span class="data-value">{{ $data["date_of_joining"] ?? "N/A" }}</span>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="data-row">
-                  <span class="data-label">Previous Employer:</span>
-                  <span class="data-value">{{ $data["previous_employer"] ?? "N/A" }}</span>
-                </div>
-                <div class="data-row">
-                  <span class="data-label">Total Years of Experience:</span>
-                  <span class="data-value">{{ $data["experience"] ?? "N/A" }} years</span>
-                </div>
-                <div class="data-row">
-                  <span class="data-label">Notice Period:</span>
-                  <span class="data-value">{{ $data["notice_period"] ?? "N/A" }}</span>
-                </div>
+                    <div class="data-row">
+                      <span class="data-label">Experience:</span>
+                      <span class="data-value">{{ $data["experience"] ?? 'N/A' }} years</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Notice Period:</span>
+                      <span class="data-value">{{ $data["notice_period"] ?? 'N/A' }}</span>
+                    </div>
               </div>
             </div>
-            <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#employment">
-                <i class="fas fa-edit me-2"></i> Edit
-              </a>
-            </div>
           </div>
-        </div>
-
-        <!-- Documents -->
-        <div class="card">
-          <div class="card-header">
-            <h2 class="mb-0">Uploaded Documents</h2>
-          </div>
-          <div class="card-body">
-            @if (!empty($data["documents"]))
-              <ul class="list-group">
-                @foreach ($data["documents"] as $docName => $docPath)
-                  <li class="list-group-item d-flex justify-content-between align-items-center">
-                    {{ $docName }}
-                    <a href="{{ asset("storage/" . $docPath) }}" target="_blank" class="btn btn-sm btn-outline-primary">
-                      <i class="fas fa-eye me-1"></i> View
-                    </a>
-                  </li>
-                @endforeach
-              </ul>
+          <hr>
+            <!--  -->
+          <h4>
+            Previous Experience
+          </h4>
+            @if (!empty($data['employment']) && is_array($data['employment']))
+              @foreach ($data['employment'] as $index => $emp)
+                <div class="row mb-3 card-body">
+                  <div class="col-md-6">
+                    <div class="data-row">
+                      <span class="data-label">Previous Employer:</span>
+                      <span class="data-value">{{ $emp['previous_employer'] ?? 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Department:</span>
+                      <span class="data-value">{{ $emp['department'] ?? 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Designation</span>
+                      <span class="data-value">{{ $emp['designation'] ?? 'N/A' }}</span>
+                    </div>
+                    <div class="data-row">
+                      <span class="data-label">Experience:</span>
+                      <span class="data-value">{{ $emp['experience'] ?? 'N/A' }} years</span>
+                    </div>
+                    
+                    <div class="data-row">
+                      <span class="data-label">Date of Joining:</span>
+                      <span class="data-value">{{ $emp['date_of_joining'] ?? 'N/A' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <hr>
+              @endforeach
+              <div class="edit-btn mt-3">
+                <a href="{{ route('hrm.apply') }}#employment">
+                  <i class="fas fa-edit me-2"></i> Edit
+                </a>
+              </div>
             @else
-              <p>No documents uploaded.</p>
+              <p class="text-muted">No employment details provided.</p>
+              <div class="edit-btn">
+                <a href="{{ route('hrm.apply') }}#employment">
+                  <i class="fas fa-edit me-2"></i> Add Employment Details
+                </a>
+              </div>
             @endif
-            <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#documents">
-                <i class="fas fa-edit me-2"></i> Edit
-              </a>
-            </div>
           </div>
         </div>
 
-        <!-- Additional Information -->
+      <!-- Uploaded Documents -->
+      <div class="card border-0 shadow-sm">
+        <div class="card-header bg-white border-bottom">
+          <h4 class="mb-0 fw-semibold">Uploaded Documents</h4>
+        </div>
+        <div class="card-body">
+          @if (!empty($data["documents"]))
+            <div class="row g-3">
+              @foreach ($data["documents"] as $docName => $docPath)
+                <div class="col-md-3 col-sm-4 col-6">
+                  <div class="rounded-3 border hover-shadow overflow-hidden position-relative transition-all h-100">
+                    <!-- File Thumbnail -->
+                    <a href="{{ asset('storage/' . $docPath) }}" target="_blank" class="d-block">
+                      <div class="bg-light position-relative" style="height: 160px;">
+                        <img src="{{ asset('storage/thumbnails/' . pathinfo($docPath, PATHINFO_FILENAME) . '.jpg') }}"
+                            onerror="this.onerror=null;this.src='{{ asset('images/default-pdf-thumb.jpg') }}';"
+                            alt="{{ $docName }}"
+                            class="img-fluid w-100 h-100"
+                            style="object-fit: cover;">
+                      </div>
+                    </a>
+
+                    <!-- File Name + Menu -->
+                    <div class="bg-white p-2 d-flex justify-content-between align-items-start">
+                      <div class="text-truncate small fw-medium" title="{{ $docName }}" style="max-width: 140px;">
+                        {{ $docName }}
+                      </div>
+                      <div class="dropdown">
+                        <a href="#" class="text-muted small" data-bs-toggle="dropdown">
+                          <i class="fas fa-ellipsis-v"></i>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                          <li>
+                            <a class="dropdown-item" href="{{ asset('storage/' . $docPath) }}" target="_blank">
+                              <i class="fas fa-eye me-2"></i> View
+                            </a>
+                          </li>
+                          <!-- Add more options like Delete, Rename if needed -->
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          @else
+            <p class="text-muted">No documents uploaded.</p>
+          @endif
+
+          <div class="edit-btn mt-4">
+            <a href="{{ route('hrm.apply') }}#documents" class="btn btn-outline-secondary">
+              <i class="fas fa-edit me-2"></i> Edit Documents
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Information -->
         <div class="card">
           <div class="card-header">
             <h2 class="mb-0">Additional Information</h2>
@@ -514,27 +573,29 @@
           </div>
         </div>
 
-        <!-- Passport Photo -->
+       <!-- Passport Size Photo -->
         <div class="card">
           <div class="card-header">
             <h2 class="mb-0">Passport Size Photo</h2>
           </div>
           <div class="card-body">
             <div class="text-center">
-              @if (!empty($data["photo"]))
-                <img src="{{ asset("storage/" . $data["photo"]) }}" alt="Passport Photo" class="img-thumbnail"
-                  style="max-height: 200px;">
+              @if (!empty($data["photo"]) && file_exists(storage_path('app/public/' . $data["photo"])))
+                <img src="{{ asset('storage/' . $data["photo"]) }}" alt="Passport Photo" class="img-thumbnail rounded"
+                    style="max-height: 200px; max-width: 200px; object-fit: cover;">
               @else
-                <p>No photo uploaded.</p>
+                <div class="alert alert-warning d-inline-block">No photo uploaded.</div>
               @endif
             </div>
-            <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#photo">
-                <i class="fas fa-edit me-2"></i> Edit
+
+            <div class="edit-btn mt-3 text-center">
+              <a href="{{ route('hrm.apply') }}#photo" class="btn btn-outline-primary">
+                <i class="fas fa-edit me-2"></i> Edit Photo
               </a>
             </div>
           </div>
         </div>
+
 
         <!-- Declaration -->
         <div class="card">
@@ -543,8 +604,10 @@
           </div>
           <div class="card-body">
             <div class="alert alert-info">
-              <p>I hereby declare that the information provided above is true to the best of my knowledge and belief. I
-                understand that any false information may lead to disqualification from the recruitment process.</p>
+              <p>I hereby declare that the information provided above is true to the best of my knowledge and
+                belief. I
+                understand that any false information may lead to disqualification from the recruitment process.
+              </p>
             </div>
             <div class="row">
               <div class="col-md-6">
@@ -574,10 +637,27 @@
             <i class="fas fa-check-circle me-2"></i> Confirm & Submit Application
           </button>
         </div>
-    
-    </form>
+      </form>
     </div>
     
+    @if(session('error'))
+    <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
+        <strong>Error:</strong> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+@endif
+
+{{-- Optional: Display validation errors --}}
+@if ($errors->any())
+    <div class="alert alert-warning">
+        <ul class="mb-0">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
