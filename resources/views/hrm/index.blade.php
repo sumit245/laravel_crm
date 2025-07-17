@@ -184,11 +184,6 @@
       </x-data-table>
       </form>
     </div>
-
-    <!-- Pagination -->
-    <!-- <div class="d-flex justify-content-center mt-3">
-      {{ $candidates->links() }}
-    </div> -->
   </div>
 
 

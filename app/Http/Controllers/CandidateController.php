@@ -39,7 +39,7 @@ class CandidateController extends Controller
             $query->where('location', $request->location);
         }
 
-        $candidates = $query->paginate(10)->appends($request->query());
+        $candidates = $query->get();
 
         return view('hrm.index', compact('candidates'));
     }
