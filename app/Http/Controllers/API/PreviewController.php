@@ -84,24 +84,24 @@ class PreviewController extends Controller
                 $request->curr_zip;
 
             // Handle file uploads
-            $documents = [];
-            $documentPaths = [];
-            if ($request->hasFile('document_file')) {
-                foreach ($request->file('document_file') as $index => $file) {
-                    if ($file->isValid()) {
-                        $docName = $request->document_name[$index] ?? 'Document ' . ($index + 1);
-                        $path = $file->store('documents', 'public');
-                        $documents[$docName] = $path;
-                        $documentPaths[] = $path;
-                    }
-                }
-            }
+            // $documents = [];
+            // $documentPaths = [];
+            // if ($request->hasFile('document_file')) {
+            //     foreach ($request->file('document_file') as $index => $file) {
+            //         if ($file->isValid()) {
+            //             $docName = $request->document_name[$index] ?? 'Document ' . ($index + 1);
+            //             $path = $file->store('documents', 'public');
+            //             $documents[$docName] = $path;
+            //             $documentPaths[] = $path;
+            //         }
+            //     }
+            // }
 
             // Handle passport photo upload
-            $photoPath = null;
-            if ($request->hasFile('passport_photo') && $request->file('passport_photo')->isValid()) {
-                $photoPath = $request->file('passport_photo')->store('photos', 'public');
-            }
+            // $photoPath = null;
+            // if ($request->hasFile('passport_photo') && $request->file('passport_photo')->isValid()) {
+            //     $photoPath = $request->file('passport_photo')->store('photos', 'public');
+            // }
 
             // Store all data in session
             $formData = [
@@ -138,9 +138,9 @@ class PreviewController extends Controller
                 'other_info' => $request->other_info,
 
                 // Documents
-                'documents' => $documents,
-                'document_paths' => $documentPaths,
-                'photo' => $photoPath,
+                // 'documents' => null,
+                // 'document_paths' => $documentPaths,
+                // 'photo' => null,
 
                 // Declaration
                 'signature' => $request->signature,
@@ -148,7 +148,7 @@ class PreviewController extends Controller
 
                 // Raw data for form fields
                 // Safely exclude files
-                'raw_data' => $request->except(['document_file', 'passport_photo'])
+                // 'raw_data' => $request->except(['document_file', 'passport_photo'])
 
             ];
 

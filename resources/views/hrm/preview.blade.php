@@ -352,7 +352,7 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("apply-now", ["id" => $id]) }}#personal-info">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#personal-info">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
@@ -388,7 +388,7 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("apply-now", ["id" => $id]) }}#contact-info">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#contact-info">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
@@ -437,7 +437,7 @@
               <p>No educational information provided.</p>
             @endif
             <div class="edit-btn">
-              <a href="{{ route("apply-now", ["id" => $id]) }}#education">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#education">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
@@ -505,7 +505,7 @@
             @endif
 
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#employment">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#employment">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
@@ -577,7 +577,7 @@
             @endif
 
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#documents" class="btn btn-outline-primary">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#documents" class="btn btn-outline-primary">
                 <i class="fas fa-edit me-2"></i> Edit Documents
               </a>
             </div>
@@ -613,7 +613,7 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("apply-now", ["id" => $id]) }}#additional-info">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#additional-info">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
@@ -635,7 +635,7 @@
               @endif
             </div>
             <div class="edit-btn mt-3 text-center">
-              <a href="{{ route("hrm.apply") }}#photo" class="btn btn-outline-primary">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#photo" class="btn btn-outline-primary">
                 <i class="fas fa-edit me-2"></i> Edit Photo
               </a>
             </div>
@@ -669,7 +669,7 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("apply-now", ["id" => $id]) }}#declaration">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#declaration">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
@@ -794,11 +794,13 @@
     </script>
 
     @php
-      function formatBytes($size, $precision = 2)
-      {
-          $base = log($size, 1024);
-          $suffixes = ["B", "KB", "MB", "GB", "TB"];
-          return round(pow(1024, $base - floor($base)), $precision) . " " . $suffixes[floor($base)];
+      if (!function_exists("formatBytes")) {
+          function formatBytes($size, $precision = 2)
+          {
+              $base = log($size, 1024);
+              $suffixes = ["B", "KB", "MB", "GB", "TB"];
+              return round(pow(1024, $base - floor($base)), $precision) . " " . $suffixes[floor($base)];
+          }
       }
     @endphp
   </body>
