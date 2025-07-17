@@ -4,9 +4,21 @@
   <div class="container p-2">
     <div class="d-flex justify-content-between mb-3">
       <div></div>
-      <a href="{{ route("staff.create") }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Staff">
-        <i class="mdi mdi-plus-circle"></i>
-      </a>
+      <div class="d-flex">
+        <a href="{{ route("staff.create") }}" class="btn btn-sm btn-primary mx-2" data-toggle="tooltip" title="Add New Staff">
+          <i class="mdi mdi-plus-circle"></i>
+        </a>
+        <form action="{{ route("import.staff") }}" method="POST" enctype="multipart/form-data">
+          @csrf
+          <div class="input-group mx-1">
+            <input type="file" name="file" class="form-control form-control-sm" required>
+            <button type="submit" class="btn btn-sm btn-primary" title="Import Candidates">
+              <i class="mdi mdi-upload"></i> Import Staff
+            </button>
+          </div>
+        </form>
+      </div>
+
     </div>
     <table id="staffTable" class="table-striped table-bordered table">
       <thead>

@@ -76,7 +76,7 @@
     </ol>
 
     <p>
-      We request you to <a href="https://slldm.com/apply-now">Reply (by clicking here)</a> to this letter to confirm your
+      We request you to <a href={{ route('apply-now' ,$candidate->id) }}>Reply (by clicking here)</a> to this letter to confirm your
       acceptance of this offer within
       <strong>three (3)</strong> business days from the date of receipt. We are excited to welcome you to the team and
       look forward to your positive contributions at <strong>Sugs Lloyd Limited</strong>.
