@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Onboarding - Sugs Lloyd Ltd</title>
@@ -11,12 +12,12 @@
     {{-- select2 css --}}
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
     <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
-    
+
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
@@ -626,8 +627,9 @@
             margin-top: 10px;
         }
     </style>
-</head>
-<body>
+  </head>
+
+  <body>
     <div class="container-scroller">
         <!-- Top Logo Header -->
         <div class="top-logo-header">
@@ -989,7 +991,7 @@
                                                         <div class="invalid-feedback">Please enter a valid experience (0-50 years)</div>
                                                     </div>
                                                     <div class="col-md-4">
-                                                        <label class="form-label required" for="notice_period">Notice Period</label>
+                                                        <label class="form-label required" for="notice_period">Notice Period(in days)</label>
                                                         <input type="text" id="notice_period" name="notice_period" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter your notice period</div>
                                                     </div>
@@ -1215,9 +1217,11 @@
                                                     <div class="col-md-12 mt-4">
                                                         <div class="form-check">
                                                             <input type="checkbox" id="agree_terms" name="agree_terms" class="form-check-input" required>
-                                                            <label class="form-check-label" for="agree_terms">
-                                                                I agree to the terms and conditions and confirm that all information provided is accurate.
-                                                            </label>
+                                                             <label class="form-check-label" for="agree_terms">
+    I agree to the 
+    <a href="/terms-and-conditions" target="_blank">terms and conditions</a> 
+    and confirm that all information provided is accurate.
+  </label>
                                                             <div class="invalid-feedback">You must agree to the terms and conditions</div>
                                                         </div>
                                                     </div>
@@ -1253,8 +1257,8 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
         const sections = ['personal-info', 'contact-info', 'education', 'employment',  'additional-info', 'declaration'];
         let completedSections = [];
@@ -1266,63 +1270,63 @@
 
         // Toggle mobile sidebar
         if (mobileSidebarToggle) {
-            mobileSidebarToggle.addEventListener('click', function() {
-                sideNav.classList.toggle('show');
-                sidebarOverlay.classList.toggle('show');
-            });
+          mobileSidebarToggle.addEventListener('click', function() {
+            sideNav.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+          });
         }
 
         // Close sidebar when clicking overlay
         if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', function() {
-                sideNav.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-            });
+          sidebarOverlay.addEventListener('click', function() {
+            sideNav.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+          });
         }
 
         // Close sidebar when clicking on a nav link (mobile)
         document.querySelectorAll('.form-tabs .nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 991.98) {
-                    sideNav.classList.remove('show');
-                    sidebarOverlay.classList.remove('show');
-                }
-            });
+          link.addEventListener('click', function() {
+            if (window.innerWidth <= 991.98) {
+              sideNav.classList.remove('show');
+              sidebarOverlay.classList.remove('show');
+            }
+          });
         });
 
         // Close sidebar on window resize if desktop
         window.addEventListener('resize', function() {
-            if (window.innerWidth > 991.98) {
-                sideNav.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-            }
+          if (window.innerWidth > 991.98) {
+            sideNav.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+          }
         });
-        
+
         // Function to update progress bar
         function updateProgress() {
-            const totalSections = sections.length;
-            const completedCount = completedSections.length;
-            const progressPercentage = Math.round((completedCount / totalSections) * 100);
-            
-            document.getElementById('progress-bar').style.width = progressPercentage + '%';
-            document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+          const totalSections = sections.length;
+          const completedCount = completedSections.length;
+          const progressPercentage = Math.round((completedCount / totalSections) * 100);
+
+          document.getElementById('progress-bar').style.width = progressPercentage + '%';
+          document.getElementById('progress-percentage').textContent = progressPercentage + '%';
         }
-        
+
         // Function to mark section as completed
         function markSectionCompleted(sectionId) {
-            if (!completedSections.includes(sectionId)) {
-                completedSections.push(sectionId);
-                
-                // Update tab status
-                const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
-                if (tabLink) {
-                    tabLink.classList.add('completed');
-                }
-                
-                updateProgress();
+          if (!completedSections.includes(sectionId)) {
+            completedSections.push(sectionId);
+
+            // Update tab status
+            const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+            if (tabLink) {
+              tabLink.classList.add('completed');
             }
+
+            updateProgress();
+          }
         }
-        
+
         // Function to validate section
         function validateSection(sectionId) {
             const section = document.getElementById(sectionId);
@@ -1396,91 +1400,91 @@
             
             return isValid;
         }
-        
+
         // Function to switch sections
         function switchSection(fromSection, toSection) {
-            // Hide current section
-            document.getElementById(fromSection).classList.remove('active');
-            
-            // Show target section
-            document.getElementById(toSection).classList.add('active');
-            
-            // Update active tab
-            document.querySelector(`.nav-link[data-section="${fromSection}"]`).classList.remove('active');
-            document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.add('active');
-            document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.remove('disabled');
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
+          // Hide current section
+          document.getElementById(fromSection).classList.remove('active');
+
+          // Show target section
+          document.getElementById(toSection).classList.add('active');
+
+          // Update active tab
+          document.querySelector(`.nav-link[data-section="${fromSection}"]`).classList.remove('active');
+          document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.add('active');
+          document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.remove('disabled');
+
+          // Scroll to top
+          window.scrollTo(0, 0);
         }
-        
+
         // Next section button click handler
         document.querySelectorAll('.next-section').forEach(button => {
-            button.addEventListener('click', function() {
-                const currentSection = this.closest('.form-section').id;
-                const nextSection = this.getAttribute('data-next');
-                
-                if (validateSection(currentSection)) {
-                    markSectionCompleted(currentSection);
-                    switchSection(currentSection, nextSection);
-                } else {
-                    Swal.fire({
-                        title: 'Validation Error',
-                        text: 'Please fill in all required fields correctly before proceeding.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#673ab7'
-                    });
-                }
-            });
+          button.addEventListener('click', function() {
+            const currentSection = this.closest('.form-section').id;
+            const nextSection = this.getAttribute('data-next');
+
+            if (validateSection(currentSection)) {
+              markSectionCompleted(currentSection);
+              switchSection(currentSection, nextSection);
+            } else {
+              Swal.fire({
+                title: 'Validation Error',
+                text: 'Please fill in all required fields correctly before proceeding.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#673ab7'
+              });
+            }
+          });
         });
-        
+
         // Previous section button click handler
         document.querySelectorAll('.prev-section').forEach(button => {
-            button.addEventListener('click', function() {
-                const currentSection = this.closest('.form-section').id;
-                const prevSection = this.getAttribute('data-prev');
-                
-                switchSection(currentSection, prevSection);
-            });
+          button.addEventListener('click', function() {
+            const currentSection = this.closest('.form-section').id;
+            const prevSection = this.getAttribute('data-prev');
+
+            switchSection(currentSection, prevSection);
+          });
         });
-        
+
         // Tab click handler
         document.querySelectorAll('.form-tabs .nav-link').forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                if (!this.classList.contains('disabled')) {
-                    const targetSection = this.getAttribute('data-section');
-                    const currentSection = document.querySelector('.form-section.active').id;
-                    
-                    switchSection(currentSection, targetSection);
-                }
-            });
+          tab.addEventListener('click', function(e) {
+            if (!this.classList.contains('disabled')) {
+              const targetSection = this.getAttribute('data-section');
+              const currentSection = document.querySelector('.form-section.active').id;
+
+              switchSection(currentSection, targetSection);
+            }
+          });
         });
-        
+
         // Same as permanent address checkbox
         document.getElementById('sameAsPermanent').addEventListener('change', function() {
-            const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
-            fields.forEach(field => {
-                const perm = document.getElementById(`perm_${field}`);
-                const curr = document.getElementById(`curr_${field}`);
-                if (this.checked) {
-                    curr.value = perm.value;
-                    curr.readOnly = true;
-                    curr.classList.add('bg-light');
-                } else {
-                    curr.readOnly = false;
-                    curr.classList.remove('bg-light');
-                }
-            });
+          const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
+          fields.forEach(field => {
+            const perm = document.getElementById(`perm_${field}`);
+            const curr = document.getElementById(`curr_${field}`);
+            if (this.checked) {
+              curr.value = perm.value;
+              curr.readOnly = true;
+              curr.classList.add('bg-light');
+            } else {
+              curr.readOnly = false;
+              curr.classList.remove('bg-light');
+            }
+          });
         });
-        
+
         // Add more documents button
         document.getElementById('addMoreDocuments').addEventListener('click', function() {
-            const wrapper = document.getElementById('documentUploads');
-            const documentCount = wrapper.children.length + 1;
-            const row = document.createElement('div');
-            row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
-            row.innerHTML = `
+          const wrapper = document.getElementById('documentUploads');
+          const documentCount = wrapper.children.length + 1;
+          const row = document.createElement('div');
+          row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
+          row.innerHTML = `
                 <div class="col-md-5">
                     <label class="form-label" for="document_name_${documentCount}">Document Name</label>
                     <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" placeholder="Document Name">
@@ -1495,37 +1499,38 @@
                     </button>
                 </div>
             `;
-            wrapper.appendChild(row);
-            
-            // Show all remove buttons if there's more than one document
-            if (wrapper.children.length > 1) {
-                wrapper.querySelectorAll('.remove-document').forEach(btn => {
-                    btn.classList.remove('d-none');
-                });
-            }
+          wrapper.appendChild(row);
+
+          // Show all remove buttons if there's more than one document
+          if (wrapper.children.length > 1) {
+            wrapper.querySelectorAll('.remove-document').forEach(btn => {
+              btn.classList.remove('d-none');
+            });
+          }
         });
-        
+
         // Remove document field
         document.getElementById('documentUploads').addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-document') || e.target.closest('.remove-document')) {
-                const button = e.target.classList.contains('remove-document') ? e.target : e.target.closest('.remove-document');
-                const row = button.closest('.row');
-                row.remove();
-                
-                // Hide remove button if only one document remains
-                const wrapper = document.getElementById('documentUploads');
-                if (wrapper.children.length === 1) {
-                    wrapper.querySelector('.remove-document').classList.add('d-none');
-                }
+          if (e.target.classList.contains('remove-document') || e.target.closest('.remove-document')) {
+            const button = e.target.classList.contains('remove-document') ? e.target : e.target.closest(
+              '.remove-document');
+            const row = button.closest('.row');
+            row.remove();
+
+            // Hide remove button if only one document remains
+            const wrapper = document.getElementById('documentUploads');
+            if (wrapper.children.length === 1) {
+              wrapper.querySelector('.remove-document').classList.add('d-none');
             }
+          }
         });
-        
+
         // Passport photo preview
         const photoInput = document.getElementById('passportPhotoInput');
         const photoPreview = document.getElementById('passportPhotoPreview');
         const removeButton = document.getElementById('removePhotoButton');
         const ppppp = document.getElementById('p_photo');
-        
+
         photoInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
@@ -1553,33 +1558,33 @@
                 resetPassportPhoto();
             }
         });
-        
+
         removeButton.addEventListener('click', function() {
-            resetPassportPhoto();
+          resetPassportPhoto();
         });
-        
+
         function resetPassportPhoto() {
             photoPreview.src = '{{ asset('images/default-avatar.png') }}';
             photoInput.value = '';
             removeButton.style.display = 'none';
             ppppp.style.display = 'none';
         }
-        
+
         // Show/hide reason for leaving based on employment status
         document.querySelectorAll('input[name="currently_employed"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const reasonContainer = document.getElementById('reason-for-leaving-container');
-                const reasonInput = document.getElementById('reason_for_leaving');
-                
-                if (this.value === 'Yes') {
-                    reasonContainer.style.display = 'block';
-                    reasonInput.required = true;
-                } else {
-                    reasonContainer.style.display = 'none';
-                    reasonInput.required = false;
-                    reasonInput.value = '';
-                }
-            });
+          radio.addEventListener('change', function() {
+            const reasonContainer = document.getElementById('reason-for-leaving-container');
+            const reasonInput = document.getElementById('reason_for_leaving');
+
+            if (this.value === 'Yes') {
+              reasonContainer.style.display = 'block';
+              reasonInput.required = true;
+            } else {
+              reasonContainer.style.display = 'none';
+              reasonInput.required = false;
+              reasonInput.value = '';
+            }
+          });
         });
 
         // Experience validation functionality
@@ -1635,14 +1640,14 @@
         
         // Initialize Select2 for enhanced select boxes
         if ($.fn.select2) {
-            $('.custom-select').select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                dropdownParent: $('#onboarding-form'),
-                minimumResultsForSearch: 6
-            });
+          $('.custom-select').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('#onboarding-form'),
+            minimumResultsForSearch: 6
+          });
         }
-    });
+      });
 
     let educationCount = 0;
     function addEducationEntry() {
@@ -1689,42 +1694,42 @@
                 </div>
             </div>`;
         container.insertAdjacentHTML('beforeend', entryHTML);
-        
+
         // Initialize Select2 for the newly added select
         if ($.fn.select2) {
-            $(`#education_qualification_${educationCount}`).select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                dropdownParent: $(`#education-entry-${educationCount}`),
-                minimumResultsForSearch: 6
-            });
+          $(`#education_qualification_${educationCount}`).select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $(`#education-entry-${educationCount}`),
+            minimumResultsForSearch: 6
+          });
         }
     }
 
-    function removeEducationEntry(id) {
+      function removeEducationEntry(id) {
         const entry = document.getElementById(`education-entry-${id}`);
         if (entry) {
-            // Use SweetAlert2 for confirmation
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You are about to remove this education entry.",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, remove it!'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    entry.remove();
-                }
-            });
+          // Use SweetAlert2 for confirmation
+          Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to remove this education entry.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              entry.remove();
+            }
+          });
         }
-    }
+      }
 
-    // Add initial entry by default
-    window.onload = function() {
+      // Add initial entry by default
+      window.onload = function() {
         addEducationEntry();
-    };
+      };
 
     let employmentIndex = 0;
     function addEmploymentEntry() {
@@ -1767,7 +1772,7 @@
         updateExperienceSummary();
     }
 
-    function removeEmploymentEntry(index) {
+      function removeEmploymentEntry(index) {
         const entry = document.getElementById(`employment-entry-${index}`);
         if (entry) {
             Swal.fire({
@@ -1888,10 +1893,10 @@
     const dobInput = document.getElementById('dob');
     const dojInput = document.getElementById('date_of_joining');
 
-    // Optional: You can auto-focus it when the page loads or on a specific user action
-    dobInput.addEventListener('click', function () {
+      // Optional: You can auto-focus it when the page loads or on a specific user action
+      dobInput.addEventListener('click', function() {
         this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
-    });
+      });
 
     if (dojInput) {
         dojInput.addEventListener('click', function () {
@@ -1900,5 +1905,6 @@
     }
 </script>
 
-</body>
+  </body>
+
 </html>
