@@ -208,7 +208,7 @@ Route::middleware(['auth'])->group(function () {
 });
 
 Route::get('apply-now/{id}', [PreviewController::class, 'applyNow'])->name('apply-now');
-Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
+Route::post('/apply/stor    e', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
 Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
 Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
 Route::get('/apply/success', function () {

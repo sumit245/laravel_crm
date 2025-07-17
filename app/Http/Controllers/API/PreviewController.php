@@ -8,10 +8,8 @@ use App\Models\Candidate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
-use Log;
 use PHPUnit\Event\Code\Throwable;
-
-
+use Illuminate\Support\Facades\Log;
 
 class PreviewController extends Controller
 {
@@ -54,11 +52,11 @@ class PreviewController extends Controller
                 // Education (array)
                 'education' => 'required|array',
                 // Employment Details
-                'employment' => 'required|array',
-                'position_applied_for' => 'required|string',
-                'department' => 'required|string',
-                'experience' => 'required|numeric|min:0|max:50',
-                'notice_period' => 'required|string',
+                'employment' => 'array',
+                'position_applied_for' => 'string',
+                'department' => 'string',
+                'experience' => 'numeric|min:0|max:50',
+                'notice_period' => 'string',
                 // Additional Information
                 'disabilities' => 'required|string',
                 'currently_employed' => 'required|string',
@@ -193,7 +191,7 @@ class PreviewController extends Controller
 
             if ($request->hasFile('photo') && $request->file('photo')->isValid()) {
                 $photoFile = $request->file('photo');
-                $photoFilename = time() . '_photo_' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
+                $photoFilename = time() . 'photo' . uniqid() . '.' . $photoFile->getClientOriginalExtension();
                 $photoPath = Storage::disk('s3')->putFileAs('candidate_photos', $photoFile, $photoFilename);
                 $photoUrl = Storage::disk('s3')->url($photoPath);
                 $data['photo'] = $photoUrl;
@@ -203,7 +201,7 @@ class PreviewController extends Controller
 
             if ($request->hasFile('signature') && $request->file('signature')->isValid()) {
                 $signatureFile = $request->file('signature');
-                $signatureFilename = time() . '_signature_' . uniqid() . '.' . $signatureFile->getClientOriginalExtension();
+                $signatureFilename = time() . 'signature' . uniqid() . '.' . $signatureFile->getClientOriginalExtension();
                 $signaturePath = Storage::disk('s3')->putFileAs('candidate_signatures', $signatureFile, $signatureFilename);
                 $signatureUrl = Storage::disk('s3')->url($signaturePath);
                 $data['signature'] = $signatureUrl;
@@ -213,7 +211,7 @@ class PreviewController extends Controller
             if ($request->hasFile('document_paths')) {
                 foreach ($request->file('document_paths') as $index => $docFile) {
                     if ($docFile->isValid()) {
-                        $docFilename = time() . '_doc_' . $index . '_' . uniqid() . '.' . $docFile->getClientOriginalExtension();
+                        $docFilename = time() . 'doc' . $index . '_' . uniqid() . '.' . $docFile->getClientOriginalExtension();
                         $docPath = Storage::disk('s3')->putFileAs('candidate_documents', $docFile, $docFilename);
                         $docUrl = Storage::disk('s3')->url($docPath);
                         $uploadedDocuments[] = $docUrl;
