@@ -21,29 +21,20 @@ class WhatsappHelper
             "templateParams"      => [
                 $data['firstName'] ?? 'John',
                 $data['lastName'] ?? 'Doe',
-                $data['type'] ?? 'Review',
                 $data['title'] ?? 'Meeting',
                 $data['meet_date'] ?? '03-06-2025',
                 $data['meet_time'] ?? '16:23',
                 $data['platform'] ?? 'Google Meet',
                 $data['meet_link'] ?? 'meet.google.com',
-                $data['agenda'] ?? 'Agenda of meeting'
+                $data['agenda'] ?? 'Agenda of meeting',
+                $data['type'] ?? 'Review'
             ],
             "source"              => "new-landing-page form",
             "media"               => [],
-            "buttons"             => [[
-                "type"       => "button",
-                "sub_type"   => "url",
-                "index"      => 0,
-                "parameters" => [
-                    [
-                        "type" => "text",
-                        "text" => 'Agree', // Replace with dynamic or fixed value if needed
-                    ],
-                ],
-            ]],
+            "buttons"             => [],
             "carouselCards"       => [],
             "location"            => [],
+            "attributes"          => [],
             "paramsFallbackValue" => ["FirstName" => "user"],
         ];
         Log::info($apiUrl);
