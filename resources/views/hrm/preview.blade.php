@@ -10,7 +10,7 @@
     <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+        
     <style>
       body {
         font-family: 'Roboto', sans-serif;
@@ -21,7 +21,37 @@
         max-width: 1200px;
         margin: 30px auto;
         padding: 20px;
+        position: relative;
       }
+      
+      /* Print Button Styles */
+      .print-button {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background-color: #673ab7;
+        color: white;
+        border: none;
+        border-radius: 50px;
+        padding: 12px 20px;
+        font-size: 14px;
+        font-weight: 500;
+        box-shadow: 0 4px 12px rgba(103, 58, 183, 0.3);
+        transition: all 0.3s ease;
+        cursor: pointer;
+      }
+      
+      .print-button:hover {
+        background-color: #5e35b1;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(103, 58, 183, 0.4);
+      }
+      
+      .print-button i {
+        margin-right: 8px;
+      }
+      
       .card {
         border: none;
         border-radius: 8px;
@@ -112,7 +142,6 @@
         margin-top: 30px;
         text-align: right;
       }
-
       /* Document Thumbnail Styles */
       .document-card {
         border: 1px solid #e0e0e0;
@@ -123,13 +152,13 @@
         height: 100%;
         cursor: pointer;
       }
-      
+            
       .document-card:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         transform: translateY(-2px);
         border-color: #673ab7;
       }
-      
+            
       .document-thumbnail {
         height: 160px;
         background: #f8f9fa;
@@ -139,23 +168,23 @@
         position: relative;
         overflow: hidden;
       }
-      
+            
       .document-thumbnail img {
         width: 100%;
         height: 100%;
         object-fit: cover;
       }
-      
+            
       .document-icon {
         font-size: 48px;
         color: #5f6368;
       }
-      
+            
       .document-info {
         padding: 12px;
         border-top: 1px solid #e0e0e0;
       }
-      
+            
       .document-name {
         font-size: 14px;
         font-weight: 500;
@@ -168,12 +197,12 @@
         line-height: 1.3;
         min-height: 34px;
       }
-      
+            
       .document-size {
         font-size: 12px;
         color: #5f6368;
       }
-      
+            
       .document-actions {
         position: absolute;
         top: 8px;
@@ -181,11 +210,11 @@
         opacity: 0;
         transition: opacity 0.3s ease;
       }
-      
+            
       .document-card:hover .document-actions {
         opacity: 1;
       }
-      
+            
       .action-btn {
         background: rgba(255, 255, 255, 0.9);
         border: none;
@@ -199,19 +228,19 @@
         transition: all 0.3s ease;
         color: #5f6368;
       }
-      
+            
       .action-btn:hover {
         background: white;
         color: #673ab7;
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       }
-      
+            
       /* File type specific colors */
       .pdf-icon { color: #d32f2f; }
       .doc-icon { color: #1976d2; }
       .image-icon { color: #388e3c; }
       .default-icon { color: #5f6368; }
-      
+            
       /* Document grid */
       .documents-grid {
         display: grid;
@@ -219,62 +248,207 @@
         gap: 16px;
         margin-top: 16px;
       }
-      
+            
       @media (max-width: 768px) {
         .documents-grid {
           grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
           gap: 12px;
         }
-        
+                
         .document-thumbnail {
           height: 120px;
         }
-        
+                
         .document-icon {
           font-size: 36px;
         }
+        
+        .print-button {
+          top: 10px;
+          right: 10px;
+          padding: 10px 16px;
+          font-size: 12px;
+        }
       }
-
+      
       /* Modal styles for document preview */
       .document-modal .modal-dialog {
         max-width: 90vw;
         max-height: 90vh;
       }
-      
+            
       .document-modal .modal-content {
         height: 85vh;
       }
-      
+            
       .document-modal .modal-body {
         padding: 0;
         height: calc(85vh - 120px);
         overflow: hidden;
       }
-      
+            
       .document-preview {
         width: 100%;
         height: 100%;
         border: none;
       }
-      
+            
       .document-preview img {
         width: 100%;
         height: 100%;
         object-fit: contain;
       }
+      
+      /* Print Styles */
+      @media print {
+        body {
+          background-color: white !important;
+          color: black !important;
+          font-size: 12px;
+          line-height: 1.4;
+        }
+        
+        .container {
+          max-width: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          background: white !important;
+        }
+        
+        .print-button {
+          display: none !important;
+        }
+        
+        .edit-btn {
+          display: none !important;
+        }
+        
+        .submit-container {
+          display: none !important;
+        }
+        
+        .card {
+          box-shadow: none !important;
+          border: 1px solid #ddd !important;
+          margin-bottom: 15px !important;
+          page-break-inside: avoid;
+        }
+        
+        .card-header {
+          background-color: #f8f9fa !important;
+          color: black !important;
+          border-bottom: 1px solid #ddd !important;
+          padding: 10px 15px !important;
+        }
+        
+        .card-body {
+          padding: 15px !important;
+        }
+        
+        .logo-container {
+          margin-bottom: 20px !important;
+        }
+        
+        .logo-container img {
+          max-height: 60px !important;
+        }
+        
+        .data-row {
+          margin-bottom: 6px !important;
+          display: flex;
+          justify-content: space-between;
+        }
+        
+        .data-label {
+          font-weight: bold !important;
+          color: black !important;
+          width: 40%;
+        }
+        
+        .data-value {
+          color: black !important;
+          width: 60%;
+          text-align: right;
+        }
+        
+        .documents-grid {
+          display: block !important;
+        }
+        
+        .document-card {
+          display: inline-block !important;
+          width: 150px !important;
+          margin: 5px !important;
+          vertical-align: top !important;
+          box-shadow: none !important;
+          border: 1px solid #ddd !important;
+        }
+        
+        .document-thumbnail {
+          height: 100px !important;
+        }
+        
+        .document-actions {
+          display: none !important;
+        }
+        
+        .document-icon {
+          font-size: 24px !important;
+        }
+        
+        .document-info {
+          padding: 8px !important;
+        }
+        
+        .document-name {
+          font-size: 10px !important;
+          min-height: auto !important;
+        }
+        
+        .document-size {
+          font-size: 9px !important;
+        }
+        
+        .alert {
+          border: 1px solid #ddd !important;
+          background-color: #f8f9fa !important;
+          color: black !important;
+        }
+        
+        /* Ensure images print properly */
+        img {
+          max-width: 100% !important;
+          height: auto !important;
+        }
+        
+        /* Page breaks */
+        .card {
+          page-break-inside: avoid;
+        }
+        
+        h1, h2, h3, h4, h5, h6 {
+          page-break-after: avoid;
+        }
+      }
     </style>
 </head>
 <body>
+    <!-- Print Button -->
+    <button class="print-button" onclick="printPage()" title="Print Application">
+        <i class="fas fa-print"></i>
+        Print
+    </button>
+
     <div class="container">
       <div class="logo-container">
         <img src="{{ asset("images/logo.png") }}" alt="Sugs Lloyd Ltd Logo" class="img-fluid">
         <h1 class="mt-3">Review & Confirm Your Details</h1>
         <p class="text-muted">Please review your information carefully before final submission.</p>
       </div>
-      
+            
       <form action="{{ route("hrm.submit") }}" method="POST">
         @csrf
-        
+                
         <!-- Personal Information -->
         <div class="card">
           <div class="card-header">
@@ -320,13 +494,13 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#personal-info">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#personal-info">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Contact Information -->
         <div class="card">
           <div class="card-header">
@@ -356,13 +530,13 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#contact-info">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#contact-info">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Educational Background -->
         <div class="card">
           <div class="card-header">
@@ -405,13 +579,13 @@
               <p>No educational information provided.</p>
             @endif
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#education">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#education">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Employment Details -->
         <div class="card">
           <div class="card-header">
@@ -438,7 +612,7 @@
                 </div>
               </div>
             </div>
-            
+                        
             @if (!empty($data['employment']) && is_array($data['employment']))
               <hr>
               <h4>Previous Experience</h4>
@@ -471,15 +645,15 @@
                 </div>
               @endforeach
             @endif
-            
+                        
             <div class="edit-btn">
-              <a href="{{ route('hrm.apply') }}#employment">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#employment">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Uploaded Documents -->
         <div class="card">
           <div class="card-header">
@@ -500,14 +674,14 @@
                     $isPdf = $extension === 'pdf';
                     $isDoc = in_array($extension, ['doc', 'docx']);
                   @endphp
-                  
+                                    
                   <div class="document-card" onclick="previewDocument('{{ asset('storage/' . $docPath) }}', '{{ $docName }}', '{{ $extension }}')">
                     <div class="document-thumbnail">
                       @if($isImage)
                         <img src="{{ asset('storage/' . $docPath) }}" alt="{{ $docName }}" loading="lazy">
                       @else
-                        <i class="fas 
-                          @if($isPdf) fa-file-pdf pdf-icon
+                        <i class="fas
+                           @if($isPdf) fa-file-pdf pdf-icon
                           @elseif($isDoc) fa-file-word doc-icon
                           @elseif(in_array($extension, ['xls', 'xlsx'])) fa-file-excel
                           @elseif(in_array($extension, ['ppt', 'pptx'])) fa-file-powerpoint
@@ -515,7 +689,7 @@
                           @else fa-file default-icon
                           @endif document-icon"></i>
                       @endif
-                      
+                                            
                       <div class="document-actions">
                         <button type="button" class="action-btn" onclick="event.stopPropagation(); downloadDocument('{{ asset('storage/' . $docPath) }}', '{{ $docName }}')" title="Download">
                           <i class="fas fa-download"></i>
@@ -525,7 +699,7 @@
                         </button>
                       </div>
                     </div>
-                    
+                                        
                     <div class="document-info">
                       <div class="document-name" title="{{ $docName }}">{{ $docName }}</div>
                       <div class="document-size">{{ $fileSize }} • {{ strtoupper($extension) }}</div>
@@ -539,15 +713,15 @@
                 <p class="text-muted">No documents uploaded.</p>
               </div>
             @endif
-            
+                        
             <div class="edit-btn">
-              <a href="{{ route('hrm.apply') }}#documents" class="btn btn-outline-primary">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#documents" class="btn btn-outline-primary">
                 <i class="fas fa-edit me-2"></i> Edit Documents
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Additional Information -->
         <div class="card">
           <div class="card-header">
@@ -577,13 +751,13 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#additional-info">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#additional-info">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Passport Size Photo -->
         <div class="card">
           <div class="card-header">
@@ -599,13 +773,13 @@
               @endif
             </div>
             <div class="edit-btn mt-3 text-center">
-              <a href="{{ route('hrm.apply') }}#photo" class="btn btn-outline-primary">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#photo" class="btn btn-outline-primary">
                 <i class="fas fa-edit me-2"></i> Edit Photo
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Declaration -->
         <div class="card">
           <div class="card-header">
@@ -632,13 +806,13 @@
               </div>
             </div>
             <div class="edit-btn">
-              <a href="{{ route("hrm.apply") }}#declaration">
+              <a href="{{ route("apply-now", ["id" => $data["id"]]) }} #declaration">
                 <i class="fas fa-edit me-2"></i> Edit
               </a>
             </div>
           </div>
         </div>
-
+        
         <!-- Submit Button -->
         <div class="submit-container">
           <button type="submit" class="btn btn-success btn-lg">
@@ -647,7 +821,7 @@
         </div>
       </form>
     </div>
-
+    
     <!-- Document Preview Modal -->
     <div class="modal fade document-modal" id="documentPreviewModal" tabindex="-1" aria-labelledby="documentPreviewModalLabel" aria-hidden="true">
       <div class="modal-dialog modal-xl">
@@ -670,14 +844,14 @@
         </div>
       </div>
     </div>
-
+    
     @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show text-center" role="alert">
         <strong>Error:</strong> {{ session('error') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
-
+    
     @if ($errors->any())
     <div class="alert alert-warning">
         <ul class="mb-0">
@@ -687,23 +861,32 @@
         </ul>
     </div>
     @endif
-
+    
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    
+        
     <script>
+      // Print functionality
+      function printPage() {
+        // Show a loading message
+        const originalContent = document.body.innerHTML;
+        
+        // Trigger the print dialog
+        window.print();
+      }
+      
       // Document preview functionality
       function previewDocument(url, name, extension) {
         const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
         const modalTitle = document.getElementById('documentPreviewModalLabel');
         const previewContent = document.getElementById('documentPreviewContent');
         const downloadBtn = document.getElementById('downloadBtn');
-        
+                
         modalTitle.textContent = name;
-        
+                
         // Clear previous content
         previewContent.innerHTML = '';
-        
+                
         if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension.toLowerCase())) {
           // Image preview
           previewContent.innerHTML = `<img src="${url}" alt="${name}" class="img-fluid">`;
@@ -727,13 +910,13 @@
             </div>
           `;
         }
-        
+                
         // Set download button
         downloadBtn.onclick = () => downloadDocument(url, name);
-        
+                
         modal.show();
       }
-      
+            
       // Download document
       function downloadDocument(url, name) {
         const link = document.createElement('a');
@@ -743,24 +926,18 @@
         link.click();
         document.body.removeChild(link);
       }
+                  
+     
       
-      
-      function formatBytes(bytes, decimals = 2) {
-        if (bytes === 0) return '0 Bytes';
-        const k = 1024;
-        const dm = decimals < 0 ? 0 : decimals;
-        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
-      }
+      // Keyboard shortcut for printing (Ctrl+P)
+      document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'p') {
+          e.preventDefault();
+          printPage();
+        }
+      });
     </script>
-
-    @php
-    function formatBytes($size, $precision = 2) {
-        $base = log($size, 1024);
-        $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');
-        return round(pow(1024, $base - floor($base)), $precision) . ' ' . $suffixes[floor($base)];
-    }
-    @endphp
+    
+    
 </body>
-</html>  
+</html>

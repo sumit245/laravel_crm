@@ -8,9 +8,10 @@ use Illuminate\Database\Eloquent\Model;
 class Site extends Model
 {
     use HasFactory;
+
     protected $fillable = [
         'breda_sl_no',
-        'project_id', //FIXME:Project id wala comented tha fillable that's why ye null ja raha tha
+        'project_id',
         'site_name',
         'state',
         'district',
@@ -21,7 +22,6 @@ class Site extends Model
         'project_capacity',
         'ca_number',
         'shadow_free_area',
-        'division',
         'block',
         'department_name',
         'sanction_load',
@@ -41,7 +41,29 @@ class Site extends Model
         'survey_latitude',
         'survey_longitude',
         'actual_latitude',
-        'actual_longitude'
+        'actual_longitude',
+
+        // Newly added enum fields
+        'drawing_approval',
+        'inspection',
+        'material_supplied',
+        'structure_installation',
+        'structure_foundation',
+        'pv_module_installation',
+        'inverter_installation',
+        'dcdb_acdb_installaation',
+        'dc_cabelling',
+        'ac_cabelling',
+        'ac_cable_termination',
+        'dc_earthing',
+        'ac_earthing',
+        'lighntning_arrestor',
+        'remote_monitoring_unit',
+        'fire_safety',
+        'net_meter_registration',
+        'meter_installaton_commission',
+        'performance_guarantee_test',
+        'handover_status',
     ];
 
     public function project()

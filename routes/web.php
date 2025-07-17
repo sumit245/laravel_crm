@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
+    Route::post('/import-staff', [StaffController::class, 'import'])->name('import.staff');
     // Staff router
     Route::resource('staff', StaffController::class);
     Route::prefix('staff')->group(function () {
@@ -131,12 +132,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('billing.deletecategory');
     // City category and Allow expense
     Route::get('/settings/edit-city-category', function () {
-    return view('billing.editCityCategory');
-        })->name('billing.editcitycategory');
-    Route::get('/settings/allowed-expense/{id}',[ConvenienceController::class, 'editAllowedExpense'])->name('billing.allowedexpense');
-    Route::post('/settings/update-allowed-expense/{id}',[ConvenienceController::class, 'updateAllowedExpense'])->name('billing.updateallowedexpense');
-    
-        
+        return view('billing.editCityCategory');
+    })->name('billing.editcitycategory');
+    Route::get('/settings/allowed-expense/{id}', [ConvenienceController::class, 'editAllowedExpense'])->name('billing.allowedexpense');
+    Route::post('/settings/update-allowed-expense/{id}', [ConvenienceController::class, 'updateAllowedExpense'])->name('billing.updateallowedexpense');
+
+
     //Convenience Details
 
     // View Bills Details
@@ -156,7 +157,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/inventory/view', [InventoryController::class, 'viewInventory'])->name('inventory.view');
     Route::post('/inventory/replace', [InventoryController::class, 'replaceItem'])->name('inventory.replace');
 
-    // adding inventory data
     // adding inventory data
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     // Inventory Edit
@@ -205,9 +205,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
     Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
-
 });
-Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
+
+Route::get('apply-now/{id}', [PreviewController::class, 'applyNow'])->name('apply-now');
 Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
 Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
 Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
@@ -224,10 +224,12 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 
 
 // apply now
-Route::get('apply-now/{id}', function ($id) {
-    return view('hrm.applyNow', compact('id'));
-})->name('apply-now');
 
-Route::get('privacy-policy', function(){
+
+Route::get('privacy-policy', function () {
     return view('privacy');
+});
+
+Route::get('terms-and-conditions', function () {
+    return view('terms');
 });
