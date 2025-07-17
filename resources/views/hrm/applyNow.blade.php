@@ -1256,7 +1256,7 @@
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
-        const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info', 'declaration'];
+        const sections = ['personal-info', 'contact-info', 'education', 'employment',  'additional-info', 'declaration'];
         let completedSections = [];
 
         // Mobile sidebar functionality
@@ -1812,6 +1812,78 @@
             `;
         }
     }
+</script>
+
+<script>
+    // Modified form data saving - excluding file inputs to prevent serialization errors
+    document.addEventListener('DOMContentLoaded', function() {
+        // Function to save form data to sessionStorage (excluding files)
+        function saveFormData() {
+            const formData = {};
+            const form = document.getElementById('onboarding-form');
+            
+            // Get all input elements except file inputs
+            const inputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
+            
+            inputs.forEach(input => {
+                // Handle radio buttons and checkboxes
+                if (input.type === 'radio' || input.type === 'checkbox') {
+                    if (input.checked) {
+                        formData[input.name] = input.value;
+                    }
+                } else {
+                    formData[input.name] = input.value;
+                }
+            });
+            
+            // Save to sessionStorage
+            sessionStorage.setItem('employeeFormData', JSON.stringify(formData));
+        }
+        
+        // Function to load form data from sessionStorage
+        function loadFormData() {
+            const savedData = sessionStorage.getItem('employeeFormData');
+            
+            if (savedData) {
+                const formData = JSON.parse(savedData);
+                const form = document.getElementById('onboarding-form');
+                
+                // Set values for all inputs except file inputs
+                Object.keys(formData).forEach(name => {
+                    const input = form.querySelector(`[name="${name}"]:not([type="file"])`);
+                    
+                    if (input) {
+                        if (input.type === 'radio' || input.type === 'checkbox') {
+                            const radioOrCheckbox = form.querySelector(`[name="${name}"][value="${formData[name]}"]`);
+                            if (radioOrCheckbox) {
+                                radioOrCheckbox.checked = true;
+                            }
+                        } else {
+                            input.value = formData[name];
+                        }
+                    }
+                });
+            }
+        }
+        
+        // Save form data when moving between sections
+        document.querySelectorAll('.next-section, .prev-section').forEach(button => {
+            button.addEventListener('click', saveFormData);
+        });
+        
+        // Save form data periodically (every 30 seconds)
+        setInterval(saveFormData, 30000);
+        
+        // Load form data when page loads
+        window.addEventListener('DOMContentLoaded', loadFormData);
+        
+        // Save form data before submitting (excluding files)
+        document.getElementById('onboarding-form').addEventListener('submit', function() {
+            saveFormData();
+            // Clear session storage after successful submission
+            sessionStorage.removeItem('employeeFormData');
+        });
+    });
 
     const dobInput = document.getElementById('dob');
     const dojInput = document.getElementById('date_of_joining');
