@@ -401,7 +401,7 @@ class StaffController extends Controller
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
 
-    public function vendorData($id)
+   public function vendorData($id)
     {
         $managerid = $id;
 
