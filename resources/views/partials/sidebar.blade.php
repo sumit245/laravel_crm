@@ -48,7 +48,9 @@
           </a>
         </li>
       @endif
+
     @endif
+
     <li class="nav-item">
       <a class="nav-link disabled" href="{{ route("sites.index") }}">
         <i class="menu-icon mdi mdi-map-marker-outline"></i>
@@ -136,6 +138,14 @@
         <span class="menu-title">Setting</span>
       </a>
     </li>
+    @if (auth()->user()->role == 0)
+  <li class="nav-item">
+    <a class="nav-link" href="{{ route("backup.index") }}">
+      <i class="menu-icon mdi mdi-backup-restore"></i>
+      <span class="menu-title">Backup</span>
+    </a>
+  </li>
+@endif
     <!-- <li class="nav-item nav-category">Help</li> -->
   </ul>
 </nav>
