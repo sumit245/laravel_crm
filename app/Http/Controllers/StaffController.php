@@ -221,9 +221,13 @@ class StaffController extends Controller
         //
         $staff = User::findOrFail($id);
         $projects = Project::all();
-        $usercategory = UserCategory::all();
+        $projectEngineers = User::where('role',2)->get();
+        $usercategory = DB::table('user_categories')
+                ->select(DB::raw('MIN(id) as id'), 'category_code')
+                ->groupBy('category_code')
+                ->get();
 
-        return view('staff.edit', compact('staff', 'projects', 'usercategory')); // Form to edit staff
+        return view('staff.edit', compact('staff', 'projects', 'usercategory', 'projectEngineers')); // Form to edit staff
     }
 
     /**
@@ -234,12 +238,12 @@ class StaffController extends Controller
         //
         $validated = $request->validate([
             'name'      => 'required|string|max:255',
+            'manager_id' => 'required|numeric',
             'project_id' => 'nullable|integer',
             'firstName' => 'nullable|string|max:25',
             'lastName'  => 'nullable|string|max:25',
             'email'     => 'required|email|unique:users,email,' . $staff->id,
             'contactNo' => 'string',
-            'category'  => 'nullable|string',
             'category'  => 'nullable|string',
             'address'   => 'string|max:255',
             'password'  => 'nullable|string|min:6|confirmed',

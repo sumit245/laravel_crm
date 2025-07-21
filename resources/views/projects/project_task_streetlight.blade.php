@@ -342,7 +342,7 @@
 
         if (block) { // You're checking 'district' instead of 'block'
           $.ajax({
-            url: '/jicr/panchayats/' + block,
+            url: '' + block,
             type: 'GET',
             dataType: 'json',
             success: function(data) {

@@ -766,4 +766,23 @@ class InventoryController extends Controller
             return back()->withInput()->with('replace_error', 'Failed to replace item: ' . $e->getMessage());
         }
     }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $ids = json_decode($request->input('ids'), true);
+
+            if (!is_array($ids) || empty($ids)) {
+                return redirect()->back()->with('error', 'No valid items selected for deletion.');
+            }
+
+            InventroyStreetLightModel::whereIn('id', $ids)->delete();
+
+            return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
+            } catch (\Throwable $th) {
+                \Log::error("Bulk delete error: " . $th->getMessage());
+                return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+            }
+    }
+
 }

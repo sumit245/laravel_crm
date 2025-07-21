@@ -41,7 +41,7 @@ class ConvenienceController extends Controller
     public function showdetailsconveyance($id)
     {
 
-        $details = Conveyance::with(['user', 'vehicle'])->where('user_id', $id)->get();
+        $details = Conveyance::with(['user', 'vehicle'])->where('id', $id)->get();
         $appliedAmount = Conveyance::where('user_id', $id)->sum('amount');
         $disbursedAmount = Conveyance::where('user_id', $id)->where('status', 1)->sum('amount');
         $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount');
@@ -61,6 +61,29 @@ class ConvenienceController extends Controller
         Conveyance::where('id', $id)->update(['status' => 0]);
 
         return back()->with('success', 'Status updated to Accepted.');
+    }
+
+    public function bulkAction(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'action_type' => 'required|string|in:accept,reject',
+            ]);
+
+            $status = $request->action_type === 'accept' ? 1 : 0;
+
+            Conveyance::whereIn('id', $request->ids)->update(['status' => $status]);
+
+            return redirect()->back()->with('success', 'Bulk action completed successfully.');
+        } catch (\Throwable $th) {
+            \Log::error('Bulk conveyance action failed: ' . $th->getMessage(), [
+                'request_data' => $request->all(),
+                'exception' => $th
+            ]);
+
+            return redirect()->back()->with('error', 'An error occurred while processing bulk action.');
+        }
     }
 
     // Tada view

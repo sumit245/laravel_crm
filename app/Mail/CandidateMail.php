@@ -25,7 +25,7 @@ class CandidateMail extends Mailable
      */
     public function build()
     {
-        return $this->subject('Job Opportunity at Sugs Lloyd Limited')
+        return $this->subject('Offer Letter from Sugs Lloyd Limited for' . $this->candidate->name)
             ->view('emails.candidate')
             ->with(['candidate' => $this->candidate]);
     }
