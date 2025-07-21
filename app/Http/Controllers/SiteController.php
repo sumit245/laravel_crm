@@ -162,14 +162,20 @@ class SiteController extends Controller
     public function show(string $id, Request $request)
     {
         // dd('Show method hit');
-        $projectId = $request->query('project_id');
+        $projectType = $request->query('project_type');
 
-        if ($projectId == 11) {
+        if ($projectType == 1) {
             $streetlight = Streetlight::findOrFail($id);
+            // Add related task here and add all related poles here
+            $streetLightTask = $streetlight->tasks();
+            $poles = $streetlight->poles();
+            // Write logic to derive all information in human readable format
             $states = $streetlight->state;
             $districts = $streetlight->district;
 
-            return view('sites.show', compact('streetlight', 'states', 'districts', 'projectId'));
+            // Log::info($streetLightTask);
+            // Log::info($poles);
+            return view('sites.show', compact('streetlight', 'states', 'districts', 'projectType'));
         }
         $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
         $states    = State::all();
@@ -220,7 +226,7 @@ class SiteController extends Controller
         }
 
         $site = Site::findOrFail($id);
-        return view('sites.edit', compact('site', 'projectId' ));
+        return view('sites.edit', compact('site', 'projectId'));
     }
 
     public function update(Request $request, string $id)

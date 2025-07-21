@@ -7,12 +7,13 @@
         <div class="d-flex justify-content-between my-2">
           <h6 class="card-subtitle text-bold text-info">Basic Details</h6>
           <!-- <a href="{{-- route("sites.edit", $site->id) --}}" class="btn btn-icon btn-warning" data-toggle="tooltip"
-            title="Edit Site">
-            <i class="mdi mdi-pencil"> Update Site</i>
-          </a> -->
+              title="Edit Site">
+              <i class="mdi mdi-pencil"> Update Site</i>
+            </a> -->
         </div>
 
-        @if ($projectId == 11)
+        @if ($projectType == 1)
+          {{-- Modify the UI here --}}
           <!-- Row 1 -->
           <div class="row my-4">
             <div class="col-md-3 col-sm-3">
