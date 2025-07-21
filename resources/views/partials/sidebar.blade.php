@@ -35,7 +35,7 @@
     </li>
     {{-- @if ($projectType == 11) --}}
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
+      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProject]) }}">
         <i class="menu-icon mdi mdi-chart-pie"></i>
         <span class="menu-title">Generate JICR</span>
       </a>
