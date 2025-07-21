@@ -229,3 +229,7 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 Route::get('privacy-policy', function () {
     return view('privacy');
 });
+
+Route::get('terms-and-conditions', function () {
+    return view('terms');
+});
