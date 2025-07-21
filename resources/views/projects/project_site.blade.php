@@ -93,8 +93,8 @@
         @endif
 
         <td>
-          <a href="{{ route("sites.show", $site->id) }}?project_id={{ $project->id }}" class="btn btn-info btn-icon"
-            title="View Details">
+          <a href="{{ route("sites.show", $site->id) }}?project_type={{ $project->project_type }}"
+            class="btn btn-info btn-icon" title="View Details">
             <i class="mdi mdi-eye"></i>
           </a>
           <a href="{{ route("sites.edit", $site->id) }}?project_id={{ $project->id }}"
