@@ -2,12 +2,14 @@
   use App\Models\Project;
 
   $selectedProject = null;
-
+  $selectedProjectId = 0;
   if (session()->has("project_id")) {
       $selectedProject = Project::find(session("project_id"));
+      $selectedProjectId = $selectedProject->id;
   }
   if (!$selectedProject) {
       $selectedProject = Project::first();
+      $selectedProjectId = $selectedProject->id;
   }
   $projectType = $selectedProject ? $selectedProject->project_type : null;
 @endphp
@@ -35,7 +37,7 @@
     </li>
     {{-- @if ($projectType == 11) --}}
     <li class="nav-item">
-      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProject]) }}">
+      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
         <i class="menu-icon mdi mdi-chart-pie"></i>
         <span class="menu-title">Generate JICR</span>
       </a>
