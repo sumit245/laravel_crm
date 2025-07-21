@@ -33,22 +33,22 @@
         <span class="menu-title">RMS Portal</span>
       </a>
     </li>
-    @if ($projectType == 11)
+    {{-- @if ($projectType == 11) --}}
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
+        <i class="menu-icon mdi mdi-chart-pie"></i>
+        <span class="menu-title">Generate JICR</span>
+      </a>
+    </li>
+    @if (auth()->user()->role == 0)
       <li class="nav-item">
-        <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
-          <i class="menu-icon mdi mdi-chart-pie"></i>
-          <span class="menu-title">Generate JICR</span>
+        <a class="nav-link" href="{{ route("device.index", ["project_id" => $selectedProjectId]) }}">
+          <i class="menu-icon mdi mdi-file-excel"></i>
+          <span class="menu-title">Import Devices</span>
         </a>
       </li>
-      @if (auth()->user()->role == 0)
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route("device.index", ["project_id" => $selectedProjectId]) }}">
-            <i class="menu-icon mdi mdi-file-excel"></i>
-            <span class="menu-title">Import Devices</span>
-          </a>
-        </li>
-      @endif
     @endif
+    {{-- @endif --}}
     <li class="nav-item">
       <a class="nav-link disabled" href="{{ route("sites.index") }}">
         <i class="menu-icon mdi mdi-map-marker-outline"></i>
