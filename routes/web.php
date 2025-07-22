@@ -231,3 +231,7 @@ Route::get('apply-now', function () {
 Route::get('privacy-policy', function(){
     return view('privacy');
 });
+
+Route::get('/backup', function () {
+    return view('backup.index');
+})->name('backup.index');
