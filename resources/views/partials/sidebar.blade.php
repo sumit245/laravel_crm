@@ -17,6 +17,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav" style="max-height: 80%;">
     <li class="nav-item nav-category">Project</li>
+
     <li class="nav-item">
       <a class="nav-link" href="{{ url("/dashboard") }}">
         <i class="mdi mdi-grid-large menu-icon"></i>
@@ -138,6 +139,14 @@
         <span class="menu-title">Setting</span>
       </a>
     </li>
+    @if (auth()->user()->role == 0)
+      <li class="nav-item">
+        <a class="nav-link" href="{{ route("backup.index") }}">
+          <i class="menu-icon mdi mdi-backup-restore"></i>
+          <span class="menu-title">Backup</span>
+        </a>
+      </li>
+    @endif
     <!-- <li class="nav-item nav-category">Help</li> -->
   </ul>
 </nav>

@@ -28,7 +28,7 @@ class MeetController extends Controller
         return view('review-meetings.index', compact('meets', 'usersByRole', 'projects'));
     }
 
-    public function create()
+       public function create()
     {
         $meets = Meet::latest()->get();
         $projects = Project::all();
