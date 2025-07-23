@@ -184,6 +184,7 @@
               </x-slot:tbody>
             </x-data-table>
           </div>
+          
         </div>
         </div>
       </div>
