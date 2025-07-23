@@ -290,130 +290,116 @@ class InventoryController extends Controller
         }
     }
 
-    // View Inventory from store
     public function viewInventory(Request $request)
     {
-
         try {
             $projectId = $request->project_id;
             $storeId = $request->store_id;
-            $store = Stores::findOrFail($storeId);
+
+            // 1. Fetch primary records efficiently
+            $store = Stores::with('user')->findOrFail($storeId);
+            $project = Project::findOrFail($projectId);
+
             $storeName = $store->store_name;
-            $storeIncharge = User::findOrFail($store->store_incharge_id);
-            $inchargeName = $storeIncharge->firstName . ' ' . $storeIncharge->lastName;
-
-            // Fetch the project to determine the type
-            $project = Project::findOrFail($projectId);
-            // $storeName = "";
-
-            // Fetch the project to determine the type
-            $project = Project::findOrFail($projectId);
+            $inchargeName = $store->storeIncharge ? $store->storeIncharge->firstName . ' ' . $store->storeIncharge->lastName : 'N/A';
             $projectType = $project->project_type;
 
-            // Determine the model to query based on project type
-            $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
+            // 2. Determine the correct model
+            $inventoryModel = ($projectType == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
-
-            // Query inventory based on store_name and store_id
-            $inventory = $inventoryModel::where('project_id', $projectId)
-                ->where('store_id', $storeId) // Filter by store_id directly
-                ->with('dispatch')
-                ->get();
-            // Dispatch Inventory
-            $dispatch = InventoryDispatch::where('isDispatched', true)
+            // 3. Get all inventory summary stats in ONE database query
+            $inventoryStats = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
+                ->select(
+                    'item_code',
+                    DB::raw('COUNT(*) as total_items'),
+                    DB::raw('MAX(rate) as item_rate') // Use MAX, AVG, or MIN as appropriate for your business logic
+                )
+                ->groupBy('item_code')
+                ->get()
+                ->keyBy('item_code'); // Key by item_code for easy access e.g., $inventoryStats['SL01']
+
+            // 4. Get all dispatch summary stats in ONE database query
+            $dispatchStats = InventoryDispatch::where('isDispatched', true)
+                ->where('project_id', $projectId) // Assumes dispatches are linked to projects
+                ->where('store_id', $storeId)
+                ->select(
+                    'item_code',
+                    DB::raw('COUNT(*) as dispatched_items'),
+                    DB::raw('SUM(total_value) as dispatched_value')
+                )
+                ->groupBy('item_code')
+                ->get()
+                ->keyBy('item_code');
+
+            // 5. Get the full inventory list for displaying in the view's table
+            // This is the only place we use ->get() on the full list
+            $inventory = $inventoryModel::where('project_id', $projectId)
+                ->where('store_id', $storeId)
+                ->with('dispatch') // Keep eager loading if you list dispatch status per item
                 ->get();
 
-
-
-            // Battery Data
-            $totalBattery = $inventory->where('item_code', 'SL03')
-                ->count();
-            $batteryRate = $inventory->where('item_code', 'SL03')
-                ->value('rate');
+            // 6. Calculate totals using the efficient stats (with null-coalescing for safety)
+            // Battery Data ('SL03')
+            $totalBattery = $inventoryStats->get('SL03')->total_items ?? 0;
+            $batteryRate = $inventoryStats->get('SL03')->item_rate ?? 0;
             $totalBatteryValue = $batteryRate * $totalBattery;
-            $totalBatteryValue = number_format($totalBatteryValue, 2);
-            // Battery Dispatch data
-            $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
+            $batteryDispatch = $dispatchStats->get('SL03')->dispatched_items ?? 0;
+            $dispatchAmountBattery = $dispatchStats->get('SL03')->dispatched_value ?? 0;
             $availableBattery = $totalBattery - $batteryDispatch;
 
-            $dispatchAmountBattery = $dispatch->where('item_code', 'SL03')->sum('total_value');
-            $dispatchAmountBattery = number_format($dispatchAmountBattery, 2);
-
-            // Luminary Data
-            $totalLuminary = $inventory->where('item_code', 'SL02')->count();
-            $LuminaryRate = $inventory->where('item_code', 'SL02')
-                ->value('rate');
-            $totalLuminaryValue = $LuminaryRate * $totalLuminary;
-            $totalLuminaryValue = number_format($totalLuminaryValue, 2);
-            // Luminary Dispatch data
-            $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
+            // Luminary Data ('SL02')
+            $totalLuminary = $inventoryStats->get('SL02')->total_items ?? 0;
+            $luminaryRate = $inventoryStats->get('SL02')->item_rate ?? 0;
+            $totalLuminaryValue = $luminaryRate * $totalLuminary;
+            $luminaryDispatch = $dispatchStats->get('SL02')->dispatched_items ?? 0;
+            $dispatchAmountLuminary = $dispatchStats->get('SL02')->dispatched_value ?? 0;
             $availableLuminary = $totalLuminary - $luminaryDispatch;
 
-            $dispatchAmountLuminary = $dispatch->where('item_code', 'SL02')->sum('total_value');
-            $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
+            // Module Data ('SL01')
+            $totalModule = $inventoryStats->get('SL01')->total_items ?? 0;
+            $moduleRate = $inventoryStats->get('SL01')->item_rate ?? 0;
+            $totalModuleValue = $moduleRate * $totalModule;
+            $moduleDispatch = $dispatchStats->get('SL01')->dispatched_items ?? 0;
+            $dispatchAmountModule = $dispatchStats->get('SL01')->dispatched_value ?? 0;
+            $availableModule = $totalModule - $moduleDispatch;
 
-            //Structure Data
-            // $totalStructure = $inventory->where('item_code', 'SL04')->count();
-            // $StructureRate = $inventory->where('item_code', 'SL04')
-            // ->value('rate');
-            // $totalStructureValue = $StructureRate * $totalStructure;
-            // $totalStructureValue = number_format($totalStructureValue, 2);
-            // Structure Dispatch data
-            // $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
-            // $availableStructure = $totalStructure - $structureDispatch;
-            // $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
-            // $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
-
-            // Linking Battery to Structure
+            // Structure Data (Derived from Battery, as per original logic)
             $totalStructure = $totalBattery;
-            $totalStructureValue = $totalBattery * 400;
+            $totalStructureValue = $totalBattery * 400; // Business rule
             $structureDispatch = $batteryDispatch;
             $availableStructure = $availableBattery;
 
-            // Module Data
-            $totalModule = $inventory->where('item_code', 'SL01')->count();
-            $ModuleRate = $inventory->where('item_code', 'SL01')
-                ->value('rate');
-            $totalModuleValue = $ModuleRate * $totalModule;
-            $totalModuleValue = number_format($totalModuleValue, 2);
-            // Module Dispatch data
-            $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
-            $availableModule = $totalModule - $moduleDispatch;
-
-            $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
-            $dispatchAmountModule = number_format($dispatchAmountModule, 2);
-
-
-
-            return view('inventory.view', compact(
-                'inventory',
-                'projectId',
-                'storeName',
-                'inchargeName',
-                'projectType',
-                'totalBattery',
-                'totalBatteryValue',
-                'batteryDispatch',
-                'availableBattery',
-                'dispatchAmountBattery',
-                'totalStructure',
-                'totalStructureValue',
-                'structureDispatch',
-                'availableStructure',
-                'totalModule',
-                'totalModuleValue',
-                'availableModule',
-                'moduleDispatch',
-                'dispatchAmountModule',
-                'totalLuminary',
-                'totalLuminaryValue',
-                'luminaryDispatch',
-                'dispatchAmountLuminary',
-                'availableLuminary',
-            ));
+            return view('inventory.view', [
+                // Pass calculated values, formatting in the view (Blade) is recommended
+                'inventory' => $inventory,
+                'projectId' => $projectId,
+                'storeName' => $storeName,
+                'inchargeName' => $inchargeName,
+                'projectType' => $projectType,
+                'totalBattery' => $totalBattery,
+                'totalBatteryValue' => $totalBatteryValue,
+                'batteryDispatch' => $batteryDispatch,
+                'availableBattery' => $availableBattery,
+                'dispatchAmountBattery' => $dispatchAmountBattery,
+                'totalLuminary' => $totalLuminary,
+                'totalLuminaryValue' => $totalLuminaryValue,
+                'luminaryDispatch' => $luminaryDispatch,
+                'availableLuminary' => $availableLuminary,
+                'totalModule' => $totalModule,
+                'totalModuleValue' => $totalModuleValue,
+                'moduleDispatch' => $moduleDispatch,
+                'availableModule' => $availableModule,
+                'dispatchAmountModule' => $dispatchAmountModule,
+                'totalStructure' => $totalStructure,
+                'totalStructureValue' => $totalStructureValue,
+                'structureDispatch' => $structureDispatch,
+                'availableStructure' => $availableStructure,
+            ]);
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            Log::error("Error in viewInventory: " . $e->getMessage());
+            // Redirect back with an error message for a better user experience
+            return back()->with('error', 'Could not load inventory data. Please try again.');
         }
     }
 
@@ -779,10 +765,9 @@ class InventoryController extends Controller
             InventroyStreetLightModel::whereIn('id', $ids)->delete();
 
             return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
-            } catch (\Throwable $th) {
-                \Log::error("Bulk delete error: " . $th->getMessage());
-                return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
-            }
+        } catch (\Throwable $th) {
+            \Log::error("Bulk delete error: " . $th->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+        }
     }
-
 }

@@ -230,6 +230,14 @@ Route::get('privacy-policy', function () {
     return view('privacy');
 });
 
+Route::get('/backup', function () {
+    return view('backup.index');
+})->name('backup.index');
+
+
 Route::get('terms-and-conditions', function () {
     return view('terms');
 });
+Route::get('/backup', function () {
+    return view('data_backup.backup');
+})->name('backup.index');

@@ -1,186 +1,182 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="content-wrapper">
-    <div class="card">
-      <div class="card-body">
-        <div class="d-flex justify-content-between my-2">
-          <h6 class="card-subtitle text-bold text-info">Basic Details</h6>
-          <!-- <a href="{{-- route("sites.edit", $site->id) --}}" class="btn btn-icon btn-warning" data-toggle="tooltip"
-              title="Edit Site">
-              <i class="mdi mdi-pencil"> Update Site</i>
-            </a> -->
-        </div>
+  <div class="min-h-screen bg-gray-50 p-4">
+    <!-- Header -->
+    <div class="border-dark mb-4 border-2 bg-white p-4">
+      <div class="d-flex justify-content-between align-items-center">
+        <h1 class="h2 font-weight-bold mb-0">
+          @if (isset($projectType) && $projectType == 1)
+            {{ $site->task_id ?? 0 }}
+          @else
+            {{ $site->site_name ?? 0 }}
+          @endif
+        </h1>
+        <h2 class="h2 font-weight-bold mb-0">Sugs Lloyd</h2>
+      </div>
+      <div class="mt-2">
+        <p class="h5 font-weight-medium mb-0">
+          @if (isset($projectType) && $projectType == 1)
+            {{ $site->panchayat ?? "Demo Panchayat" }}, {{ $site->district ?? "Demo District" }} -
+            {{ $site->state ?? "Demo State" }}
+          @else
+            {{ $site->location ?? "Demo Location" }}, {{ $site->districtRelation->name ?? "Demo District" }} -
+            {{ $site->stateRelation->name ?? "Demo State" }}
+          @endif
+        </p>
+      </div>
+    </div>
 
-        @if ($projectType == 1)
-          {{-- Modify the UI here --}}
-          <!-- Row 1 -->
-          <div class="row my-4">
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Site
-                name</label>
-              <p class="mg-b-0">{{ $streetlight->task_id ?? "N/A" }}</p>
+    <div class="d-flex" style="gap: 1.5rem;">
+      <!-- Left Sidebar - Ward Buttons -->
+      <div style="width: 250px;">
+        @if (isset($projectType) && $projectType == 1)
+          @php
+            $wards = collect(explode(",", $site->ward))
+                ->map(fn($w) => "Ward " . trim($w))
+                ->toArray();
+          @endphp
+          @foreach ($wards as $ward)
+            <div class="card border-dark ward-button mb-3 cursor-pointer border-2" data-ward="{{ $ward }}"
+              onclick="loadWardData(event, '{{ $ward }}')">
+              <div class="card-body p-4 text-center">
+                <div class="h4 font-weight-bold">{{ $ward }}</div>
+              </div>
             </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">State</label>
-              <p class="mg-b-0">{{ $streetlight->state ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">District</label>
-              <p class="mg-b-0">{{ $streetlight->district ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Location</label>
-              <p class="mg-b-0">{{ $streetlight->panchayat ?? "N/A" }}</p>
-            </div>
-          </div>
-
-          <!-- Row 2 -->
-          <div class="row my-4">
-
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Wards</label>
-              <p class="mg-b-0">{{ $streetlight->ward ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Pole Number</label>
-              <p class="mg-b-0">{{ $streetlight->complete_pole_number ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Contact No</label>
-              <p class="mg-b-0">{{ $streetlight->mukhiya_contact ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Location</label>
-              <p class="mg-b-0">{{ $streetlight->lat ?? "N/A" }}, {{ $streetlight->lng ?? "N/A" }}</p>
-            </div>
-
-          </div>
-
-          <!-- Row 3 -->
-          <div class="row my-4">
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Luminary QR</label>
-              <p class="mg-b-0">{{ $streetlight->luminary_qr ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Battery QR</label>
-              <p class="mg-b-0">{{ $streetlight->battery_qr ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Panel QR</label>
-              <p class="mg-b-0">{{ $streetlight->panel_qr ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Total Poles</label>
-              <p class="mg-b-0">{{ $streetlight->total_poles ?? "N/A" }}</p>
-            </div>
-
-          </div>
+          @endforeach
         @else
-          <div class="row my-4">
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Site name</label>
-              <p class="mg-b-0">{{ $site->site_name ?? "N/A" }}</p>
+          <div class="card border-dark mb-3 border-2">
+            <div class="card-body p-4 text-center">
+              <div class="h4 font-weight-bold">Site Details</div>
             </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">State</label>
-              <p class="mg-b-0">{{ $site->stateRelation->name ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">District</label>
-              <p class="mg-b-0">{{ $site->districtRelation->name ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Location</label>
-              <p class="mg-b-0">{{ $site->location ?? "N/A" }}</p>
-            </div>
-
-          </div>
-          {{-- donr --}}
-          <div class="row my-4">
-
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">I&C Vendor Name</label>
-              <p class="mg-b-0">{{ $site->ic_vendor_name ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Site Engineer</label>
-              <p class="mg-b-0">{{ $site->site_engineer ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Contact No</label>
-              <p class="mg-b-0">{{ $site->contact_no ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Project Serial</label>
-              <p class="mg-b-0">{{ $site->project_id ?? "N/A" }}</p>
-            </div>
-
-          </div>
-          {{-- done --}}
-          <hr class="my-4">
-          <div class="row my-4">
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Ca number</label>
-              <p class="mg-b-0">{{ $site->ca_number ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Meter Number</label>
-              <p class="mg-b-0">{{ $site->meter_number ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Net Meter SI. No</label>
-              <p class="mg-b-0">{{ $site->net_meter_sr_no ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Solar Meter SI No</label>
-              <p class="mg-b-0">{{ $site->solar_meter_sr_no ?? "N/A" }}</p>
-            </div>
-
-          </div>
-          <div class="row my-4">
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Project Capacity</label>
-              <p class="mg-b-0">{{ $site->project_capacity ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Sanction Load</label>
-              <p class="mg-b-0">{{ $site->sanction_load ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Load Enhancement Status</label>
-              <p class="mg-b-0">{{ $site->load_enhancement_status ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Site Survey Status</label>
-              <p class="mg-b-0">{{ $site->site_survey_status ?? "N/A" }}</p>
-            </div>
-          </div>
-          <hr />
-
-          <div class="row my-4">
-            <div class="col-md-4 col-sm-4">
-              <label class="font-10 text-uppercase mg-b-10">Material Inspection Date</label>
-              <p class="mg-b-0">{{ $site->material_inspection_date ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-4 col-sm-4">
-              <label class="font-10 text-uppercase mg-b-10">SPP Installation Date</label>
-              <p class="mg-b-0">{{ $site->spp_installation_date ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-4 col-sm-4">
-              <label class="font-10 text-uppercase mg-b-10">Commissioning Date</label>
-              <p class="mg-b-0">{{ $site->commissioning_date ?? "N/A" }}</p>
-            </div>
-            <div class="col-md-3 col-sm-3">
-              <label class="font-10 text-uppercase mg-b-10">Remarks</label>
-              <p class="mg-b-0">{{ $site->remarks ?? "N/A" }}</p>
-            </div>
-
           </div>
         @endif
+      </div>
 
+      <!-- Main Content -->
+      <div class="flex-fill border-dark border-2 bg-white">
+        <div class="p-4">
+          <!-- Engineer and Vendor Info -->
+          <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
+            <div>
+              @if (isset($projectType) && $projectType == 1)
+                <p class="h5 font-weight-medium mb-1">Manager - {{ $managerName }}</p>
+                <p class="h5 font-weight-medium mb-1">Engineer - {{ $engineerName }}</p>
+                <p class="h5 font-weight-medium mb-1">Vendor - {{ $vendorName }}</p>
+              @else
+                <p class="h5 font-weight-medium mb-1">Engineer - {{ $site->site_engineer ?? "Ram Kumar" }}</p>
+                <p class="h5 font-weight-medium mb-1">Vendor - {{ $site->ic_vendor_name ?? "Shyam Kumar" }}</p>
+              @endif
+            </div>
+
+            <!-- Start Date and End Date with Carbon -->
+            <div class="text-right">
+              @if (isset($projectType) && $projectType == 1)
+                <p class="h5 font-weight-medium mb-1">Start Date:
+                  {{ \Carbon\Carbon::parse($streetlightTask?->start_date)->format("d/M/Y") }}</p>
+                <p class="h5 font-weight-medium mb-1">End Date:
+                  {{ \Carbon\Carbon::parse($streetlightTask?->end_date)->format("d/M/Y") }}</p>
+              @else
+                <p class="h5 font-weight-medium mb-1">Start Date:
+                  {{ \Carbon\Carbon::parse($site->material_inspection_date)->format("d/M/Y") ?? "abc" }}</p>
+                <p class="h5 font-weight-medium mb-1">End Date:
+                  {{ \Carbon\Carbon::parse($site->commissioning_date)->format("d/M/Y") ?? "abc" }}</p>
+              @endif
+            </div>
+          </div>
+
+          <!-- Tabs -->
+          <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+              <button class="nav-link active" id="surveyed-tab" data-bs-toggle="tab" data-status="surveyed" type="button"
+                role="tab" aria-selected="true">
+                Surveyed Poles
+              </button>
+            </li>
+            <li class="nav-item" role="presentation">
+              <button class="nav-link" id="installed-tab" data-bs-toggle="tab" data-status="installed" type="button"
+                role="tab" aria-selected="false">
+                Installed Lights
+              </button>
+            </li>
+          </ul>
+
+          <!-- Single DataTable -->
+          <x-data-table id="polesDataTable" class="table-striped table-bordered table-sm mt-3 table">
+            <x-slot:thead>
+              <tr>
+                <th>Pole Number</th>
+                <th>Beneficiary</th>
+                <th>Beneficiary Contact</th>
+                <th>Ward</th>
+                <th>Actions</th>
+              </tr>
+            </x-slot:thead>
+            <x-slot:tbody>
+              @foreach ($poles as $pole)
+                <tr data-ward="{{ $pole->ward_name }}" data-surveyed="{{ $pole->isSurveyDone }}"
+                  data-installed="{{ $pole->isInstallationDone }}">
+                  <td>{{ $pole->complete_pole_number }}</td>
+                  <td>{{ $pole->beneficiary ?? "N/A" }}</td>
+                  <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
+                  <td>{{ $pole->ward_name ?? "N/A" }}</td>
+                  <td>
+                    <a href="#" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                      <i class="mdi mdi-eye"></i>
+                    </a>
+                  </td>
+                </tr>
+              @endforeach
+            </x-slot:tbody>
+          </x-data-table>
+
+        </div>
       </div>
     </div>
   </div>
+
+  <!-- Scripts -->
+  @push("scripts")
+    <script>
+      let currentWard = null;
+      let currentTab = 'surveyed';
+
+      function filterTable() {
+        document.querySelectorAll('#polesDataTable tbody tr').forEach(row => {
+          const ward = row.getAttribute('data-ward');
+          const surveyed = row.getAttribute('data-surveyed');
+          const installed = row.getAttribute('data-installed');
+
+          let show = true;
+
+          if (currentWard && ward !== currentWard) show = false;
+          if (currentTab === 'surveyed' && surveyed !== '1') show = false;
+          if (currentTab === 'installed' && installed !== '1') show = false;
+
+          row.style.display = show ? '' : 'none';
+        });
+      }
+
+      function loadWardData(event, ward) {
+        event.preventDefault();
+        currentWard = ward;
+        document.querySelectorAll('.ward-button').forEach(btn => btn.classList.remove('active'));
+        event.currentTarget.classList.add('active');
+        filterTable();
+      }
+
+      document.addEventListener('DOMContentLoaded', function() {
+        // Tab switch filter
+        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+          tab.addEventListener('click', function() {
+            currentTab = this.getAttribute('data-status');
+            filterTable();
+          });
+        });
+
+        filterTable(); // initial filter
+      });
+    </script>
+  @endpush
+
 @endsection
