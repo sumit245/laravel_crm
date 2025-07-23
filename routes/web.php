@@ -79,6 +79,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
     Route::resource('sites', SiteController::class);
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
+Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
 
 
     // Conveyance route fixed
