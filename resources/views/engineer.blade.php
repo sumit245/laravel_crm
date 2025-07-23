@@ -1,6 +1,6 @@
 @extends("layouts.main")
-@section("content")
 
+@section("content")
 <style>
   .engineer-overview-card {
     border: 1px solid #dee2e6;

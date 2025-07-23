@@ -23,7 +23,7 @@
       </li>
     </ul>
     <ul class="navbar-nav ms-auto">
-      <li class="nav-item dropdown d-none d-lg-block">
+      {{-- <li class="nav-item dropdown d-none d-lg-block">
         <a class="nav-link dropdown-bordered dropdown-toggle dropdown-toggle-split" id="messageDropdown" href="#"
           data-bs-toggle="dropdown" aria-expanded="false">
           <span id="selectedState">Select State</span>
@@ -37,7 +37,7 @@
           </span>
           <input type="text" class="form-control">
         </div>
-      </li>
+      </li> --}}
 
       <li class="nav-item dropdown">
         <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown"
@@ -55,7 +55,8 @@
       </li>
       <li class="nav-item dropdown d-none d-lg-block user-dropdown">
         <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
-          <img class="img-xs rounded-circle" src="{{ Auth::user()->image ?? asset("images/faces/face8.jpg") }}" alt="Profile image">
+          <img class="img-xs rounded-circle" src="{{ Auth::user()->image ?? asset("images/faces/face8.jpg") }}"
+            alt="Profile image">
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
