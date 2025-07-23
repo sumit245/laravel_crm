@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Imports\SiteImport;
 use App\Imports\StreetlightImport;
 use App\Models\City;
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Site;
 use App\Models\State;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
-use App\Models\Pole;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -133,548 +133,66 @@ class SiteController extends Controller
      */
     public function show(string $id, Request $request)
     {
-        $projectId = $request->query('project_id');
-        
-        Log::info('Site show method called', [
-            'site_id' => $id, 
-            'project_id' => $projectId,
-            'request_all' => $request->all()
-        ]);
-        
-        try {
-            // Initialize default variables
-            $site = null;
-            $streetlight = null;
-            $streetlightTask = null;
-            $taskId = null;
-            $engineerName = 'N/A';
-            $vendorName = 'N/A';
-            $managerName = 'N/A';
-            $startDate = 'N/A';
-            $endDate = 'N/A';
-            $polesByWard = [];
-            $allPoles = collect();
-            $wardCounts = [];
-            $states = [];
-            $districts = [];
-            $projects = [];
-            $users = [];
-            $project = null;
+        $projectType = $request->query('project_type');
 
-            // Get project information first
-            if ($projectId) {
-                $project = Project::find($projectId);
-                Log::info('Project found', ['project' => $project ? $project->toArray() : null]);
-            }
+        if ($projectType == 1) {
+            // Step 1. Find the streetlight that will return id, district, state, block, panchayat, ward, number_of_surveyed_poles and number_of_installed_poles 
+            $site = Streetlight::with('streetlightTasks')->findOrFail($id);
 
-            // Handle streetlight project (project_id == 11 OR project_type == 1)
-            if ($projectId == 11 || ($project && $project->project_type == 1)) {
-                Log::info('Handling streetlight project');
-                
-                // For streetlight projects, try to find in Streetlight table first
-                try {
-                    $streetlight = Streetlight::find($id);
-                    
-                    if ($streetlight) {
-                        Log::info('Streetlight found', ['streetlight' => $streetlight->toArray()]);
-                        
-                        // Use streetlight data
-                        $taskId = $streetlight->task_id;
-                        $states = $streetlight->state;
-                        $districts = $streetlight->district;
-                        
-                        // Set default values for streetlight
-                        $engineerName = 'Ram Kumar';
-                        $vendorName = 'Shyam Kumar';
-                        $startDate = 'abc';
-                        $endDate = 'abc';
-                        
-                        Log::info('Using streetlight data', [
-                            'task_id' => $taskId,
-                            'state' => $states,
-                            'district' => $districts
-                        ]);
-                        
-                    } else {
-                        Log::info('Streetlight not found, trying Site table');
-                        
-                        // If not found in Streetlight, try Site table
-                        $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->find($id);
-                        
-                        if ($site) {
-                            Log::info('Site found for streetlight project', ['site' => $site->toArray()]);
-                            
-                            $taskId = $site->task_id;
-                            
-                            if ($site->engineerRelation) {
-                                $engineerName = $site->engineerRelation->firstName . ' ' . $site->engineerRelation->lastName;
-                            } else {
-                                $engineerName = 'Ram Kumar';
-                            }
-                            
-                            if ($site->vendorRelation) {
-                                $vendorName = $site->vendorRelation->name;
-                            } else {
-                                $vendorName = 'Shyam Kumar';
-                            }
-                            
-                            $startDate = $site->material_inspection_date ?? 'abc';
-                            $endDate = $site->commissioning_date ?? 'abc';
-                        } else {
-                            Log::error('Neither Streetlight nor Site found for ID: ' . $id);
-                            return back()->with('error', 'Record not found.');
-                        }
-                    }
-                    
-                } catch (\Exception $e) {
-                    Log::error('Error finding streetlight/site', ['error' => $e->getMessage()]);
-                    return back()->with('error', 'Record not found: ' . $e->getMessage());
-                }
+            // Step 2. Use the id of streetlight to find streetlight_task allotted corresponding to the site by column site_id
+            // Return engineer_id, vendor_id, manager_id, start_date, end_date, billed with names via eager loading
 
-                // If we have a task_id, try to get poles data
-                if ($taskId) {
-                    Log::info('Querying poles with task_id', ['task_id' => $taskId]);
-                    
-                    try {
-                        // Get unique wards from poles table using task_id
-                        $polesByWard = Pole::where('task_id', $taskId)
-                            ->select('ward_name')
-                            ->whereNotNull('ward_name')
-                            ->where('ward_name', '!=', '')
-                            ->groupBy('ward_name')
-                            ->pluck('ward_name')
-                            ->toArray();
+            $streetlightTask = StreetlightTask::with(['engineer', 'vendor', 'manager'])
+                ->where('site_id', $site->id)
+                ->first();
 
-                        Log::info('Poles query result', [
-                            'task_id' => $taskId,
-                            'wards_found' => $polesByWard,
-                            'wards_count' => count($polesByWard)
-                        ]);
+            // Step 3: Use the id of streetlight_task to find streelight_poles corresponding to task_id
+            // Group poles according to ward_name so that frontend can filter poles specific to a ward
 
-                        // If no wards found in poles table, use streetlight/site ward data
-                        if (empty($polesByWard)) {
-                            $wardString = null;
-                            
-                            if ($streetlight && $streetlight->ward) {
-                                $wardString = $streetlight->ward;
-                                Log::info('Using streetlight ward as fallback', ['ward_string' => $wardString]);
-                            } elseif ($site && $site->ward) {
-                                $wardString = $site->ward;
-                                Log::info('Using site ward as fallback', ['ward_string' => $wardString]);
-                            }
-                            
-                            // Parse comma-separated wards
-                            if ($wardString) {
-                                $polesByWard = array_map('trim', explode(',', $wardString));
-                                // Add "Ward " prefix if not already present
-                                $polesByWard = array_map(function($ward) {
-                                    return is_numeric($ward) ? 'Ward ' . $ward : $ward;
-                                }, $polesByWard);
-                                
-                                Log::info('Parsed wards from string', [
-                                    'original' => $wardString,
-                                    'parsed' => $polesByWard
-                                ]);
-                            }
-                        }
+            $poles = Pole::where('task_id', $streetlightTask->id ?? null)
+                ->get();
+            // ->groupBy('ward_name');
 
-                        // Get all poles for the task
-                        $allPoles = Pole::where('task_id', $taskId)->get();
-                        
-                        Log::info('All poles count', ['total_poles' => $allPoles->count()]);
+            Log::info($poles);
 
-                        // Count surveyed and installed poles by ward
-                        foreach ($polesByWard as $ward) {
-                            // For wards parsed from comma-separated string, we might not have actual pole data
-                            // So we'll use sample counts or try to match with actual pole data
-                            
-                            $actualWardName = $ward;
-                            // Try different ward name formats
-                            $wardVariations = [
-                                $ward,
-                                str_replace('Ward ', '', $ward),
-                                is_numeric(str_replace('Ward ', '', $ward)) ? str_replace('Ward ', '', $ward) : $ward
-                            ];
-                            
-                            $surveyedCount = 0;
-                            $installedCount = 0;
-                            
-                            foreach ($wardVariations as $wardVariation) {
-                                $surveyedCount += Pole::where('task_id', $taskId)
-                                    ->where('ward_name', $wardVariation)
-                                    ->where(function($query) {
-                                        $query->where('is_surveyed', true)
-                                              ->orWhere('is_surveyed', 1)
-                                              ->orWhereNotNull('survey_date');
-                                    })
-                                    ->count();
-                                
-                                $installedCount += Pole::where('task_id', $taskId)
-                                    ->where('ward_name', $wardVariation)
-                                    ->where(function($query) {
-                                        $query->where('is_installed', true)
-                                              ->orWhere('is_installed', 1)
-                                              ->orWhereNotNull('installation_date');
-                                    })
-                                    ->count();
-                            }
-                            
-                            // If no actual data found, use sample data for demo
-                            if ($surveyedCount === 0 && $installedCount === 0) {
-                                $wardNumber = is_numeric(str_replace('Ward ', '', $ward)) ? (int)str_replace('Ward ', '', $ward) : 5;
-                                $surveyedCount = 20 + ($wardNumber * 2); // Sample data
-                                $installedCount = 15 + $wardNumber; // Sample data
-                            }
+            // Prepare readable engineer, vendor, manager names
+            $engineerName = optional($streetlightTask?->engineer)->firstName . " " . optional($streetlightTask?->engineer)->lastName ?? 'N/A';
 
-                            $wardCounts[$ward] = [
-                                'surveyed' => $surveyedCount,
-                                'installed' => $installedCount
-                            ];
-                            
-                            Log::info('Ward counts calculated', [
-                                'ward' => $ward,
-                                'surveyed' => $surveyedCount,
-                                'installed' => $installedCount
-                            ]);
-                        }
-                    } catch (\Exception $e) {
-                        Log::error('Error querying Pole table', [
-                            'error' => $e->getMessage(),
-                            'task_id' => $taskId
-                        ]);
-                        
-                        // Fallback to parsing ward string if poles query fails
-                        $wardString = null;
-                        if ($streetlight && $streetlight->ward) {
-                            $wardString = $streetlight->ward;
-                        } elseif ($site && $site->ward) {
-                            $wardString = $site->ward;
-                        }
-                        
-                        if ($wardString) {
-                            $polesByWard = array_map('trim', explode(',', $wardString));
-                            $polesByWard = array_map(function($ward) {
-                                return is_numeric($ward) ? 'Ward ' . $ward : $ward;
-                            }, $polesByWard);
-                            
-                            // Set sample counts for each ward
-                            foreach ($polesByWard as $ward) {
-                                $wardNumber = is_numeric(str_replace('Ward ', '', $ward)) ? (int)str_replace('Ward ', '', $ward) : 5;
-                                $wardCounts[$ward] = [
-                                    'surveyed' => 20 + ($wardNumber * 2),
-                                    'installed' => 15 + $wardNumber
-                                ];
-                            }
-                            
-                            Log::info('Used fallback ward parsing', [
-                                'wards' => $polesByWard,
-                                'counts' => $wardCounts
-                            ]);
-                        }
-                    }
-                } else {
-                    Log::warning('No task_id found for streetlight project');
-                }
-                
-                // Set streetlightTask flag for the view
-                $streetlightTask = (object) ['task_id' => $taskId];
+            $vendorName   = optional($streetlightTask?->vendor)->name ?? 'N/A';
+            $managerName  = optional($streetlightTask?->manager)->firstName . " " . optional($streetlightTask?->manager)->lastName ?? 'N/A';
 
-                // Get additional data for the view
-                $states = State::all();
-                $districts = City::all();
-                $projects = Project::all();
-                $users = User::all();
+            // Prepare state and district names if you have relationships, else keep as stored
+            $stateName    = $site->state;
+            $districtName = $site->district;
 
-                Log::info('Streetlight project data prepared successfully', [
-                    'site_id' => $id,
-                    'task_id' => $taskId,
-                    'wards_count' => count($polesByWard),
-                    'has_streetlight_task' => $streetlightTask ? true : false,
-                    'ward_counts' => $wardCounts
-                ]);
 
-                return view('sites.show', compact(
-                    'site',
-                    'streetlight',
-                    'streetlightTask',
-                    'taskId',
-                    'engineerName',
-                    'vendorName',
-                    'managerName',
-                    'startDate',
-                    'endDate',
-                    'polesByWard',
-                    'allPoles',
-                    'wardCounts',
-                    'projectId',
-                    'states',
-                    'districts',
-                    'projects',
-                    'users',
-                    'project'
-                ));
-            }
 
-            // Handle regular projects (non-streetlight)
-            Log::info('Handling regular project');
-            
-            // Get the site first to ensure it exists
-            $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->find($id);
-            
-            if (!$site) {
-                Log::error('Site not found for ID: ' . $id);
-                return back()->with('error', 'Site not found.');
-            }
-
-            Log::info('Site found', [
-                'site_id' => $site->id, 
-                'site_name' => $site->site_name,
-                'site_data' => $site->toArray()
-            ]);
-
-            // Try to find StreetlightTask for regular projects
-            $streetlightTask = StreetlightTask::where('site_id', $id)->first();
-            
-            Log::info('Regular project - StreetlightTask query result', [
-                'site_id' => $id,
-                'streetlight_task_found' => $streetlightTask ? true : false,
-                'streetlight_task_data' => $streetlightTask ? $streetlightTask->toArray() : null
-            ]);
-            
-            if ($streetlightTask) {
-                // Get task details from StreetlightTask
-                $taskId = $streetlightTask->task_id;
-                $engineerName = $streetlightTask->engineer_name ?? 'N/A';
-                $vendorName = $streetlightTask->vendor_name ?? 'N/A';
-                $managerName = $streetlightTask->manager_name ?? 'N/A';
-                $startDate = $streetlightTask->start_date ?? 'N/A';
-                $endDate = $streetlightTask->end_date ?? 'N/A';
-
-                // Query poles using task_id
-                try {
-                    $polesByWard = Pole::where('task_id', $taskId)
-                        ->select('ward_name')
-                        ->whereNotNull('ward_name')
-                        ->where('ward_name', '!=', '')
-                        ->groupBy('ward_name')
-                        ->pluck('ward_name')
-                        ->toArray();
-
-                    // Count poles by ward
-                    foreach ($polesByWard as $ward) {
-                        $surveyedCount = Pole::where('task_id', $taskId)
-                            ->where('ward_name', $ward)
-                            ->where(function($query) {
-                                $query->where('is_surveyed', true)
-                                      ->orWhere('is_surveyed', 1)
-                                      ->orWhereNotNull('survey_date');
-                            })
-                            ->count();
-                        
-                        $installedCount = Pole::where('task_id', $taskId)
-                            ->where('ward_name', $ward)
-                            ->where(function($query) {
-                                $query->where('is_installed', true)
-                                      ->orWhere('is_installed', 1)
-                                      ->orWhereNotNull('installation_date');
-                            })
-                            ->count();
-
-                        $wardCounts[$ward] = [
-                            'surveyed' => $surveyedCount,
-                            'installed' => $installedCount
-                        ];
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Error querying Pole table for regular project', [
-                        'error' => $e->getMessage(),
-                        'task_id' => $taskId
-                    ]);
-                }
-            } else {
-                // No streetlight task, use site data
-                if ($site->engineerRelation) {
-                    $engineerName = $site->engineerRelation->name ?? 'N/A';
-                }
-                if ($site->vendorRelation) {
-                    $vendorName = $site->vendorRelation->name ?? 'N/A';
-                }
-                $startDate = $site->material_inspection_date ?? 'N/A';
-                $endDate = $site->commissioning_date ?? 'N/A';
-            }
-
-            // Get additional data for the view
-            $states = State::all();
-            $districts = City::where('state_id', $site->state)->get();
-            $projects = Project::all();
-            $users = User::all();
-
-            Log::info('Regular project data prepared successfully', [
-                'site_id' => $id,
-                'task_id' => $taskId,
-                'wards_count' => count($polesByWard),
-                'has_streetlight_task' => $streetlightTask ? true : false,
-                'ward_counts' => $wardCounts
-            ]);
-
+            // Return to view with all required data
             return view('sites.show', compact(
                 'site',
-                'streetlight',
                 'streetlightTask',
-                'taskId',
+                'poles',
                 'engineerName',
                 'vendorName',
                 'managerName',
-                'startDate',
-                'endDate',
-                'polesByWard',
-                'allPoles',
-                'wardCounts',
-                'projectId',
-                'states',
-                'districts',
-                'projects',
-                'users',
-                'project'
+                'stateName',
+                'districtName',
+                'projectType'
             ));
-
-        } catch (\Exception $e) {
-            Log::error('Error in site show method', [
-                'site_id' => $id,
-                'project_id' => $projectId,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return back()->with('error', 'An error occurred while loading site details: ' . $e->getMessage());
         }
+
+        // For non-streetlight projects (default site)
+        $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])
+            ->findOrFail($id);
+
+        $states    = State::all();
+        $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
+        $projects  = Project::all();
+        $users     = User::all(); // For vendor and engineer names
+
+        return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectType'));
     }
 
-    /**
-     * Get ward-specific poles data via AJAX
-     */
-    public function getWardPoles(Request $request)
-    {
-        Log::info('getWardPoles method called', [
-            'request_data' => $request->all(),
-            'method' => $request->method(),
-            'headers' => $request->headers->all()
-        ]);
-
-        try {
-            $taskId = $request->input('task_id');
-            $wardName = $request->input('ward_name');
-            $type = $request->input('type', 'surveyed');
-
-            Log::info('Processing ward poles request', [
-                'task_id' => $taskId,
-                'ward_name' => $wardName,
-                'type' => $type
-            ]);
-
-            if (!$taskId) {
-                Log::warning('Task ID is missing in request');
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Task ID is required'
-                ], 400);
-            }
-
-            // Check if Pole table exists and has data
-            try {
-                // Try different ward name formats for matching
-                $wardVariations = [
-                    $wardName,
-                    str_replace('Ward ', '', $wardName),
-                    is_numeric(str_replace('Ward ', '', $wardName)) ? str_replace('Ward ', '', $wardName) : $wardName
-                ];
-                
-                $poles = collect();
-                
-                foreach ($wardVariations as $wardVariation) {
-                    $query = Pole::where('task_id', $taskId)
-                        ->where('ward_name', $wardVariation);
-
-                    Log::info('Trying ward variation', [
-                        'task_id' => $taskId,
-                        'ward_variation' => $wardVariation
-                    ]);
-
-                    if ($type === 'surveyed') {
-                        $wardPoles = $query->where(function($q) {
-                            $q->where('is_surveyed', true)
-                              ->orWhere('is_surveyed', 1)
-                              ->orWhereNotNull('survey_date');
-                        })->get();
-                    } else {
-                        $wardPoles = $query->where(function($q) {
-                            $q->where('is_installed', true)
-                              ->orWhere('is_installed', 1)
-                              ->orWhereNotNull('installation_date');
-                        })->get();
-                    }
-                    
-                    $poles = $poles->merge($wardPoles);
-                    
-                    if ($wardPoles->count() > 0) {
-                        Log::info('Found poles with ward variation', [
-                            'ward_variation' => $wardVariation,
-                            'poles_count' => $wardPoles->count()
-                        ]);
-                        break; // Found data, no need to try other variations
-                    }
-                }
-
-                Log::info('Final pole query result', [
-                    'type' => $type,
-                    'poles_count' => $poles->count(),
-                    'poles_data' => $poles->toArray()
-                ]);
-
-                return response()->json([
-                    'success' => true,
-                    'data' => $poles,
-                    'count' => $poles->count(),
-                    'debug' => [
-                        'task_id' => $taskId,
-                        'ward_name' => $wardName,
-                        'ward_variations_tried' => $wardVariations,
-                        'type' => $type,
-                        'query_executed' => true
-                    ]
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error('Error querying Pole table in AJAX', [
-                    'error' => $e->getMessage(),
-                    'task_id' => $taskId,
-                    'ward_name' => $wardName,
-                    'type' => $type
-                ]);
-
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Database error: ' . $e->getMessage(),
-                    'debug' => [
-                        'task_id' => $taskId,
-                        'ward_name' => $wardName,
-                        'type' => $type,
-                        'error' => $e->getMessage()
-                    ]
-                ], 500);
-            }
-
-        } catch (\Exception $e) {
-            Log::error('General error in getWardPoles', [
-                'error' => $e->getMessage(),
-                'request_data' => $request->all()
-            ]);
-
-            return response()->json([
-                'success' => false,
-                'message' => 'Server error: ' . $e->getMessage()
-            ], 500);
-        }
-    }
 
     public function search(Request $request)
     {
