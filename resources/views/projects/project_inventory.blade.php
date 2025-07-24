@@ -62,7 +62,7 @@
 
       <div class="form-group">
         <label for="address">Address:</label>
-        <textarea class="form-control" id="address" name="address" rows="2" required></textarea>
+        <textarea class="form-control" id="address" name="address" rows="2"  style="height:70px;" required></textarea>
       </div>
 
       <div class="form-group">

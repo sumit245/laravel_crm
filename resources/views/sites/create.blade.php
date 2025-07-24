@@ -131,11 +131,16 @@
           <!-- Load Enhancement Status and Site Survey Status Section -->
           <h6 class="card-subtitle text-bold text-info">Status Information</h6>
           <div class="form-group row mt-5">
+
             <div class="col-md-6">
               <label for="loadStatus">Load Enhancement Status:</label>
-              <input type="text" class="form-control" id="loadStatus" placeholder="Enter load enhancement status"
-                name="load_enhancement_status" value="{{ old("load_enhancement_status") }}">
+              <select class="form-control" id="loadStatus" name="load_enhancement_status">
+                <option value="">-- Select Status --</option>
+                <option value="Yes" {{ old("load_enhancement_status") == "Yes" ? "selected" : "" }}>Yes</option>
+                <option value="No" {{ old("load_enhancement_status") == "No" ? "selected" : "" }}>No</option>
+              </select>
             </div>
+
             <div class="col-md-6">
               <label for="siteSurvey">Site Survey Status:</label>
               <input type="text" class="form-control" id="siteSurvey" placeholder="Enter site survey status"
@@ -145,17 +150,17 @@
           <div class="form-group row">
             <div class="col-md-4">
               <label for="inspectionDate">Material Inspection Date:</label>
-              <input type="date" class="form-control navbar-date-picker" id="inspectionDate"
+              <input onclick="document.getElementById('inspectionDate').showPicker()" type="date" class="form-control navbar-date-picker" id="inspectionDate"
                 name="material_inspection_date" value="{{ old("material_inspection_date") }}">
             </div>
             <div class="col-md-4">
               <label for="installationDate">SPP Installation Date:</label>
-              <input type="date" class="form-control" id="installationDate" name="spp_installation_date"
+              <input onclick="document.getElementById('installationDate').showPicker()" type="date" class="form-control" id="installationDate" name="spp_installation_date"
                 value="{{ old("spp_installation_date") }}">
             </div>
             <div class="col-md-4">
               <label for="commissioningDate">Commissioning Date:</label>
-              <input type="date" class="form-control" id="commissioningDate" name="commissioning_date"
+              <input onclick="document.getElementById('commissioningDate').showPicker()" type="date" class="form-control" id="commissioningDate" name="commissioning_date"
                 value="{{ old("commissioning_date") }}">
             </div>
           </div>

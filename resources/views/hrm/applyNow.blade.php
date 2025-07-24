@@ -1,31 +1,27 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
+
+  <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Employee Onboarding - Sugs Lloyd Ltd</title>
-
     {{-- datatables css --}}
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
-
     {{-- base css --}}
     <link rel="stylesheet" href="{{ asset("css/vertical-layout-light/style.css") }}">
-
     {{-- select2 css --}}
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
     <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
-    
+
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
-    
+
     {{-- Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
     
     <style>
         /* Google Forms inspired styles */
@@ -109,7 +105,6 @@
         
         /* Mobile responsive adjustments */
         @media (max-width: 991.98px) {
-
             .side-nav {
                 width: 280px;
                 transform: translateX(-100%);
@@ -118,8 +113,7 @@
             .top-logo-header{
                display: block;
             }
-            
-            
+                        
             .side-nav.show {
                 transform: translateX(0);
             }
@@ -325,7 +319,6 @@
         
         .select2-container--bootstrap4 .select2-dropdown {
             border-color: #dadce0;
-            /* background:grey; */
             border-radius: 4px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
         }
@@ -463,7 +456,6 @@
             border-color: #d93025;
             color: white;
         }
-
         .section-title{
            white-space: nowrap;
         }
@@ -481,7 +473,7 @@
         .top-logo-header img {
             max-height: 100px;
             width: auto;
-            
+                    
         }
         
         .company-tagline {
@@ -573,6 +565,12 @@
             color: #1967d2;
         }
         
+        .alert-warning {
+            background-color: #fef7e0;
+            border-color: #fce8b2;
+            color: #b7791f;
+        }
+        
         /* Section Dividers */
         hr {
             margin: 24px 0;
@@ -609,9 +607,29 @@
         .swal2-modal .swal2-icon{
             margin: 0px;
         }
+
+        /* Experience validation styles */
+        .experience-warning {
+            background-color: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
+
+        .experience-summary {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+            padding: 10px;
+            border-radius: 4px;
+            margin-top: 10px;
+        }
     </style>
-</head>
-<body>
+  </head>
+
+  <body>
     <div class="container-scroller">
         <!-- Top Logo Header -->
         <div class="top-logo-header">
@@ -690,7 +708,7 @@
                                     <a class="nav-link disabled" data-section="documents">
                                         <div class="d-flex align-items-center">
                                             <span class="section-number">5</span>
-                                            <span class="section-title">Document Uploads</span>
+                                            <span class="section-title">Documents & Photo</span>
                                             <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
                                         </div>
                                     </a>
@@ -705,18 +723,9 @@
                                     </a>
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link disabled" data-section="photo">
-                                        <div class="d-flex align-items-center">
-                                            <span class="section-number">7</span>
-                                            <span class="section-title">Passport Size Photo</span>
-                                            <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
-                                        </div>
-                                    </a>
-                                </li>
-                                <li class="nav-item">
                                     <a class="nav-link disabled" data-section="declaration">
                                         <div class="d-flex align-items-center">
-                                            <span class="section-number">8</span>
+                                            <span class="section-number">7</span>
                                             <span class="section-title">Declaration</span>
                                             <span class="section-status ms-auto"><i class="fas fa-circle"></i></span>
                                         </div>
@@ -738,14 +747,15 @@
                                 </div>
                                 
                                 <form id="onboarding-form" method="POST" action="{{ route('hrm.store') }}" enctype="multipart/form-data">
-                                    @csrf
-                                    
+                                    @csrf 
+                                    <input type="hidden" name="id" value="{{ $id }}">
+
                                     <!-- Personal Information Section -->
                                     <div class="form-section active" id="personal-info">
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold">1. Personal Information</span>
-                                                <span class="section-indicator">Section 1 of 8</span>
+                                                <span class="section-indicator">Section 1 of 7</span>
                                             </div>
                                             <div class="card-body">
                                                 <div class="row g-3">
@@ -835,7 +845,7 @@
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold">2. Contact Information</span>
-                                                <span class="section-indicator">Section 2 of 8</span>
+                                                <span class="section-indicator">Section 2 of 7</span>
                                             </div>
                                             <div class="card-body">
                                                 <h5 class="fw-semibold mb-3">Permanent Address</h5>
@@ -871,13 +881,11 @@
                                                         <div class="invalid-feedback">Please enter a valid ZIP code (5-10 digits)</div>
                                                     </div>
                                                 </div>
-
                                                 <!-- Same as Permanent Checkbox -->
                                                 <div class="form-check mb-3">
                                                     <input type="checkbox" class="form-check-input" id="sameAsPermanent">
                                                     <label class="form-check-label" for="sameAsPermanent">Same as Permanent Address</label>
                                                 </div>
-
                                                 <h5 class="fw-semibold mb-3">Current Address</h5>
                                                 <div class="row g-3 mb-4">
                                                     <div class="col-md-3">
@@ -911,7 +919,6 @@
                                                         <div class="invalid-feedback">Please enter a valid ZIP code (5-10 digits)</div>
                                                     </div>
                                                 </div>
-
                                                 <hr>
                                                 <div class="row g-3">
                                                     <div class="col-md-6">
@@ -940,19 +947,16 @@
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold">3. Educational Background</span>
-                                                <span class="section-indicator">Section 3 of 8</span>
+                                                <span class="section-indicator">Section 3 of 7</span>
                                             </div>
-
                                             <div id="education-entries">
                                                 <!-- Education entry will be added here dynamically -->
                                             </div>
-
                                             <div class="card-body">
                                                 <button type="button" class="btn btn-success" onclick="addEducationEntry()">
                                                     <i class="fas fa-plus-circle me-2"></i> Add More Education
                                                 </button>
                                             </div>
-
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
                                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="contact-info">Previous</button>
@@ -967,7 +971,7 @@
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold">4. Employment Details</span>
-                                                <span class="section-indicator">Section 4 of 8</span>
+                                                <span class="section-indicator">Section 4 of 7</span>
                                             </div>
                                             <div class="card-body">
                                                 <div class="row g-3">
@@ -981,38 +985,46 @@
                                                         <input type="text" id="department" name="department" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter the department</div>
                                                     </div>
-                                                    <!-- <div class="col-md-4">
-                                                        <label class="form-label required" for="date_of_joining">Date of Joining</label>
-                                                        <input type="date" id="date_of_joining" name="date_of_joining" class="form-control" required min="{{ date('Y-m-d') }}">
-                                                        <div class="invalid-feedback">Please select a valid joining date (must be today or in the future)</div>
-                                                    </div> -->
-                                                    
                                                     <div class="col-md-4">
                                                         <label class="form-label required" for="experience">Total Years of Experience</label>
                                                         <input type="number" id="experience" name="experience" step="0.1" min="0" max="50" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter a valid experience (0-50 years)</div>
                                                     </div>
                                                     <div class="col-md-4">
-                                                        <label class="form-label required" for="notice_period">Notice Period</label>
+                                                        <label class="form-label required" for="notice_period">Notice Period(in days)</label>
                                                         <input type="text" id="notice_period" name="notice_period" class="form-control" required>
                                                         <div class="invalid-feedback">Please enter your notice period</div>
                                                     </div>
-
+                                                </div>
+                                                
+                                                <!-- Experience Summary -->
+                                                <div id="experience-summary" class="experience-summary mt-3" style="display: none;">
+                                                    <strong>Experience Summary:</strong>
+                                                    <div id="experience-breakdown"></div>
                                                 </div>
                                             </div>
-
-                                            <div id="employment-entries"></div>
-
-                                            <div class="card-body">
-                                                <button type="button" class="btn btn-success" onclick="addEmploymentEntry()">
-                                                    <i class="fas fa-plus-circle me-2"></i> Add Previous Employer
-                                                </button>
+                                            
+                                            <!-- Previous Employment Entries -->
+                                            <div id="employment-entries" style="display: none;">
+                                                <div class="card-body">
+                                                    <h5 class="fw-semibold mb-3">Previous Employment History</h5>
+                                                    <div class="alert alert-info">
+                                                        <i class="fas fa-info-circle me-2"></i>
+                                                        Please add your previous employment details. The total experience from all employers should match your stated total years of experience.
+                                                    </div>
+                                                </div>
+                                                <div id="employment-entries-container"></div>
+                                                <div class="card-body">
+                                                    <button type="button" class="btn btn-success" onclick="addEmploymentEntry()">
+                                                        <i class="fas fa-plus-circle me-2"></i> Add Previous Employer
+                                                    </button>
+                                                </div>
                                             </div>
                                             
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
                                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="education">Previous</button>
-                                                    <button type="button" class="btn btn-primary next-section" data-next="documents">Next Section</button>
+                                                    <button type="button" class="btn btn-primary next-section" data-next="documents" id="employment-next-btn">Next Section</button>
                                                 </div>
                                             </div>
                                         </div>
@@ -1022,25 +1034,83 @@
                                     <div class="form-section" id="documents">
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold">5. Document Uploads</span>
-                                                <span class="section-indicator">Section 5 of 8</span>
+                                                <span class="fw-bold">5. Documents & Photo Upload</span>
+                                                <span class="section-indicator">Section 5 of 7</span>
                                             </div>
                                             <div class="card-body">
                                                 <div class="alert alert-info mb-4">
                                                     <i class="fas fa-info-circle me-2"></i>
-                                                    Upload documents (PDF, JPG, PNG, max 5MB each). You can add more documents below.
+                                                    Upload all required documents (PDF, JPG, PNG, max 5MB each) and your passport size photo (max 2MB).
                                                 </div>
+                                                
+                                                <!-- Required Documents Section -->
+                                                <h5 class="fw-semibold mb-3">Required Documents</h5>
+                                                <div class="row g-3 mb-4">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="resume">Resume/CV</label>
+                                                        <input type="file" id="resume" name="resume" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                        <div class="invalid-feedback">Please upload your resume (PDF, JPG, PNG, max 5MB)</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="identity_proof">Identity Proof (Aadhar/PAN/Passport)</label>
+                                                        <input type="file" id="identity_proof" name="identity_proof" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                        <div class="invalid-feedback">Please upload identity proof (PDF, JPG, PNG, max 5MB)</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="address_proof">Address Proof</label>
+                                                        <input type="file" id="address_proof" name="address_proof" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                        <div class="invalid-feedback">Please upload address proof (PDF, JPG, PNG, max 5MB)</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="educational_certificates">Educational Certificates</label>
+                                                        <input type="file" id="educational_certificates" name="educational_certificates" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                        <div class="invalid-feedback">Please upload educational certificates (PDF, JPG, PNG, max 5MB)</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="experience_letters">Experience Letters</label>
+                                                        <input type="file" id="experience_letters" name="experience_letters" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                        <div class="invalid-feedback">Please upload experience letters (PDF, JPG, PNG, max 5MB)</div>
+                                                    </div>
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="bank_details">Bank Account Details</label>
+                                                        <input type="file" id="bank_details" name="bank_details" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
+                                                        <div class="invalid-feedback">Please upload bank details (PDF, JPG, PNG, max 5MB)</div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Passport Photo Section -->
+                                                <hr>
+                                                <h5 class="fw-semibold mb-3">Passport Size Photo</h5>
+                                                <div class="row g-3 mb-4">
+                                                    <div class="col-md-6">
+                                                        <label class="form-label required" for="passportPhotoInput">Upload Photo</label>
+                                                        <input type="file" id="passportPhotoInput" name="passport_photo" accept="image/jpeg,image/png" class="form-control" required>
+                                                        <div class="invalid-feedback">Please upload a valid passport photo (JPG, PNG, max 2MB)</div>
+                                                        <small class="text-muted">Upload a recent passport size photo (JPG, PNG, max 2MB)</small>
+                                                    </div>
+                                                    <div class="col-md-6" id="p_photo" style="display: none;">
+                                                        <div class="photo-upload-container">
+                                                            <label class="form-label d-block">Preview</label>
+                                                            <div class="position-relative d-inline-block">
+                                                                <img id="passportPhotoPreview" src="{{ asset('images/default-avatar.png') }}" alt="Passport Preview" class="img-thumbnail" style="max-height: 150px;">
+                                                                <button type="button" id="removePhotoButton" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" style="display:none;">×</button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Additional Documents Section -->
+                                                <hr>
+                                                <h5 class="fw-semibold mb-3">Additional Documents (Optional)</h5>
                                                 <div id="documentUploads">
                                                     <div class="row g-3 align-items-end mb-3 p-3 border rounded bg-light">
                                                         <div class="col-md-5">
-                                                            <label class="form-label required" for="document_name_1">Document Name</label>
-                                                            <input type="text" id="document_name_1" name="document_name[]" class="form-control" placeholder="e.g. Resume" required>
-                                                            <div class="invalid-feedback">Please enter a document name</div>
+                                                            <label class="form-label" for="document_name_1">Document Name</label>
+                                                            <input type="text" id="document_name_1" name="document_name[]" class="form-control" placeholder="e.g. Additional Certificate">
                                                         </div>
                                                         <div class="col-md-5">
-                                                            <label class="form-label required" for="document_file_1">Upload File</label>
-                                                            <input type="file" id="document_file_1" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
-                                                            <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
+                                                            <label class="form-label" for="document_file_1">Upload File</label>
+                                                            <input type="file" id="document_file_1" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                                                         </div>
                                                         <div class="col-md-2 d-flex align-items-end">
                                                             <button type="button" class="btn btn-outline-danger remove-document d-none">
@@ -1067,7 +1137,7 @@
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
                                                 <span class="fw-bold">6. Additional Information</span>
-                                                <span class="section-indicator">Section 6 of 8</span>
+                                                <span class="section-indicator">Section 6 of 7</span>
                                             </div>
                                             <div class="card-body">
                                                 <div class="row g-3">
@@ -1113,44 +1183,6 @@
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
                                                     <button type="button" class="btn btn-outline-secondary prev-section" data-prev="documents">Previous</button>
-                                                    <button type="button" class="btn btn-primary next-section" data-next="photo">Next Section</button>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Passport Size Photo Section -->
-                                    <div class="form-section" id="photo">
-                                        <div class="card mb-4">
-                                            <div class="card-header d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold">7. Passport Size Photo</span>
-                                                <span class="section-indicator">Section 7 of 8</span>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="alert alert-info mb-4">
-                                                    <i class="fas fa-info-circle me-2"></i>
-                                                    Upload a recent passport size photo (JPG, PNG, max 2MB).
-                                                </div>
-                                                <div class="row g-3">
-                                                    <div class="col-md-6">
-                                                        <label class="form-label required" for="passportPhotoInput">Upload Photo</label>
-                                                        <input type="file" id="passportPhotoInput" name="passport_photo" accept="image/jpeg,image/png" class="form-control" required>
-                                                        <div class="invalid-feedback">Please upload a valid passport photo (JPG, PNG, max 2MB)</div>
-                                                    </div>
-                                                    <div class="col-md-6 align-items-end" id="p_photo" style="display: none;">
-                                                        <div class="photo-upload-container">
-                                                            <label class="form-label d-block">Preview</label>
-                                                            <div class="position-relative d-inline-block">
-                                                                <img id="passportPhotoPreview" src="{{ asset('images/default-avatar.png') }}" alt="Passport Preview" class="img-thumbnail" style="max-height: 150px;">
-                                                                <button type="button" id="removePhotoButton" class="btn btn-sm btn-danger position-absolute top-0 end-0 m-1" style="display:none;">×</button>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                            <div class="card-footer">
-                                                <div class="d-flex justify-content-between">
-                                                    <button type="button" class="btn btn-outline-secondary prev-section" data-prev="additional-info">Previous</button>
                                                     <button type="button" class="btn btn-primary next-section" data-next="declaration">Next Section</button>
                                                 </div>
                                             </div>
@@ -1161,8 +1193,8 @@
                                     <div class="form-section" id="declaration">
                                         <div class="card mb-4">
                                             <div class="card-header d-flex justify-content-between align-items-center">
-                                                <span class="fw-bold">8. Declaration</span>
-                                                <span class="section-indicator">Section 8 of 8</span>
+                                                <span class="fw-bold">7. Declaration</span>
+                                                <span class="section-indicator">Section 7 of 7</span>
                                             </div>
                                             <div class="card-body">
                                                 <div class="alert alert-info mb-4">
@@ -1185,9 +1217,11 @@
                                                     <div class="col-md-12 mt-4">
                                                         <div class="form-check">
                                                             <input type="checkbox" id="agree_terms" name="agree_terms" class="form-check-input" required>
-                                                            <label class="form-check-label" for="agree_terms">
-                                                                I agree to the terms and conditions and confirm that all information provided is accurate.
-                                                            </label>
+                                                             <label class="form-check-label" for="agree_terms">
+    I agree to the 
+    <a href="/terms-and-conditions" target="_blank">terms and conditions</a> 
+    and confirm that all information provided is accurate.
+  </label>
                                                             <div class="invalid-feedback">You must agree to the terms and conditions</div>
                                                         </div>
                                                     </div>
@@ -1195,7 +1229,7 @@
                                             </div>
                                             <div class="card-footer">
                                                 <div class="d-flex justify-content-between">
-                                                    <button type="button" class="btn btn-outline-secondary prev-section" data-prev="photo">Previous</button>
+                                                    <button type="button" class="btn btn-outline-secondary prev-section" data-prev="additional-info">Previous</button>
                                                     <button type="submit" class="btn btn-success">
                                                         <i class="fas fa-check-circle me-2"></i> Submit & Preview
                                                     </button>
@@ -1212,6 +1246,7 @@
             </div>
         </div>
     </div>
+
     <!-- Scripts -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="{{ asset("vendors/select2/select2.min.js") }}"></script>
@@ -1222,10 +1257,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
         // Initialize variables
-        const sections = ['personal-info', 'contact-info', 'education', 'employment', 'documents', 'additional-info', 'photo', 'declaration'];
+        const sections = ['personal-info', 'contact-info', 'education', 'employment',  'additional-info', 'declaration'];
         let completedSections = [];
 
         // Mobile sidebar functionality
@@ -1235,63 +1270,63 @@
 
         // Toggle mobile sidebar
         if (mobileSidebarToggle) {
-            mobileSidebarToggle.addEventListener('click', function() {
-                sideNav.classList.toggle('show');
-                sidebarOverlay.classList.toggle('show');
-            });
+          mobileSidebarToggle.addEventListener('click', function() {
+            sideNav.classList.toggle('show');
+            sidebarOverlay.classList.toggle('show');
+          });
         }
 
         // Close sidebar when clicking overlay
         if (sidebarOverlay) {
-            sidebarOverlay.addEventListener('click', function() {
-                sideNav.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-            });
+          sidebarOverlay.addEventListener('click', function() {
+            sideNav.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+          });
         }
 
         // Close sidebar when clicking on a nav link (mobile)
         document.querySelectorAll('.form-tabs .nav-link').forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 991.98) {
-                    sideNav.classList.remove('show');
-                    sidebarOverlay.classList.remove('show');
-                }
-            });
+          link.addEventListener('click', function() {
+            if (window.innerWidth <= 991.98) {
+              sideNav.classList.remove('show');
+              sidebarOverlay.classList.remove('show');
+            }
+          });
         });
 
         // Close sidebar on window resize if desktop
         window.addEventListener('resize', function() {
-            if (window.innerWidth > 991.98) {
-                sideNav.classList.remove('show');
-                sidebarOverlay.classList.remove('show');
-            }
+          if (window.innerWidth > 991.98) {
+            sideNav.classList.remove('show');
+            sidebarOverlay.classList.remove('show');
+          }
         });
-        
+
         // Function to update progress bar
         function updateProgress() {
-            const totalSections = sections.length;
-            const completedCount = completedSections.length;
-            const progressPercentage = Math.round((completedCount / totalSections) * 100);
-            
-            document.getElementById('progress-bar').style.width = progressPercentage + '%';
-            document.getElementById('progress-percentage').textContent = progressPercentage + '%';
+          const totalSections = sections.length;
+          const completedCount = completedSections.length;
+          const progressPercentage = Math.round((completedCount / totalSections) * 100);
+
+          document.getElementById('progress-bar').style.width = progressPercentage + '%';
+          document.getElementById('progress-percentage').textContent = progressPercentage + '%';
         }
-        
+
         // Function to mark section as completed
         function markSectionCompleted(sectionId) {
-            if (!completedSections.includes(sectionId)) {
-                completedSections.push(sectionId);
-                
-                // Update tab status
-                const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
-                if (tabLink) {
-                    tabLink.classList.add('completed');
-                }
-                
-                updateProgress();
+          if (!completedSections.includes(sectionId)) {
+            completedSections.push(sectionId);
+
+            // Update tab status
+            const tabLink = document.querySelector(`.nav-link[data-section="${sectionId}"]`);
+            if (tabLink) {
+              tabLink.classList.add('completed');
             }
+
+            updateProgress();
+          }
         }
-        
+
         // Function to validate section
         function validateSection(sectionId) {
             const section = document.getElementById(sectionId);
@@ -1324,7 +1359,13 @@
                         input.classList.remove('is-invalid');
                     }
                 } else if (input.type === 'file') {
-                    // Skip file validation for now as it's handled separately
+                    // For file inputs, check if file is selected
+                    if (!input.files || input.files.length === 0) {
+                        isValid = false;
+                        input.classList.add('is-invalid');
+                    } else {
+                        input.classList.remove('is-invalid');
+                    }
                 } else {
                     // For other inputs, check if they have a value and match their pattern if any
                     if (!input.value.trim()) {
@@ -1339,102 +1380,118 @@
                 }
             });
             
+            // Special validation for employment section
+            if (sectionId === 'employment') {
+                const totalExperience = parseFloat(document.getElementById('experience').value) || 0;
+                if (totalExperience > 0) {
+                    const totalPreviousExperience = calculateTotalPreviousExperience();
+                    if (Math.abs(totalExperience - totalPreviousExperience) > 0.1) {
+                        isValid = false;
+                        Swal.fire({
+                            title: 'Experience Mismatch',
+                            text: `Total experience (${totalExperience} years) must match the sum of previous employment experience (${totalPreviousExperience} years).`,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#673ab7'
+                        });
+                    }
+                }
+            }
+            
             return isValid;
         }
-        
+
         // Function to switch sections
         function switchSection(fromSection, toSection) {
-            // Hide current section
-            document.getElementById(fromSection).classList.remove('active');
-            
-            // Show target section
-            document.getElementById(toSection).classList.add('active');
-            
-            // Update active tab
-            document.querySelector(`.nav-link[data-section="${fromSection}"]`).classList.remove('active');
-            document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.add('active');
-            document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.remove('disabled');
-            
-            // Scroll to top
-            window.scrollTo(0, 0);
+          // Hide current section
+          document.getElementById(fromSection).classList.remove('active');
+
+          // Show target section
+          document.getElementById(toSection).classList.add('active');
+
+          // Update active tab
+          document.querySelector(`.nav-link[data-section="${fromSection}"]`).classList.remove('active');
+          document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.add('active');
+          document.querySelector(`.nav-link[data-section="${toSection}"]`).classList.remove('disabled');
+
+          // Scroll to top
+          window.scrollTo(0, 0);
         }
-        
+
         // Next section button click handler
         document.querySelectorAll('.next-section').forEach(button => {
-            button.addEventListener('click', function() {
-                const currentSection = this.closest('.form-section').id;
-                const nextSection = this.getAttribute('data-next');
-                
-                if (validateSection(currentSection)) {
-                    markSectionCompleted(currentSection);
-                    switchSection(currentSection, nextSection);
-                } else {
-                    Swal.fire({
-                        title: 'Validation Error',
-                        text: 'Please fill in all required fields correctly before proceeding.',
-                        icon: 'error',
-                        confirmButtonText: 'OK',
-                        confirmButtonColor: '#673ab7'
-                    });
-                }
-            });
+          button.addEventListener('click', function() {
+            const currentSection = this.closest('.form-section').id;
+            const nextSection = this.getAttribute('data-next');
+
+            if (validateSection(currentSection)) {
+              markSectionCompleted(currentSection);
+              switchSection(currentSection, nextSection);
+            } else {
+              Swal.fire({
+                title: 'Validation Error',
+                text: 'Please fill in all required fields correctly before proceeding.',
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#673ab7'
+              });
+            }
+          });
         });
-        
+
         // Previous section button click handler
         document.querySelectorAll('.prev-section').forEach(button => {
-            button.addEventListener('click', function() {
-                const currentSection = this.closest('.form-section').id;
-                const prevSection = this.getAttribute('data-prev');
-                
-                switchSection(currentSection, prevSection);
-            });
+          button.addEventListener('click', function() {
+            const currentSection = this.closest('.form-section').id;
+            const prevSection = this.getAttribute('data-prev');
+
+            switchSection(currentSection, prevSection);
+          });
         });
-        
+
         // Tab click handler
         document.querySelectorAll('.form-tabs .nav-link').forEach(tab => {
-            tab.addEventListener('click', function(e) {
-                if (!this.classList.contains('disabled')) {
-                    const targetSection = this.getAttribute('data-section');
-                    const currentSection = document.querySelector('.form-section.active').id;
-                    
-                    switchSection(currentSection, targetSection);
-                }
-            });
+          tab.addEventListener('click', function(e) {
+            if (!this.classList.contains('disabled')) {
+              const targetSection = this.getAttribute('data-section');
+              const currentSection = document.querySelector('.form-section.active').id;
+
+              switchSection(currentSection, targetSection);
+            }
+          });
         });
-        
+
         // Same as permanent address checkbox
         document.getElementById('sameAsPermanent').addEventListener('change', function() {
-            const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
-            fields.forEach(field => {
-                const perm = document.getElementById(`perm_${field}`);
-                const curr = document.getElementById(`curr_${field}`);
-                if (this.checked) {
-                    curr.value = perm.value;
-                    curr.readOnly = true;
-                    curr.classList.add('bg-light');
-                } else {
-                    curr.readOnly = false;
-                    curr.classList.remove('bg-light');
-                }
-            });
+          const fields = ['house_no', 'street', 'city', 'state', 'country', 'zip'];
+          fields.forEach(field => {
+            const perm = document.getElementById(`perm_${field}`);
+            const curr = document.getElementById(`curr_${field}`);
+            if (this.checked) {
+              curr.value = perm.value;
+              curr.readOnly = true;
+              curr.classList.add('bg-light');
+            } else {
+              curr.readOnly = false;
+              curr.classList.remove('bg-light');
+            }
+          });
         });
-        
+
         // Add more documents button
         document.getElementById('addMoreDocuments').addEventListener('click', function() {
-            const wrapper = document.getElementById('documentUploads');
-            const documentCount = wrapper.children.length + 1;
-            const row = document.createElement('div');
-            row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
-            row.innerHTML = `
+          const wrapper = document.getElementById('documentUploads');
+          const documentCount = wrapper.children.length + 1;
+          const row = document.createElement('div');
+          row.className = 'row g-3 align-items-end mb-3 p-3 border rounded bg-light';
+          row.innerHTML = `
                 <div class="col-md-5">
-                    <label class="form-label required" for="document_name_${documentCount}">Document Name</label>
-                    <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" placeholder="Document Name" required>
-                    <div class="invalid-feedback">Please enter a document name</div>
+                    <label class="form-label" for="document_name_${documentCount}">Document Name</label>
+                    <input type="text" id="document_name_${documentCount}" name="document_name[]" class="form-control" placeholder="Document Name">
                 </div>
                 <div class="col-md-5">
-                    <label class="form-label required" for="document_file_${documentCount}">Upload File</label>
-                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png" required>
-                    <div class="invalid-feedback">Please upload a valid document (PDF, JPG, PNG, max 5MB)</div>
+                    <label class="form-label" for="document_file_${documentCount}">Upload File</label>
+                    <input type="file" id="document_file_${documentCount}" name="document_file[]" class="form-control" accept=".pdf,.jpg,.jpeg,.png">
                 </div>
                 <div class="col-md-2 d-flex align-items-end">
                     <button type="button" class="btn btn-outline-danger remove-document">
@@ -1442,37 +1499,38 @@
                     </button>
                 </div>
             `;
-            wrapper.appendChild(row);
-            
-            // Show all remove buttons if there's more than one document
-            if (wrapper.children.length > 1) {
-                wrapper.querySelectorAll('.remove-document').forEach(btn => {
-                    btn.classList.remove('d-none');
-                });
-            }
+          wrapper.appendChild(row);
+
+          // Show all remove buttons if there's more than one document
+          if (wrapper.children.length > 1) {
+            wrapper.querySelectorAll('.remove-document').forEach(btn => {
+              btn.classList.remove('d-none');
+            });
+          }
         });
-        
+
         // Remove document field
         document.getElementById('documentUploads').addEventListener('click', function(e) {
-            if (e.target.classList.contains('remove-document') || e.target.closest('.remove-document')) {
-                const button = e.target.classList.contains('remove-document') ? e.target : e.target.closest('.remove-document');
-                const row = button.closest('.row');
-                row.remove();
-                
-                // Hide remove button if only one document remains
-                const wrapper = document.getElementById('documentUploads');
-                if (wrapper.children.length === 1) {
-                    wrapper.querySelector('.remove-document').classList.add('d-none');
-                }
+          if (e.target.classList.contains('remove-document') || e.target.closest('.remove-document')) {
+            const button = e.target.classList.contains('remove-document') ? e.target : e.target.closest(
+              '.remove-document');
+            const row = button.closest('.row');
+            row.remove();
+
+            // Hide remove button if only one document remains
+            const wrapper = document.getElementById('documentUploads');
+            if (wrapper.children.length === 1) {
+              wrapper.querySelector('.remove-document').classList.add('d-none');
             }
+          }
         });
-        
+
         // Passport photo preview
         const photoInput = document.getElementById('passportPhotoInput');
         const photoPreview = document.getElementById('passportPhotoPreview');
         const removeButton = document.getElementById('removePhotoButton');
         const ppppp = document.getElementById('p_photo');
-        
+
         photoInput.addEventListener('change', function(event) {
             const file = event.target.files[0];
             if (file && file.type.startsWith('image/')) {
@@ -1493,54 +1551,105 @@
                 reader.onload = function(e) {
                     photoPreview.src = e.target.result;
                     removeButton.style.display = 'inline-block';
-                    ppppp.style.display = "block" 
-                };
+                    ppppp.style.display = "block"
+                 };
                 reader.readAsDataURL(file);
             } else {
                 resetPassportPhoto();
             }
         });
-        
+
         removeButton.addEventListener('click', function() {
-            resetPassportPhoto();
+          resetPassportPhoto();
         });
-        
+
         function resetPassportPhoto() {
             photoPreview.src = '{{ asset('images/default-avatar.png') }}';
             photoInput.value = '';
             removeButton.style.display = 'none';
+            ppppp.style.display = 'none';
         }
-        
+
         // Show/hide reason for leaving based on employment status
         document.querySelectorAll('input[name="currently_employed"]').forEach(radio => {
-            radio.addEventListener('change', function() {
-                const reasonContainer = document.getElementById('reason-for-leaving-container');
-                const reasonInput = document.getElementById('reason_for_leaving');
-                
-                if (this.value === 'Yes') {
-                    reasonContainer.style.display = 'block';
-                    reasonInput.required = true;
-                } else {
-                    reasonContainer.style.display = 'none';
-                    reasonInput.required = false;
-                    reasonInput.value = '';
-                }
-            });
+          radio.addEventListener('change', function() {
+            const reasonContainer = document.getElementById('reason-for-leaving-container');
+            const reasonInput = document.getElementById('reason_for_leaving');
+
+            if (this.value === 'Yes') {
+              reasonContainer.style.display = 'block';
+              reasonInput.required = true;
+            } else {
+              reasonContainer.style.display = 'none';
+              reasonInput.required = false;
+              reasonInput.value = '';
+            }
+          });
         });
+
+        // Experience validation functionality
+        const experienceInput = document.getElementById('experience');
+        const employmentEntriesSection = document.getElementById('employment-entries');
+        const experienceSummary = document.getElementById('experience-summary');
+        const experienceBreakdown = document.getElementById('experience-breakdown');
+        
+        experienceInput.addEventListener('input', function() {
+            const totalExperience = parseFloat(this.value) || 0;
+            
+            if (totalExperience > 0) {
+                employmentEntriesSection.style.display = 'block';
+                // Add first employment entry if none exists
+                if (document.getElementById('employment-entries-container').children.length === 0) {
+                    addEmploymentEntry();
+                }
+                updateExperienceSummary();
+            } else {
+                employmentEntriesSection.style.display = 'none';
+                document.getElementById('employment-entries-container').innerHTML = '';
+                experienceSummary.style.display = 'none';
+            }
+        });
+
+        function calculateTotalPreviousExperience() {
+            let total = 0;
+            const experienceInputs = document.querySelectorAll('input[name*="[experience]"]');
+            experienceInputs.forEach(input => {
+                total += parseFloat(input.value) || 0;
+            });
+            return total;
+        }
+
+        function updateExperienceSummary() {
+            const totalRequired = parseFloat(experienceInput.value) || 0;
+            const totalEntered = calculateTotalPreviousExperience();
+            const remaining = totalRequired - totalEntered;
+            
+            if (totalRequired > 0) {
+                experienceSummary.style.display = 'block';
+                experienceBreakdown.innerHTML = `
+                    <div>Total Required: ${totalRequired} years</div>
+                    <div>Total Entered: ${totalEntered} years</div>
+                    <div class="${remaining > 0.1 ? 'text-warning' : remaining < -0.1 ? 'text-danger' : 'text-success'}">
+                        ${remaining > 0.1 ? `Remaining: ${remaining.toFixed(1)} years` : 
+                          remaining < -0.1 ? `Excess: ${Math.abs(remaining).toFixed(1)} years` : 
+                          'Experience matches!'}
+                    </div>
+                `;
+            }
+        }
         
         // Initialize Select2 for enhanced select boxes
         if ($.fn.select2) {
-            $('.custom-select').select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                dropdownParent: $('#onboarding-form'),
-                minimumResultsForSearch: 6
-            });
+          $('.custom-select').select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $('#onboarding-form'),
+            minimumResultsForSearch: 6
+          });
         }
-    });
+      });
 
     let educationCount = 0;
-
     function addEducationEntry() {
         educationCount++;
         const container = document.getElementById('education-entries');
@@ -1585,27 +1694,90 @@
                 </div>
             </div>`;
         container.insertAdjacentHTML('beforeend', entryHTML);
-        
+
         // Initialize Select2 for the newly added select
         if ($.fn.select2) {
-            $(`#education_qualification_${educationCount}`).select2({
-                theme: 'bootstrap4',
-                width: '100%',
-                dropdownParent: $(`#education-entry-${educationCount}`),
-                minimumResultsForSearch: 6
-            });
+          $(`#education_qualification_${educationCount}`).select2({
+            theme: 'bootstrap4',
+            width: '100%',
+            dropdownParent: $(`#education-entry-${educationCount}`),
+            minimumResultsForSearch: 6
+          });
         }
     }
 
-
-
-    function removeEducationEntry(id) {
+      function removeEducationEntry(id) {
         const entry = document.getElementById(`education-entry-${id}`);
         if (entry) {
-            // Use SweetAlert2 for confirmation
+          // Use SweetAlert2 for confirmation
+          Swal.fire({
+            title: 'Are you sure?',
+            text: "You are about to remove this education entry.",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, remove it!'
+          }).then((result) => {
+            if (result.isConfirmed) {
+              entry.remove();
+            }
+          });
+        }
+      }
+
+      // Add initial entry by default
+      window.onload = function() {
+        addEducationEntry();
+      };
+
+    let employmentIndex = 0;
+    function addEmploymentEntry() {
+        const html = `
+            <div class="card-body row g-3 mb-3 border p-3 bg-light rounded" id="employment-entry-${employmentIndex}">
+                <div class="col-md-4">
+                    <label class="form-label required">Previous Employer</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][previous_employer]" required>
+                    <div class="invalid-feedback">Please enter your previous employer</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required">Designation</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][designation]" required>
+                    <div class="invalid-feedback">Please enter your designation</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required">Department</label>
+                    <input type="text" class="form-control" name="employment[${employmentIndex}][department]" required>
+                    <div class="invalid-feedback">Please enter your department</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required">Date of Joining</label>
+                    <input type="date" class="form-control" name="employment[${employmentIndex}][date_of_joining]" min="1980-01-01" required>
+                    <div class="invalid-feedback">Please enter a valid joining date</div>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label required">Experience (Years)</label>
+                    <input type="number" class="form-control experience-input" name="employment[${employmentIndex}][experience]" step="0.1" min="0" max="50" required onchange="updateExperienceSummary()">
+                    <div class="invalid-feedback">Please enter valid years (0–50)</div>
+                </div>
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" class="btn btn-danger" onclick="removeEmploymentEntry(${employmentIndex})">
+                        <i class="fas fa-trash-alt me-2"></i> Remove
+                    </button>
+                </div>
+            </div>
+        `;
+        document.getElementById('employment-entries-container').insertAdjacentHTML('beforeend', html);
+        employmentIndex++;
+        updateExperienceSummary();
+    }
+
+      function removeEmploymentEntry(index) {
+        const entry = document.getElementById(`employment-entry-${index}`);
+        if (entry) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: "You are about to remove this education entry.",
+                text: "You are about to remove this employment entry.",
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
@@ -1614,87 +1786,51 @@
             }).then((result) => {
                 if (result.isConfirmed) {
                     entry.remove();
+                    updateExperienceSummary();
                 }
             });
         }
     }
 
-    // Add initial entry by default
-    window.onload = function() {
-        addEducationEntry();
-    };
-
-    let employmentIndex = 0;
-
-    function addEmploymentEntry() {
-        const today = new Date().toISOString().split('T')[0];
-
-        const html = `
-            <div class="card-body row g-3 mb-3 border p-3 bg-light rounded" id="employment-entry-${employmentIndex}">
-                <div class="col-md-4">
-                    <label class="form-label required">Previous Employer</label>
-                    <input type="text" class="form-control" name="employment[${employmentIndex}][previous_employer]" required>
-                    <div class="invalid-feedback">Please enter your previous employer</div>
+    function updateExperienceSummary() {
+        const totalRequired = parseFloat(document.getElementById('experience').value) || 0;
+        let totalEntered = 0;
+        const experienceInputs = document.querySelectorAll('input[name*="[experience]"]');
+        experienceInputs.forEach(input => {
+            totalEntered += parseFloat(input.value) || 0;
+        });
+        
+        const remaining = totalRequired - totalEntered;
+        const experienceSummary = document.getElementById('experience-summary');
+        const experienceBreakdown = document.getElementById('experience-breakdown');
+        
+        if (totalRequired > 0) {
+            experienceSummary.style.display = 'block';
+            experienceBreakdown.innerHTML = `
+                <div>Total Required: ${totalRequired} years</div>
+                <div>Total Entered: ${totalEntered} years</div>
+                <div class="${remaining > 0.1 ? 'text-warning' : remaining < -0.1 ? 'text-danger' : 'text-success'}">
+                    ${remaining > 0.1 ? `Remaining: ${remaining.toFixed(1)} years` : 
+                      remaining < -0.1 ? `Excess: ${Math.abs(remaining).toFixed(1)} years` : 
+                      'Experience matches!'}
                 </div>
-
-                <div class="col-md-4">
-                    <label class="form-label required">Designation</label>
-                    <input type="text" class="form-control" name="employment[${employmentIndex}][designation]" required>
-                    <div class="invalid-feedback">Please enter your designation</div>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label required">Department</label>
-                    <input type="text" class="form-control" name="employment[${employmentIndex}][department]" required>
-                    <div class="invalid-feedback">Please enter your department</div>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label required">Date of Joining</label>
-                    <input type="date" class="form-control" name="employment[${employmentIndex}][date_of_joining]" min="1980-01-01" required>
-                    <div class="invalid-feedback">Please enter a valid joining date</div>
-                </div>
-
-                <div class="col-md-4">
-                    <label class="form-label required">Experience</label>
-                    <input type="number" class="form-control" name="employment[${employmentIndex}][experience]" step="0.1" min="0" max="50" required>
-                    <div class="invalid-feedback">Please enter valid years (0–50)</div>
-                </div>
-
-                <div class="col-md-4 d-flex align-items-end">
-                    <button type="button" class="btn btn-danger" onclick="removeEmploymentEntry(${employmentIndex})">
-                        <i class="fas fa-trash-alt me-2"></i> Remove
-                    </button>
-                </div>
-            </div>
-        `;
-
-        document.getElementById('employment-entries').insertAdjacentHTML('beforeend', html);
-        employmentIndex++;
+            `;
+        }
     }
-
-    function removeEmploymentEntry(index) {
-        const entry = document.getElementById(`employment-entry-${index}`);
-        if (entry) entry.remove();
-    }
-
 </script>
 
 <script>
-    // Add this at the end of your existing script
+    // Modified form data saving - excluding file inputs to prevent serialization errors
     document.addEventListener('DOMContentLoaded', function() {
-        // Function to save form data to sessionStorage
+        // Function to save form data to sessionStorage (excluding files)
         function saveFormData() {
             const formData = {};
             const form = document.getElementById('onboarding-form');
             
-            // Get all input elements
-            const inputs = form.querySelectorAll('input, select, textarea');
+            // Get all input elements except file inputs
+            const inputs = form.querySelectorAll('input:not([type="file"]), select, textarea');
             
             inputs.forEach(input => {
-                // Skip file inputs
-                if (input.type === 'file') return;
-                
                 // Handle radio buttons and checkboxes
                 if (input.type === 'radio' || input.type === 'checkbox') {
                     if (input.checked) {
@@ -1717,9 +1853,9 @@
                 const formData = JSON.parse(savedData);
                 const form = document.getElementById('onboarding-form');
                 
-                // Set values for all inputs
+                // Set values for all inputs except file inputs
                 Object.keys(formData).forEach(name => {
-                    const input = form.querySelector(`[name="${name}"]`);
+                    const input = form.querySelector(`[name="${name}"]:not([type="file"])`);
                     
                     if (input) {
                         if (input.type === 'radio' || input.type === 'checkbox') {
@@ -1746,23 +1882,29 @@
         // Load form data when page loads
         window.addEventListener('DOMContentLoaded', loadFormData);
         
-        // Save form data before submitting
-        document.getElementById('onboarding-form').addEventListener('submit', saveFormData);
+        // Save form data before submitting (excluding files)
+        document.getElementById('onboarding-form').addEventListener('submit', function() {
+            saveFormData();
+            // Clear session storage after successful submission
+            sessionStorage.removeItem('employeeFormData');
+        });
     });
 
     const dobInput = document.getElementById('dob');
-     const dojInput = document.getElementById('date_of_joining');
+    const dojInput = document.getElementById('date_of_joining');
 
-    // Optional: You can auto-focus it when the page loads or on a specific user action
-    dobInput.addEventListener('click', function () {
+      // Optional: You can auto-focus it when the page loads or on a specific user action
+      dobInput.addEventListener('click', function() {
         this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
-    });
+      });
 
-     dojInput.addEventListener('click', function () {
-        this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
-    });
-
+    if (dojInput) {
+        dojInput.addEventListener('click', function () {
+            this.showPicker && this.showPicker(); // For browsers that support it (like Chrome)
+        });
+    }
 </script>
 
-</body>
+  </body>
+
 </html>

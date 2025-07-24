@@ -2,12 +2,14 @@
   use App\Models\Project;
 
   $selectedProject = null;
-
+  $selectedProjectId = 0;
   if (session()->has("project_id")) {
       $selectedProject = Project::find(session("project_id"));
+      $selectedProjectId = $selectedProject->id;
   }
   if (!$selectedProject) {
       $selectedProject = Project::first();
+      $selectedProjectId = $selectedProject->id;
   }
   $projectType = $selectedProject ? $selectedProject->project_type : null;
 @endphp
@@ -15,6 +17,7 @@
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
   <ul class="nav" style="max-height: 80%;">
     <li class="nav-item nav-category">Project</li>
+
     <li class="nav-item">
       <a class="nav-link" href="{{ url("/dashboard") }}">
         <i class="mdi mdi-grid-large menu-icon"></i>
@@ -139,13 +142,13 @@
       </a>
     </li>
     @if (auth()->user()->role == 0)
-  <li class="nav-item">
-    <a class="nav-link" href="{{ route("backup.index") }}">
-      <i class="menu-icon mdi mdi-backup-restore"></i>
-      <span class="menu-title">Backup</span>
-    </a>
-  </li>
-@endif
+      <li class="nav-item">
+        <a class="nav-link" href="{{ route("backup.index") }}">
+          <i class="menu-icon mdi mdi-backup-restore"></i>
+          <span class="menu-title">Backup</span>
+        </a>
+      </li>
+    @endif
     <!-- <li class="nav-item nav-category">Help</li> -->
   </ul>
 </nav>

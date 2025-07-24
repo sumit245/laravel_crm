@@ -44,6 +44,11 @@ class StaffController extends Controller
         return view('staff.index', compact('staff'));
     }
 
+    public function import()
+    {
+        return null;
+    }
+
     /**
      * Show the form for creating a new resource.
      */
@@ -61,7 +66,7 @@ class StaffController extends Controller
      */
     public function store(Request $request)
     {
-        \Log::info('Received request staff data:', $request->all());
+        Log::info('Received request staff data:', $request->all());
         // Validate the incoming data without requiring a username
         $validated = $request->validate([
             'manager_id' => 'nullable|exists:users,id',
@@ -221,11 +226,11 @@ class StaffController extends Controller
         //
         $staff = User::findOrFail($id);
         $projects = Project::all();
-        $projectEngineers = User::where('role',2)->get();
+        $projectEngineers = User::where('role', 2)->get();
         $usercategory = DB::table('user_categories')
-                ->select(DB::raw('MIN(id) as id'), 'category_code')
-                ->groupBy('category_code')
-                ->get();
+            ->select(DB::raw('MIN(id) as id'), 'category_code')
+            ->groupBy('category_code')
+            ->get();
 
         return view('staff.edit', compact('staff', 'projects', 'usercategory', 'projectEngineers')); // Form to edit staff
     }
@@ -293,13 +298,13 @@ class StaffController extends Controller
 
         try {
             if (!$request->hasFile('profile_picture') || !$request->file('profile_picture')->isValid()) {
-                \Log::error('Invalid file upload attempt');
+                Log::error('Invalid file upload attempt');
                 return redirect()->back()->with('error', 'Invalid file upload. Please try again.');
             }
 
             $file = $request->file('profile_picture');
 
-            \Log::info('File upload attempt', [
+            Log::info('File upload attempt', [
                 'original_name' => $file->getClientOriginalName(),
                 'mime_type' => $file->getMimeType(),
                 'size' => $file->getSize()
@@ -316,7 +321,7 @@ class StaffController extends Controller
 
             $imageUrl = Storage::disk('s3')->url($imagePath);
 
-            \Log::info('Profile picture uploaded to S3', [
+            Log::info('Profile picture uploaded to S3', [
                 'user_id' => $user->id,
                 'path' => $imagePath,
                 'url' => $imageUrl
@@ -332,7 +337,7 @@ class StaffController extends Controller
 
             return redirect()->back()->with('success', 'Profile picture updated successfully!');
         } catch (\Exception $e) {
-            \Log::error('Profile picture update error: ' . $e->getMessage(), [
+            Log::error('Profile picture update error: ' . $e->getMessage(), [
                 'exception' => $e,
                 'trace' => $e->getTraceAsString()
             ]);
@@ -396,7 +401,7 @@ class StaffController extends Controller
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
 
-    public function vendorData($id)
+   public function vendorData($id)
     {
         $managerid = $id;
 
