@@ -78,5 +78,6 @@ class Streetlight extends Model
     public function tasks()
     {
         return $this->hasMany(StreetlightTask::class, 'site_id');
+        // Modify the method which should contain only task per site id
     }
 }

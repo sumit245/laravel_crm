@@ -5,10 +5,12 @@ namespace App\Http\Controllers;
 use App\Imports\SiteImport;
 use App\Imports\StreetlightImport;
 use App\Models\City;
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Site;
 use App\Models\State;
 use App\Models\Streetlight;
+use App\Models\StreetlightTask;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
@@ -161,24 +163,66 @@ class SiteController extends Controller
      */
     public function show(string $id, Request $request)
     {
-        // dd('Show method hit');
-        $projectId = $request->query('project_id');
+        $projectType = $request->query('project_type');
 
-        if ($projectId == 11) {
-            $streetlight = Streetlight::findOrFail($id);
-            $states = $streetlight->state;
-            $districts = $streetlight->district;
+        if ($projectType == 1) {
+            // Step 1. Find the streetlight that will return id, district, state, block, panchayat, ward, number_of_surveyed_poles and number_of_installed_poles 
+            $site = Streetlight::with('streetlightTasks')->findOrFail($id);
 
-            return view('sites.show', compact('streetlight', 'states', 'districts', 'projectId'));
+            // Step 2. Use the id of streetlight to find streetlight_task allotted corresponding to the site by column site_id
+            // Return engineer_id, vendor_id, manager_id, start_date, end_date, billed with names via eager loading
+
+            $streetlightTask = StreetlightTask::with(['engineer', 'vendor', 'manager'])
+                ->where('site_id', $site->id)
+                ->first();
+
+            // Step 3: Use the id of streetlight_task to find streelight_poles corresponding to task_id
+            // Group poles according to ward_name so that frontend can filter poles specific to a ward
+
+            $poles = Pole::where('task_id', $streetlightTask->id ?? null)
+                ->get();
+            // ->groupBy('ward_name');
+
+            Log::info($poles);
+
+            // Prepare readable engineer, vendor, manager names
+            $engineerName = optional($streetlightTask?->engineer)->firstName . " " . optional($streetlightTask?->engineer)->lastName ?? 'N/A';
+
+            $vendorName   = optional($streetlightTask?->vendor)->name ?? 'N/A';
+            $managerName  = optional($streetlightTask?->manager)->firstName . " " . optional($streetlightTask?->manager)->lastName ?? 'N/A';
+
+            // Prepare state and district names if you have relationships, else keep as stored
+            $stateName    = $site->state;
+            $districtName = $site->district;
+
+
+
+            // Return to view with all required data
+            return view('sites.show', compact(
+                'site',
+                'streetlightTask',
+                'poles',
+                'engineerName',
+                'vendorName',
+                'managerName',
+                'stateName',
+                'districtName',
+                'projectType'
+            ));
         }
-        $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])->findOrFail($id);
+
+        // For non-streetlight projects (default site)
+        $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])
+            ->findOrFail($id);
+
         $states    = State::all();
         $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
         $projects  = Project::all();
         $users     = User::all(); // For vendor and engineer names
-        Log::info($site);
-        return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectId'));
+
+        return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectType'));
     }
+
 
     public function search(Request $request)
     {
@@ -220,7 +264,7 @@ class SiteController extends Controller
         }
 
         $site = Site::findOrFail($id);
-        return view('sites.edit', compact('site', 'projectId' ));
+        return view('sites.edit', compact('site', 'projectId'));
     }
 
     public function update(Request $request, string $id)

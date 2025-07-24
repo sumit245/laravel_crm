@@ -1,12 +1,11 @@
 @extends("layouts.main")
-
 @section("content")
   <div class="container-fluid p-0">
     <div class="row g-0">
+
       <!-- Vertical Tab Navigation -->
       <div class="col-md-3 col-lg-2 bg-light" style="min-height: calc(100vh - 60px);">
         <div class="settings-sidebar">
-
           <div class="nav flex-column nav-pills" id="v-pills-tab" role="tablist" aria-orientation="vertical">
             <div class="p-3">
               <h5 class="fw-bold mb-0">Settings</h5>
@@ -38,79 +37,70 @@
       <!-- Tab Content Area -->
       <div class="col-md-9 col-lg-10">
         <div class="tab-content m-3 p-3" id="v-pills-tabContent">
-
-          <!-- Vehicle Settings Tab -->
-          <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel"
-            aria-labelledby="v-pills-vehicle-tab">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0"><i class="bi bi-car-front me-2"></i>Vehicle Settings</h4>
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
-                <i class="mdi mdi-plus-circle me-1"></i> Add Vehicle
-              </button>
-            </div>
-
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <x-data-table id="vehicleTable" class="table table-bordered table-striped table-sm display nowrap" style="width:100%">
-  <x-slot:thead class="table-light">
-    <tr>
-      <th>Vehicle Name</th>
-      <th>Category</th>
-      <th>Sub Category</th>
-      <th>Rate/KM</th>
-      <th>Actions</th>
-    </tr>
-  </x-slot:thead>
-
-  <x-slot:tbody>
-    @foreach ($vehicles as $vehicle)
-      <tr>
-        <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
-        <td>{{ $vehicle->category ?? "N/A" }}</td>
-        <td>{{ $vehicle->sub_category }}</td>
-        <td>{{ $vehicle->rate }}</td>
-        <td>
-          <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
-            <i class="mdi mdi-pencil"></i>
-          </a>
-          <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
-              onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
-              <i class="mdi mdi-delete"></i>
-            </button>
-          </form>
-        </td>
-      </tr>
-    @endforeach
-  </x-slot:tbody>
-</x-data-table>
-
-
-
-                </div>
-              </div>
-            </div>
-          </div>
+                  <!-- Vehicle Settings Tab -->
+                  <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel"
+                    aria-labelledby="v-pills-vehicle-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <h4 class="mb-0"><i class="bi bi-car-front me-2"></i>Vehicle Settings</h4>
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        <i class="mdi mdi-plus-circle me-1"></i> Add Vehicle
+                      </button>
+                    </div>
+                    <div class="card shadow-sm">
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <x-data-table id="vehicleTable" class="table table-bordered table-striped table-sm display nowrap" style="width:100%">
+          <x-slot:thead class="table-light">
+            <tr>
+              <th>Vehicle Name</th>
+              <th>Category</th>
+              <th>Sub Category</th>
+              <th>Rate/KM</th>
+              <th>Actions</th>
+            </tr>
+          </x-slot:thead>
+          <x-slot:tbody>
+            @foreach ($vehicles as $vehicle)
+              <tr>
+                <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
+                <td>{{ $vehicle->category ?? "N/A" }}</td>
+                <td>{{ $vehicle->sub_category }}</td>
+                <td>{{ $vehicle->rate }}</td>
+                <td>
+                  <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
+                    <i class="mdi mdi-pencil"></i>
+                  </a>
+                  <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
+                      onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
+                      <i class="mdi mdi-delete"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            @endforeach
+          </x-slot:tbody>
+        </x-data-table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
 
           <!-- User Settings Tab -->
           <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
-              <!-- <button class="btn btn-primary" id="assignCategoryBtn">
-                                  <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
-                              </button> -->
             </div>
 
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
-                  <table id="userTable" class="table-bordered table-striped table-sm table">
-                    <thead class="table-light">
+                  <x-data-table id="userTable" class="table-bordered table-striped table-sm table">
+                    <x-slot:thead class="table-light">
                       <tr>
-                        <!-- <th><input type="checkbox" id="selectAllUsers"></th> -->
+                        <th><input type="checkbox" id="selectAllUsers"></th>
                         <!-- <th>#</th> -->
                         <th>Name</th>
                         <th>Role</th>
@@ -118,26 +108,26 @@
                         <th>Category</th>
                         <th>Actions</th>
                       </tr>
-                    </thead>
-                    <tbody>
+                    </x-slot:thead>
+                  <x-slot:tbody>
                       @foreach ($users as $user)
                         <tr>
-                          <!-- <td><input type="checkbox" class="user-checkbox" data-id="1"></td> -->
+                          <td><input type="checkbox" class="user-checkbox" data-id="{{ $user->id }}"></td>
                           <!-- <td>{{ $user->id ?? 0 }}</td> -->
                           <td>{{ $user->firstName ?? "N/A" }} {{ $user->lastName ?? "N/A" }}</td>
                           <td>{{ $user->role ?? "N/A" }}</td>
                           <td>{{ $user->email ?? "N/A" }}</td>
                           <td>{{ $user->usercategory->category_code ?? "N/A" }}</td>
                           <td>
-                            <a href="{{ route("billing.edituser", $user->id) }}" class="btn btn-icon btn-primary"
+                            <a href="{{ route("billing.edituser", $user->id) }}" class="btn btn-icon btn-warning"
                               title="Edit Category">
                               <i class="mdi mdi-pencil"></i>
                             </a>
                           </td>
                         </tr>
                       @endforeach
-                    </tbody>
-                  </table>
+                     </x-slot:tbody>
+                   </x-data-table>
                 </div>
               </div>
             </div>
@@ -151,7 +141,6 @@
                 <i class="mdi mdi-plus-circle me-1"></i> Add Category
               </a>
             </div>
-
             <div class="card shadow-sm">
               <div class="card-body">
                 @if (request('tab') === 'category' && session('success'))
@@ -183,7 +172,6 @@
                             @php
                               $vehicleIds = json_decode($cat->allowed_vehicles, true);
                               $vehicleList = [];
-
                               if (is_array($vehicleIds)) {
                                   foreach ($vehicleIds as $id) {
                                       // Try to find the vehicle by ID and get its category
@@ -195,7 +183,6 @@
                                   echo $cat->allowed_vehicles;
                               }
                             @endphp
-
                           </td>
                           <td>{{ $cat->city_category ?? 'Define' }}</td>
                           <td>{{ $cat->dailyamount ?? "null" }}</td>
@@ -207,7 +194,6 @@
                               style="display:inline;">
                               @csrf
                               @method("DELETE")
-
                               <button type="submit" class="btn btn-icon btn-danger" title="Delete Category"
                                 onclick="return confirm('Are you sure you want to delete {{ $cat->category_code }}?')">
                                 <i class="mdi mdi-delete"></i>
@@ -223,13 +209,11 @@
             </div>
           </div>
 
-
           <!-- Allowed Expenses Settings Tab -->
           <div class="tab-pane fade" id="v-pills-allowed-expense" role="tabpanel" aria-labelledby="v-pills-allowed-expense-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0"><i class="bi bi-cash-stack me-2"></i>City Category</h4>
             </div>
-
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
@@ -249,9 +233,8 @@
                       @foreach($cities as $city)
                       <tr>
                         <td>
-                          <input type="checkbox" class="expenseCheckbox" />
+                          <input type="checkbox" class="expenseCheckbox" data-id="{{ $city->id }}" />
                         </td>
-                        
                         <td>{{ $city->name }}</td>
                         <td>{{ $city->category }}</td>
                         <td>
@@ -273,7 +256,6 @@
       </div>
     </div>
   </div>
-
   <!-- Add Vehicle Modal -->
   <div class="modal fade" id="addVehicleModal" tabindex="-1" aria-labelledby="addVehicleModalLabel"
     aria-hidden="true">
@@ -306,7 +288,6 @@
                 </div>
               </div>
             </div>
-
             <div class="row mb-3">
               <div class="col-md-6">
                 <div class="mb-3">
@@ -342,10 +323,7 @@
     </div>
   </div>
   </div>
-
-  
-
-  <!-- Delete Confirmation Modal -->
+    <!-- Delete Confirmation Modal -->
   <div class="modal fade" id="deleteConfirmModal" tabindex="-1" aria-labelledby="deleteConfirmModalLabel"
     aria-hidden="true">
     <div class="modal-dialog">
@@ -370,7 +348,6 @@
       </div>
     </div>
   </div>
-
   @if(session('success'))
   <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -383,7 +360,6 @@
     });
   </script>
 @endif
-
 @if(session('error'))
   <script>
     document.addEventListener("DOMContentLoaded", function () {
@@ -396,32 +372,24 @@
     });
   </script>
 @endif
-
 @endsection
-
 @push("scripts")
   <script>
     $(document).ready(function() {
+
       // Initialize Select2 for vehicles allowed dropdowns
-
-
       $('#editVehiclesAllowed').select2({
         placeholder: "Select vehicles",
         allowClear: true,
         dropdownParent: $('#editCategoryModal')
       });
 
-
-
       // Reopen workaround if needed
       $('#addCategoryModal').on('shown.bs.modal', function() {
         $('#vehiclesAllowed').select2('open');
       });
-
-
-
-      // Initialize DataTables
       
+      // Initialize DataTables
       $('#userTable').DataTable({
         dom: "<'row'<'col-sm-12'f>>" +
           "<'row'<'col-sm-12'tr>>" +
@@ -455,6 +423,7 @@
           searchPlaceholder: 'Search Users'
         }
       });
+
 
       $('#categoryTable').DataTable({
         dom: "<'row'<'col-sm-12'f>>" +
@@ -490,11 +459,45 @@
         }
       });
 
+      // Initialize DataTable for City Category (Allowed Expense)
+      $('#allowedExpenseTable').DataTable({
+        dom: "<'row'<'col-sm-12'f>>" +
+          "<'row'<'col-sm-12'tr>>" +
+          "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
+        buttons: [{
+            extend: 'excel',
+            text: '<i class="mdi mdi-file-excel text-light"></i>',
+            className: 'btn btn-icon btn-dark',
+            titleAttr: 'Export to Excel'
+          },
+          {
+            extend: 'pdf',
+            text: '<i class="mdi mdi-file-pdf"></i>',
+            className: 'btn btn-icon btn-danger',
+            titleAttr: 'Export to PDF'
+          },
+          {
+            extend: 'print',
+            text: '<i class="mdi mdi-printer"></i>',
+            className: 'btn btn-icon btn-info',
+            titleAttr: 'Print Table'
+          }
+        ],
+        paging: true,
+        pageLength: 50,
+        searching: true,
+        ordering: true,
+        responsive: true,
+        language: {
+          search: '',
+          searchPlaceholder: 'Search Cities'
+        }
+      });
+
       // Form validation function
       function validateForm(formId) {
         const form = document.getElementById(formId);
         let isValid = true;
-
         // Check all required fields
         $(form).find('[required]').each(function() {
           if ($(this).val() === '' || $(this).val() === null) {
@@ -504,7 +507,6 @@
             $(this).removeClass('is-invalid');
           }
         });
-
         // Special check for select2 fields
         if (formId === 'addCategoryForm' || formId === 'editCategoryForm') {
           const selectId = formId === 'addCategoryForm' ? 'vehiclesAllowed' : 'editVehiclesAllowed';
@@ -515,21 +517,42 @@
             $('#' + selectId).next('.select2-container').css('border', '');
           }
         }
-
         return isValid;
       }
 
-      // Select all users checkbox
-      $('#selectAllUsers').on('click', function() {
-        $('.user-checkbox').prop('checked', $(this).prop('checked'));
+      // Select all users checkbox functionality
+      $('#selectAllUsers').on('change', function() {
+        var isChecked = $(this).prop('checked');
+        $('.user-checkbox').prop('checked', isChecked);
       });
 
       // Individual user checkbox change
       $('.user-checkbox').on('change', function() {
-        if ($('.user-checkbox:checked').length === $('.user-checkbox').length) {
+        var totalCheckboxes = $('.user-checkbox').length;
+        var checkedCheckboxes = $('.user-checkbox:checked').length;
+        
+        if (checkedCheckboxes === totalCheckboxes) {
           $('#selectAllUsers').prop('checked', true);
         } else {
           $('#selectAllUsers').prop('checked', false);
+        }
+      });
+
+      // Select all expense checkbox functionality
+      $('#selectAllExpense').on('change', function() {
+        var isChecked = $(this).prop('checked');
+        $('.expenseCheckbox').prop('checked', isChecked);
+      });
+
+      // Individual expense checkbox change
+      $('.expenseCheckbox').on('change', function() {
+        var totalCheckboxes = $('.expenseCheckbox').length;
+        var checkedCheckboxes = $('.expenseCheckbox:checked').length;
+        
+        if (checkedCheckboxes === totalCheckboxes) {
+          $('#selectAllExpense').prop('checked', true);
+        } else {
+          $('#selectAllExpense').prop('checked', false);
         }
       });
 
@@ -553,18 +576,14 @@
         if (!validateForm('assignCategoryForm')) {
           return;
         }
-
         let selectedCategory = $('#bulkUserCategory').val();
         let selectedUsers = [];
         $('.user-checkbox:checked').each(function() {
           selectedUsers.push($(this).data('id'));
         });
-
         // Here you would typically make an AJAX call to update the users
         console.log('Assigning category:', selectedCategory, 'to users:', selectedUsers);
-
         $('#assignCategoryModal').modal('hide');
-
         // Show success message
         Swal.fire({
           icon: 'success',
@@ -578,22 +597,17 @@
       $('.delete-vehicle').on('click', function() {
         let vehicleId = $(this).data('id');
         let vehicleName = $(this).data('name');
-
-        $('#deleteConfirmText').text(Are you sure you want to delete the vehicle "${vehicleName}" ?
-          This action cannot be undone.);
+        $('#deleteConfirmText').text(`Are you sure you want to delete the vehicle "${vehicleName}"? This action cannot be undone.`);
         $('#deleteConfirmModal').modal('show');
-
         $('#confirmDeleteBtn').off('click').on('click', function() {
           // Add your delete logic here
-          $(button[data - id = "${vehicleId}"].delete - vehicle).closest('tr').remove();
+          $(`button[data-id="${vehicleId}"].delete-vehicle`).closest('tr').remove();
           $('#deleteConfirmModal').modal('hide');
-
           // Show success message
           Swal.fire({
             icon: 'success',
             title: 'Deleted!',
-            text: Vehicle "${vehicleName}"
-            has been deleted.,
+            text: `Vehicle "${vehicleName}" has been deleted.`,
             confirmButtonColor: '#0d6efd'
           });
         });
@@ -603,22 +617,17 @@
       $('.delete-category').on('click', function() {
         let categoryId = $(this).data('id');
         let categoryName = $(this).data('name');
-
-        $('#deleteConfirmText').text(Are you sure you want to delete the category "${categoryName}" ?
-          This action cannot be undone.);
+        $('#deleteConfirmText').text(`Are you sure you want to delete the category "${categoryName}"? This action cannot be undone.`);
         $('#deleteConfirmModal').modal('show');
-
         $('#confirmDeleteBtn').off('click').on('click', function() {
           // Add your delete logic here
-          $(button[data - id = "${categoryId}"].delete - category).closest('tr').remove();
+          $(`button[data-id="${categoryId}"].delete-category`).closest('tr').remove();
           $('#deleteConfirmModal').modal('hide');
-
           // Show success message
           Swal.fire({
             icon: 'success',
             title: 'Deleted!',
-            text: Category "${categoryName}"
-            has been deleted.,
+            text: `Category "${categoryName}" has been deleted.`,
             confirmButtonColor: '#0d6efd'
           });
         });
@@ -629,10 +638,8 @@
         if (!validateForm('addVehicleForm')) {
           return;
         }
-
         // Add your save logic here
         $('#addVehicleModal').modal('hide');
-
         // Show success message
         Swal.fire({
           icon: 'success',
@@ -647,10 +654,8 @@
         if (!validateForm('editVehicleForm')) {
           return;
         }
-
         // Add your update logic here
         $('#editVehicleModal').modal('hide');
-
         // Show success message
         Swal.fire({
           icon: 'success',
@@ -665,10 +670,8 @@
         if (!validateForm('addCategoryForm')) {
           return;
         }
-
         // Add your save logic here
         $('#addCategoryModal').modal('hide');
-
         // Show success message
         Swal.fire({
           icon: 'success',
@@ -683,10 +686,8 @@
         if (!validateForm('editCategoryForm')) {
           return;
         }
-
         // Add your update logic here
         $('#editCategoryModal').modal('hide');
-
         // Show success message
         Swal.fire({
           icon: 'success',
@@ -701,10 +702,8 @@
         if (!validateForm('editUserCategoryForm')) {
           return;
         }
-
         // Add your update logic here
         $('#editUserCategoryModal').modal('hide');
-
         // Show success message
         Swal.fire({
           icon: 'success',
@@ -729,18 +728,17 @@
       $('#vehiclesAllowed, #editVehiclesAllowed').on('change', function() {
         $(this).next('.select2-container').css('border', '');
       });
+      });
 
-    });
-    $(document).ready(function () {
-        const tab = new URLSearchParams(window.location.search).get('tab');
-        if (tab === 'category') {
-            $('#category-tab').tab('show'); // Or your relevant method
-        }
-    });
-    
+      $(document).ready(function () {
+          const tab = new URLSearchParams(window.location.search).get('tab');
+          if (tab === 'category') {
+              $('#category-tab').tab('show'); // Or your relevant method
+          }
+      });
+
   </script>
 @endpush
-
 @push("styles")
   <style>
     /* Settings sidebar styles */
@@ -750,23 +748,19 @@
       margin-left: 1rem;
       margin-top: 0.9rem;
     }
-
     .settings-sidebar .nav-link {
       color: #495057;
       border-radius: 0;
       position: relative;
     }
-
     .settings-sidebar .nav-link.active {
       color: #0d6efd;
       background-color: rgba(13, 110, 253, 0.1);
       font-weight: 500;
     }
-
     .settings-sidebar .nav-link:hover:not(.active) {
       background-color: rgba(0, 0, 0, 0.05);
     }
-
     /* Table styles */
     .table-responsive {
       overflow-x: auto;
@@ -775,12 +769,10 @@
       -ms-overflow-style: none;
       /* IE and Edge */
     }
-
     .table-responsive::-webkit-scrollbar {
       display: none;
       /* Chrome, Safari, Opera */
     }
-
     .btn-icon {
       width: 32px;
       height: 32px;
@@ -790,33 +782,27 @@
       justify-content: center;
       margin-right: 0.25rem;
     }
-
     /* Form styles */
     .form-label {
       font-size: 0.875rem;
     }
-
     .modal-body {
       padding: 1.5rem;
     }
-
     /* Tab content area min-height */
     #v-pills-tabContent {
       min-height: 500px;
       border: 0px;
     }
-
     .nav-pills {
       border-bottom: 0;
     }
-
     /* Select2 styling */
     .select2-container--default .select2-selection--multiple {
       border: 1px solid #ced4da;
       border-radius: 0.25rem;
       min-height: 38px;
     }
-
     .select2-container--default .select2-selection--multiple .select2-selection__choice {
       background-color: #0d6efd;
       border: 1px solid #0d6efd;
@@ -824,12 +810,10 @@
       border-radius: 0.2rem;
       padding: 2px 8px;
     }
-
     .select2-container--default .select2-selection--multiple .select2-selection_choice_remove {
       color: white;
       margin-right: 5px;
     }
-
     .select2-container--default .select2-selection--multiple .select2-selection_choice_remove:hover {
       color: #f8f9fa;
     }

@@ -119,9 +119,12 @@
         </p>
 
         {{-- Optional: Back to form link --}}
+        @php
+            $id = session('employee_form_data.id');
+        @endphp
         @if(session('error'))
             <div class="text-center mt-3">
-                <a href="{{ route('hrm.apply') }}" class="btn btn-warning">
+                <a href="{{ route('apply-now', ['id' => $id]) }}" class="btn btn-warning">
                     <i class="fas fa-arrow-left me-1"></i> Go Back to Form
                 </a>
             </div>
