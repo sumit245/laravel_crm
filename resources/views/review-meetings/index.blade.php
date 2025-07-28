@@ -8,8 +8,8 @@
       <a class="btn btn-primary" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Create New Meeting"
         href="{{ route("meets.create") }}"> <i class="mdi mdi-plus-circle"></i></a>
     </div>
-    <table id="meetingsTable" class="table-bordered table-striped table">
-      <thead>
+    <x-data-table id="meetingsTable" class="table-bordered table-striped table">
+      <x-slot:thead>
         <tr>
           <th>Title</th>
           <th>Agenda</th>
@@ -21,8 +21,8 @@
           <th>Created At</th>
           <th>Actions</th>
         </tr>
-      </thead>
-      <tbody>
+       </x-slot:thead>
+      <x-slot:tbody>
         @foreach ($meets as $meet)
           <tr>
             <td>{{ $meet->title }}</td>
@@ -55,15 +55,13 @@
             </td>
           </tr>
         @endforeach
-      </tbody>
-    </table>
+       </x-slot:tbody>
+      </x-data-table>
   </div>
 @endsection
 
 @push("scripts")
   <script>
-    $(document).ready(function() {
-      $('#meetingsTable').DataTable();
-    });
+    
   </script>
 @endpush
