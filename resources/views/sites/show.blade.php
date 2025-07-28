@@ -55,26 +55,36 @@
 
       <!-- Main Content -->
       <div class="flex-fill border-dark border-2 bg-white">
-        <div class="p-4">
+        <div class="p-1">
           <!-- Engineer and Vendor Info -->
-          <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap">
+          <div class="d-flex justify-content-between align-items-start flex-wrap">
             <div>
               @if (isset($projectType) && $projectType == 1)
-                <p class="h5 font-weight-medium mb-1">Manager - {{ $managerName }}</p>
-                <p class="h5 font-weight-medium mb-1">Engineer - {{ $engineerName }}</p>
-                <p class="h5 font-weight-medium mb-1">Vendor - {{ $vendorName }}</p>
+                <p class="h5 font-weight-medium mb-1">
+                  <strong>Manager</strong> - {{ $managerName }}
+                </p>
+                <p class="h5 font-weight-medium mb-1">
+                  <strong>Engineer</strong> - {{ $engineerName }}
+                </p>
+                <p class="h5 font-weight-medium mb-1">
+                  <strong>Vendor</strong> - {{ $vendorName }}
+                </p>
               @else
-                <p class="h5 font-weight-medium mb-1">Engineer - {{ $site->site_engineer ?? "Ram Kumar" }}</p>
-                <p class="h5 font-weight-medium mb-1">Vendor - {{ $site->ic_vendor_name ?? "Shyam Kumar" }}</p>
+                <p class="h5 font-weight-medium mb-1">
+                  <strong>Engineer</strong> - {{ $site->site_engineer ?? "Ram Kumar" }}
+                </p>
+                <p class="h5 font-weight-medium mb-1">
+                  <strong>Vendor</strong> - {{ $site->ic_vendor_name ?? "Shyam Kumar" }}
+                </p>
               @endif
             </div>
 
             <!-- Start Date and End Date with Carbon -->
             <div class="text-right">
               @if (isset($projectType) && $projectType == 1)
-                <p class="h5 font-weight-medium mb-1">Start Date:
+                <p class="h5 font-weight-medium mb-1"><strong>Start Date</strong>:
                   {{ \Carbon\Carbon::parse($streetlightTask?->start_date)->format("d/M/Y") }}</p>
-                <p class="h5 font-weight-medium mb-1">End Date:
+                <p class="h5 font-weight-medium mb-1"><strong>End Date</strong>:
                   {{ \Carbon\Carbon::parse($streetlightTask?->end_date)->format("d/M/Y") }}</p>
               @else
                 <p class="h5 font-weight-medium mb-1">Start Date:
@@ -86,7 +96,7 @@
           </div>
 
           <!-- Tabs -->
-          <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
+          <ul class="nav nav-tabs fixed-navbar-project mt-5" id="myTab" role="tablist">
             <li class="nav-item" role="presentation">
               <button class="nav-link active" id="surveyed-tab" data-bs-toggle="tab" data-status="surveyed" type="button"
                 role="tab" aria-selected="true">
@@ -134,6 +144,26 @@
       </div>
     </div>
   </div>
+
+ @push('styles')
+  <style>
+    .nav-tabs {
+    border-top: 1px solid #ebedf2;
+    border-bottom: none;
+    }
+    .mt-5 {
+    margin-top: 4rem !important;
+    }
+    .fixed-navbar-project {
+    position: relative;
+    margin-left: 2px;
+    max-width: 100%;
+    background-color: transparent;
+    z-index: 1000;
+    padding: 30px 0 0;
+   }
+  </style>
+  @endpush
 
   <!-- Scripts -->
   @push("scripts")

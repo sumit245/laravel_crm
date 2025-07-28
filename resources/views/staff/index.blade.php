@@ -2,24 +2,27 @@
 
 @section("content")
   <div class="container p-2">
-    <div class="d-flex justify-content-between mb-3">
-      <div></div>
-      <div class="d-flex">
-        <a href="{{ route("staff.create") }}" class="btn btn-sm btn-primary mx-2" data-toggle="tooltip" title="Add New Staff">
-          <i class="mdi mdi-plus-circle"></i>
-        </a>
-        <form action="{{ route("import.staff") }}" method="POST" enctype="multipart/form-data">
-          @csrf
-          <div class="input-group mx-1">
-            <input type="file" name="file" class="form-control form-control-sm" required>
-            <button type="submit" class="btn btn-sm btn-primary" title="Import Candidates">
-              <i class="mdi mdi-upload"></i> Import Staff
-            </button>
-          </div>
-        </form>
-      </div>
 
+   <!-- Header row: Title + Add button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="fw-bold mb-0">Staff Management</h3>
+
+      <a href="{{ route('staff.create') }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Staff">
+        <i class="mdi mdi-plus-circle"></i>
+      </a>
     </div>
+
+    <!-- Import Staff form -->
+    <form action="{{ route('import.staff') }}" method="POST" enctype="multipart/form-data">
+      @csrf
+      <div class="input-group input-group-sm mb-3" style="max-width: 600px;">
+        <input type="file" name="file" class="form-control form-height form-control-sm" required>
+        <button type="submit" class="btn btn-sm btn-primary" title="Import Staff">
+          <i class="mdi mdi-upload"></i> Import Staff
+        </button>
+      </div>
+    </form>
+
     <table id="staffTable" class="table-striped table-bordered table">
       <thead>
         <tr>
@@ -82,7 +85,7 @@
         buttons: [{
             extend: 'excel',
             text: '<i class="mdi mdi-file-excel text-light"></i>',
-            className: 'btn btn-icon btn-dark',
+            className: 'btn btn-icon  btn-success',
             titleAttr: 'Export to Excel'
           },
           {
@@ -186,4 +189,25 @@
       });
     });
   </script>
+@endpush
+
+@push('styles')
+<style>
+  table.dataTable thead th,
+  table.dataTable thead td,
+  table.dataTable tfoot th,
+  table.dataTable tfoot td {
+      text-align: center;
+  }
+
+  .form-control:read-only,  .select2-container--default .select2-selection--single:read-only{
+    background: none;
+  }
+   .select2-container--default .select2-selection--single:read-only{
+    padding: 0;
+   }
+  .form-height{
+    height: 100%;
+  }
+</style>
 @endpush
