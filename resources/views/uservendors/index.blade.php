@@ -2,13 +2,25 @@
 
 @section("content")
   <div class="container p-2">
-    <div class="d-flex justify-content-between mb-3">
-      <div></div>
-      <a href="{{ route("uservendors.create") }}" class="btn btn-icon btn-primary" data-toggle="tooltip"
-        title="Add New Vendor">
+
+     <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="fw-bold mb-0">Vendor Management</h3>
+
+      <a href="{{ route("uservendors.create") }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Vendor">
         <i class="mdi mdi-plus-circle"></i>
       </a>
-    </div>
+     </div>
+
+    <form action="#" method="POST" enctype="multipart/form-data">
+      @csrf
+      <div class="input-group input-group-sm mb-3" style="max-width: 600px;">
+        <input type="file" name="file" class="form-control form-height form-control-sm" required>
+        <button type="submit" class="btn btn-sm btn-primary" title="Import Vendor">
+          <i class="mdi mdi-upload"></i> Import Vendor
+        </button>
+      </div>
+    </form>
+
     <table id="staffTable" class="table-striped table-bordered table-sm table">
       <thead>
         <tr>
@@ -138,4 +150,26 @@
       });
     });
   </script>
+@endpush
+
+
+@push('styles')
+<style>
+  table.dataTable thead th,
+  table.dataTable thead td,
+  table.dataTable tfoot th,
+  table.dataTable tfoot td {
+      text-align: center;
+  }
+
+  .form-control:read-only,  .select2-container--default .select2-selection--single:read-only{
+    background: none;
+  }
+   .select2-container--default .select2-selection--single:read-only{
+    padding: 0;
+   }
+  .form-height{
+    height: 100%;
+  }
+</style>
 @endpush
