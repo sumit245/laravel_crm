@@ -5,8 +5,8 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h5 class="card-title mb-0 fw-bold text-white"><i class="bi bi-database me-2"></i> Database Backup</h5>
+                <div class="card-header p-4 bg-white text-white">
+                    <h5 class="card-title mb-0 fw-bold text-black"><i class="bi bi-database me-2"></i> Database Backup</h5>
                 </div>
                 <div class="card-body p-4">
                     <div id="alertContainer"></div>
@@ -225,19 +225,25 @@ $(document).ready(function() {
 
 @push('styles')
 <style>
+
+.card-title{
+    font-size:25px !important;
+}
+
+
+
 /* Take Backup button - outline with bluish hover */
 .backup-btn {
     border: 1px solid #6c757d;
-    color: #6c757d;
-    background-color: transparent;
+    color: #fff;
+    background-color: #1f3bb3;
     transition: all 0.3s ease;
 }
 
 .backup-btn:hover {
-    background-color: #007bff;
+    background: #1f3bb3;
     border-color: #007bff;
     color: white;
-    transform: translateY(-1px);
     box-shadow: 0 2px 4px rgba(0,123,255,0.2);
 }
 
@@ -250,7 +256,7 @@ $(document).ready(function() {
 .backup-btn:disabled {
     background-color: transparent;
     border-color: #6c757d;
-    color: #6c757d;
+    color: #000;
     opacity: 0.6;
     transform: none;
     box-shadow: none;
