@@ -11,8 +11,8 @@
 |
  */
 
-ini_set('post_max_size', '100M');
-ini_set('upload_max_filesize', '100M');
+ini_set('post_max_size', '200M');
+ini_set('upload_max_filesize', '200M');
 ini_set('max_execution_time', '3600');
 
 $app = new Illuminate\Foundation\Application(

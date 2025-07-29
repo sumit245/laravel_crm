@@ -36,7 +36,6 @@
         <span class="menu-title">RMS Portal</span>
       </a>
     </li>
-    @if ($projectType == 11)
       <li class="nav-item">
         <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
           <i class="menu-icon mdi mdi-chart-pie"></i>
@@ -52,7 +51,6 @@
         </li>
       @endif
 
-    @endif
 
     <li class="nav-item">
       <a class="nav-link disabled" href="{{ route("sites.index") }}">
