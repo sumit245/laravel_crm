@@ -18,6 +18,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PoleController;
 
 Auth::routes(['register' => false]);
 
@@ -222,6 +223,10 @@ Route::post('/candidates/import', [CandidateController::class, 'importCandidates
 Route::post('/candidates/send-emails', [CandidateController::class, 'sendEmails'])->name('candidates.send-emails');
 Route::get('/candidates/{id}/upload', [CandidateController::class, 'showUploadForm'])->name('candidates.upload-form');
 Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocuments'])->name('candidates.upload');
+
+
+Route::get('/poles/{id}/edit', [PoleController::class, 'edit'])->name('poles.edit');
+Route::put('/poles/{id}', [PoleController::class, 'update'])->name('poles.update');
 
 
 // apply now
