@@ -149,8 +149,6 @@ class TasksController extends Controller
             // Get all engineers and vendors from the users table based on role
             $engineers = User::where('role', 1)->get();
             $vendors = User::where('role', 3)->get();
-
-
             return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
         }
     }

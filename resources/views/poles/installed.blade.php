@@ -43,8 +43,13 @@
               <!-- View Button -->
               <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
                 title="View Details">
-                <i class="mdi mdi-eye">info</i>
+                <i class="mdi mdi-eye"></i>
               </a>
+
+              <a href="{{ route("poles.edit", $pole->id) }}" class="btn btn-icon btn-warning">
+          <i class="mdi mdi-pencil"></i>
+          <!-- <span class="d-?none d-sm-inline mg-l-5">Edit</span> -->
+        </a>
             </td>
           </tr>
         @endforeach
