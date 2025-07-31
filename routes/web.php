@@ -18,6 +18,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\PoleController;
 
 Auth::routes(['register' => false]);
 
@@ -79,6 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
     Route::resource('sites', SiteController::class);
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
+    Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
 
 
     // Conveyance route fixed
@@ -184,8 +186,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');
     Route::get('/export-poles', [TaskController::class, 'exportPoles'])->name('poles.export');
     Route::get('/poles/show/{id}', [TaskController::class, 'viewPoleDetails'])->name('poles.show');
-    Route::put('/poles/edit/{id}', [TaskController::class, 'editPoleDetails'])->name('poles.edit');
-    Route::put('/poles/update/{id}', [TaskController::class, 'updatePoleDetails'])->name('poles.update');
+    // Route::put('/poles/edit/{id}', [TaskController::class, 'editPoleDetails'])->name('poles.edit');
+    // Route::put('/poles/update/{id}', [TaskController::class, 'updatePoleDetails'])->name('poles.update');
 
 
     // Route for Installed Poles
@@ -221,6 +223,10 @@ Route::post('/candidates/import', [CandidateController::class, 'importCandidates
 Route::post('/candidates/send-emails', [CandidateController::class, 'sendEmails'])->name('candidates.send-emails');
 Route::get('/candidates/{id}/upload', [CandidateController::class, 'showUploadForm'])->name('candidates.upload-form');
 Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocuments'])->name('candidates.upload');
+
+
+Route::get('/poles/{id}/edit', [PoleController::class, 'edit'])->name('poles.edit');
+Route::put('/poles/{id}', [PoleController::class, 'update'])->name('poles.update');
 
 
 // apply now

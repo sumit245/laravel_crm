@@ -19,7 +19,6 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class SiteController extends Controller
 {
-
     // Import Excel file for sites
     public function import(Request $request, $projectId)
     {
@@ -27,10 +26,10 @@ class SiteController extends Controller
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
+
         Log::info('Uploaded file:', ['file' => $request->file('file')]);
 
         $project = Project::find($request->project_id);
-
         if (!$project) {
             Log::error('Project not found for ID: ' . $projectId);
             return back()->with('error', 'Project not found.');
@@ -57,9 +56,7 @@ class SiteController extends Controller
      */
     public function index()
     {
-        //
         $sites = Site::with(['stateRelation', 'districtRelation'])->get();
-
         return view('sites.index', compact('sites'));
     }
 
@@ -68,41 +65,21 @@ class SiteController extends Controller
      */
     public function create()
     {
-
         $states   = State::all();
         $projects = Project::all();
         $vendors  = User::where('role', 3)->get();
         $staffs   = User::whereIn('role', [1, 2])->get();
-        return view('sites.create', compact('states', 'projects', 'vendors', 'staffs')); // Pass states to the view
+        return view('sites.create', compact('states', 'projects', 'vendors', 'staffs'));
     }
 
     /**
      * Store a newly created resource in storage.
      */
-    // public function store(Request $request)
-    // {
-
-    //     try {
-    //         Log::info('Request received for create site', $request->all);
-    //         $site = Site::create($request->all());
-    //         return redirect()->route('sites.show', $site->id)
-    //             ->with('success', 'Site created successfully.');
-    //     } catch (\Exception $e) {
-    //         $errorMessage = $e->getMessage();
-
-    //         return redirect()->back()
-    //             ->withErrors(['error' => $errorMessage])
-    //             ->withInput();
-    //     }
-    // }
-
     public function store(Request $request)
     {
         try {
-            // Log the incoming request data
             Log::info('Request received for create site', $request->all());
-
-            // Validate the request data
+            
             $validatedData = $request->validate([
                 'state' => 'required|integer',
                 'district' => 'required|integer',
@@ -126,37 +103,30 @@ class SiteController extends Controller
                 'remarks' => 'nullable|string|max:1000',
             ]);
 
-            // Create the site with validated data
             $site = Site::create($validatedData);
-
-            // Log successful creation
+            
             Log::info('Site created successfully', ['site_id' => $site->id, 'site_name' => $site->site_name]);
-
+            
             return redirect()->route('sites.show', $site->id)
                 ->with('success', 'Site created successfully.');
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // Handle validation errors
             Log::warning('Site creation failed - Validation errors', [
                 'errors' => $e->errors(),
                 'input' => $request->all()
             ]);
-
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
-            // Handle other exceptions
             Log::error('Site creation failed - Exception', [
                 'error' => $e->getMessage(),
                 'input' => $request->all()
             ]);
-
             return redirect()->back()
                 ->withErrors(['error' => 'An error occurred while creating the site. Please try again.'])
                 ->withInput();
         }
     }
-
 
     /**
      * Display the specified resource.
@@ -237,8 +207,9 @@ class SiteController extends Controller
             ->orWhereHas('districtRelation', function ($query) use ($search) {
                 $query->where('name', 'LIKE', "%{$search}%");
             })
-            ->limit(10) // Limit results for performance
+            ->limit(10)
             ->get(['id', 'breda_sl_no', 'site_name', 'location', 'state', 'district']);
+
         return response()->json($sites->map(function ($site) {
             return [
                 'id' => $site->id,
@@ -249,14 +220,11 @@ class SiteController extends Controller
         }));
     }
 
-
-
     /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id, Request $request)
     {
-        //
         $projectId = $request->query('project_id');
         if ($projectId == 11) {
             $streetlight = Streetlight::findOrFail($id);
@@ -270,11 +238,8 @@ class SiteController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            // If project_id == 11, use Streetlight instead
             if ($request->project_id == 11) {
                 $streetlight = Streetlight::findOrFail($id);
-
-                // Update only specific fields relevant to the Streetlight model
                 $streetlight->update($request->only([
                     'task_id',
                     'state',
@@ -285,11 +250,9 @@ class SiteController extends Controller
                     'mukhiya_contact',
                     'total_poles'
                 ]));
-
                 return redirect()->route('projects.show', $request->project_id)
                     ->with('success', 'Streetlight site updated successfully.');
             } else {
-                // Normal Site model update
                 $site = Site::findOrFail($id);
                 $site->update($request->only([
                     'task_id',
@@ -299,59 +262,28 @@ class SiteController extends Controller
                     'panchayat',
                     'ward',
                     'mukhiya_contact',
-                    // Include any other columns you allow updating
                 ]));
-
                 return redirect()->route('sites.show', $site->id)
                     ->with('success', 'Site updated successfully.');
             }
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
-
             return redirect()->back()
                 ->withErrors(['error' => $errorMessage])
                 ->withInput();
         }
     }
 
-
-    /**
-     * Update the specified resource in storage.
-     */
-    // public function update(Request $request, string $id)
-    // {
-    //     //
-    //     try {
-    //         $site = Site::findOrFail($id);
-    //         $site->update($request->all());
-    //         return redirect()->route('sites.show', $site->id)
-    //             ->with('success', 'Site created successfully.');
-    //     } catch (\Exception $e) {
-    //         $errorMessage = $e->getMessage();
-
-    //         return redirect()->back()
-    //             ->withErrors(['error' => $errorMessage])
-    //             ->withInput();
-    //     }
-    // }
-
-
     public function destroy(string $id, Request $request)
     {
-        // \Log::info('Request received for delete site with id: ' . $id);
         try {
-            // Check if project_id is 11 (from the site record)
-
-
             if ($request->project_id == 11) {
-                // Delete from streetlights table instead
-                $streetlight = Streetlight::findOrFail($id); // assumes same id is used
+                $streetlight = Streetlight::findOrFail($id);
                 $streetlight->delete();
                 return redirect()->back()
                     ->with('success', 'Streetlight site deleted successfully.');
             } else {
                 $site = Site::findOrFail($id);
-                // Default delete from sites table
                 $site->delete();
                 return response()->json(['message' => 'Site deleted']);
             }
@@ -359,21 +291,4 @@ class SiteController extends Controller
             return response()->json(['message' => $e->getMessage()], 500);
         }
     }
-
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    // public function destroy(string $id)
-    // {
-    //     //
-    //     //
-    //     try {
-    //         $site = Site::findOrFail($id);
-    //         $site->delete();
-    //         return response()->json(['message' => 'Site deleted']);
-    //     } catch (\Exception $e) {
-    //         return response()->json(['message' => $e->getMessage()]);
-    //     }
-    // }
 }
