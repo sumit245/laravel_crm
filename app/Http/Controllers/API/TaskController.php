@@ -13,6 +13,7 @@ use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -858,5 +859,19 @@ class TaskController extends Controller
             'message' => 'Pole data sync process completed.',
             'result' => $responses,
         ]);
+    }
+
+    public function editPoleDetails(Request $request, $id)
+    {
+        // Return view to update pole
+        $data = $request->all();
+        return view('poles.edit', compact('data'));
+    }
+
+    public function updatePoleDetails(Request $request, $id)
+    {
+        // Apply logic and return to show pole details
+        // $id=Auth()->id();
+
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Pole;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
+//TODO: Add StreetlightTask and User model also to modify vendor(installer name, billing status etc)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
@@ -13,56 +14,59 @@ class PoleController extends Controller
     public function edit($id)
     {
         $pole = Pole::findOrFail($id);
-        
+
         // Get related data (same as show method)
         $installer = $pole->task->installer ?? null;
         $siteEngineer = $pole->task->engineer ?? null;
         $projectManager = $pole->task->streetlight->projectManager ?? null;
-        
+
         return view('poles.edit', compact('pole', 'installer', 'siteEngineer', 'projectManager'));
     }
 
     public function update(Request $request, $id)
     {
-        // Validation
-        $validated = $request->validate([
+        $pole = Pole::findOrFail($id);
+
+        $rules = [
             'ward_name' => 'nullable|string|max:255',
             'beneficiary' => 'nullable|string|max:255',
             'beneficiary_contact' => 'nullable|string|max:20',
-            'remarks' => 'nullable|string',
+            'isSurveyDone' => 'nullable|boolean',
+            'isInstallationDone' => 'nullable|boolean',
+            'isNetworkAvailable' => 'nullable|boolean',
+            'vendor_id' => 'nullable|string|max:255',
             'luminary_qr' => 'nullable|string|max:255',
             'sim_number' => 'nullable|string|max:200',
             'panel_qr' => 'nullable|string|max:255',
             'battery_qr' => 'nullable|string|max:255',
             'lat' => 'nullable|numeric',
             'lng' => 'nullable|numeric',
-            'isSurveyDone' => 'nullable|boolean',
-            'isInstallationDone' => 'nullable|boolean',
-            'isNetworkAvailable' => 'nullable|boolean',
-        ]);
+            'remarks' => 'nullable|string',
+        ];
+
+        if (
+            $request->filled('luminary_qr')
+            && $request->luminary_qr !== $pole->luminary_qr
+            && $request->sim_number === $pole->sim_number
+        ) {
+            $rules['sim_number'] = 'required|string|max:200|different:sim_number';
+        }
+
+        $validated = $request->validate($rules);
 
         try {
-            $pole = Pole::findOrFail($id);
-            
-            // Store old QR codes for inventory return
-            $oldQRCodes = [
-                'luminary_qr' => $pole->luminary_qr,
-                'panel_qr' => $pole->panel_qr,
-                'battery_qr' => $pole->battery_qr,
-            ];
 
-            // Check if QR codes have changed and return old inventory
-            foreach (['luminary_qr', 'panel_qr', 'battery_qr'] as $qrField) {
-                $oldQR = $oldQRCodes[$qrField];
-                $newQR = $validated[$qrField] ?? null;
-                
-                // If QR code changed and old one exists, return it to inventory
-                if ($oldQR && $oldQR !== $newQR) {
-                    $this->returnInventoryItem($oldQR);
+
+            // Return inventory if any QR changed
+            foreach (['luminary_qr', 'panel_qr', 'battery_qr'] as $field) {
+                if (!empty($validated[$field]) && $validated[$field] !== $pole->$field) {
+                    $this->replaceSerialManually($pole, $field, $validated[$field]);
                 }
             }
 
-            // Update pole with new data
+
+
+            // Update pole
             $pole->update([
                 'ward_name' => $validated['ward_name'] ?? $pole->ward_name,
                 'beneficiary' => $validated['beneficiary'] ?? $pole->beneficiary,
@@ -99,7 +103,6 @@ class PoleController extends Controller
 
             return redirect()->route('poles.show', $pole->id)
                 ->with('success', 'Pole details updated successfully!');
-
         } catch (\Exception $e) {
             Log::error('Failed to update pole', ['error' => $e->getMessage()]);
             return redirect()->back()
@@ -112,10 +115,10 @@ class PoleController extends Controller
     {
         try {
             Log::info('Returning inventory item', ['serial_number' => $serialNumber]);
-            
+
             // Find inventory item
             $inventory = InventroyStreetLightModel::where('serial_number', $serialNumber)->first();
-            
+
             // Find dispatch record
             $dispatch = InventoryDispatch::where('serial_number', $serialNumber)
                 ->whereNotNull('streetlight_pole_id')
@@ -128,18 +131,74 @@ class PoleController extends Controller
             }
 
             if ($dispatch) {
-                $dispatch->update([
-                    'is_consumed' => false,
-                    'streetlight_pole_id' => null,
-                ]);
+                $dispatch->delete();
                 Log::info('Dispatch record updated', ['serial_number' => $serialNumber]);
             }
-
         } catch (\Exception $e) {
             Log::error('Failed to return inventory item', [
                 'serial_number' => $serialNumber,
                 'error' => $e->getMessage()
             ]);
         }
+    }
+
+    protected function replaceSerialManually($pole, $field, $newSerial)
+    {
+        $oldSerial = $pole->$field;
+
+        // Step 1: Get old dispatch record
+        $oldDispatch = InventoryDispatch::where('serial_number', $oldSerial)->first();
+        if (!$oldDispatch) return;
+
+        // Step 2: Check or clone new dispatch
+        $newDispatch = InventoryDispatch::where('serial_number', $newSerial)->first();
+
+        if (!$newDispatch) {
+            $newDispatch = $oldDispatch->replicate();
+            $newDispatch->serial_number = $newSerial;
+            $newDispatch->is_consumed = false;
+            $newDispatch->streetlight_pole_id = null;
+            $newDispatch->save();
+        } else {
+            $newDispatch->fill($oldDispatch->only([
+                'vendor_id',
+                'total_quantity',
+                'total_value',
+                'rate',
+                'store_id',
+                'store_incharge_id',
+                'project_id',
+                'isDispatched',
+                'is_consumed',
+                'streetlight_pole_id'
+            ]));
+            $newDispatch->save();
+        }
+
+        // Step 3: Update inventory streetlight model
+        $newStreet = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
+        if ($newStreet) {
+            $newStreet->quantity = 0;
+            $newStreet->save();
+        } else {
+            $oldStreet = InventroyStreetLightModel::where('serial_number', $oldSerial)->first();
+            if ($oldStreet) {
+                $newStreet = $oldStreet->replicate();
+                $newStreet->serial_number = $newSerial;
+                $newStreet->quantity = 0;
+                $newStreet->save();
+            }
+        }
+
+        // Step 4: Delete old dispatch
+        $oldDispatch->delete();
+
+        // Step 5: Restore quantity of old item in inventory streetlight
+        if (isset($oldStreet)) {
+            $oldStreet->quantity = 1;
+            $oldStreet->save();
+        }
+
+        // Step 6: You don't need to update the pole here — your `update()` method will handle it.
     }
 }

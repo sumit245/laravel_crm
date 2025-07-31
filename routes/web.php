@@ -80,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/sites/search', [SiteController::class, 'search'])->name('sites.search');
     Route::resource('sites', SiteController::class);
     Route::post('/sites/import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
-Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
+    Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
 
 
     // Conveyance route fixed
@@ -110,8 +110,6 @@ Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name(
     Route::post('/conveyance/bulk-action', [ConvenienceController::class, 'bulkAction'])->name('conveyance.bulkAction');
 
 
-    // Conveyance details
-    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
 
 
     // Conveyance details
@@ -124,7 +122,6 @@ Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name(
 
     // Add Categories
     Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
-    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
     Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
@@ -189,6 +186,9 @@ Route::post('/sites/ward-poles', [SiteController::class, 'getWardPoles'])->name(
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');
     Route::get('/export-poles', [TaskController::class, 'exportPoles'])->name('poles.export');
     Route::get('/poles/show/{id}', [TaskController::class, 'viewPoleDetails'])->name('poles.show');
+    // Route::put('/poles/edit/{id}', [TaskController::class, 'editPoleDetails'])->name('poles.edit');
+    // Route::put('/poles/update/{id}', [TaskController::class, 'updatePoleDetails'])->name('poles.update');
+
 
     // Route for Installed Poles
     Route::get('/installed-poles', [TaskController::class, 'getInstalledPoles'])->name('installed.poles');
