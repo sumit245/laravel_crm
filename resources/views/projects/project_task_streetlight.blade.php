@@ -86,11 +86,11 @@
             </div>
             <div class="form-group mb-3">
               <label for="startDate" class="form-label">Start Date</label>
-              <input type="date" id="startDate" name="start_date" class="form-control" required>
+              <input onclick="document.getElementById('startDate').showPicker()" type="date" id="startDate" name="start_date" class="form-control" required>
             </div>
             <div class="form-group mb-3">
               <label for="endDate" class="form-label">End Date</label>
-              <input type="date" id="endDate" name="end_date" class="form-control" required>
+              <input onclick="document.getElementById('endDate').showPicker()" type="date" id="endDate" name="end_date" class="form-control" required>
             </div>
           </div>
           <div class="modal-footer">
@@ -135,13 +135,13 @@
             </td>
             <td>
               <a href="{{ route("tasks.show", [$light->id, "any" => ""]) }}?project_type=1"
-                class="btn btn-info btn-sm">View</a>
-
-              <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-sm">Edit</a>
+                class="btn btn-info btn-icon"><i class="mdi mdi-eye"></i></a>
+                 
+              <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon"><i class="mdi mdi-pencil"></i></a>
               <form action="{{ route("tasks.destroystreetlight", $light->id) }}" method="POST" style="display: inline-block;" class="delete-task-form">
                 @csrf
                 @method("DELETE")
-                <button type="button" class="btn btn-danger btn-sm delete-task-btn">Delete</button>
+                <button type="button" class="btn btn-danger btn-icon"><i class="mdi mdi-delete"></i></button>
               </form>
             </td>
           </tr>
@@ -372,5 +372,11 @@
       border: 1px solid #ccc;
       border-radius: 4px;
     }
-  </style>
+    .select2-selection__choice {
+        background-color: #E9EECF !important;
+        padding: 6px 10px !important;
+        color: #000 !important;     
+        font-size: 0.875rem !important;
+      }
+    </style>
 @endpush
