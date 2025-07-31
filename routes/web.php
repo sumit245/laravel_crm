@@ -108,8 +108,6 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/conveyance/bulk-action', [ConvenienceController::class, 'bulkAction'])->name('conveyance.bulkAction');
 
 
-    // Conveyance details
-    Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
 
 
     // Conveyance details
@@ -122,7 +120,6 @@ Route::middleware(['auth'])->group(function () {
 
     // Add Categories
     Route::get('/settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('billing.addcategory');
-    Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     Route::post('/settings/add-category', [ConvenienceController::class, 'addCategory'])->name('billing.addcategory');
     // Edit Categories
     Route::get('/settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('billing.editcategory');
@@ -187,6 +184,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');
     Route::get('/export-poles', [TaskController::class, 'exportPoles'])->name('poles.export');
     Route::get('/poles/show/{id}', [TaskController::class, 'viewPoleDetails'])->name('poles.show');
+    Route::put('/poles/edit/{id}', [TaskController::class, 'editPoleDetails'])->name('poles.edit');
+    Route::put('/poles/update/{id}', [TaskController::class, 'updatePoleDetails'])->name('poles.update');
+
 
     // Route for Installed Poles
     Route::get('/installed-poles', [TaskController::class, 'getInstalledPoles'])->name('installed.poles');
