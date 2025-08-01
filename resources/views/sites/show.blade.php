@@ -123,7 +123,7 @@
               </tr>
             </x-slot:thead>
             <x-slot:tbody>
-              @foreach ($poles as $pole)
+          @foreach ($poles ?? [] as $pole)
                 <tr data-ward="{{ $pole->ward_name }}" data-surveyed="{{ $pole->isSurveyDone }}"
                   data-installed="{{ $pole->isInstallationDone }}">
                   <td>{{ $pole->complete_pole_number }}</td>

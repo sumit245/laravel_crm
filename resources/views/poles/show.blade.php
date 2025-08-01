@@ -4,15 +4,29 @@
   <div class="pd-20 pd-xl-25 container">
     <div class="d-flex align-items-center justify-content-between mg-b-25">
       <h6 class="mg-b-0">Pole Details</h6>
-      <div class="d-flex">
-  <a href="javascript:void(0);" class="btn btn-sm btn-white d-flex align-items-center"
-     onclick="goBackWithFallback();">
-    <span class="d-none d-sm-inline mg-l-5">Go Back</span>
-  </a>
-</div>
-
-
+      <div class="d-flex mt-2">
+        <a href="{{ route("poles.edit", $pole->id) }}" class="btn btn-icon btn-warning py-2">
+           <i class="mdi mdi-pencil"> Edit</i>
+        </a>
+        <a href="javascript:void(0);" class="btn btn-sm btn-white d-flex align-items-center"
+          onclick="goBackWithFallback();">
+          <span class="d-none d-sm-inline mg-l-5">Go Back</span>
+        </a>
+      </div>
     </div>
+
+    @if (session("success"))
+      <div class="alert alert-success">
+        {{ session("success") }}
+      </div>
+    @endif
+
+    @if (session("error"))
+      <div class="alert alert-danger">
+        {{ session("error") }}
+      </div>
+    @endif
+
     <div class="row">
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Complete Pole Number</label>
@@ -49,7 +63,9 @@
         <p class="mg-b-0">{{ $installer->name ?? "" }}</p>
       </div>
     </div>
+
     <hr />
+
     <div class="row">
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Luminary QR</label>
@@ -70,7 +86,7 @@
     </div>
 
     <hr />
-    <!-- sim number, engineer name, project manager, vendor name -->
+
     <div class="row">
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Engineer</label>
@@ -80,58 +96,27 @@
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Project Manager</label>
         <p class="mg-b-0">{{ $projectManager->name ?? "" }}</p>
       </div>
-      
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installation Date</label>
-        <p class="mg-b-0">{{$pole-> created_at}}</p>
+        <p class="mg-b-0">{{ $pole->created_at }}</p>
       </div>
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Submitted at</label>
-        <p class="mg-b-0">
-  <?= $pole->isInstallationDone == 1 ? $pole->updated_at : "" ?>
-</p>
-
-<!-- anything -->
+        <p class="mg-b-0"><?= $pole->isInstallationDone == 1 ? $pole->updated_at : "" ?></p>
       </div>
     </div>
-    
 
     <hr />
-    <!-- newly added row  -->
+
     <div class="row">
-      
-      
       <div class="col-3 col-sm-3">
         <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Remarks</label>
         <p class="mg-b-0">{{ $pole->remarks ?? "" }}</p>
       </div>
     </div>
 
-    <!-- Streetlight Poles column end -->
     <hr />
-    <!-- Streelights columns need to call from database -->
-    {{-- <div class="row">
-      <div class="col-3 col-sm">
-        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">State</label>
-        <p class="mg-b-0">{{ $pole->streetlight->state ? "Yes" : "No" }}</p>
-      </div>
-      <div class="col-3 col-sm">
-        <!-- Table map to enginner name -->
-        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">District</label>
-        <p class="mg-b-0">{{ $pole->streetlight->district ? "Yes" : "No" }}</p>
-      </div>
-      <div class="col-3 col-sm">
-        <!-- Table map to project manager name -->
-        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Block</label>
-        <p class="mg-b-0">{{ $pole->streetlight->block ? "Yes" : "No" }}</p>
-      </div>
-      <div class="col-3 col-sm">
-        <!-- Table map to vendor name -->
-        <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Panchayat</label>
-        <p class="mg-b-0">{{ $pole->streetlight->panchayat ? "Yes" : "No" }}</p>
-      </div>
-    </div> --}}
-    <!-- Streelight column end -->
+
     <div class="row">
       <div class="col-sm-6">
         @if (!empty($surveyImages))
@@ -172,16 +157,12 @@
       }
     }
 
-
-    
-
-  function goBackWithFallback() {
-    if (window.history.length > 1) {
-      window.history.back();
-    } else {
-      window.location.href = '/'; // fallback to homepage or a desired page
+    function goBackWithFallback() {
+      if (window.history.length > 1) {
+        window.history.back();
+      } else {
+        window.location.href = '/';
+      }
     }
-  }
-
   </script>
 @endpush
