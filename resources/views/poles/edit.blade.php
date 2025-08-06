@@ -36,12 +36,11 @@
     <form action="{{ route("poles.update", $pole->id) }}" method="POST">
       @csrf
       @method("PUT")
-
+      
       <div class="row">
         <!-- Non-editable fields -->
         <div class="col-3 col-sm-3">
-          <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Complete Pole
-            Number</label>
+          <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Complete Pole Number</label>
           <p class="mg-b-0 text-muted">{{ $pole->complete_pole_number }}</p>
           <small class="text-muted">Cannot be edited</small>
         </div>
@@ -68,21 +67,19 @@
         <!-- Beneficiary -->
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Beneficiary</label>
-          <input type="text" name="beneficiary" class="form-control"
-            value="{{ old("beneficiary", $pole->beneficiary) }}">
+          <input type="text" name="beneficiary" class="form-control" value="{{ old("beneficiary", $pole->beneficiary) }}">
         </div>
 
         <!-- Beneficiary Contact -->
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Beneficiary Contact</label>
-          <input type="text" name="beneficiary_contact" class="form-control"
-            value="{{ old("beneficiary_contact", $pole->beneficiary_contact) }}">
+          <input type="text" name="beneficiary_contact" class="form-control" value="{{ old("beneficiary_contact", $pole->beneficiary_contact) }}">
         </div>
 
         <!-- Survey Status -->
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Survey Status</label>
-          <select name="isSurveyDone" class="form-control">
+          <select name="isSurveyDone" class="form-control white-select">
             <option value="1" {{ old("isSurveyDone", $pole->isSurveyDone) ? "selected" : "" }}>Yes</option>
             <option value="0" {{ !old("isSurveyDone", $pole->isSurveyDone) ? "selected" : "" }}>No</option>
           </select>
@@ -91,11 +88,9 @@
         <!-- Installation Status -->
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Installation Status</label>
-          <select name="isInstallationDone" class="form-control">
-            <option value="1" {{ old("isInstallationDone", $pole->isInstallationDone) ? "selected" : "" }}>Yes
-            </option>
-            <option value="0" {{ !old("isInstallationDone", $pole->isInstallationDone) ? "selected" : "" }}>No
-            </option>
+          <select name="isInstallationDone" class="form-control white-select">
+            <option value="1" {{ old("isInstallationDone", $pole->isInstallationDone) ? "selected" : "" }}>Yes</option>
+            <option value="0" {{ !old("isInstallationDone", $pole->isInstallationDone) ? "selected" : "" }}>No</option>
           </select>
         </div>
       </div>
@@ -104,11 +99,9 @@
         <!-- Network Status -->
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Network Status</label>
-          <select name="isNetworkAvailable" class="form-control">
-            <option value="1" {{ old("isNetworkAvailable", $pole->isNetworkAvailable) ? "selected" : "" }}>Yes
-            </option>
-            <option value="0" {{ !old("isNetworkAvailable", $pole->isNetworkAvailable) ? "selected" : "" }}>No
-            </option>
+          <select name="isNetworkAvailable" class="form-control white-select">
+            <option value="1" {{ old("isNetworkAvailable", $pole->isNetworkAvailable) ? "selected" : "" }}>Yes</option>
+            <option value="0" {{ !old("isNetworkAvailable", $pole->isNetworkAvailable) ? "selected" : "" }}>No</option>
           </select>
         </div>
 
@@ -126,28 +119,25 @@
         <!-- QR Codes -->
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Luminary QR</label>
-          <input type="text" name="luminary_qr" class="form-control"
-            value="{{ old("luminary_qr", $pole->luminary_qr) }}">
-          <small class="text-danger">Changing this will return old inventory</small>
+          <input type="text" name="luminary_qr" class="form-control" value="{{ old("luminary_qr", $pole->luminary_qr) }}">
+          <small class="text-danger inventory-warning">Changing this will return old inventory</small>
         </div>
 
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Sim Number</label>
-          <input type="text" name="sim_number" class="form-control"
-            value="{{ old("sim_number", $pole->sim_number) }}">
+          <input type="text" name="sim_number" class="form-control" value="{{ old("sim_number", $pole->sim_number) }}">
         </div>
 
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Battery QR</label>
-          <input type="text" name="battery_qr" class="form-control"
-            value="{{ old("battery_qr", $pole->battery_qr) }}">
-          <small class="text-warning">Changing this will return old inventory</small>
+          <input type="text" name="battery_qr" class="form-control" value="{{ old("battery_qr", $pole->battery_qr) }}">
+          <small class="text-danger inventory-warning">Changing this will return old inventory</small>
         </div>
 
         <div class="col-3 col-sm-3">
           <label class="tx-10 tx-medium tx-spacing-1 tx-color-03 tx-uppercase tx-sans mg-b-10">Panel QR</label>
           <input type="text" name="panel_qr" class="form-control" value="{{ old("panel_qr", $pole->panel_qr) }}">
-          <small class="text-warning">Changing this will return old inventory</small>
+          <small class="text-danger inventory-warning">Changing this will return old inventory</small>
         </div>
       </div>
 
@@ -209,4 +199,26 @@
       // You can add form validation or other interactive features here
     });
   </script>
+@endpush
+
+@push("styles")
+  <style>
+    /* White background for select dropdowns */
+    .white-select {
+      background-color: #ffffff !important;
+      color: #333333 !important;
+    }
+    
+    .white-select option {
+      background-color: #ffffff !important;
+      color: #333333 !important;
+    }
+    
+    /* Smaller red text for inventory warnings */
+    .inventory-warning {
+      font-size: 0.75rem !important;
+      color: #dc3545 !important;
+      font-weight: 500;
+    }
+  </style>
 @endpush
