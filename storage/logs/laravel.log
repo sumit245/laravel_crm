@@ -1,14 +1,41 @@
-[2025-08-06 22:02:38] local.INFO: array (
+[2025-08-06 22:37:37] local.INFO: Raw ward string: 5,6,7,8,9,10  
+[2025-08-06 22:37:37] local.INFO: array (
+  0 => 
+  array (
+    'ward' => '5',
+  ),
+  1 => 
+  array (
+    'ward' => '6',
+  ),
+  2 => 
+  array (
+    'ward' => '7',
+  ),
+  3 => 
+  array (
+    'ward' => '8',
+  ),
+  4 => 
+  array (
+    'ward' => '9',
+  ),
+  5 => 
+  array (
+    'ward' => '10',
+  ),
+)  
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075806516',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/4',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3886',
@@ -18,24 +45,20 @@
   'lng' => '86.1447498',
   'remark' => 'Sopari Saw ke ghar ke aage',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:38',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:38] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:38] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075301060',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/2',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3824',
@@ -45,24 +68,20 @@
   'lng' => '86.1584839',
   'remark' => 'Sohan saw ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:38',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:38] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:38] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075304783',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/3',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3834',
@@ -72,24 +91,20 @@
   'lng' => '86.1584839',
   'remark' => 'Lalan saw ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:38',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:39] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:39] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076739987',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/9',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3844',
@@ -99,24 +114,20 @@
   'lng' => '86.1584839',
   'remark' => 'Sandeep ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:39',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:39] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:39] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075294562',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/5',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3820',
@@ -126,24 +137,20 @@
   'lng' => '86.1584839',
   'remark' => 'Prem saw ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:39',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:39] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:39] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075276569',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/7',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3823',
@@ -153,24 +160,20 @@
   'lng' => '86.1212937',
   'remark' => 'Tuntun saw ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:39',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:39] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:39] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075307935',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/8',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3813',
@@ -180,24 +183,20 @@
   'lng' => '86.1416274',
   'remark' => 'Anup saw ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:39',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:39] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:39] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075244716',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD11/1',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3917',
@@ -207,24 +206,20 @@
   'lng' => '86.1421895',
   'remark' => 'Pramod Saw ke bagal me hai',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:39',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:39] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:39] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076688614',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/4',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3883',
@@ -234,24 +229,20 @@
   'lng' => '86.1584839',
   'remark' => 'Shyam sundar ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:39',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:40] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:40] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075805268',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/5',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3882',
@@ -261,24 +252,20 @@
   'lng' => '86.1584839',
   'remark' => 'Samudaik bhawan ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:40',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:40] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:40] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075269507',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/6',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3864',
@@ -288,24 +275,20 @@
   'lng' => '86.1584839',
   'remark' => 'Sankar manjhi ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:40',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:40] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:40] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075232141',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/9',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3860',
@@ -315,24 +298,20 @@
   'lng' => '86.1584839',
   'remark' => 'Pardesi ravidas ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:40',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:40] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:40] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076748640',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/3',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3875',
@@ -342,24 +321,20 @@
   'lng' => '86.1584839',
   'remark' => 'Sundar manjhi ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:40',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:40] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:40] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076690420',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/7',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3832',
@@ -369,24 +344,20 @@
   'lng' => '86.1584839',
   'remark' => 'Sudhir thakur ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:40',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:41] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:41] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075068834',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/2',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3926',
@@ -396,24 +367,20 @@
   'lng' => '86.1584839',
   'remark' => 'Ramlakhan yadav ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:41',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:41] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:41] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076642322',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/8',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3850',
@@ -423,24 +390,20 @@
   'lng' => '86.1584839',
   'remark' => 'Upendra ram ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:41',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:41] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:41] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076758888',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/10',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3901',
@@ -450,24 +413,20 @@
   'lng' => '86.1584839',
   'remark' => 'Shiv mandir ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:41',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:41] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:41] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076816553',
   'MfId' => '4',
   'poleName' => 'LAK/RAM/NON/WARD9/1',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3879',
@@ -477,24 +436,20 @@
   'lng' => '86.1476709',
   'remark' => 'Saryu rajak ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:41',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:41] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:41] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268076739490',
   'MfId' => '4',
   'poleName' => 'LAK/SUR/RAM/WARD6/1',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3909',
@@ -504,24 +459,20 @@
   'lng' => '86.1470214',
   'remark' => 'Aneg singh',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:41',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:41] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:41] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075787227',
   'MfId' => '4',
   'poleName' => 'LAK/SUR/RAM/WARD6/2',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3943',
@@ -531,24 +482,20 @@
   'lng' => '86.1470750',
   'remark' => 'Ram Pravesh ke Ghar ke pass',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:41',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:42] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
-[2025-08-06 22:02:42] local.INFO: array (
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 
+[2025-08-06 22:37:39] local.INFO: array (
   'devId' => '861268075043548',
   'MfId' => '4',
   'poleName' => 'LAK/SUR/RAM/WARD6/3',
-  'project' => 'BREDASSL',
+  'project' => 'BREDSSL',
   'district' => 'Lakhisarai',
-  'districtCode' => 227,
+  'districtCode' => '227',
   'block' => 'Surajgarha',
-  'block_code' => '1367',
+  'blockCode' => '1367',
   'panchayat' => 'Kiranpur',
-  'panchayat_code' => '96963',
+  'panchayatCode' => '96963',
   'ward_type' => 'W',
   'ward_number' => '02',
   'BattSno' => 'EEPL/01/2025/3937',
@@ -558,10 +505,6 @@
   'lng' => '86.1479508',
   'remark' => 'Jaishankar Prasad',
   'updated_by' => 'Ujjawal Raj',
-  'dateTime' => '2025-08-06 22:02:42',
+  'dateTime' => '2025-08-06 22:37:39',
 )  
-[2025-08-06 22:02:42] local.INFO: array (
-  'status' => 'ERR',
-  'errorCode' => '4',
-  'detail' => 'Invalid Parameter',
-)  
+[2025-08-06 22:37:39] local.ERROR: Remote API exception {"error":"cURL error 6: Could not resolve host: ssl.slldm.com (see https://curl.haxx.se/libcurl/c/libcurl-errors.html) for https://ssl.slldm.com/insertMasterData.php"} 

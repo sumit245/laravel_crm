@@ -17,13 +17,13 @@ class RemoteApiHelper
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
             'poleName' => $pole->complete_pole_number,
-            "project" => "BREDASSL", //TODO: Get project from .env
+            "project" => "BREDSSL", //TODO: Get project from .env
             'district' => $streetlight->district,
-            'districtCode' => $districtCode,
+            'districtCode' => (string) $districtCode,
             'block' => $streetlight->block,
-            'block_code' => $streetlight->block_code,
+            'blockCode' => $streetlight->block_code,
             'panchayat' => $streetlight->panchayat,
-            'panchayat_code' => $streetlight->panchayat_code,
+            'panchayatCode' => $streetlight->panchayat_code,
             'ward_type' => $streetlight->ward_type ?? 'W',
             'ward_number' => "02",
             'BattSno' => $pole->battery_qr,
