@@ -16,8 +16,7 @@ return new class extends Migration
             $table->dropColumn([
                 'isSurveyDone',
                 'isNetworkAvailable',
-                'isInstallationDone',
-                'pole_id'
+                'isInstallationDone'
             ]);
         });
     }

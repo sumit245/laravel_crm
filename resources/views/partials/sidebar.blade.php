@@ -36,26 +36,7 @@
         <span class="menu-title">RMS Portal</span>
       </a>
     </li>
-<<<<<<< HEAD
-      <li class="nav-item">
-        <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
-          <i class="menu-icon mdi mdi-chart-pie"></i>
-          <span class="menu-title">Generate JICR</span>
-        </a>
-      </li>
-      @if (auth()->user()->role == 0)
-        <li class="nav-item">
-          <a class="nav-link" href="{{ route("device.index", ["project_id" => $selectedProjectId]) }}">
-            <i class="menu-icon mdi mdi-file-excel"></i>
-            <span class="menu-title">Import Devices</span>
-          </a>
-        </li>
-      @endif
 
-
-=======
-    {{-- @if ($projectType == 1) --}}
->>>>>>> f825c9f0b561ec0ffb351e6bd76c219dd5835433
     <li class="nav-item">
       <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
         <i class="menu-icon mdi mdi-chart-pie"></i>
