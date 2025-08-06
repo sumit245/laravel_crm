@@ -36,6 +36,7 @@
         <span class="menu-title">RMS Portal</span>
       </a>
     </li>
+<<<<<<< HEAD
       <li class="nav-item">
         <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
           <i class="menu-icon mdi mdi-chart-pie"></i>
@@ -52,18 +53,44 @@
       @endif
 
 
+=======
+    {{-- @if ($projectType == 1) --}}
+>>>>>>> f825c9f0b561ec0ffb351e6bd76c219dd5835433
     <li class="nav-item">
+      <a class="nav-link" href="{{ route("jicr.index", ["project_id" => $selectedProjectId]) }}">
+        <i class="menu-icon mdi mdi-chart-pie"></i>
+        <span class="menu-title">Generate JICR</span>
+      </a>
+    </li>
+    {{-- @if (auth()->user()->role == 0) --}}
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("device.index", ["project_id" => $selectedProjectId]) }}">
+        <i class="menu-icon mdi mdi-file-excel"></i>
+        <span class="menu-title">Import Devices</span>
+      </a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="{{ route("rms.index", ["project_id" => $selectedProjectId]) }}">
+        <i class="menu-icon mdi mdi-file-excel"></i>
+        <span class="menu-title">Push to RMS</span>
+      </a>
+    </li>
+    {{-- @endif --}}
+
+    {{-- @endif --}}
+
+    {{-- <li class="nav-item">
       <a class="nav-link disabled" href="{{ route("sites.index") }}">
         <i class="menu-icon mdi mdi-map-marker-outline"></i>
         <span class="menu-title">Sites Management</span>
       </a>
-    </li>
-    <li class="nav-item">
+    </li> --}}
+    {{-- <li class="nav-item">
       <a class="nav-link disabled" href="{{ route("tasks.index") }}">
         <i class="menu-icon mdi mdi-checkbox-marked"></i>
         <span class="menu-title">Target Management</span>
       </a>
-    </li>
+    </li> --}}
 
     <li class="nav-item nav-category">Users</li>
     @if (auth()->user()->role == 0)

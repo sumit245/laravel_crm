@@ -124,13 +124,13 @@
           <td>{{ $target->start_date }}</td>
           <td>{{ $target->end_date }}</td>
           <td>
-            <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-sm btn-info">View</a>
-            <a href="{{ route("tasks.editrooftop", $target->id) }}" class="btn btn-sm btn-warning">Edit</a>
+            <a href="{{ route("tasks.show", ["id" => $target->id]) }}" class="btn btn-icon btn-info"><i class="mdi mdi-eye"></i></a>
+            <a href="{{ route("tasks.editrooftop", $target->id) }}" class="btn btn-icon btn-warning"><i class="mdi mdi-pencil"></i></a>
             <form action="{{ route("tasks.destroy", $target->id) }}" method="POST"
               style="display: inline-block;">
               @csrf
               @method("DELETE")
-              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+              <button type="submit" class="btn btn-icon btn-danger"><i class="mdi mdi-delete"></i></button>
             </form>
           </td>
         </tr>

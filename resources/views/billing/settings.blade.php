@@ -2,6 +2,7 @@
 @section("content")
   <div class="container-fluid p-0">
     <div class="row g-0">
+
       <!-- Vertical Tab Navigation -->
       <div class="col-md-3 col-lg-2 bg-light" style="min-height: calc(100vh - 60px);">
         <div class="settings-sidebar">
@@ -32,72 +33,72 @@
           </div>
         </div>
       </div>
+
       <!-- Tab Content Area -->
       <div class="col-md-9 col-lg-10">
         <div class="tab-content m-3 p-3" id="v-pills-tabContent">
-          <!-- Vehicle Settings Tab -->
-          <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel"
-            aria-labelledby="v-pills-vehicle-tab">
-            <div class="d-flex justify-content-between align-items-center mb-4">
-              <h4 class="mb-0"><i class="bi bi-car-front me-2"></i>Vehicle Settings</h4>
-              <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
-                <i class="mdi mdi-plus-circle me-1"></i> Add Vehicle
-              </button>
-            </div>
-            <div class="card shadow-sm">
-              <div class="card-body">
-                <div class="table-responsive">
-                  <x-data-table id="vehicleTable" class="table table-bordered table-striped table-sm display nowrap" style="width:100%">
-  <x-slot:thead class="table-light">
-    <tr>
-      <th>Vehicle Name</th>
-      <th>Category</th>
-      <th>Sub Category</th>
-      <th>Rate/KM</th>
-      <th>Actions</th>
-    </tr>
-  </x-slot:thead>
-  <x-slot:tbody>
-    @foreach ($vehicles as $vehicle)
-      <tr>
-        <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
-        <td>{{ $vehicle->category ?? "N/A" }}</td>
-        <td>{{ $vehicle->sub_category }}</td>
-        <td>{{ $vehicle->rate }}</td>
-        <td>
-          <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
-            <i class="mdi mdi-pencil"></i>
-          </a>
-          <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
-            @csrf
-            @method('DELETE')
-            <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
-              onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
-              <i class="mdi mdi-delete"></i>
-            </button>
-          </form>
-        </td>
-      </tr>
-    @endforeach
-  </x-slot:tbody>
-</x-data-table>
-                </div>
-              </div>
-            </div>
-          </div>
+                  <!-- Vehicle Settings Tab -->
+                  <div class="tab-pane fade show active" id="v-pills-vehicle" role="tabpanel"
+                    aria-labelledby="v-pills-vehicle-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                      <h4 class="mb-0"><i class="bi bi-car-front me-2"></i>Vehicle Settings</h4>
+                      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addVehicleModal">
+                        <i class="mdi mdi-plus-circle me-1"></i> Add Vehicle
+                      </button>
+                    </div>
+                    <div class="card shadow-sm">
+                      <div class="card-body">
+                        <div class="table-responsive">
+                          <x-data-table id="vehicleTable" class="table table-bordered table-striped table-sm display nowrap" style="width:100%">
+          <x-slot:thead class="table-light">
+            <tr>
+              <th>Vehicle Name</th>
+              <th>Category</th>
+              <th>Sub Category</th>
+              <th>Rate/KM</th>
+              <th>Actions</th>
+            </tr>
+          </x-slot:thead>
+          <x-slot:tbody>
+            @foreach ($vehicles as $vehicle)
+              <tr>
+                <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
+                <td>{{ $vehicle->category ?? "N/A" }}</td>
+                <td>{{ $vehicle->sub_category }}</td>
+                <td>{{ $vehicle->rate }}</td>
+                <td>
+                  <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
+                    <i class="mdi mdi-pencil"></i>
+                  </a>
+                  <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
+                      onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
+                      <i class="mdi mdi-delete"></i>
+                    </button>
+                  </form>
+                </td>
+              </tr>
+            @endforeach
+          </x-slot:tbody>
+        </x-data-table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
           <!-- User Settings Tab -->
           <div class="tab-pane fade" id="v-pills-user" role="tabpanel" aria-labelledby="v-pills-user-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
               <h4 class="mb-0"><i class="bi bi-people me-2"></i>User Settings</h4>
-              <!-- <button class="btn btn-primary" id="assignCategoryBtn">
-                                  <i class="mdi mdi-tag-multiple me-1"></i> Assign Category
-                              </button> -->
             </div>
+
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
-                  <table id="userTable" class="table-bordered table-striped table-sm table">
-                    <thead class="table-light">
+                  <x-data-table id="userTable" class="table-bordered table-striped table-sm table">
+                    <x-slot:thead class="table-light">
                       <tr>
                         <th><input type="checkbox" id="selectAllUsers"></th>
                         <!-- <th>#</th> -->
@@ -107,8 +108,8 @@
                         <th>Category</th>
                         <th>Actions</th>
                       </tr>
-                    </thead>
-                    <tbody>
+                    </x-slot:thead>
+                  <x-slot:tbody>
                       @foreach ($users as $user)
                         <tr>
                           <td><input type="checkbox" class="user-checkbox" data-id="{{ $user->id }}"></td>
@@ -118,19 +119,20 @@
                           <td>{{ $user->email ?? "N/A" }}</td>
                           <td>{{ $user->usercategory->category_code ?? "N/A" }}</td>
                           <td>
-                            <a href="{{ route("billing.edituser", $user->id) }}" class="btn btn-icon btn-primary"
+                            <a href="{{ route("billing.edituser", $user->id) }}" class="btn btn-icon btn-warning"
                               title="Edit Category">
                               <i class="mdi mdi-pencil"></i>
                             </a>
                           </td>
                         </tr>
                       @endforeach
-                    </tbody>
-                  </table>
+                     </x-slot:tbody>
+                   </x-data-table>
                 </div>
               </div>
             </div>
           </div>
+
           <!-- Category Settings Tab -->
           <div class="tab-pane fade" id="v-pills-category" role="tabpanel" aria-labelledby="v-pills-category-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -206,6 +208,7 @@
               </div>
             </div>
           </div>
+
           <!-- Allowed Expenses Settings Tab -->
           <div class="tab-pane fade" id="v-pills-allowed-expense" role="tabpanel" aria-labelledby="v-pills-allowed-expense-tab">
             <div class="d-flex justify-content-between align-items-center mb-4">
@@ -248,6 +251,7 @@
               </div>
             </div>
           </div>
+
         </div>
       </div>
     </div>
@@ -372,16 +376,19 @@
 @push("scripts")
   <script>
     $(document).ready(function() {
+
       // Initialize Select2 for vehicles allowed dropdowns
       $('#editVehiclesAllowed').select2({
         placeholder: "Select vehicles",
         allowClear: true,
         dropdownParent: $('#editCategoryModal')
       });
+
       // Reopen workaround if needed
       $('#addCategoryModal').on('shown.bs.modal', function() {
         $('#vehiclesAllowed').select2('open');
       });
+      
       // Initialize DataTables
       $('#userTable').DataTable({
         dom: "<'row'<'col-sm-12'f>>" +
@@ -416,6 +423,8 @@
           searchPlaceholder: 'Search Users'
         }
       });
+
+
       $('#categoryTable').DataTable({
         dom: "<'row'<'col-sm-12'f>>" +
           "<'row'<'col-sm-12'tr>>" +
@@ -561,6 +570,7 @@
           $('#assignCategoryModal').modal('show');
         }
       });
+
       // Save bulk category assignment
       $('#saveBulkCategoryBtn').on('click', function() {
         if (!validateForm('assignCategoryForm')) {
@@ -582,6 +592,7 @@
           confirmButtonColor: '#0d6efd'
         });
       });
+
       // Delete vehicle button click
       $('.delete-vehicle').on('click', function() {
         let vehicleId = $(this).data('id');
@@ -601,6 +612,7 @@
           });
         });
       });
+
       // Delete category button click
       $('.delete-category').on('click', function() {
         let categoryId = $(this).data('id');
@@ -620,6 +632,7 @@
           });
         });
       });
+
       // Save vehicle button
       $('#saveVehicleBtn').on('click', function() {
         if (!validateForm('addVehicleForm')) {
@@ -635,6 +648,7 @@
           confirmButtonColor: '#0d6efd'
         });
       });
+
       // Update vehicle button
       $('#updateVehicleBtn').on('click', function() {
         if (!validateForm('editVehicleForm')) {
@@ -650,6 +664,7 @@
           confirmButtonColor: '#0d6efd'
         });
       });
+
       // Save category button
       $('#saveCategoryBtn').on('click', function() {
         if (!validateForm('addCategoryForm')) {
@@ -665,6 +680,7 @@
           confirmButtonColor: '#0d6efd'
         });
       });
+
       // Update category button
       $('#updateCategoryBtn').on('click', function() {
         if (!validateForm('editCategoryForm')) {
@@ -680,6 +696,7 @@
           confirmButtonColor: '#0d6efd'
         });
       });
+
       // Update user category button
       $('#updateUserCategoryBtn').on('click', function() {
         if (!validateForm('editUserCategoryForm')) {
@@ -695,26 +712,31 @@
           confirmButtonColor: '#0d6efd'
         });
       });
+
       $('#vehiclesAllowed').select2({
         placeholder: "Select vehicles",
         allowClear: true,
         dropdownParent: $('#addCategoryModal')
       });
+
       // Clear validation on input change
       $('input, select').on('change', function() {
         $(this).removeClass('is-invalid');
       });
+
       // Clear select2 validation on change
       $('#vehiclesAllowed, #editVehiclesAllowed').on('change', function() {
         $(this).next('.select2-container').css('border', '');
       });
-    });
-    $(document).ready(function () {
-        const tab = new URLSearchParams(window.location.search).get('tab');
-        if (tab === 'category') {
-            $('#category-tab').tab('show'); // Or your relevant method
-        }
-    });
+      });
+
+      $(document).ready(function () {
+          const tab = new URLSearchParams(window.location.search).get('tab');
+          if (tab === 'category') {
+              $('#category-tab').tab('show'); // Or your relevant method
+          }
+      });
+
   </script>
 @endpush
 @push("styles")

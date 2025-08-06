@@ -12,7 +12,7 @@
         <form action="{{ route("import.candidates") }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="input-group">
-            <input type="file" name="file" class="form-control form-control-sm" required>
+            <input type="file" name="file" class="form-control form-height form-control-sm" required>
             <button type="submit" class="btn btn-sm btn-primary" title="Import Candidates">
               <i class="mdi mdi-upload"></i> Import Candidates
             </button>
@@ -312,5 +312,8 @@
    .select2-container--default .select2-selection--single:read-only{
     padding: 0;
    }
+  .form-height{
+    height: 100%;
+  }
 </style>
 @endpush

@@ -336,7 +336,11 @@ class InventoryController extends Controller
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
                 ->with('dispatch')
+<<<<<<< HEAD
                 ->paginate(10000); // Load 50 items per page
+=======
+                ->get();
+>>>>>>> f825c9f0b561ec0ffb351e6bd76c219dd5835433
 
             // 6. Calculate derived totals
             $totalBattery = $inventoryStats->get('SL03')->total_items ?? 0;
@@ -481,86 +485,99 @@ class InventoryController extends Controller
     }
 
 
-    public function viewVendorInventory($vendorId)
-    {
-        Log::info("Fetching inventory for vendor_id: {$vendorId}");
+    public function viewVendorInventory(Request $request, $vendorId)
+{
+    Log::info("Fetching inventory for vendor_id: {$vendorId}");
 
-        try {
-            $todayDate = now()->toDateString(); // Get today's date
+    try {
+        $todayDate = now()->toDateString();
 
-            // Fetch inventory dispatched to the vendor
-            $inventory = InventoryDispatch::where('vendor_id', $vendorId)
-                ->with(['project', 'store', 'storeIncharge'])
-                ->get();
+        // Set the page size, default to 100 if not provided
+        $perPage = $request->get('per_page', 100);
 
-            if ($inventory->isEmpty()) {
-                Log::warning("No inventory found for vendor_id: {$vendorId}");
-                return response()->json([
-                    'message' => 'No inventory found for this vendor.',
-                    'vendor_id' => $vendorId
-                ], 404);
-            }
+        // Fetch paginated inventory
+        $inventoryPaginated = InventoryDispatch::where('vendor_id', $vendorId)
+            ->with(['project', 'store', 'storeIncharge'])
+            ->orderBy('dispatch_date', 'desc') // Optional: keep it ordered
+            ->paginate($perPage);
 
-            // Filter today's inventory
-            $todayInventory = $inventory->where('dispatch_date', '>=', $todayDate)
-                ->groupBy('item_code')->map(function ($items) {
-                    return $this->formatInventoryItem($items);
-                })->values();
+        $inventory = collect($inventoryPaginated->items());
 
-            // Group inventory by item_code
-            $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
-                return $this->formatInventoryItem($items);
-            });
-
-            // Split into categories based on `is_consumed`
-            $totalReceived = [];
-            $inStock = [];
-            $consumed = [];
-
-            foreach ($groupedInventory as $item) {
-                $matchingItems = $inventory->where('item_code', $item['item_code']);
-
-                $consumedItems = $matchingItems->where('is_consumed', 1);
-                $inStockItems = $matchingItems->where('is_consumed', 0);
-
-                // If any item is consumed, move to "consumed"
-                if ($consumedItems->isNotEmpty()) {
-                    $consumed[] = $this->formatInventoryItem($consumedItems);
-                }
-
-                // If any item is still in stock, move to "in_stock"
-                if ($inStockItems->isNotEmpty()) {
-                    $inStock[] = $this->formatInventoryItem($inStockItems);
-                }
-
-                // Add all items to total received
-                $totalReceived[] = $item;
-            }
-
-            // Prepare final response
-            $response = [
-                'vendor_id' => $vendorId,
-                'project_id' => optional($inventory->first()->project)->id,
-                'project_name' => optional($inventory->first()->project)->project_name,
-                'total_inventory_value' => number_format($inventory->sum('total_value'), 2, '.', ''),
-                'inventory_count' => count($groupedInventory),
-                'today_inventory' => $todayInventory,
-                'all_inventory' => [
-                    'total_received' => $totalReceived,
-                    'in_stock' => $inStock,
-                    'consumed' => $consumed,
-                ],
-            ];
-
-            return response()->json($response);
-        } catch (Exception $e) {
-            Log::error($e->getMessage());
+        if ($inventory->isEmpty()) {
+            Log::warning("No inventory found for vendor_id: {$vendorId}");
             return response()->json([
-                'message' => 'Something went wrong!',
-                'error' => $e->getMessage()
-            ], 500);
+                'message' => 'No inventory found for this vendor.',
+                'vendor_id' => $vendorId
+            ], 404);
         }
+
+        // Filter today's inventory
+        $todayInventory = $inventory->where('dispatch_date', '>=', $todayDate)
+            ->groupBy('item_code')->map(function ($items) {
+                return $this->formatInventoryItem($items);
+            })->values();
+
+        // Group inventory by item_code
+        $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
+            return $this->formatInventoryItem($items);
+        });
+
+        // Split into categories based on `is_consumed`
+        $totalReceived = [];
+        $inStock = [];
+        $consumed = [];
+
+        foreach ($groupedInventory as $item) {
+            $matchingItems = $inventory->where('item_code', $item['item_code']);
+
+            $consumedItems = $matchingItems->where('is_consumed', 1);
+            $inStockItems = $matchingItems->where('is_consumed', 0);
+
+            if ($consumedItems->isNotEmpty()) {
+                $consumed[] = $this->formatInventoryItem($consumedItems);
+            }
+
+            if ($inStockItems->isNotEmpty()) {
+                $inStock[] = $this->formatInventoryItem($inStockItems);
+            }
+
+            $totalReceived[] = $item;
+        }
+
+        // Prepare final response
+        $response = [
+            'vendor_id' => $vendorId,
+            'project_id' => optional($inventory->first()->project)->id,
+            'project_name' => optional($inventory->first()->project)->project_name,
+            'total_inventory_value' => number_format($inventory->sum('total_value'), 2, '.', ''),
+            'inventory_count' => count($groupedInventory),
+            'today_inventory' => $todayInventory,
+            'all_inventory' => [
+                'total_received' => $totalReceived,
+                'in_stock' => $inStock,
+                'consumed' => $consumed,
+            ],
+            'pagination' => [
+                'total' => $inventoryPaginated->total(),
+                'per_page' => $inventoryPaginated->perPage(),
+                'current_page' => $inventoryPaginated->currentPage(),
+                'last_page' => $inventoryPaginated->lastPage(),
+                'next_page_url' => $inventoryPaginated->nextPageUrl(),
+                'prev_page_url' => $inventoryPaginated->previousPageUrl(),
+            ]
+        ];
+
+        return response()->json($response);
+
+    } catch (Exception $e) {
+        Log::error($e->getMessage());
+        return response()->json([
+            'message' => 'Something went wrong!',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
 
     /**
      * Helper function to format inventory items
