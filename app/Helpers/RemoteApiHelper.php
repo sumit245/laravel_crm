@@ -14,24 +14,28 @@ class RemoteApiHelper
         // TODO: Read URL from env
         $districtCode = DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
         $payload = [
+            'devId' => $pole->luminary_qr,
+            'MfId' => "4",
             'poleName' => $pole->complete_pole_number,
-            'ward' => $pole->ward_name,
-            'panchayat' => $streetlight->panchayat,
-            'block' => $streetlight->block,
+            "project" => "BREDASSL", //TODO: Get project from .env
             'district' => $streetlight->district,
             'districtCode' => $districtCode,
-            'devId' => $pole->luminary_qr,
+            'block' => $streetlight->block,
+            'block_code' => $streetlight->block_code,
+            'panchayat' => $streetlight->panchayat,
+            'panchayat_code' => $streetlight->panchayat_code,
+            'ward_type' => $streetlight->ward_type ?? 'W',
+            'ward_number' => "02",
             'BattSno' => $pole->battery_qr,
             'PvSno' => $pole->panel_qr,
+            'simNo' => $pole->sim_number,
             'lat' => $pole->lat,
             'lng' => $pole->lng,
-            'file' => '',
-            "project" => "BREDASSL", //TODO: Get project from .env
             'remark' => $pole->remarks,
             'updated_by' => $approver,
-            'MfId' => 101,
             'dateTime' => now()->format('Y-m-d H:i:s'),
         ];
+        Log::info($payload);
         try {
             $response = Http::asForm()->post($url, $payload);
             Log::info($response->json());
