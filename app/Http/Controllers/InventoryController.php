@@ -336,11 +336,7 @@ class InventoryController extends Controller
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
                 ->with('dispatch')
-<<<<<<< HEAD
-                ->paginate(10000); // Load 50 items per page
-=======
                 ->get();
->>>>>>> f825c9f0b561ec0ffb351e6bd76c219dd5835433
 
             // 6. Calculate derived totals
             $totalBattery = $inventoryStats->get('SL03')->total_items ?? 0;
