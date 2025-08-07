@@ -21,3 +21,4 @@ composer.lock
 /.vscode
 /storage/logs/laravel.log
 storage/logs/laravel.log
+storage/logs/laravel.log
