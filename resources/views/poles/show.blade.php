@@ -4,10 +4,9 @@
   <div class="pd-20 pd-xl-25 container">
     <div class="d-flex align-items-center justify-content-between mg-b-25">
       <h6 class="mg-b-0">Pole Details</h6>
-      <div class="d-flex">
-        <a href="{{ route("poles.edit", $pole->id) }}" class="btn btn-sm btn-white d-flex align-items-center">
-          <i class="fa fa-edit"></i>
-          <span class="d-?none d-sm-inline mg-l-5">Edit</span>
+      <div class="d-flex mt-2">
+        <a href="{{ route("poles.edit", $pole->id) }}" class="btn btn-icon btn-warning py-2">
+           <i class="mdi mdi-pencil"> Edit</i>
         </a>
         <a href="javascript:void(0);" class="btn btn-sm btn-white d-flex align-items-center"
           onclick="goBackWithFallback();">

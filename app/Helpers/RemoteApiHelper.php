@@ -15,24 +15,28 @@ class RemoteApiHelper
         $districtCode = DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
        Log::info( basename($pole->complete_pole_number));
         $payload = [
-            'poleName' => $pole->complete_pole_number,
-            'ward' => $pole->ward_name,
-            'panchayat' => $streetlight->panchayat,
-            'block' => $streetlight->block,
-            'district' => $streetlight->district,
-            'districtCode' => $districtCode,
             'devId' => $pole->luminary_qr,
+            'MfId' => "4",
+            'poleName' => $pole->complete_pole_number,
+            "project" => "BREDASSL", //TODO: Get project from .env
+            'district' => $streetlight->district,
+            'districtCode' => (string) $districtCode,
+            'block' => $streetlight->block,
+            'blockCode' => $streetlight->block_code,
+            'panchayat' => $streetlight->panchayat,
+            'panchayatCode' => $streetlight->panchayat_code,
+            'ward_type' => $streetlight->ward_type ?? 'W',
+            'ward_number' => "02",
             'BattSno' => $pole->battery_qr,
             'PvSno' => $pole->panel_qr,
+            'simNo' => $pole->sim_number,
             'lat' => $pole->lat,
             'lng' => $pole->lng,
-            'file' => '',
-            "project" => "BREDASSL", //TODO: Get project from .env
             'remark' => $pole->remarks,
             'updated_by' => $approver,
-            'MfId' => 101,
             'dateTime' => now()->format('Y-m-d H:i:s'),
         ];
+        Log::info($payload);
         try {
             // $response = Http::asForm()->post($url, $payload);
             // Log::info($response->json());
