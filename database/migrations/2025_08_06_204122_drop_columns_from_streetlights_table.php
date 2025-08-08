@@ -28,7 +28,12 @@ return new class extends Migration
                 'lat',
                 'lng',
                 'remark',
+<<<<<<< HEAD
                 'SID'
+=======
+                'SID',
+                // 'pole_id'
+>>>>>>> 4f2e9ee6d4295205f1bab72d37ad5891e37d1395
             ]);
 
             // Add the new columns with specified data types

@@ -13,6 +13,7 @@ class RemoteApiHelper
         $url = 'https://ssl.slldm.com/insertMasterData.php';
         // TODO: Read URL from env
         $districtCode = DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
+       Log::info( basename($pole->complete_pole_number));
         $payload = [
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
@@ -37,8 +38,8 @@ class RemoteApiHelper
         ];
         Log::info($payload);
         try {
-            $response = Http::asForm()->post($url, $payload);
-            Log::info($response->json());
+            // $response = Http::asForm()->post($url, $payload);
+            // Log::info($response->json());
             // if ($response->successful()) {
             //     Log::info("Remote API success", ['response' => $response->body()]);
             // } else {

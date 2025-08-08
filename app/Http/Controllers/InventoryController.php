@@ -290,80 +290,101 @@ class InventoryController extends Controller
         }
     }
 
+    // View Inventory from store
     public function viewInventory(Request $request)
     {
+
         try {
             $projectId = $request->project_id;
             $storeId = $request->store_id;
-
-            // 1. Fetch store and project
-            $store = Stores::with('user')->findOrFail($storeId);
-            $project = Project::findOrFail($projectId);
-
+            $store = Stores::findOrFail($storeId);
             $storeName = $store->store_name;
-            $inchargeName = $store->storeIncharge ? $store->storeIncharge->firstName . ' ' . $store->storeIncharge->lastName : 'N/A';
+            $storeIncharge = User::findOrFail($store->store_incharge_id);
+            $inchargeName = $storeIncharge->firstName . ' ' . $storeIncharge->lastName;
+
+            // Fetch the project to determine the type
+            $project = Project::findOrFail($projectId);
+            // $storeName = "";
+
+            // Fetch the project to determine the type
+            $project = Project::findOrFail($projectId);
             $projectType = $project->project_type;
 
-            // 2. Determine model
-            $inventoryModel = ($projectType == 1) ? InventroyStreetLightModel::class : Inventory::class;
+            // Determine the model to query based on project type
+            $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
-            // 3. Inventory stats
-            $inventoryStats = $inventoryModel::where('project_id', $projectId)
-                ->where('store_id', $storeId)
-                ->select(
-                    'item_code',
-                    DB::raw('COUNT(*) as total_items'),
-                    DB::raw('MAX(rate) as item_rate')
-                )
-                ->groupBy('item_code')
-                ->get()
-                ->keyBy('item_code');
 
-            // 4. Dispatch stats
-            $dispatchStats = InventoryDispatch::where('isDispatched', true)
-                ->where('project_id', $projectId)
-                ->where('store_id', $storeId)
-                ->select(
-                    'item_code',
-                    DB::raw('COUNT(*) as dispatched_items'),
-                    DB::raw('SUM(total_value) as dispatched_value')
-                )
-                ->groupBy('item_code')
-                ->get()
-                ->keyBy('item_code');
-
-            // 5. Paginate inventory (prevent memory leak here)
+            // Query inventory based on store_name and store_id
             $inventory = $inventoryModel::where('project_id', $projectId)
-                ->where('store_id', $storeId)
+                ->where('store_id', $storeId) // Filter by store_id directly
                 ->with('dispatch')
                 ->get();
+            // Dispatch Inventory
+            $dispatch = InventoryDispatch::where('isDispatched', true)
+                ->where('store_id', $storeId)
+                ->get();
 
-            // 6. Calculate derived totals
-            $totalBattery = $inventoryStats->get('SL03')->total_items ?? 0;
-            $batteryRate = $inventoryStats->get('SL03')->item_rate ?? 0;
+
+
+            // Battery Data
+            $totalBattery = $inventory->where('item_code', 'SL03')
+                ->count();
+            $batteryRate = $inventory->where('item_code', 'SL03')
+                ->value('rate');
             $totalBatteryValue = $batteryRate * $totalBattery;
-            $batteryDispatch = $dispatchStats->get('SL03')->dispatched_items ?? 0;
-            $dispatchAmountBattery = $dispatchStats->get('SL03')->dispatched_value ?? 0;
+            $totalBatteryValue = number_format($totalBatteryValue, 2);
+            // Battery Dispatch data
+            $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
             $availableBattery = $totalBattery - $batteryDispatch;
 
-            $totalLuminary = $inventoryStats->get('SL02')->total_items ?? 0;
-            $luminaryRate = $inventoryStats->get('SL02')->item_rate ?? 0;
-            $totalLuminaryValue = $luminaryRate * $totalLuminary;
-            $luminaryDispatch = $dispatchStats->get('SL02')->dispatched_items ?? 0;
-            $dispatchAmountLuminary = $dispatchStats->get('SL02')->dispatched_value ?? 0;
+            $dispatchAmountBattery = $dispatch->where('item_code', 'SL03')->sum('total_value');
+            $dispatchAmountBattery = number_format($dispatchAmountBattery, 2);
+
+            // Luminary Data
+            $totalLuminary = $inventory->where('item_code', 'SL02')->count();
+            $LuminaryRate = $inventory->where('item_code', 'SL02')
+                ->value('rate');
+            $totalLuminaryValue = $LuminaryRate * $totalLuminary;
+            $totalLuminaryValue = number_format($totalLuminaryValue, 2);
+            // Luminary Dispatch data
+            $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
             $availableLuminary = $totalLuminary - $luminaryDispatch;
 
-            $totalModule = $inventoryStats->get('SL01')->total_items ?? 0;
-            $moduleRate = $inventoryStats->get('SL01')->item_rate ?? 0;
-            $totalModuleValue = $moduleRate * $totalModule;
-            $moduleDispatch = $dispatchStats->get('SL01')->dispatched_items ?? 0;
-            $dispatchAmountModule = $dispatchStats->get('SL01')->dispatched_value ?? 0;
-            $availableModule = $totalModule - $moduleDispatch;
+            $dispatchAmountLuminary = $dispatch->where('item_code', 'SL02')->sum('total_value');
+            $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
 
+            //Structure Data
+            // $totalStructure = $inventory->where('item_code', 'SL04')->count();
+            // $StructureRate = $inventory->where('item_code', 'SL04')
+            // ->value('rate');
+            // $totalStructureValue = $StructureRate * $totalStructure;
+            // $totalStructureValue = number_format($totalStructureValue, 2);
+            // Structure Dispatch data
+            // $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
+            // $availableStructure = $totalStructure - $structureDispatch;
+            // $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
+            // $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
+
+            // Linking Battery to Structure
             $totalStructure = $totalBattery;
             $totalStructureValue = $totalBattery * 400;
             $structureDispatch = $batteryDispatch;
             $availableStructure = $availableBattery;
+
+            // Module Data
+            $totalModule = $inventory->where('item_code', 'SL01')->count();
+            $ModuleRate = $inventory->where('item_code', 'SL01')
+                ->value('rate');
+            $totalModuleValue = $ModuleRate * $totalModule;
+            $totalModuleValue = number_format($totalModuleValue, 2);
+            // Module Dispatch data
+            $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
+            $availableModule = $totalModule - $moduleDispatch;
+
+            $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
+            $dispatchAmountModule = number_format($dispatchAmountModule, 2);
+
+
 
             return view('inventory.view', compact(
                 'inventory',
@@ -376,23 +397,23 @@ class InventoryController extends Controller
                 'batteryDispatch',
                 'availableBattery',
                 'dispatchAmountBattery',
-                'totalLuminary',
-                'totalLuminaryValue',
-                'luminaryDispatch',
-                'availableLuminary',
-                'totalModule',
-                'totalModuleValue',
-                'moduleDispatch',
-                'availableModule',
-                'dispatchAmountModule',
                 'totalStructure',
                 'totalStructureValue',
                 'structureDispatch',
-                'availableStructure'
+                'availableStructure',
+                'totalModule',
+                'totalModuleValue',
+                'availableModule',
+                'moduleDispatch',
+                'dispatchAmountModule',
+                'totalLuminary',
+                'totalLuminaryValue',
+                'luminaryDispatch',
+                'dispatchAmountLuminary',
+                'availableLuminary',
             ));
         } catch (Exception $e) {
-            Log::error("Error in viewInventory: " . $e->getMessage());
-            return back()->with('error', 'Could not load inventory data. Please try again.');
+            Log::error($e->getMessage());
         }
     }
 
@@ -481,99 +502,86 @@ class InventoryController extends Controller
     }
 
 
-    public function viewVendorInventory(Request $request, $vendorId)
-{
-    Log::info("Fetching inventory for vendor_id: {$vendorId}");
+    public function viewVendorInventory($vendorId)
+    {
+        Log::info("Fetching inventory for vendor_id: {$vendorId}");
 
-    try {
-        $todayDate = now()->toDateString();
+        try {
+            $todayDate = now()->toDateString(); // Get today's date
 
-        // Set the page size, default to 100 if not provided
-        $perPage = $request->get('per_page', 100);
+            // Fetch inventory dispatched to the vendor
+            $inventory = InventoryDispatch::where('vendor_id', $vendorId)
+                ->with(['project', 'store', 'storeIncharge'])
+                ->get();
 
-        // Fetch paginated inventory
-        $inventoryPaginated = InventoryDispatch::where('vendor_id', $vendorId)
-            ->with(['project', 'store', 'storeIncharge'])
-            ->orderBy('dispatch_date', 'desc') // Optional: keep it ordered
-            ->paginate($perPage);
+            if ($inventory->isEmpty()) {
+                Log::warning("No inventory found for vendor_id: {$vendorId}");
+                return response()->json([
+                    'message' => 'No inventory found for this vendor.',
+                    'vendor_id' => $vendorId
+                ], 404);
+            }
 
-        $inventory = collect($inventoryPaginated->items());
+            // Filter today's inventory
+            $todayInventory = $inventory->where('dispatch_date', '>=', $todayDate)
+                ->groupBy('item_code')->map(function ($items) {
+                    return $this->formatInventoryItem($items);
+                })->values();
 
-        if ($inventory->isEmpty()) {
-            Log::warning("No inventory found for vendor_id: {$vendorId}");
-            return response()->json([
-                'message' => 'No inventory found for this vendor.',
-                'vendor_id' => $vendorId
-            ], 404);
-        }
-
-        // Filter today's inventory
-        $todayInventory = $inventory->where('dispatch_date', '>=', $todayDate)
-            ->groupBy('item_code')->map(function ($items) {
+            // Group inventory by item_code
+            $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
                 return $this->formatInventoryItem($items);
-            })->values();
+            });
 
-        // Group inventory by item_code
-        $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
-            return $this->formatInventoryItem($items);
-        });
+            // Split into categories based on `is_consumed`
+            $totalReceived = [];
+            $inStock = [];
+            $consumed = [];
 
-        // Split into categories based on `is_consumed`
-        $totalReceived = [];
-        $inStock = [];
-        $consumed = [];
+            foreach ($groupedInventory as $item) {
+                $matchingItems = $inventory->where('item_code', $item['item_code']);
 
-        foreach ($groupedInventory as $item) {
-            $matchingItems = $inventory->where('item_code', $item['item_code']);
+                $consumedItems = $matchingItems->where('is_consumed', 1);
+                $inStockItems = $matchingItems->where('is_consumed', 0);
 
-            $consumedItems = $matchingItems->where('is_consumed', 1);
-            $inStockItems = $matchingItems->where('is_consumed', 0);
+                // If any item is consumed, move to "consumed"
+                if ($consumedItems->isNotEmpty()) {
+                    $consumed[] = $this->formatInventoryItem($consumedItems);
+                }
 
-            if ($consumedItems->isNotEmpty()) {
-                $consumed[] = $this->formatInventoryItem($consumedItems);
+                // If any item is still in stock, move to "in_stock"
+                if ($inStockItems->isNotEmpty()) {
+                    $inStock[] = $this->formatInventoryItem($inStockItems);
+                }
+
+                // Add all items to total received
+                $totalReceived[] = $item;
             }
 
-            if ($inStockItems->isNotEmpty()) {
-                $inStock[] = $this->formatInventoryItem($inStockItems);
-            }
+            // Prepare final response
+            $response = [
+                'vendor_id' => $vendorId,
+                'project_id' => optional($inventory->first()->project)->id,
+                'project_name' => optional($inventory->first()->project)->project_name,
+                'total_inventory_value' => number_format($inventory->sum('total_value'), 2, '.', ''),
+                'inventory_count' => count($groupedInventory),
+                'today_inventory' => $todayInventory,
+                'all_inventory' => [
+                    'total_received' => $totalReceived,
+                    'in_stock' => $inStock,
+                    'consumed' => $consumed,
+                ],
+            ];
 
-            $totalReceived[] = $item;
+            return response()->json($response);
+        } catch (Exception $e) {
+            Log::error($e->getMessage());
+            return response()->json([
+                'message' => 'Something went wrong!',
+                'error' => $e->getMessage()
+            ], 500);
         }
-
-        // Prepare final response
-        $response = [
-            'vendor_id' => $vendorId,
-            'project_id' => optional($inventory->first()->project)->id,
-            'project_name' => optional($inventory->first()->project)->project_name,
-            'total_inventory_value' => number_format($inventory->sum('total_value'), 2, '.', ''),
-            'inventory_count' => count($groupedInventory),
-            'today_inventory' => $todayInventory,
-            'all_inventory' => [
-                'total_received' => $totalReceived,
-                'in_stock' => $inStock,
-                'consumed' => $consumed,
-            ],
-            'pagination' => [
-                'total' => $inventoryPaginated->total(),
-                'per_page' => $inventoryPaginated->perPage(),
-                'current_page' => $inventoryPaginated->currentPage(),
-                'last_page' => $inventoryPaginated->lastPage(),
-                'next_page_url' => $inventoryPaginated->nextPageUrl(),
-                'prev_page_url' => $inventoryPaginated->previousPageUrl(),
-            ]
-        ];
-
-        return response()->json($response);
-
-    } catch (Exception $e) {
-        Log::error($e->getMessage());
-        return response()->json([
-            'message' => 'Something went wrong!',
-            'error' => $e->getMessage()
-        ], 500);
     }
-}
-
 
     /**
      * Helper function to format inventory items
@@ -771,9 +779,10 @@ class InventoryController extends Controller
             InventroyStreetLightModel::whereIn('id', $ids)->delete();
 
             return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
-        } catch (\Throwable $th) {
-            \Log::error("Bulk delete error: " . $th->getMessage());
-            return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
-        }
+            } catch (\Throwable $th) {
+                \Log::error("Bulk delete error: " . $th->getMessage());
+                return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+            }
     }
+
 }
