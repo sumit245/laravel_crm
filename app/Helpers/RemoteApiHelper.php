@@ -16,8 +16,8 @@ class RemoteApiHelper
         $payload = [
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
-            'poleName' => $pole->complete_pole_number,
-            "project" => "BREDASSL", //TODO: Get project from .env
+            'poleName' => basename($pole->complete_pole_number),
+            "project" => "SUGS", //TODO: Get project from .env
             'district' => $streetlight->district,
             'districtCode' => (string) $districtCode,
             'block' => $streetlight->block,
@@ -25,7 +25,7 @@ class RemoteApiHelper
             'panchayat' => $streetlight->panchayat,
             'panchayatCode' => $streetlight->panchayat_code,
             'ward_type' => $streetlight->ward_type ?? 'W',
-            'ward_number' => "02",
+            'ward_number' => preg_replace('/\D/' , '' ,$pole->ward_name),
             'BattSno' => $pole->battery_qr,
             'PvSno' => $pole->panel_qr,
             'simNo' => $pole->sim_number,
