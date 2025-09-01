@@ -17,7 +17,7 @@ return new class extends Migration
                 'isSurveyDone',
                 'isNetworkAvailable',
                 'isInstallationDone',
-                'pole_id'
+                // 'pole_id'
             ]);
         });
     }

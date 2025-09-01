@@ -29,7 +29,7 @@ return new class extends Migration
                 'lng',
                 'remark',
                 'SID',
-                'pole_id'
+                // 'pole_id'
             ]);
 
             // Add the new columns with specified data types

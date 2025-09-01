@@ -153,7 +153,7 @@ class InventoryController extends Controller
     }
 
 
-    public function replaceItem(Request $request)
+      public function replaceItem(Request $request)
     {
         Log::info($request->all());
         $request->validate([
