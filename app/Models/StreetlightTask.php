@@ -61,4 +61,10 @@ class StreetlightTask extends Model
     {
         return $this->hasMany(Pole::class, 'task_id');
     }
+    public function streetlight()
+    {
+        // This matches the hasMany relationship on your Streetlight model.
+        // Assumes your 'streetlight_tasks' table has a 'site_id' foreign key.
+        return $this->belongsTo(Streetlight::class, 'site_id');
+    }
 }
