@@ -1,11 +1,5 @@
-[2025-09-02 09:32:22] local.INFO: array (
-  'qr_code' => '861268079095999',
-  'store_id' => '28',
-  'item_code' => 'SL02',
-)  
-[2025-09-02 09:32:23] local.INFO: Pole Submitted: {"task_id":"754","complete_pole_number":"LAK/LAK/DAM/WARD2/1","ward_name":"Ward 2","beneficiary":"Shiv mandir","beneficiary_contact":null,"remarks":"Shiv mandir ke pass","isSurveyDone":true,"isInstallationDone":false,"lat":"25.1665344","lng":"86.0884774","updated_at":"2025-09-02T09:32:23.000000Z","created_at":"2025-09-02T09:32:23.000000Z","id":54522,"survey_image":"[\"streetlights\\/survey\\/54522\\/1756805543_photo_0_survey_25.1665344_86.0884774.jpg\",\"streetlights\\/survey\\/54522\\/1756805543_photo_1_survey_25.1665344_86.0884774.jpg\"]"} 
-[2025-09-02 09:32:30] local.INFO: array (
-  'qr_code' => '861268079007168',
+[2025-09-02 09:33:38] local.INFO: array (
+  'qr_code' => '861268079177797',
   'store_id' => '28',
   'item_code' => 'SL02',
 )  
