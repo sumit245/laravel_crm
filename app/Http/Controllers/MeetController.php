@@ -92,7 +92,7 @@ class MeetController extends Controller
         // Load the relationship
         $historicalNotes = $meet->notesHistory()->with('user')->get();
 
-        return view('review-meetings.show', [
+        return view('review-meetings.notes', [
             'meet' => $meet,
             'historicalNotes' => $historicalNotes,
         ]);

@@ -80,4 +80,9 @@ class Streetlight extends Model
         return $this->hasMany(StreetlightTask::class, 'site_id');
         // Modify the method which should contain only task per site id
     }
+    public function task()
+    {
+        // Assumes your 'streetlight_poles' table has a 'task_id' foreign key.
+        return $this->belongsTo(StreetlightTask::class, 'task_id');
+    }
 }
