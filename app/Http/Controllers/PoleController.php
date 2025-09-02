@@ -111,6 +111,75 @@ class PoleController extends Controller
         }
     }
 
+    public function destroy($id)
+{
+    try {
+        $pole = Pole::findOrFail($id);
+
+        // Count poles with same pole number
+        $samePolesCount = Pole::where('complete_pole_number', $pole->pole_number)->count();
+
+        // Get associated streetlight
+        $streetlight = $pole->task->streetlight ?? null;
+
+        // Check inventory usage
+        $inventoryFields = ['luminary_qr', 'panel_qr', 'battery_qr'];
+        $isInventoryUsed = false;
+
+        foreach ($inventoryFields as $field) {
+            if (!empty($pole->$field)) {
+                $dispatch = InventoryDispatch::where('serial_number', $pole->$field)
+                    ->where('streetlight_pole_id', '!=', $pole->id)
+                    ->first();
+
+                if ($dispatch) {
+                    $isInventoryUsed = true;
+                    break;
+                }
+            }
+        }
+
+        // If multiple poles exist with same pole number
+        if ($samePolesCount > 1) {
+            if ($isInventoryUsed) {
+                // Inventory used in other pole → directly delete
+                $pole->delete();
+            } else {
+                // Inventory not used elsewhere → return inventory + delete
+                foreach ($inventoryFields as $field) {
+                    if (!empty($pole->$field)) {
+                        $this->returnInventoryItem($pole->$field);
+                    }
+                }
+                $pole->delete();
+
+                if ($streetlight) {
+                    $streetlight->decrement('polecount', 1);
+                }
+            }
+        } else {
+            // Only one pole with that number → always return inventory + delete
+            foreach ($inventoryFields as $field) {
+                if (!empty($pole->$field)) {
+                    $this->returnInventoryItem($pole->$field);
+                }
+            }
+            $pole->delete();
+
+            if ($streetlight) {
+                $streetlight->decrement('polecount', 1);
+            }
+        }
+
+        return redirect()->route('poles.index')
+            ->with('success', 'Pole deleted successfully.');
+    } catch (\Exception $e) {
+        Log::error('Failed to delete pole', ['error' => $e->getMessage()]);
+        return redirect()->back()
+            ->with('error', 'Failed to delete pole.');
+    }
+}
+
     private function returnInventoryItem($serialNumber)
     {
         try {

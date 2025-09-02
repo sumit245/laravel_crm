@@ -30,16 +30,12 @@
         </div>
 
         <div class="row">
-          <div class="col-sm-8">
-            <div class="form-group">
-              <label class="form-label">Link to Join</label>
-              <input type="url" class="form-control" name="meet_link" placeholder="Meeting Link" required>
-            </div>
-          </div>
+          {{-- MODIFIED BLOCK STARTS HERE --}}
           <div class="col-sm-4">
             <div class="form-group">
               <label class="form-label">Select Platform</label>
-              <select name="platform" class="form-select" required>
+              <select name="platform" id="platform-select" class="form-select" required>
+                <option value="" selected disabled>-- Choose Platform --</option>
                 <option value="Google Meet">Google Meet</option>
                 <option value="Zoom">Zoom</option>
                 <option value="Teams">Teams</option>
@@ -47,6 +43,16 @@
               </select>
             </div>
           </div>
+          <div class="col-sm-8">
+            <div class="form-group">
+              <label class="form-label">Link to Join</label>
+              <input type="url" class="form-control" name="meet_link" id="meet-link-input" placeholder="Meeting Link" required>
+              <small id="link-helper" class="form-text text-muted" style="display: none;">
+                Please create the meeting in the new tab and paste the link here.
+              </small>
+            </div>
+          </div>
+          {{-- MODIFIED BLOCK ENDS HERE --}}
         </div>
 
         <div class="form-group">
@@ -198,39 +204,82 @@
 
 @push("scripts")
 <script>
-  
-document.querySelectorAll('.select-all').forEach(function (btn) {
-  btn.addEventListener('click', function () {
-    const role = this.dataset.role;
-    const checkboxes = document.querySelectorAll('.role-' + role);
-    const allChecked = Array.from(checkboxes).every(cb => cb.checked);
-    checkboxes.forEach(cb => cb.checked = !allChecked);
-    this.textContent = allChecked ? 'Select All' : 'Unselect All';
-  });
-});
-
-// Participant Search Filter
-document.querySelectorAll('.participant-search').forEach(function (searchBox) {
-  searchBox.addEventListener('input', function () {
-    const role = this.dataset.role;
-    const keyword = this.value.toLowerCase();
-    const participants = document.querySelectorAll('.role-group-' + role + ' .circle-checkbox-label');
-    participants.forEach(label => {
-      const text = label.textContent.toLowerCase();
-      label.style.display = text.includes(keyword) ? '' : 'none';
+document.addEventListener('DOMContentLoaded', function () {
+  // Select All functionality
+  document.querySelectorAll('.select-all').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      const role = this.dataset.role;
+      const checkboxes = document.querySelectorAll('.role-' + role);
+      const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+      checkboxes.forEach(cb => cb.checked = !allChecked);
+      this.textContent = allChecked ? 'Select All' : 'Unselect All';
     });
   });
-});
 
-// Auto-show date/time picker
-['meet_date', 'meet_time1', 'meet_time2'].forEach(id => {
-  const el = document.getElementById(id);
-  if (el) {
-    el.addEventListener('click', function () {
-      this.showPicker && this.showPicker();
+  // Participant Search Filter
+  document.querySelectorAll('.participant-search').forEach(function (searchBox) {
+    searchBox.addEventListener('input', function () {
+      const role = this.dataset.role;
+      const keyword = this.value.toLowerCase();
+      const participants = document.querySelectorAll('.role-group-' + role + ' .circle-checkbox-label');
+      participants.forEach(label => {
+        const text = label.textContent.toLowerCase();
+        label.style.display = text.includes(keyword) ? '' : 'none';
+      });
     });
-  }
-});
+  });
 
+  // Auto-show date/time picker
+  ['meet_date', 'meet_time1', 'meet_time2'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('click', function () {
+        this.showPicker && this.showPicker();
+      });
+    }
+  });
+
+  // --- NEW SCRIPT FOR PLATFORM SELECTION ---
+  const platformSelect = document.getElementById('platform-select');
+  const meetLinkInput = document.getElementById('meet-link-input');
+  const linkHelper = document.getElementById('link-helper');
+
+  platformSelect.addEventListener('change', function(event) {
+    const selectedPlatform = event.target.value;
+    let url;
+
+    switch (selectedPlatform) {
+      case 'Google Meet':
+        // 'meet.new' is a shortcut to instantly create a new Google Meet.
+        url = 'https://meet.new';
+        break;
+      case 'Zoom':
+        // Directs to the page for scheduling a new meeting.
+        url = 'https://zoom.us/meeting/schedule';
+        break;
+      case 'Teams':
+        // Opens the Teams web app to schedule a meeting.
+        url = 'https://teams.microsoft.com/';
+        break;
+      default:
+        // For 'Other' or if no platform is selected, do nothing.
+        url = null;
+    }
+
+    if (url) {
+      // 1. Open the selected platform in a new tab.
+      window.open(url, '_blank');
+      
+      // 2. Guide the user to paste the link.
+      linkHelper.style.display = 'block';
+      meetLinkInput.focus(); // Automatically focus on the input field.
+      meetLinkInput.placeholder = `Paste your ${selectedPlatform} link here`;
+    } else {
+      // Hide helper text if 'Other' is selected.
+      linkHelper.style.display = 'none';
+      meetLinkInput.placeholder = 'Meeting Link';
+    }
+  });
+});
 </script>
 @endpush

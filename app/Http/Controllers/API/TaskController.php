@@ -626,7 +626,7 @@ class TaskController extends Controller
             });
         }
         $clonedQuery = clone $query;
-        $poles = $query->get();
+        $poles = $query->get()->unique('id');
         $totalInstalled = $clonedQuery->count();
         return view('poles.installed', compact('poles', 'totalInstalled'));
     }

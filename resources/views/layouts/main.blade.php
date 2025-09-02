@@ -23,8 +23,7 @@
     {{-- select2 css --}}
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
     <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
-
-    @stack("styles") <!-- For page-specific styles -->
+    @stack("styles")
   </head>
 
   <body>

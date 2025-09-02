@@ -27,12 +27,30 @@ class Meet extends Model
         'meet_time' => 'datetime:H:i',
     ];
 
-    public function participants()
-    {
-        return User::whereIn('id', $this->user_ids)->get();
-    }
      public function whiteboard()
     {
         return $this->hasOne(Whiteboard::class);
     }
+    // app/Models/Meet.php
+public function notesHistory()
+{
+    return $this->hasMany(MeetingNoteHistory::class)->latest(); // Order by most recent
+}
+
+public function participants()
+{
+    // Make sure you have this relationship defined
+    return $this->belongsToMany(User::class, 'meet_user'); 
+}
+
+// app/Models/MeetingNoteHistory.php
+public function meet()
+{
+    return $this->belongsTo(Meet::class);
+}
+
+public function user()
+{
+    return $this->belongsTo(User::class);
+}
 }
