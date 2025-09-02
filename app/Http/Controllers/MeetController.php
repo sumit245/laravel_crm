@@ -87,10 +87,15 @@ class MeetController extends Controller
 
         return redirect()->route('meets.index')->with('success', 'Meeting created successfully!');
     }
-
     public function show(Meet $meet)
     {
-        return view('review-meetings.show', compact('meet'));
+        // Load the relationship
+        $historicalNotes = $meet->notesHistory()->with('user')->get();
+
+        return view('review-meetings.show', [
+            'meet' => $meet,
+            'historicalNotes' => $historicalNotes,
+        ]);
     }
 
     public function edit(Meet $meet)

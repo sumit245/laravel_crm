@@ -63,6 +63,8 @@ Route::middleware(['auth'])->group(function () {
 
     // optional
     Route::get('/meets/{meet}/export/excel', [MeetController::class, 'exportExcel'])->name('meets.exportExcel');
+    // routes/web.php
+    Route::post('/meets/{meet}/update-status', [MeetController::class, 'updateStatus'])->name('meets.updateStatus');
 
     Route::get('/review-meetings/{reviewMeeting}/whiteboard', [WhiteboardController::class, 'show'])->name('whiteboard.show');
     Route::post('/review-meetings/{reviewMeeting}/whiteboard', [WhiteboardController::class, 'store'])->name('whiteboard.store');
@@ -157,6 +159,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/poles/show/{id}', [TaskController::class, 'viewPoleDetails'])->name('poles.show');
     Route::get('/poles/{id}/edit', [PoleController::class, 'edit'])->name('poles.edit');
     Route::put('/poles/{id}', [PoleController::class, 'update'])->name('poles.update');
+    Route::delete('/poles/{id}', [PoleController::class, 'destroy'])->name('poles.destroy');
 
     // Streetlight
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');

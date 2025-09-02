@@ -17,7 +17,6 @@
           <th>Battery</th>
           <th>Panel</th>
           <th>Bill Raised</th>
-          <!-- <th>Location</th> -->
           <th>RMS</th>
           <th>Actions</th>
         </tr>
@@ -34,13 +33,8 @@
             <td>{{ $pole->battery_qr ?? "N/A" }}</td>
             <td>{{ $pole->panel_qr ?? "N/A" }}</td>
             <td>0</td>
-            <!-- <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;">
-              {{-- TODO:  --}}
-              <span class="text-primary">View Location</span>
-            </td> -->
             <td>{{ $pole->rms_status ?? "N/A" }}</td>
             <td>
-              <!-- View Button -->
               <a href="{{ route("poles.show", $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
                 title="View Details">
                 <i class="mdi mdi-eye"></i>
@@ -48,12 +42,13 @@
 
               <a href="{{ route("poles.edit", $pole->id) }}" class="btn btn-icon btn-warning">
                 <i class="mdi mdi-pencil"></i>
-                 <!-- <span class="d-?none d-sm-inline mg-l-5">Edit</span> -->
               </a>
-              <!-- TODO: Add otp method to delete poles -->
-              <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip"
-                title="Delete Poles" data-id="" data-name=""
-                data-url="#">
+
+              <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
+                title="Delete Pole"
+                data-id="{{ $pole->id }}"
+                data-name="{{ $pole->complete_pole_number ?? 'this pole' }}"
+                data-url="{{ route('poles.destroy', $pole->id) }}">
                 <i class="mdi mdi-delete"></i>
               </button>
             </td>
@@ -68,6 +63,7 @@
   <script>
     function locateOnMap(lat, lng) {
       if (lat && lng) {
+        // Using a more standard Google Maps URL
         const url = `https://www.google.com/maps?q=${lat},${lng}`;
         window.open(url, '_blank');
       } else {
@@ -105,35 +101,7 @@
         ordering: true,
         responsive: true,
         autoWidth: false,
-        columnDefs: [{
-            targets: 0,
-            width: "4%"
-          },
-          {
-            targets: 1,
-            width: "16%"
-          },
-          {
-            targets: 2,
-            width: "20%"
-          },
-          {
-            targets: 3,
-            width: "20%"
-          },
-          {
-            targets: 4,
-            width: "10%"
-          },
-          {
-            targets: 5,
-            width: "10%"
-          },
-          {
-            targets: 6,
-            width: "20%"
-          },
-        ],
+        columnDefs: [ /* ... your column defs ... */ ],
         language: {
           search: '',
           searchPlaceholder: 'Search...'
@@ -143,14 +111,18 @@
       $('[data-toggle="tooltip"]').tooltip();
       $('.dataTables_filter input').addClass('form-control form-control-sm');
 
-      $('.delete-staff').on('click', function() {
-        let staffId = $(this).data('id');
-        let staffName = $(this).data('name');
+      // --- MODIFIED JAVASCRIPT FOR DELETE CONFIRMATION ---
+      // We target the new class '.delete-pole-btn'
+      $('.delete-pole-btn').on('click', function() {
+        // Get the data from the button
+        let poleId = $(this).data('id');
+        let poleName = $(this).data('name');
         let deleteUrl = $(this).data('url');
-
+        
+        // Show the confirmation dialog
         Swal.fire({
           title: `Are you sure?`,
-          text: `You are about to delete ${staffName}. This action cannot be undone.`,
+          text: `You are about to delete pole "${poleName}". This action cannot be undone.`,
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#d33',
@@ -158,26 +130,31 @@
           confirmButtonText: 'Yes, delete it!',
           cancelButtonText: 'Cancel',
         }).then((result) => {
+          // If the user confirms
           if (result.isConfirmed) {
+            // We make the AJAX call to the delete route
             $.ajax({
               url: deleteUrl,
               type: 'POST',
               data: {
-                _method: 'DELETE',
+                _method: 'DELETE', // Laravel's method spoofing
                 _token: "{{ csrf_token() }}",
               },
               success: function(response) {
                 Swal.fire(
                   'Deleted!',
-                  `${staffName} has been deleted.`,
+                  `Pole "${poleName}" has been deleted.`,
                   'success'
                 );
-                $(`button[data-id="${staffId}"]`).closest('tr').remove();
+                // Remove the table row with a fade-out effect for better UX
+                $(`.delete-pole-btn[data-id="${poleId}"]`).closest('tr').fadeOut(500, function() {
+                  $(this).remove();
+                });
               },
               error: function(xhr) {
                 Swal.fire(
                   'Error!',
-                  'There was an error deleting the staff member. Please try again.',
+                  'There was an error deleting the pole. Please try again.',
                   'error'
                 );
               }
