@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Whiteboard;
 
 class Meet extends Model
 {
@@ -29,5 +30,9 @@ class Meet extends Model
     public function participants()
     {
         return User::whereIn('id', $this->user_ids)->get();
+    }
+     public function whiteboard()
+    {
+        return $this->hasOne(Whiteboard::class);
     }
 }

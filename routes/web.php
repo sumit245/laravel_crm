@@ -2,26 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{
-    API\PreviewController,
-    API\StreetlightController,
-    API\TaskController,
-    CandidateController,
-    ConvenienceController,
-    DeviceController,
-    HomeController,
-    InventoryController,
-    JICRController,
-    MeetController,
-    PoleController,
-    ProjectsController,
-    RMSController,
-    SiteController,
-    StaffController,
-    StoreController,
-    TasksController,
-    VendorController
-};
+use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -44,35 +25,48 @@ Route::get('/backup', fn() => view('data_backup.backup'))->name('backup.index');
 
 // Authenticated Routes
 Route::middleware(['auth'])->group(function () {
-
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
 
     // JICR
-    Route::prefix('jicr')->name('jicr.')->group(function () {
-        Route::get('/', [JICRController::class, 'index'])->name('index');
-        Route::get('/blocks/{district}', [JICRController::class, 'getBlocks'])->name('blocks');
-        Route::get('/panchayats/{block}', [JICRController::class, 'getPanchayats'])->name('panchayats');
-        Route::get('/ward/{panchayat}', [JICRController::class, 'getWards'])->name('wards');
-        Route::get('/generate', [JICRController::class, 'generatePDF'])->name('generate');
-    });
+    Route::prefix('jicr')
+        ->name('jicr.')
+        ->group(function () {
+            Route::get('/', [JICRController::class, 'index'])->name('index');
+            Route::get('/blocks/{district}', [JICRController::class, 'getBlocks'])->name('blocks');
+            Route::get('/panchayats/{block}', [JICRController::class, 'getPanchayats'])->name('panchayats');
+            Route::get('/ward/{panchayat}', [JICRController::class, 'getWards'])->name('wards');
+            Route::get('/generate', [JICRController::class, 'generatePDF'])->name('generate');
+        });
 
     // Staff
     Route::get('/vendor-data/{id}', [StaffController::class, 'vendorData'])->name('vendor.data');
     Route::get('/engineer-data/{id}', [StaffController::class, 'engineerData'])->name('engineer.data');
     Route::resource('staff', StaffController::class);
-    Route::prefix('staff')->name('staff.')->group(function () {
-        Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
-        Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
-        Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('change-password');
-        Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
-    });
+    Route::prefix('staff')
+        ->name('staff.')
+        ->group(function () {
+            Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
+            Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
+            Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('change-password');
+            Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
+        });
     Route::post('/import-staff', [StaffController::class, 'import'])->name('import.staff');
 
     // Meets
     Route::resource('meets', MeetController::class);
+    Route::get('/meets/{meet}/notes', [MeetController::class, 'notes'])->name('meets.notes');
+    Route::put('/meets/{meet}/notes', [MeetController::class, 'updateNotes'])->name('meets.updateNotes');
+    Route::get('/meets/{meet}/export/pdf', [MeetController::class, 'exportPdf'])->name('meets.exportPdf');
+
+    // optional
+    Route::get('/meets/{meet}/export/excel', [MeetController::class, 'exportExcel'])->name('meets.exportExcel');
+
+    Route::get('/review-meetings/{reviewMeeting}/whiteboard', [WhiteboardController::class, 'show'])->name('whiteboard.show');
+    Route::post('/review-meetings/{reviewMeeting}/whiteboard', [WhiteboardController::class, 'store'])->name('whiteboard.store');
+    // ...
 
     // Vendors
     Route::resource('uservendors', VendorController::class);
@@ -91,31 +85,33 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('sites', SiteController::class);
 
     // Convenience / Billing
-    Route::prefix('billing')->name('billing.')->group(function () {
-        Route::get('convenience', [ConvenienceController::class, 'convenience'])->name('convenience');
-        Route::get('tada', [ConvenienceController::class, 'tadaView'])->name('tada');
-        Route::get('tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('tadaDetails');
-        Route::get('settings', [ConvenienceController::class, 'settings'])->name('settings');
-        Route::post('settings/add', [ConvenienceController::class, 'addVehicle'])->name('addvehicle');
-        Route::get('settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('editvehicle');
-        Route::post('settings/update', [ConvenienceController::class, 'updateVehicle'])->name('updatevehicle');
-        Route::delete('settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('deletevehicle');
+    Route::prefix('billing')
+        ->name('billing.')
+        ->group(function () {
+            Route::get('convenience', [ConvenienceController::class, 'convenience'])->name('convenience');
+            Route::get('tada', [ConvenienceController::class, 'tadaView'])->name('tada');
+            Route::get('tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('tadaDetails');
+            Route::get('settings', [ConvenienceController::class, 'settings'])->name('settings');
+            Route::post('settings/add', [ConvenienceController::class, 'addVehicle'])->name('addvehicle');
+            Route::get('settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('editvehicle');
+            Route::post('settings/update', [ConvenienceController::class, 'updateVehicle'])->name('updatevehicle');
+            Route::delete('settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('deletevehicle');
 
-        // User management
-        Route::get('settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('edituser');
-        Route::post('settings/update-user', [ConvenienceController::class, 'updateUser'])->name('updateuser');
+            // User management
+            Route::get('settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('edituser');
+            Route::post('settings/update-user', [ConvenienceController::class, 'updateUser'])->name('updateuser');
 
-        // Categories
-        Route::get('settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('addcategory');
-        Route::post('settings/add-category', [ConvenienceController::class, 'addCategory'])->name('addcategory');
-        Route::get('settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('editcategory');
-        Route::post('settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('updatecategory');
-        Route::delete('settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('deletecategory');
+            // Categories
+            Route::get('settings/add-category', [ConvenienceController::class, 'viewCategory'])->name('addcategory');
+            Route::post('settings/add-category', [ConvenienceController::class, 'addCategory'])->name('addcategory');
+            Route::get('settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('editcategory');
+            Route::post('settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('updatecategory');
+            Route::delete('settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('deletecategory');
 
-        Route::get('edit-city-category', fn() => view('billing.editCityCategory'))->name('editcitycategory');
-        Route::get('allowed-expense/{id}', [ConvenienceController::class, 'editAllowedExpense'])->name('allowedexpense');
-        Route::post('update-allowed-expense/{id}', [ConvenienceController::class, 'updateAllowedExpense'])->name('updateallowedexpense');
-    });
+            Route::get('edit-city-category', fn() => view('billing.editCityCategory'))->name('editcitycategory');
+            Route::get('allowed-expense/{id}', [ConvenienceController::class, 'editAllowedExpense'])->name('allowedexpense');
+            Route::post('update-allowed-expense/{id}', [ConvenienceController::class, 'updateAllowedExpense'])->name('updateallowedexpense');
+        });
 
     Route::post('/tada/bulk-update-status', [ConvenienceController::class, 'bulkUpdateStatus']);
     Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
@@ -127,19 +123,21 @@ Route::middleware(['auth'])->group(function () {
     // Inventory
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
-    Route::prefix('inventory')->name('inventory.')->group(function () {
-        Route::post('import', [InventoryController::class, 'import'])->name('import');
-        Route::post('import-streetlight', [InventoryController::class, 'importStreetlight'])->name('import-streetlight');
-        Route::post('checkQR', [InventoryController::class, 'checkQR'])->name('checkQR');
-        Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
-        Route::get('view', [InventoryController::class, 'viewInventory'])->name('view');
-        Route::post('replace', [InventoryController::class, 'replaceItem'])->name('replace');
-        Route::get('edit/{id}', [InventoryController::class, 'editInventory'])->name('editInventory');
-        Route::put('update/{id}', [InventoryController::class, 'updateInventory'])->name('updateInventory');
-        Route::post('bulk-delete', [InventoryController::class, 'bulkDelete'])->name('bulkDelete');
-        Route::get('dispatch', [InventoryController::class, 'showDispatchInventory'])->name('showDispatchInventory');
-        Route::post('return', [InventoryController::class, 'returnInventory'])->name('return');
-    });
+    Route::prefix('inventory')
+        ->name('inventory.')
+        ->group(function () {
+            Route::post('import', [InventoryController::class, 'import'])->name('import');
+            Route::post('import-streetlight', [InventoryController::class, 'importStreetlight'])->name('import-streetlight');
+            Route::post('checkQR', [InventoryController::class, 'checkQR'])->name('checkQR');
+            Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
+            Route::get('view', [InventoryController::class, 'viewInventory'])->name('view');
+            Route::post('replace', [InventoryController::class, 'replaceItem'])->name('replace');
+            Route::get('edit/{id}', [InventoryController::class, 'editInventory'])->name('editInventory');
+            Route::put('update/{id}', [InventoryController::class, 'updateInventory'])->name('updateInventory');
+            Route::post('bulk-delete', [InventoryController::class, 'bulkDelete'])->name('bulkDelete');
+            Route::get('dispatch', [InventoryController::class, 'showDispatchInventory'])->name('showDispatchInventory');
+            Route::post('return', [InventoryController::class, 'returnInventory'])->name('return');
+        });
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
 
@@ -147,7 +145,9 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/rooftop/{id}', [TasksController::class, 'editrooftop'])->name('tasks.editrooftop');
     Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
-    Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
+    Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])
+        ->where('any', '.*')
+        ->name('tasks.show');
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
 
     // Surveyed/Installed Poles

@@ -23,6 +23,7 @@
     {{-- select2 css --}}
     <link rel="stylesheet" href="{{ asset("vendors/select2/select2.min.css") }}">
     <link rel="shortcut icon" href="{{ asset("images/favicon.png") }}">
+
     @stack("styles") <!-- For page-specific styles -->
   </head>
 
@@ -58,10 +59,11 @@
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
     <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/select/1.6.3/js/dataTables.select.min.js"></script>
+    {{-- <script src="https://cdn.datatables.net/select/1.6.3/js/dataTables.select.min.js"></script> --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Place this just before </body> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://unpkg.com/tldraw@3.15.4/files/dist-cjs/index.js"></script>
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/fontawesome.min.js"></script> --}}
 
     @stack("scripts") <!-- For page-specific scripts -->
