@@ -404,7 +404,7 @@ class TaskController extends Controller
         ]);
     }
 
-    // Controller to get details of pole by Id    
+    // Controller to get details of pole by Id
     public function getPoleDetails(Request $request)
     {
         $id = $request->pole_id;
@@ -607,7 +607,8 @@ class TaskController extends Controller
     // Fetch Installed Poles based on user role
     public function getInstalledPoles(Request $request)
     {
-        $query = Pole::where('isInstallationDone', 1);
+        $query = Pole::with(['task.streetlight'])
+                 ->where('isInstallationDone', 1);
         if ($request->has('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
@@ -626,7 +627,7 @@ class TaskController extends Controller
             });
         }
         $clonedQuery = clone $query;
-        $poles = $query->get()->unique('id');
+        $poles = $query->get();
         $totalInstalled = $clonedQuery->count();
         return view('poles.installed', compact('poles', 'totalInstalled'));
     }
