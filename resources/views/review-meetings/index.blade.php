@@ -1,7 +1,7 @@
 @extends('layouts.main')
 
 @section('content')
-    <div class="container p-2">
+    <div class="container">
         <div class="d-flex justify-content-between mb-3">
             <!-- Search box is added automatically by DataTables -->
             <div></div> <!-- Empty div to align with search box -->
@@ -25,8 +25,8 @@
             <x-slot:tbody>
                 @foreach ($meets as $meet)
                     <tr>
-                        <td>{{ $meet->title }}</td>
-                        <td>{{ $meet->agenda }}</td>
+                        <td class="truncate-cell">{{ $meet->title }}</td>
+                        <td class="truncate-cell"">{{ $meet->agenda }}</td>
                         <td>{{ $meet->platform }}</td>
                         <td><a href="{{ $meet->meet_link }}" target="_blank">Join</a></td>
                         <td>{{ $meet->meet_date }}</br>{{ $meet->meet_time }}</td>
@@ -67,7 +67,8 @@
 @push('styles')
     <style>
         .truncate-cell {
-            max-width: 200px;
+            max-width: 100px;
+            overflow: hidden;
             /* set desired width */
             white-space: normal;
             /* allow text to wrap */
