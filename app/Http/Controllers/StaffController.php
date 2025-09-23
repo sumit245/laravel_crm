@@ -55,9 +55,10 @@ class StaffController extends Controller
         $file = $request->file('file');
 
         try {
+            Log::info('Starting staff import process');
             $import = new StaffImport();
             Excel::import($import, $file);
-
+            
             $summary = $import->getSummary();
             Log::info('' . $summary);
 
