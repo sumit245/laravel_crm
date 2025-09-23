@@ -88,6 +88,7 @@
 <body>
     <div class="success-container">
         <img src="{{ asset('images/logo.png') }}" alt="Sugs Lloyd Ltd Logo" class="logo">
+<<<<<<< HEAD
 
         {{-- Success Icon --}}
         @if(session('error'))
@@ -132,4 +133,19 @@
     </div>
 </body>
 
+=======
+        
+        <div class="success-icon">
+            <i class="fas fa-check-circle"></i>
+        </div>
+        
+        <h1 class="success-title">Application Submitted Successfully!</h1>
+        
+        <p class="success-message">
+            Thank you for completing your employee onboarding application. We have received your information and will review it shortly. You will be contacted for the next steps.
+        </p>
+       
+    </div>
+</body>
+>>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
 </html>
