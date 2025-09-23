@@ -72,3 +72,5 @@ Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicl
 Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
 Route::get('check-price', [ConveyanceController::class, 'checkPice']);
 Route::get('allow-expense', [ConveyanceController::class, 'allowExpense']);
+
+
