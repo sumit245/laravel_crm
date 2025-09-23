@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use function Laravel\Prompts\confirm;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\StaffImport;
 
 class StaffController extends Controller
 {
@@ -44,9 +46,34 @@ class StaffController extends Controller
         return view('staff.index', compact('staff'));
     }
 
-    public function import()
+    public function import(Request $request)
     {
-        return null;
+        $request->validate([
+            'file' => 'required|file|mimes:csv,xlsx,xls,txt',
+        ]);
+
+        $file = $request->file('file');
+
+        try {
+            $import = new StaffImport();
+            Excel::import($import, $file);
+
+            $summary = $import->getSummary();
+            Log::info('' . $summary);
+
+            return redirect()->back()
+                ->with('success', $summary['message'])
+                ->with('import_errors', $summary['errors']);
+        } catch (\Maatwebsite\Excel\Validators\ValidationException $e) {
+            $failures = $e->failures();
+            $messages = [];
+            foreach ($failures as $failure) {
+                $messages[] = "Row {$failure->row()}: " . implode(', ', $failure->errors());
+            }
+            return redirect()->back()->withErrors(['file' => 'Import validation failed'])->with('import_errors', $messages);
+        } catch (\Exception $e) {
+            return redirect()->back()->withErrors(['file' => 'Import failed: ' . $e->getMessage()]);
+        }
     }
 
     /**
@@ -71,13 +98,13 @@ class StaffController extends Controller
         $validated = $request->validate([
             'manager_id' => 'nullable|exists:users,id',
             'firstName' => 'required|string',
-            'lastName'  => 'required|string',
-            'email'     => 'required|email|unique:users,email',
+            'lastName' => 'required|string',
+            'email' => 'required|email|unique:users,email',
             'contactNo' => 'string',
-            'role'      => 'string',
-            'category'  => 'nullable|numeric',
-            'address'   => 'string|max:255',
-            'password'  => 'required|string|min:6|confirmed',
+            'role' => 'string',
+            'category' => 'nullable|numeric',
+            'address' => 'string|max:255',
+            'password' => 'required|string|min:6|confirmed',
             'project_id' => 'required|exists:projects,id', // validate project_id
         ]);
 
@@ -89,9 +116,9 @@ class StaffController extends Controller
             $staff = User::create($validated);
             // Save to pivot table `project_user`
             DB::table('project_user')->insert([
-                'user_id'    => $staff->id,
+                'user_id' => $staff->id,
                 'project_id' => $validated['project_id'],
-                'role'       => $validated['role'],
+                'role' => $validated['role'],
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -242,17 +269,17 @@ class StaffController extends Controller
     {
         //
         $validated = $request->validate([
-            'name'      => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'manager_id' => 'required|numeric',
             'project_id' => 'nullable|integer',
             'firstName' => 'nullable|string|max:25',
-            'lastName'  => 'nullable|string|max:25',
-            'email'     => 'required|email|unique:users,email,' . $staff->id,
+            'lastName' => 'nullable|string|max:25',
+            'email' => 'required|email|unique:users,email,' . $staff->id,
             'contactNo' => 'string',
-            'category'  => 'nullable|string',
-            'address'   => 'string|max:255',
-            'password'  => 'nullable|string|min:6|confirmed',
-            'role'      => 'nullable|string',
+            'category' => 'nullable|string',
+            'address' => 'string|max:255',
+            'password' => 'nullable|string|min:6|confirmed',
+            'role' => 'nullable|string',
 
         ]);
 
@@ -384,12 +411,12 @@ class StaffController extends Controller
     {
         $baseUsername = strtolower(preg_replace('/\s+/', '', $name)); // Remove spaces and make lowercase
         $randomSuffix = mt_rand(1000, 9999); // Generate a random 4-digit number
-        $username     = $baseUsername . $randomSuffix;
+        $username = $baseUsername . $randomSuffix;
 
         // Ensure the username is unique
         while (User::where('username', $username)->exists()) {
             $randomSuffix = mt_rand(1000, 9999); // Generate a new random suffix if it exists
-            $username     = $baseUsername . $randomSuffix;
+            $username = $baseUsername . $randomSuffix;
         }
 
         return $username;
@@ -401,7 +428,7 @@ class StaffController extends Controller
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
 
-   public function vendorData($id)
+    public function vendorData($id)
     {
         $managerid = $id;
 
@@ -436,12 +463,12 @@ class StaffController extends Controller
             $vendorName = trim(($vendor->firstName ?? '') . ' ' . ($vendor->lastName ?? ''));
             // Add to final array
             $vendorPoleCounts[$vendorId] = [
-                'id'           => $vendorId,
-                'vendor_name'  => $vendorName,
-                'survey'       => $surveyCount,
-                'install'      => $installCount,
-                'tasks'        => $tasks->count(),
-                'total_poles'  => $totalPoles,
+                'id' => $vendorId,
+                'vendor_name' => $vendorName,
+                'survey' => $surveyCount,
+                'install' => $installCount,
+                'tasks' => $tasks->count(),
+                'total_poles' => $totalPoles,
             ];
             // === Today's Data ===
             $today = now()->toDateString();
@@ -484,13 +511,13 @@ class StaffController extends Controller
             })->unique('id')->values();
 
             $vendorPoleCountsToday[$vendorId] = [
-                'vendor_name'  => $vendorName,
-                'survey'       => $todaySurvey,
-                'install'      => $todayInstall,
-                'tasks'        => $todayTasks->count(),
-                'total_poles'  => $totalPoles,
+                'vendor_name' => $vendorName,
+                'survey' => $todaySurvey,
+                'install' => $todayInstall,
+                'tasks' => $todayTasks->count(),
+                'total_poles' => $totalPoles,
                 'today_target' => $todayTotalPoles,
-                'backlog'      => $backLogPoles,
+                'backlog' => $backLogPoles,
                 'backlog_sites' => $backlogSites,
             ];
         }
@@ -534,12 +561,12 @@ class StaffController extends Controller
 
             // Add to final array
             $engineerPoleCounts[$engineerId] = [
-                'id'           => $engineerId,
-                'engineer_name'  => $engineerName,
-                'survey'       => $surveyCount,
-                'install'      => $installCount,
-                'tasks'        => $tasks->count(),
-                'total_poles'  => $totalPoles,
+                'id' => $engineerId,
+                'engineer_name' => $engineerName,
+                'survey' => $surveyCount,
+                'install' => $installCount,
+                'tasks' => $tasks->count(),
+                'total_poles' => $totalPoles,
             ];
 
             // === Today's Data ===
@@ -583,14 +610,14 @@ class StaffController extends Controller
             })->unique('id')->values();
 
             $engineerPoleCountsToday[$engineerId] = [
-                'engineer_name'  => $engineerName,
-                'survey'         => $todaySurvey,
-                'install'        => $todayInstall,
-                'tasks'          => $todayTasks->count(),
-                'total_poles'    => $totalPoles,
-                'today_target'   => $todayTotalPoles,
-                'backlog'        => $backLogPoles,
-                'backlog_sites'  => $backlogSites,
+                'engineer_name' => $engineerName,
+                'survey' => $todaySurvey,
+                'install' => $todayInstall,
+                'tasks' => $todayTasks->count(),
+                'total_poles' => $totalPoles,
+                'today_target' => $todayTotalPoles,
+                'backlog' => $backLogPoles,
+                'backlog_sites' => $backlogSites,
             ];
         }
 
