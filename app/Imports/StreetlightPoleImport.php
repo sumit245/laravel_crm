@@ -110,9 +110,9 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
         }
 
         // After the loop, if any missing items were found, throw one exception with all of them.
-        if (!empty($missingItems)) {
-            throw new \Exception("The following items are missing or already consumed: " . implode(", ", array_unique($missingItems)));
-        }
+        // if (!empty($missingItems)) {
+        //     throw new \Exception("The following items are missing or already consumed: " . implode(", ", array_unique($missingItems)));
+        // }
     }
 
     // Set the chunk size
