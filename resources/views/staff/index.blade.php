@@ -142,6 +142,59 @@
                 }
             });
 
+            // show session / validation / import messages as toast / modal using SweetAlert2
+            @if (session()->has('success'))
+                const successMsg = {!! json_encode(session('success')) !!};
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'success',
+                    title: successMsg,
+                    showConfirmButton: false,
+                    timer: 4000,
+                    timerProgressBar: true
+                });
+            @endif
+
+            @if (session()->has('error'))
+                const errorMsg = {!! json_encode(session('error')) !!};
+                Swal.fire({
+                    toast: true,
+                    position: 'top-end',
+                    icon: 'error',
+                    title: errorMsg,
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true
+                });
+            @endif
+
+            @if (session()->has('import_errors'))
+                const importErrors = {!! json_encode(session('import_errors')) !!};
+                // show top X errors in a modal for readability
+                const maxShow = 10;
+                const shortList = Array.isArray(importErrors) ? importErrors.slice(0, maxShow) : [importErrors];
+                Swal.fire({
+                    title: 'Import completed with errors',
+                    icon: 'warning',
+                    html: shortList.join('<br>') + (importErrors.length > maxShow ?
+                        '<br><em>...more errors omitted</em>' : ''),
+                    confirmButtonText: 'OK',
+                    width: '600px'
+                });
+            @endif
+
+            @if ($errors->any())
+                const validationErrors = {!! json_encode($errors->all()) !!};
+                Swal.fire({
+                    title: 'Validation errors',
+                    icon: 'error',
+                    html: validationErrors.join('<br>'),
+                    confirmButtonText: 'OK',
+                    width: '600px'
+                });
+            @endif
+
             $('[data-toggle="tooltip"]').tooltip();
             $('.dataTables_filter input').addClass('form-control form-control-sm');
 
@@ -175,7 +228,7 @@
                                     'success'
                                 );
                                 $(`button[data-id="${staffId}"]`).closest('tr')
-                            .remove();
+                                    .remove();
                             },
                             error: function(xhr) {
                                 Swal.fire(
