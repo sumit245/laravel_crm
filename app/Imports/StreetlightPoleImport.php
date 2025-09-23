@@ -91,8 +91,8 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 $streetlight->increment('number_of_installed_poles');
             }
         }
- //       if (!empty($missingItems)) {
-//            throw new \Exception("The following items are missing: " . implode(", ", $missingItems));
- //       }
+        if (!empty($missingItems)) {
+            throw new \Exception("The following items are missing: " . implode(", ", $missingItems));
+        }
     }
 }
