@@ -9,6 +9,8 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class MeetController extends Controller
 {
@@ -32,21 +34,140 @@ class MeetController extends Controller
     {
         $meets = Meet::latest()->get();
         $projects = Project::all();
-        // $users = User::all()->groupBy('role'); // Assuming you have role-based categories
-        $usersByRole = [
-            'Admins' => User::where('role', 0)->get(),
-            'Site Engineers' => User::where('role', 1)->get(),
-            'Project Managers' => User::where('role', 2)->get(),
-            'Vendors' => User::where('role', 3)->get(),
-            'Coordinators' => User::where('role', 4)->get(),
-            // Add more roles as needed
-        ];
-        return view('review-meetings.create', compact('meets', 'usersByRole', 'projects'));
+
+        // Return all users except role 3 (Vendors)
+        $users = User::where('role', '<>', 3)->get();
+
+        return view('review-meetings.create', compact('meets', 'users', 'projects'));
     }
 
     public function store(Request $request)
     {
-        Log::info($request);
+        Log::info($request->all());
+
+        // 1) Validate meeting basic fields (do not validate users.* yet)
+        $validatedBase = $request->validate([
+            'title' => 'required|string',
+            'agenda' => 'nullable|string',
+            'meet_link' => 'required|url',
+            'platform' => 'required|string',
+            'meet_date' => 'required|date',
+            'meet_time_from' => 'required',
+            'meet_time_to' => 'required',
+            'type' => 'required|string',
+        ]);
+
+        $createdUserIds = [];
+
+        // 2) Handle "new_participants" from the form (array of objects)
+        $newParticipants = $request->input('new_participants', []);
+        if (!empty($newParticipants) && is_array($newParticipants)) {
+            foreach ($newParticipants as $idx => $np) {
+                // Basic validation per participant (skip empty rows)
+                $np = array_map('trim', (array) $np);
+                if (empty($np['firstName']) && empty($np['lastName']) && empty($np['email']) && empty($np['contactNo'])) {
+                    continue; // skip entirely empty row
+                }
+
+                $v = Validator::make($np, [
+                    'firstName' => 'required|string|max:255',
+                    'lastName' => 'nullable|string|max:255',
+                    'email' => 'nullable|email|max:255',
+                    'contactNo' => 'nullable|string|max:50',
+                ]);
+
+                if ($v->fails()) {
+                    return back()->withErrors($v)->withInput();
+                }
+
+                // Try to find existing user by email or contactNo; create if not found
+                $existingQuery = User::query();
+                if (!empty($np['email'])) {
+                    $existingQuery->where('email', $np['email']);
+                }
+                if (!empty($np['contactNo'])) {
+                    $existingQuery->orWhere('contactNo', $np['contactNo'])->orWhere('contactNo', $np['contactNo']);
+                }
+                $existing = $existingQuery->first();
+
+                if ($existing) {
+                    $createdUserIds[] = $existing->id;
+                    continue;
+                }
+
+                // Create a minimal user. Adjust role as needed (using 4 as generic participant).
+                $password = Str::random(12);
+                $user = User::create([
+                    'firstName' => $np['firstName'] ?? null,
+                    'lastName' => $np['lastName'] ?? null,
+                    'email' => $np['email'] ?? null,
+                    'contactNo' => $np['contactNo'] ?? null,
+                    'role' => 100,
+                    'password' => bcrypt($password),
+                ]);
+
+                $createdUserIds[] = $user->id;
+            }
+        }
+
+        // 3) Handle CSV import (optional file input name = import_participants)
+        if ($request->hasFile('import_participants')) {
+            $file = $request->file('import_participants');
+            if ($file->isValid()) {
+                if (($handle = fopen($file->getRealPath(), 'r')) !== false) {
+                    $header = null;
+                    while (($row = fgetcsv($handle, 0, ',')) !== false) {
+                        if (!$header) {
+                            // assume header exists, normalize
+                            $header = array_map('trim', $row);
+                            continue;
+                        }
+                        $data = array_combine($header, $row);
+                        $first = trim($data['firstName'] ?? $data['firstName'] ?? ($data['first'] ?? ''));
+                        $last = trim($data['lastName'] ?? $data['lastName'] ?? ($data['last'] ?? ''));
+                        $email = trim($data['email'] ?? '');
+                        $phone = trim($data['contactNo'] ?? $data['phone'] ?? '');
+
+                        if (empty($first) && empty($email) && empty($phone)) {
+                            continue;
+                        }
+
+                        $existing = User::where(function ($q) use ($email, $phone) {
+                            if ($email)
+                                $q->orWhere('email', $email);
+                            if ($phone)
+                                $q->orWhere('contactNo', $phone)->orWhere('contactNo', $phone);
+                        })->first();
+
+                        if ($existing) {
+                            $createdUserIds[] = $existing->id;
+                            continue;
+                        }
+
+                        $user = User::create([
+                            'firstName' => $first ?: null,
+                            'lastName' => $last ?: null,
+                            'email' => $email ?: null,
+                            'contactNo' => $phone ?: null,
+                            'role' => 100,
+                            'password' => bcrypt(Str::random(12)),
+                        ]);
+                        $createdUserIds[] = $user->id;
+                    }
+                    fclose($handle);
+                }
+            }
+        }
+
+        // 4) Combine selected checkboxes with created users
+        $selectedUsers = $request->input('users', []);
+        if (!is_array($selectedUsers)) {
+            $selectedUsers = [];
+        }
+        $allUserIds = array_values(array_unique(array_merge($selectedUsers, $createdUserIds)));
+
+        // 5) Now validate users array (ensures they exist)
+        $request->merge(['users' => $allUserIds]);
         $validated = $request->validate([
             'title' => 'required|string',
             'agenda' => 'nullable|string',
@@ -60,11 +181,15 @@ class MeetController extends Controller
             'users.*' => 'exists:users,id',
         ]);
 
-        $meet = Meet::create([...$validated, 'meet_time' => $validated['meet_time_from'], 'user_ids' => json_encode($validated['users'])]);
+        // 6) Create meet (store user_ids JSON)
+        $meet = Meet::create([
+            ...$validated,
+            'meet_time' => $validated['meet_time_from'],
+            'user_ids' => json_encode($validated['users']),
+        ]);
 
-        // ✅ Fetch users and send WhatsApp invite
+        // 7) Send WhatsApp invites
         $users = User::whereIn('id', $validated['users'])->get(['firstName', 'lastName', 'contactNo']);
-
         foreach ($users as $user) {
             try {
                 WhatsappHelper::sendMeetLink($user->contactNo, $user->firstName . ' ' . $user->lastName, [
@@ -82,8 +207,6 @@ class MeetController extends Controller
                 Log::error("Failed to send WhatsApp to {$user->contactNo}: " . $e->getMessage());
             }
         }
-
-        // Optional: Send WhatsApp notification here later
 
         return redirect()->route('meets.index')->with('success', 'Meeting created successfully!');
     }
