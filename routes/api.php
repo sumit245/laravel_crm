@@ -69,13 +69,5 @@ Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
 Route::get('all-vehicles/{id}', [ConveyanceController::class, 'getVehicles']);
 Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicle']);
 Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
-//<<<<<<< HEAD
-//<<<<<<< HEAD
 Route::get('check-price', [ConveyanceController::class, 'checkPrice']);
-//=======
-//Route::get('check-price', [ConveyanceController::class, 'checkPice']);
-//>>>>>>> 5d629fd034bbd4c22e1d9cadaa1f4bcf967910f5
 Route::get('allow-expense', [ConveyanceController::class, 'allowExpense']);
-//=======
-//Route::get('check-price', [ConveyanceController::class, 'checkPrice']);
-//>>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
