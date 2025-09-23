@@ -27,7 +27,7 @@ class StaffImport implements ToCollection, WithHeadingRow
                 $last = trim((string) ($row['last_name'] ?? $row['lastname'] ?? $row['last'] ?? ''));
                 $email = strtolower(trim((string) ($row['email'] ?? '')));
                 $password = trim((string) ($row['password'] ?? ''));
-                $phone = trim((string) ($row['contactno'] ?? $row['contact_no'] ?? $row['mobile'] ?? $row['mobile_number'] ?? $row['phone'] ?? ''));
+                $phone = trim((string) ($row['contactno'] ?? $row['contact_number'] ?? $row['mobile'] ?? $row['mobile_number'] ?? $row['phone'] ?? ''));
                 $roleRaw = trim((string) ($row['role'] ?? $row['role_id'] ?? ''));
                 $employeeId = trim((string) ($row['employee_code'] ?? $row['emp_code_id'] ?? ''));
                 $address = trim((string) ($row['address'] ?? ''));
