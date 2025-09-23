@@ -1,7 +1,5 @@
 <?php
 
-<<<<<<< HEAD
-=======
 use App\Http\Controllers\API\PreviewController;
 use App\Http\Controllers\API\StreetlightController;
 use App\Http\Controllers\API\TaskController;
@@ -18,7 +16,6 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\CandidateController;
 use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
@@ -64,8 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/vendor-data/{id}', [StaffController::class, 'vendorData'])->name('vendor.data');
     Route::get('/engineer-data/{id}', [StaffController::class, 'engineerData'])->name('engineer.data');
     Route::resource('staff', StaffController::class);
-<<<<<<< HEAD
-    Route::prefix('staff')
+Route::prefix('staff')
         ->name('staff.')
         ->group(function () {
             Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
@@ -80,16 +76,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/meets/{meet}/notes', [MeetController::class, 'notes'])->name('meets.notes');
     Route::put('/meets/{meet}/notes', [MeetController::class, 'updateNotes'])->name('meets.updateNotes');
     Route::get('/meets/{meet}/export/pdf', [MeetController::class, 'exportPdf'])->name('meets.exportPdf');
-=======
-    Route::prefix('staff')->group(function () {
-        Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('staff.profile');
-        Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('staff.updateProfilePicture');
-    });
-    
     Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('staff.change-password');
     Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('staff.update-password');
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
-
     // optional
     Route::get('/meets/{meet}/export/excel', [MeetController::class, 'exportExcel'])->name('meets.exportExcel');
     // routes/web.php
@@ -101,16 +89,13 @@ Route::middleware(['auth'])->group(function () {
 
     // Vendors
     Route::resource('uservendors', VendorController::class);
-<<<<<<< HEAD
 
     // Projects
-=======
     // Route::post('vendors-updatepassword/{id}', [VendorController::class, 'updatePassword'])->name('vendor.update-password');
     // Route::get('/vendors-change-password/{id}', [VendorController::class, 'changePassword'])->name('vendor.change-password');
     
     // projects Router
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
     Route::resource('projects', ProjectsController::class);
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
@@ -135,8 +120,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('editvehicle');
             Route::post('settings/update', [ConvenienceController::class, 'updateVehicle'])->name('updatevehicle');
             Route::delete('settings/delete/{id}', [ConvenienceController::class, 'deleteVehicle'])->name('deletevehicle');
-
-<<<<<<< HEAD
             // User management
             Route::get('settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('edituser');
             Route::post('settings/update-user', [ConvenienceController::class, 'updateUser'])->name('updateuser');
@@ -147,7 +130,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('settings/edit-category/{id}', [ConvenienceController::class, 'editCategory'])->name('editcategory');
             Route::post('settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('updatecategory');
             Route::delete('settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('deletecategory');
-=======
     // Conveyance route fixed
     Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
@@ -171,14 +153,12 @@ Route::middleware(['auth'])->group(function () {
     
     // Conveyance details
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
-
             Route::get('edit-city-category', fn() => view('billing.editCityCategory'))->name('editcitycategory');
             Route::get('allowed-expense/{id}', [ConvenienceController::class, 'editAllowedExpense'])->name('allowedexpense');
             Route::post('update-allowed-expense/{id}', [ConvenienceController::class, 'updateAllowedExpense'])->name('updateallowedexpense');
         });
 
-<<<<<<< HEAD
+
     Route::post('/tada/bulk-update-status', [ConvenienceController::class, 'bulkUpdateStatus']);
     Route::post('/conveyance/accept/{id}', [ConvenienceController::class, 'accept'])->name('conveyance.accept');
     Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
@@ -187,7 +167,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/view-bills', fn() => view('billing.viewBills'))->name('view.bills');
 
     // Inventory
-=======
     // Billing Edit User
     Route::get('/settings/edit-user/{id}', [ConvenienceController::class, 'editUser'])->name('billing.edituser');
     // Billing Update User
@@ -214,7 +193,7 @@ Route::middleware(['auth'])->group(function () {
     // Inventory router
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
+//>>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
     Route::prefix('inventory')
@@ -239,17 +218,17 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/rooftop/{id}', [TasksController::class, 'editrooftop'])->name('tasks.editrooftop');
     Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
-<<<<<<< HEAD
+//<<<<<<< HEAD
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])
         ->where('any', '.*')
         ->name('tasks.show');
-=======
+//=======
     // Greedy path
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])->where('any', '.*')->name('tasks.show');
     
     // Projects Controller
     // Deleting target
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
+//>>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
     Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
 
     // Surveyed/Installed Poles
@@ -276,7 +255,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
     Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 
-<<<<<<< HEAD
+//<<<<<<< HEAD
     // Device Import
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
@@ -285,7 +264,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/rms-export', [RMSController::class, 'index'])->name('rms.index');
     Route::post('/rms-push', [RMSController::class, 'sendPanchayatToRMS'])->name('rms.push');
 });
-=======
+//=======
     // Route for hiring software HRM
    
 
@@ -314,4 +293,4 @@ Route::get('apply-now', function () {
 Route::get('admin-preview', function () {
     return view('hrm.adminPreview');
 })->name('admin-preview');
->>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
+//>>>>>>> 5fd7e494199d3ae2af4600437e3169f144087b5c
