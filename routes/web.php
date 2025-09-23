@@ -18,7 +18,7 @@ use App\Http\Controllers\DeviceController;
 use App\Http\Controllers\JICRController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
+//use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -131,14 +131,14 @@ Route::prefix('staff')
             Route::post('settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('updatecategory');
             Route::delete('settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('deletecategory');
     // Conveyance route fixed
-    Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
+   // Route::get('/billing/convenience', [ConvenienceController::class, 'convenience'])->name('billing.convenience');
     // Tada route fixed
-    Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
-    Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
+   // Route::get('/billing/tada', [ConvenienceController::class, 'tadaView'])->name('billing.tada');
+    //Route::get('billing/tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('billing.tadaDetails');
     // Settings Route
-    Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
+   // Route::get('/settings', [ConvenienceController::class, 'settings'])->name('billing.settings');
     // status update
-    Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
+    //Route::post('/tada/update-status/{id}', [ConvenienceController::class, 'updateTadaStatus'])->name('tada.updateStatus');
     //Add Vehicle
     Route::post('/settings/add', [ConvenienceController::class, 'addVehicle'])->name('billing.addvehicle');
     // Edit Vehicle
@@ -268,7 +268,7 @@ Route::prefix('staff')
     // Route for hiring software HRM
    
 
-});
+//});
  Route::get('/apply', [PreviewController::class, 'applyNow'])->name('hrm.apply');
 Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
 Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
