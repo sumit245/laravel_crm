@@ -116,12 +116,9 @@
                         <div class="border rounded p-2">
                             <div class="participant-scroll">
                                 @foreach ($users as $user)
-                                    <label
-                                        class="circle-checkbox-label d-flex align-items-start gap-2 mb-2 participant-item"
+                                    <div class="circle-checkbox-label d-flex align-items-start gap-2 mb-2 participant-item"
                                         data-name="{{ strtolower(trim($user->firstName . ' ' . $user->lastName)) }}"
-                                        data-email="{{ strtolower($user->email ?? '') }}"
-                                        data-phone="{{ $user->contactNo ?? ($user->mobile_number ?? '') }}"
-                                        data-role="{{ strtolower($roleNames[$user->role] ?? 'role') }}">
+                                        data-email="{{ strtolower($user->email ?? '') }}">
                                         <input type="checkbox" name="users[]" value="{{ $user->id }}"
                                             class="circle-checkbox">
                                         <span>
@@ -132,7 +129,7 @@
                                                 {{ $user->contactNo && trim($user->contactNo) !== '' ? $user->contactNo : 'Not provided' }}
                                             </small>
                                         </span>
-                                    </label>
+                                    </div>
                                 @endforeach
                             </div>
                         </div>
@@ -233,6 +230,10 @@
             border-color: #0d6efd;
         }
 
+        .participant-item.hidden {
+            display: none !important;
+        }
+
         .circle-checkbox:checked::after {
             content: '✔';
             color: #fff;
@@ -291,17 +292,22 @@
                     participantItems.forEach(item => {
                         const name = (item.dataset.name || '').toLowerCase();
                         const email = (item.dataset.email || '').toLowerCase();
-                        const phone = (item.dataset.phone || '').toLowerCase();
-                        const role = (item.dataset.role || '').toLowerCase();
 
-                        const isMatch =
-                            name.includes(query) ||
-                            email.includes(query) ||
-                            phone.includes(query) ||
-                            role.includes(query);
+                        let isMatch = false;
+                        if (query.length > 0) {
+                            isMatch = name.includes(query) || email.includes(query);
+                        } else {
+                            // if search box is empty, show all
+                            isMatch = true;
+                        }
 
-                        // use 'flex' because you have d-flex on the label
-                        item.style.display = isMatch ? 'flex' : 'none';
+                        if (isMatch) {
+                            item.classList.remove('hidden');
+                            item.classList.add('d-flex');
+                        } else {
+                            item.classList.add('hidden');
+                            item.classList.remove('d-flex');
+                        }
                     });
                 });
             })();
