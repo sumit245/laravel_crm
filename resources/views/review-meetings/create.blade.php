@@ -108,47 +108,33 @@
                                 4 => 'Store Incharge',
                                 5 => 'Coordinator',
                             ];
-                            $grouped = $users->groupBy('role');
                         @endphp
 
-                        <div class="row">
-                            @foreach ($grouped as $role => $roleUsers)
-                                @php
-                                    $roleName = $roleNames[$role] ?? 'Role ' . $role;
-                                    $roleSlug = \Illuminate\Support\Str::slug($roleName, '_');
-                                @endphp
+                        <input type="text" class="form-control mb-2 participant-search"
+                            placeholder="Search by name, role, email or phone...">
 
-                                <div class="col-md-4 mb-3">
-                                    <div class="border rounded p-2">
-                                        <div class="d-flex justify-content-between align-items-center mb-1">
-                                            <strong>{{ $roleName }}</strong>
-                                            <a href="javascript:void(0);" class="text-primary small select-all"
-                                                data-role="{{ $roleSlug }}">
-                                                Select All
-                                            </a>
-                                        </div>
-
-                                        <input type="text" class="form-control mb-2 participant-search"
-                                            placeholder="Search..." data-role="{{ $roleSlug }}">
-                                        <div class="participant-scroll role-group-{{ $roleSlug }}">
-                                            @foreach ($roleUsers as $user)
-                                                <label class="circle-checkbox-label d-flex align-items-start gap-2 mb-2">
-                                                    <input type="checkbox" name="users[]" value="{{ $user->id }}"
-                                                        class="circle-checkbox role-{{ $roleSlug }}">
-                                                    <span>
-                                                        {{ $user->firstName }} {{ $user->lastName }}<br>
-                                                        {{-- <span class="text-bold text-primary">Role: {{ $roleName }}</span><br/> --}}
-                                                        <small class="text-muted">
-                                                            {{ $user->email ?? 'No email' }} |
-                                                            {{ $user->contactNo && trim($user->contactNo) !== '' ? $user->contactNo : 'Not provided' }}
-                                                        </small>
-                                                    </span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                </div>
-                            @endforeach
+                        <div class="border rounded p-2">
+                            <div class="participant-scroll">
+                                @foreach ($users as $user)
+                                    <label
+                                        class="circle-checkbox-label d-flex align-items-start gap-2 mb-2 participant-item"
+                                        data-name="{{ strtolower(trim($user->firstName . ' ' . $user->lastName)) }}"
+                                        data-email="{{ strtolower($user->email ?? '') }}"
+                                        data-phone="{{ $user->contactNo ?? ($user->mobile_number ?? '') }}"
+                                        data-role="{{ strtolower($roleNames[$user->role] ?? 'role') }}">
+                                        <input type="checkbox" name="users[]" value="{{ $user->id }}"
+                                            class="circle-checkbox">
+                                        <span>
+                                            {{ $user->firstName }} {{ $user->lastName }}<br>
+                                            <small class="text-muted">
+                                                Role: {{ $roleNames[$user->role] ?? 'Role' }} |
+                                                {{ $user->email ?? 'No email' }} |
+                                                {{ $user->contactNo && trim($user->contactNo) !== '' ? $user->contactNo : 'Not provided' }}
+                                            </small>
+                                        </span>
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
 
                         <div class="mt-2">
@@ -293,19 +279,33 @@
                 });
             });
 
-            // Participant Search Filter
-            document.querySelectorAll('.participant-search').forEach(function(searchBox) {
-                searchBox.addEventListener('input', function() {
-                    const role = this.dataset.role;
-                    const keyword = this.value.toLowerCase();
-                    const participants = document.querySelectorAll('.role-group-' + role +
-                        ' .circle-checkbox-label');
-                    participants.forEach(label => {
-                        const text = label.textContent.toLowerCase();
-                        label.style.display = text.includes(keyword) ? '' : 'none';
+            (function() {
+                const searchInput = document.querySelector('.participant-search');
+                if (!searchInput) return;
+
+                const participantItems = document.querySelectorAll('.participant-item');
+
+                searchInput.addEventListener('input', function() {
+                    const query = this.value.trim().toLowerCase();
+
+                    participantItems.forEach(item => {
+                        const name = (item.dataset.name || '').toLowerCase();
+                        const email = (item.dataset.email || '').toLowerCase();
+                        const phone = (item.dataset.phone || '').toLowerCase();
+                        const role = (item.dataset.role || '').toLowerCase();
+
+                        const isMatch =
+                            name.includes(query) ||
+                            email.includes(query) ||
+                            phone.includes(query) ||
+                            role.includes(query);
+
+                        // use 'flex' because you have d-flex on the label
+                        item.style.display = isMatch ? 'flex' : 'none';
                     });
                 });
-            });
+            })();
+
 
             // Auto-show date/time picker
             ['meet_date', 'meet_time1', 'meet_time2'].forEach(id => {

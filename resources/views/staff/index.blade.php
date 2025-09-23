@@ -18,7 +18,7 @@
             <div class="input-group input-group-sm mb-3" style="max-width: 600px;">
                 <input type="file" name="file" class="form-control form-height form-control-sm" required>
                 <button type="submit" class="btn btn-sm btn-primary" title="Import Staff">
-                    <i class="mdi mdi-upload"></i> Importing Staff
+                    <i class="mdi mdi-upload"></i> Import Staff
                 </button>
             </div>
         </form>
