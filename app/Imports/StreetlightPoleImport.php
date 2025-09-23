@@ -4,20 +4,25 @@ namespace App\Imports;
 
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+// Import the necessary concerns
+use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Illuminate\Contracts\Queue\ShouldQueue; // Optional: For background processing
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB; // Import DB facade for updates
 use Carbon\Carbon;
 use App\Models\Pole;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
-use App\Models\InventroyStreetLightModel;
 use App\Models\InventoryDispatch;
 
-class StreetlightPoleImport implements ToCollection, WithHeadingRow
+// Implement WithChunkReading to process the file in batches
+class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
     public function collection(Collection $rows)
     {
         $missingItems = [];
         foreach ($rows as $row) {
+            // Find related models
             $streetlight = Streetlight::where([
                 ['district', $row['district']],
                 ['block', $row['block']],
@@ -36,6 +41,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
 
             $pole = Pole::where('complete_pole_number', $row['complete_pole_number'])->first();
 
+            // Prepare pole data
             $poleData = [
                 'task_id' => $task->id,
                 'isSurveyDone' => true,
@@ -50,49 +56,64 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow
                 'panel_qr' => $row['panel_qr'],
                 'lat' => $row['lat'],
                 'lng' => $row['long'],
-                'updated_at' =>  Carbon::parse($row['date_of_installation']),
+                'updated_at' => Carbon::parse($row['date_of_installation']),
             ];
-            $creatingNewPole = false; // Track if we're creating a new pole
 
             if ($pole) {
+                // If pole exists, just update it.
                 $pole->update($poleData);
             } else {
-                foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
-                    $dispatch = InventoryDispatch::where('serial_number', (string)$row[$item])
+                // If pole is new, perform checks and create it.
+                $itemsToDispatch = [
+                    (string) $row['battery_qr'],
+                    (string) $row['panel_qr'],
+                    (string) $row['luminary_qr']
+                ];
+
+                // Check for missing items (this logic remains the same)
+                foreach ($itemsToDispatch as $serialNumber) {
+                    $dispatch = InventoryDispatch::where('serial_number', $serialNumber)
                         ->whereNull('streetlight_pole_id')
                         ->where('is_consumed', 0)
                         ->first();
-
                     if (!$dispatch) {
-                        $missingItems[] = "Material '{$item}' with serial '{$row[$item]}' not yet dispatched to vendor";
+                        $missingItems[] = "Material with serial '{$serialNumber}' not yet dispatched to vendor";
                     }
                 }
 
-                $creatingNewPole = true;
-                $poleData['complete_pole_number'] = $row['complete_pole_number'];
-                Pole::create($poleData);
-            }
-
-            // Update inventory dispatch **only if new pole created**
-            if ($creatingNewPole) {
-                $latestPoleId = Pole::where('complete_pole_number', $row['complete_pole_number'])->value('id');
-                foreach (['battery_qr', 'panel_qr', 'luminary_qr'] as $item) {
-                    InventoryDispatch::where('serial_number', (string)$row[$item])
-                        ->whereNull('streetlight_pole_id')
-                        ->where('is_consumed', 0)
-                        ->update([
-                            'streetlight_pole_id' => $latestPoleId,
-                            'is_consumed' => 1,
-                            'total_quantity' => 0,
-                            'updated_at' => Carbon::now()
-                        ]);
+                if (!empty($missingItems)) {
+                    // If items are missing for this row, skip to next row after collecting errors.
+                    // This prevents a partial creation if one item is missing.
+                    continue;
                 }
-                $streetlight->increment('number_of_surveyed_poles');
-                $streetlight->increment('number_of_installed_poles');
+
+                $poleData['complete_pole_number'] = $row['complete_pole_number'];
+                $newPole = Pole::create($poleData);
+
+                // **OPTIMIZATION: Update inventory in a single query**
+                InventoryDispatch::whereIn('serial_number', $itemsToDispatch)
+                    ->whereNull('streetlight_pole_id')
+                    ->where('is_consumed', 0)
+                    ->update([
+                        'streetlight_pole_id' => $newPole->id,
+                        'is_consumed' => 1,
+                        'total_quantity' => 0, // Assuming this logic is correct
+                        'updated_at' => Carbon::now()
+                    ]);
+
+                // **OPTIMIZATION: Increment counters in a single query**
+                $streetlight->update([
+                    'number_of_surveyed_poles' => DB::raw('number_of_surveyed_poles + 1'),
+                    'number_of_installed_poles' => DB::raw('number_of_installed_poles + 1'),
+                ]);
             }
+        // After the loop, if any missing items were found, throw one exception with all of them.
+        if (!empty($missingItems)) {
+            throw new \Exception("The following items are missing or already consumed: " . implode(", ", array_unique($missingItems)));
         }
- //       if (!empty($missingItems)) {
-//            throw new \Exception("The following items are missing: " . implode(", ", $missingItems));
- //       }
+    // Set the chunk size
+    public function chunkSize(): int
+    {
+        return 200; // You can adjust this number based on your server's performance
     }
 }
