@@ -93,6 +93,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
 
             $poleData['complete_pole_number'] = $row['complete_pole_number'];
             $newPole = Pole::create($poleData);
+            Log::info('Pole Created: ' . $newPole->complete_pole_number);
 
             // **OPTIMIZATION: Update inventory in a single query**
             InventoryDispatch::whereIn('serial_number', $itemsToDispatch)
@@ -121,6 +122,6 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
     // Set the chunk size
     public function chunkSize(): int
     {
-        return 4000; // You can adjust this number based on your server's performance
+        return 40000; // You can adjust this number based on your server's performance
     }
 }
