@@ -68,43 +68,43 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
             ];
 
             // If pole is new, perform checks and create it.
-            $itemsToDispatch = [
-                (string) $row['battery_qr'],
-                (string) $row['panel_qr'],
-                (string) $row['luminary_qr']
-            ];
+            // $itemsToDispatch = [
+            //     (string) $row['battery_qr'],
+            //     (string) $row['panel_qr'],
+            //     (string) $row['luminary_qr']
+            // ];
 
             // Check for missing items (this logic remains the same)
-            foreach ($itemsToDispatch as $serialNumber) {
-                $dispatch = InventoryDispatch::where('serial_number', $serialNumber)
-                    ->whereNull('streetlight_pole_id')
-                    ->where('is_consumed', 0)
-                    ->first();
-                if (!$dispatch) {
-                    $missingItems[] = "Material with serial '{$serialNumber}' not yet dispatched to vendor";
-                }
-            }
+            // foreach ($itemsToDispatch as $serialNumber) {
+            //     $dispatch = InventoryDispatch::where('serial_number', $serialNumber)
+            //         ->whereNull('streetlight_pole_id')
+            //         ->where('is_consumed', 0)
+            //         ->first();
+            //     if (!$dispatch) {
+            //         $missingItems[] = "Material with serial '{$serialNumber}' not yet dispatched to vendor";
+            //     }
+            // }
 
-            if (!empty($missingItems)) {
-                // If items are missing for this row, skip to next row after collecting errors.
-                // This prevents a partial creation if one item is missing.
-                continue;
-            }
+            // if (!empty($missingItems)) {
+            //     // If items are missing for this row, skip to next row after collecting errors.
+            //     // This prevents a partial creation if one item is missing.
+            //     continue;
+            // }
 
             $poleData['complete_pole_number'] = $row['complete_pole_number'];
             $newPole = Pole::create($poleData);
             Log::info('Pole Created: ' . $newPole->complete_pole_number);
 
             // **OPTIMIZATION: Update inventory in a single query**
-            InventoryDispatch::whereIn('serial_number', $itemsToDispatch)
-                ->whereNull('streetlight_pole_id')
-                ->where('is_consumed', 0)
-                ->update([
-                    'streetlight_pole_id' => $newPole->id,
-                    'is_consumed' => 1,
-                    'total_quantity' => 0, // Assuming this logic is correct
-                    'updated_at' => Carbon::now()
-                ]);
+            // InventoryDispatch::whereIn('serial_number', $itemsToDispatch)
+            //     ->whereNull('streetlight_pole_id')
+            //     ->where('is_consumed', 0)
+            //     ->update([
+            //         'streetlight_pole_id' => $newPole->id,
+            //         'is_consumed' => 1,
+            //         'total_quantity' => 0, // Assuming this logic is correct
+            //         'updated_at' => Carbon::now()
+            //     ]);
 
             // **OPTIMIZATION: Increment counters in a single query**
             $streetlight->update([
