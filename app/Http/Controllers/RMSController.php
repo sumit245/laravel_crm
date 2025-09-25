@@ -118,9 +118,9 @@ class RMSController extends Controller
                     $approved_by = $task->engineer->firstName . ' ' . $task->engineer->lastName;
 
                     // Call your helper to send the data.
-                    RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
+                    $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
-                    $responses[] = ['pole_id' => $pole->id, 'status' => 'success'];
+                    $responses[] = ['pole_id' => $pole->id, 'status' => $apiResponse['status'], 'message' => $apiResponse['detail']];
                 } catch (Exception $e) {
                     Log::error("Failed to send pole data to RMS", [
                         'pole_id' => $pole->id,

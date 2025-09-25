@@ -45,6 +45,7 @@ class RemoteApiHelper
             } else {
                Log::error("Remote API failed", ['status' => $response->status(), 'body' => $response->body()]);
             }
+            return $response;
         } catch (\Exception $e) {
             Log::error("Remote API exception", ['error' => $e->getMessage()]);
         }
