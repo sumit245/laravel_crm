@@ -475,3 +475,35 @@ wala baag, datia, Datia, Data, Madhya pradesh - 475661","contact_number":6266286
 [stacktrace]
 #0 {main}
 "} 
+[2025-09-25 06:17:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:17:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:18:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:18:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:19:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:19:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:20:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 
+[2025-09-25 06:20:42] local.ERROR: Cannot use positional argument after named argument {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use positional argument after named argument at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php:52)
+[stacktrace]
+#0 {main}
+"} 

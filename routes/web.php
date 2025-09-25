@@ -49,7 +49,7 @@ Route::middleware(['auth'])->group(function () {
         ->name('staff.')
         ->group(function () {
             Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
-            Route::post(uri: 'update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
+            Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
             Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('change-password');
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
