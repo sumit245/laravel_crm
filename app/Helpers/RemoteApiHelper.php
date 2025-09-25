@@ -38,13 +38,13 @@ class RemoteApiHelper
         ];
         Log::info($payload);
         try {
-            // $response = Http::asForm()->post($url, $payload);
-            // Log::info($response->json());
-            // if ($response->successful()) {
-            //     Log::info("Remote API success", ['response' => $response->body()]);
-            // } else {
-            //     Log::error("Remote API failed", ['status' => $response->status(), 'body' => $response->body()]);
-            // }
+            $response = Http::asForm()->post($url, $payload);
+            Log::info($response->json());
+            if ($response->successful()) {
+               Log::info("Remote API success", ['response' => $response->body()]);
+            } else {
+               Log::error("Remote API failed", ['status' => $response->status(), 'body' => $response->body()]);
+            }
         } catch (\Exception $e) {
             Log::error("Remote API exception", ['error' => $e->getMessage()]);
         }
