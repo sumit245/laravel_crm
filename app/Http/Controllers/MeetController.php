@@ -14,6 +14,11 @@ use Illuminate\Support\Str;
 
 class MeetController extends Controller
 {
+    public function dashboard()
+    {
+        return null;
+    }
+
     public function index()
     {
         $meets = Meet::latest()->get();
@@ -41,21 +46,42 @@ class MeetController extends Controller
         return view('review-meetings.create', compact('meets', 'users', 'projects'));
     }
 
+    public function details(Request $request, $id)
+    {
+        try {
+            $meet = Meet::with([
+                'attendees',
+                'discussionPoints.assignee',
+                'discussionPoints.updates',
+                'followUps'
+            ])->findOrFail($id);
+
+            // Calculate task statuses for the summary card
+            $taskStatus = $meet->discussionPoints->countBy('status');
+            $taskCounts = [
+                'total' => $meet->discussionPoints->count(),
+                'done' => $taskStatus->get('Completed', 0),
+                'progress' => $taskStatus->get('In Progress', 0),
+                'pending' => $taskStatus->get('Pending', 0),
+            ];
+
+            // Group discussion points by assignee for the Responsibilities tab
+            $responsibilities = $meet->discussionPoints->groupBy('assignee.name');
+
+
+            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities'));
+
+        } catch (\Exception $e) {
+            return response()->json([
+                "error" => "Meeting not found or an error occurred.",
+                "message" => $e->getMessage()
+            ], 404);
+        }
+    }
+
     public function store(Request $request)
     {
         Log::info($request->all());
-
-        // 1) Validate meeting basic fields (do not validate users.* yet)
-        $validatedBase = $request->validate([
-            'title' => 'required|string',
-            'agenda' => 'nullable|string',
-            'meet_link' => 'required|url',
-            'platform' => 'required|string',
-            'meet_date' => 'required|date',
-            'meet_time_from' => 'required',
-            'meet_time_to' => 'required',
-            'type' => 'required|string',
-        ]);
 
         $createdUserIds = [];
 
@@ -213,12 +239,13 @@ class MeetController extends Controller
     public function show(Meet $meet)
     {
         // Load the relationship
-        $historicalNotes = $meet->notesHistory()->with('user')->get();
+        // $historicalNotes = $meet->notesHistory()->with('user')->get();
 
-        return view('review-meetings.notes', [
-            'meet' => $meet,
-            'historicalNotes' => $historicalNotes,
-        ]);
+        // return view('review-meetings.notes', [
+        //     'meet' => $meet,
+        //     'historicalNotes' => $historicalNotes,
+        // ]);
+        return view('review-meetings.show-details');
     }
 
     public function edit(Meet $meet)

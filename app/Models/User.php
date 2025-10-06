@@ -97,4 +97,14 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
     ];
+    public function meetings()
+    {
+        return $this->belongsToMany(Meet::class);
+    }
+
+    public function assignedTasks()
+    {
+        return $this->hasMany(DiscussionPoints::class, 'assignee_id');
+    }
+
 }

@@ -1,0 +1,405 @@
+@extends('layouts.main')
+@section('content')
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <a href="javascript:history.back()" class="btn btn-light border mb-2"><i class="bi bi-arrow-left me-2"></i>Back
+                    to Meetings</a>
+                <h2 class="mb-0">{{ $meet->title }}</h2>
+                <p class="text-muted">{{ \Carbon\Carbon::parse($meet->meet_date)->format('Y-m-d') }} •
+                    {{ \Carbon\Carbon::parse($meet->meet_time)->format('h:i A') }}</p>
+            </div>
+            <a href="{{ $meet->meet_link }}" target="_blank" class="btn btn-primary"><i
+                    class="bi bi-camera-video me-2"></i>Join Meeting</a>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="card summary-card h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Platform</p>
+                            <h1 class="mb-0">{{ $meet->platform }}</h1>
+                        </div>
+                        <i class="bi bi-camera-video fs-4 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card summary-card h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Attendees</p>
+                            <h1 class="mb-0">{{ $meet->attendees->count() }}</h1>
+                        </div>
+                        <i class="bi bi-people fs-4 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card summary-card h-100">
+                    <div class="card-body d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="text-muted mb-1">Task Status</p>
+                            <h1 class="mb-0">{{ $taskCounts['total'] }} Total</h1>
+                            <div>
+                                <span class="small"><span class="task-status-dot dot-done"></span>{{ $taskCounts['done'] }}
+                                    Done</span>
+                                <span class="small mx-2"><span
+                                        class="task-status-dot dot-progress"></span>{{ $taskCounts['progress'] }}
+                                    Progress</span>
+                                <span class="small"><span
+                                        class="task-status-dot dot-pending"></span>{{ $taskCounts['pending'] }}
+                                    Pending</span>
+                            </div>
+                        </div>
+                        <i class="bi bi-check2-circle fs-4 text-muted"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" style="border-radius: 0.5rem;">
+            <div class="tab-content" id="meetingTabContent">
+                <ul class="nav nav-tabs" id="meetingTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview"
+                            type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="discussion-tab" data-bs-toggle="tab" data-bs-target="#discussion"
+                            type="button" role="tab" aria-controls="discussion" aria-selected="false">Discussion
+                            Points</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="attendees-tab" data-bs-toggle="tab" data-bs-target="#attendees"
+                            type="button" role="tab" aria-controls="attendees" aria-selected="false">Attendees</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="responsibilities-tab" data-bs-toggle="tab"
+                            data-bs-target="#responsibilities" type="button" role="tab"
+                            aria-controls="responsibilities" aria-selected="false">Responsibilities</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="followups-tab" data-bs-toggle="tab" data-bs-target="#followups"
+                            type="button" role="tab" aria-controls="followups"
+                            aria-selected="false">Follow-ups</button>
+                    </li>
+                </ul>
+
+                <div class="tab-pane mt-4 fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
+                    <h4 class="mb-3">Meeting Details</h4>
+                    <div class="mb-3">
+                        <h6 class="text-muted">Agenda</h6>
+                        <p>{{ $meet->agenda ?? 'No agenda provided.' }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="text-muted">Description</h6>
+                        {{-- Assuming description is part of notes or another field. Let's use agenda for now if no description field exists. --}}
+                        <p>{{ $meet->agenda ?? 'No description provided.' }}</p>
+                    </div>
+                    <div>
+                        <h6 class="text-muted">Status</h6>
+                        <p>
+                            This meeting has tasks in various stages:
+                            <span class="badge bg-success">{{ $taskCounts['done'] }} Done</span>
+                            <span class="badge bg-warning text-dark">{{ $taskCounts['progress'] }} In Progress</span>
+                            <span class="badge bg-secondary">{{ $taskCounts['pending'] }} Pending</span>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="tab-pane mt-4 fade" id="discussion" role="tabpanel" aria-labelledby="discussion-tab">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Discussion Points & Tasks</h4>
+                        <div class="d-flex gap-2">
+                            <select class="form-select w-auto">
+                                {{-- TODO: show all departments here --}}
+                                <option selected>All Departments</option>
+                                <option value="1">Design</option>
+                                <option value="2">Engineering</option>
+                                <option value="3">Product</option>
+                            </select>
+                            {{-- TODO: Clicking this add task button will open a popup to add task --}}
+                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i
+                                    class="bi bi-plus-lg me-2"></i>Add Task</button>
+                        </div>
+                    </div>
+                    @forelse ($meet->discussionPoints as $point)
+                        <div class="task-card mb-3">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h5>
+                                        @if ($point->status == 'Completed')
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        @elseif($point->status == 'In Progress')
+                                            <i class="bi bi-clock-history text-warning me-2"></i>
+                                        @else
+                                            <i class="bi bi-exclamation-circle-fill text-secondary me-2"></i>
+                                        @endif
+                                        {{ $point->title }}
+                                    </h5>
+                                    <p class="text-muted small">{{ $point->description }}</p>
+                                </div>
+                                <div class="d-flex gap-2">
+                                    @if ($point->priority)
+                                        <span class="badge bg-primary">{{ $point->priority }}</span>
+                                    @endif
+                                    <span
+                                        class="badge 
+                                        @if ($point->status == 'Completed') bg-success
+                                        @elseif($point->status == 'In Progress') bg-warning text-dark
+                                        @else bg-secondary @endif">
+                                        {{ $point->status }}
+                                    </span>
+                                    <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-lg"></i> Add
+                                        Note</button>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between text-muted small mt-2">
+                                <span>
+                                    <i class="bi bi-person me-1"></i> {{ $point->assignee->name ?? 'Unassigned' }}
+                                    @if ($point->assignee->department)
+                                        <span
+                                            class="badge bg-light text-dark ms-1">{{ $point->assignee->department }}</span>
+                                    @endif
+                                </span>
+                                @if ($point->due_date)
+                                    <span><i class="bi bi-calendar-event me-1"></i> Due:
+                                        {{ \Carbon\Carbon::parse($point->due_date)->format('Y-m-d') }}</span>
+                                @endif
+                            </div>
+                            @if ($point->updates->isNotEmpty())
+                                <hr>
+                                <div class="task-updates">
+                                    <h6 class="small">Updates</h6>
+                                    <ul>
+                                        @foreach ($point->updates as $update)
+                                            <li><strong>{{ $update->created_at->format('Y-m-d') }}:</strong>
+                                                {{ $update->content }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            @endif
+                        </div>
+                    @empty
+                        <div class="text-center text-muted p-4">No discussion points or tasks have been added yet.</div>
+                    @endforelse
+                </div>
+
+                <div class="tab-pane mt-4 fade" id="attendees" role="tabpanel" aria-labelledby="attendees-tab">
+                    <h4 class="mb-3">Meeting Attendees</h4>
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Name</th>
+                                    <th scope="col">Department</th>
+                                    <th scope="col">Role</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($meet->attendees as $attendee)
+                                    <tr>
+                                        <td>{{ $attendee->name }}</td>
+                                        <td>{{ $attendee->department ?? 'N/A' }}</td>
+                                        <td>{{ $attendee->role_name ?? 'Attendee' }}</td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="3" class="text-center text-muted">No attendees found.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="tab-pane mt-4 fade" id="responsibilities" role="tabpanel"
+                    aria-labelledby="responsibilities-tab">
+                    <h4 class="mb-3">Staff Responsibilities Summary</h4>
+                    @forelse ($responsibilities as $assigneeName => $tasks)
+                        <div class="responsibility-card mb-3">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <h5 class="mb-0">{{ $assigneeName }}</h5>
+                                    <small class="text-muted">{{ $tasks->first()->assignee->department ?? 'N/A' }}</small>
+                                </div>
+                                <div class="text-end">
+                                    <span class="badge bg-secondary mb-1">{{ $tasks->count() }} Total</span>
+                                    <span
+                                        class="badge bg-success mb-1">{{ $tasks->where('status', 'Completed')->count() }}
+                                        Done</span>
+                                    <span
+                                        class="badge bg-warning text-dark mb-1">{{ $tasks->where('status', 'In Progress')->count() }}
+                                        Progress</span>
+                                    <span
+                                        class="badge bg-light text-dark mb-1">{{ $tasks->where('status', 'Pending')->count() }}
+                                        Pending</span>
+                                </div>
+                            </div>
+                            <hr>
+                            <h6>All Tasks:</h6>
+                            @foreach ($tasks as $task)
+                                <div class="p-2 rounded d-flex justify-content-between align-items-center mb-2"
+                                    style="background-color: #f8f9fa;">
+                                    <div>
+                                        @if ($task->status == 'Completed')
+                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                        @endif
+                                        {{ $task->title }}
+                                    </div>
+                                    <div>
+                                        @if ($task->priority)
+                                            <span class="badge bg-primary me-2">{{ $task->priority }}</span>
+                                        @endif
+                                        @if ($task->due_date)
+                                            <span class="small text-muted">Due:
+                                                {{ \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') }}</span>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    @empty
+                        <div class="text-center text-muted p-4">No one has been assigned any responsibilities yet.</div>
+                    @endforelse
+                </div>
+
+                <div class="tab-pane mt-4 fade" id="followups" role="tabpanel" aria-labelledby="followups-tab">
+                    <h4 class="mb-3">Follow-up Meetings</h4>
+                    <div class="list-group">
+                        @forelse ($meet->followUps as $followUp)
+                            <div class="list-group-item d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h6 class="mb-0">{{ $followUp->title }}</h6>
+                                    <small
+                                        class="text-muted">{{ \Carbon\Carbon::parse($followUp->meet_date)->format('Y-m-d') }}</small>
+                                </div>
+                                <div>
+                                    <span
+                                        class="badge bg-light text-dark me-2">{{ $followUp->status ?? 'scheduled' }}</span>
+                                    <a href="{{ route('meets.details', $followUp->id) }}"
+                                        class="btn btn-sm btn-outline-secondary">View Details</a>
+                                </div>
+                            </div>
+                        @empty
+                            <div class="text-center text-muted p-4">No follow-up meetings have been scheduled.</div>
+                        @endforelse
+                    </div>
+                    <div class="mt-3">
+                        <a href="#" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-2"></i>Schedule
+                            Follow-up Meeting</a>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+@endsection
+
+@push('styles')
+    <style>
+        .summary-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+        }
+
+        .summary-card .card-body {
+            padding: 1.25rem;
+        }
+
+        .summary-card h1,
+        .summary-card .h1 {
+            font-size: 2rem;
+            font-weight: 600;
+        }
+
+        /* FIX: This style block overrides the conflicting rule from your style.css */
+        .card .nav-tabs {
+            position: relative;
+            /* Overrides position: fixed */
+            max-width: 100%;
+            /* Overrides max-width: 220px */
+            flex-wrap: nowrap;
+            /* Prevents wrapping */
+        }
+
+        /* END OF FIX */
+
+        .nav-tabs .nav-link {
+            border: 0;
+            color: #6c757d;
+            border-bottom: 2px solid transparent;
+            padding-left: 1rem;
+            padding-right: 1rem;
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #0d6efd;
+            background-color: transparent;
+            border-bottom: 2px solid #0d6efd;
+        }
+
+        .task-status-dot {
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+
+        .dot-done {
+            background-color: #198754;
+        }
+
+        .dot-progress {
+            background-color: #ffc107;
+        }
+
+        .dot-pending {
+            background-color: #6c757d;
+        }
+
+        .task-card,
+        .responsibility-card {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+        }
+
+        .task-updates ul {
+            list-style-type: none;
+            padding-left: 1.25rem;
+            border-left: 2px solid #e9ecef;
+            font-size: 0.875rem;
+            color: #6c757d;
+        }
+
+        .task-updates li {
+            position: relative;
+            padding-bottom: 0.5rem;
+        }
+
+        .task-updates li::before {
+            content: '';
+            position: absolute;
+            left: -0.85rem;
+            top: 0.3rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #ced4da;
+        }
+
+        .table {
+            border: 1px solid #e9ecef;
+            border-radius: 0.5rem;
+            overflow: hidden;
+        }
+
+        .table thead {
+            background-color: #f8f9fa;
+        }
+    </style>
+@endpush

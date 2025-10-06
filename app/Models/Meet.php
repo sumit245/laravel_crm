@@ -27,30 +27,45 @@ class Meet extends Model
         'meet_time' => 'datetime:H:i',
     ];
 
-     public function whiteboard()
+    public function whiteboard()
     {
         return $this->hasOne(Whiteboard::class);
     }
     // app/Models/Meet.php
-public function notesHistory()
-{
-    return $this->hasMany(MeetingNoteHistory::class)->latest(); // Order by most recent
-}
+    public function notesHistory()
+    {
+        return $this->hasMany(MeetingNoteHistory::class)->latest(); // Order by most recent
+    }
 
-public function participants()
-{
-    // Make sure you have this relationship defined
-    return $this->belongsToMany(User::class, 'meet_user'); 
-}
+    public function participants()
+    {
+        // Make sure you have this relationship defined
+        return $this->belongsToMany(User::class, 'meet_user');
+    }
 
-// app/Models/MeetingNoteHistory.php
-public function meet()
-{
-    return $this->belongsTo(Meet::class);
-}
+    // app/Models/MeetingNoteHistory.php
+    public function meet()
+    {
+        return $this->belongsTo(Meet::class);
+    }
 
-public function user()
-{
-    return $this->belongsTo(User::class);
-}
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+    public function attendees()
+    {
+        return $this->belongsToMany(User::class);
+    }
+
+    public function discussionPoints()
+    {
+        return $this->hasMany(DiscussionPoints::class);
+    }
+
+    public function followUps()
+    {
+        return $this->hasMany(FollowUp::class, 'parent_meet_id');
+    }
+
 }

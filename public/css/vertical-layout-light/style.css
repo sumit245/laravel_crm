@@ -26074,6 +26074,7 @@ code {
 .input-group-append,
 .input-group-prepend {
     color: #c9c8c8;
+    height: inherit;
     width: auto;
     border: none;
 }
@@ -35121,13 +35122,14 @@ div.tagsinput span.tag a {
     /* Keeps it fixed in place */
     /* Positions it at the top of the page */
     /* Aligns it to the left */
-    
+
     margin-left: 4px;
     max-width: 100%;
     background-color: transparent;
     z-index: 1000;
     padding: 10px 0;
 }
+
 .fixed-navbar-project {
     position: relative;
     /* Keeps it fixed in place */
@@ -35141,8 +35143,8 @@ div.tagsinput span.tag a {
     padding: 10px 0;
 }
 
-#assignedTasksTable{
-    top:-40px;
+#assignedTasksTable {
+    top: -40px;
 }
 
 /* Assigned tasks table */

@@ -1,80 +1,214 @@
 @extends('layouts.main')
-
 @section('content')
-    <div class="container">
-        <div class="d-flex justify-content-between mb-3">
-            <!-- Search box is added automatically by DataTables -->
-            <div></div> <!-- Empty div to align with search box -->
-            <a class="btn btn-primary" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Create New Meeting"
-                href="{{ route('meets.create') }}"> <i class="mdi mdi-plus-circle"></i></a>
+    <div class="container my-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-0">Meetings</h2>
+                <p class="text-muted-light">Manage and track all your meetings in one place.</p>
+            </div>
+            <a href={{ route('meets.create') }} class="btn btn-primary">Create Meeting</a>
         </div>
-        <x-data-table id="meetingsTable" class="table-bordered table-striped table">
-            <x-slot:thead>
-                <tr>
-                    <th class="truncate-cell">Title</th>
-                    <th class="truncate-cell"">Agenda</th>
-                    <th>Platform</th>
-                    <th>Meet Link</th>
-                    <th>Date & Time</th>
-                    <th>Type</th>
-                    <th>Participants</th>
-                    <th>Created At</th>
-                    <th>Actions</th>
-                </tr>
-            </x-slot:thead>
-            <x-slot:tbody>
-                @foreach ($meets as $meet)
-                    <tr>
-                        <td class="truncate-cell">{{ $meet->title }}</td>
-                        <td class="truncate-cell"">{{ $meet->agenda }}</td>
-                        <td>{{ $meet->platform }}</td>
-                        <td><a href="{{ $meet->meet_link }}" target="_blank">Join</a></td>
-                        <td>{{ $meet->meet_date }}</br>{{ $meet->meet_time }}</td>
-                        <td>{{ $meet->type }}</td>
-                        <td>
-                            @php
-                                $userIds = json_decode($meet->user_ids, true);
-                                $participants = \App\Models\User::whereIn('id', $userIds)->get();
-                            @endphp
-                            @foreach ($participants as $user)
-                                <div>{{ $user->firstName }} {{ $user->lastName }}</div>
+
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Search Meetings</h5>
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control border-start-0"
+                        placeholder="Search by title, agenda, or type...">
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">All Meetings</h5>
+                @if ($meets instanceof \Illuminate\Pagination\LengthAwarePaginator && $meets->total() > 0)
+                    <span class="text-muted-light small">
+                        Showing {{ $meets->firstItem() }} to {{ $meets->lastItem() }} of {{ $meets->total() }}
+                        meetings
+                    </span>
+                @elseif(!$meets instanceof \Illuminate\Pagination\LengthAwarePaginator && $meets->count() > 0)
+                    <span class="text-muted-light small">
+                        Showing {{ $meets->count() }} of {{ $meets->count() }} meetings
+                    </span>
+                @endif
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th scope="col" class="ps-4">Title</th>
+                                <th scope="col">Agenda</th>
+                                <th scope="col">Platform</th>
+                                <th scope="col">Date & Time</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Participants</th>
+                                {{-- <th scope="col">Status</th> --}}
+                                <th scope="col" class="text-end pe-4">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($meets as $meeting)
+                                <tr>
+                                    <td class="ps-4 fw-bold">{{ $meeting['title'] }}</td>
+
+                                    <td class="agenda-cell">{{ $meeting['agenda'] }}</td>
+                                    <td>
+                                        <a href="{{ $meeting['meet_link'] ?? '#' }}" target="_blank"
+                                            class="text-dark text-decoration-none">
+                                            @if ($meeting['platform'] == 'Google Meet')
+                                                <i class="bi bi-camera-video text-warning"></i>
+                                            @elseif($meeting['platform'] == 'Zoom')
+                                                <i class="bi bi-camera-reels text-primary"></i>
+                                            @else
+                                                <i class="bi bi-microsoft-teams text-info"></i>
+                                            @endif
+                                            {{ $meeting['platform'] }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <div>{{ \Carbon\Carbon::parse($meeting['meet_date'])->format('Y-m-d') }}</div>
+                                        <div class="small text-muted-light">
+                                            {{ \Carbon\Carbon::parse($meeting['meet_time'])->format('H:i') }}</div>
+                                    </td>
+                                    <td><span
+                                            class="badge rounded-pill text-dark bg-{{ $meeting['type_color'] }} bg-opacity-10 border border-{{ $meeting['type_color'] }} border-opacity-10">{{ $meeting['type'] }}</span>
+                                    </td>
+
+                                    <td><i class="bi bi-people"></i>
+                                        {{ is_array($meeting['user_ids']) ? count($meeting['user_ids']) : count(json_decode($meeting['user_ids'] ?? '[]')) }}
+                                    </td>
+                                    <td class="text-end pe-3">
+                                        <div class="dropdown actions-dropdown">
+                                            <button class="btn btn-light btn-sm dropdown-toggle" type="button"
+                                                data-bs-toggle="dropdown" aria-expanded="false">
+                                                <i class="bi bi-three-dots-vertical"></i>
+                                            </button>
+                                            <ul class="dropdown-menu dropdown-menu-end">
+                                                <li><a class="dropdown-item" href="{{ $meeting['meet_link'] ?? '#' }}"
+                                                        target="_blank"><i class="bi bi-box-arrow-in-right me-2"></i>Join
+                                                        Meeting</a></li>
+                                                <li><a class="dropdown-item"
+                                                        href={{ route('meets.details', $meeting['id']) }}>
+                                                        <i class="bi bi-eye me-2"></i>
+                                                        View Meeting
+                                                    </a></li>
+                                                <li><a class="dropdown-item"
+                                                        href="{{ route('meets.edit', $meeting['id']) }}"><i
+                                                            class="bi bi-pencil me-2"></i>Edit Meeting</a></li>
+                                                <li><a class="dropdown-item" href="#" data-bs-toggle="modal"
+                                                        data-bs-target="#rescheduleModal"
+                                                        data-meeting-id="{{ $meeting['id'] }}"
+                                                        data-meeting-date="{{ \Carbon\Carbon::parse($meeting['meet_date'])->format('Y-m-d') }}"
+                                                        data-meeting-time="{{ \Carbon\Carbon::parse($meeting['meet_time'])->format('H:i') }}"><i
+                                                            class="bi bi-calendar-event me-2"></i>Reschedule</a>
+                                                </li>
+                                                <li>
+                                                    <hr class="dropdown-divider">
+                                                </li>
+                                                <li><a class="dropdown-item text-danger" href="#"><i
+                                                            class="bi bi-trash me-2"></i>Delete</a></li>
+                                            </ul>
+                                        </div>
+                                    </td>
+                                </tr>
                             @endforeach
-                        </td>
-                        <td>{{ $meet->created_at->format('d M Y') }}</td>
-                        <td>
-                            <!-- View Button -->
-                            <a href="{{ route('meets.show', $meet->id) }}" class="btn btn-icon btn-info"
-                                data-toggle="tooltip" title="View Details">
-                                <i class="mdi mdi-eye"></i>
-                            </a>
-                            <!-- Edit Button -->
-                            <a href="{{ route('meets.edit', $meet->id) }}" class="btn btn-icon btn-warning"
-                                data-toggle="tooltip" title="Postpone">
-                                <i class="mdi mdi-pencil"></i>
-                            </a>
-                        </td>
-                    </tr>
-                @endforeach
-            </x-slot:tbody>
-        </x-data-table>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            @if ($meets instanceof \Illuminate\Pagination\LengthAwarePaginator && $meets->hasPages())
+                <div class="card-footer bg-white">
+                    {{ $meets->links() }}
+                </div>
+            @endif
+        </div>
+
+        <!-- Reschedule Modal -->
+        <div class="modal fade" id="rescheduleModal" tabindex="-1" aria-labelledby="rescheduleModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="rescheduleModalLabel">Reschedule Meeting</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="rescheduleForm" method="POST">
+                        @csrf
+                        @method('PUT')
+                        <div class="modal-body">
+                            <div class="mb-3">
+                                <label for="reschedule_date" class="form-label">New Date</label>
+                                <input type="date" class="form-control" id="reschedule_date" name="meet_date" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="reschedule_time" class="form-label">New Time</label>
+                                <input type="time" class="form-control" id="reschedule_time" name="meet_time"
+                                    required>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Reschedule</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
-@push('scripts')
-    <script></script>
-@endpush
 
 @push('styles')
     <style>
-        .truncate-cell {
-            max-width: 100px;
-            overflow: hidden;
-            /* set desired width */
-            white-space: normal;
-            /* allow text to wrap */
+        .table> :not(caption)>*>* {
+            vertical-align: middle;
+        }
+
+        .table .fw-bold {
+            font-weight: 600 !important;
+        }
+
+        .text-muted-light {
+            color: #6c757d !important;
+        }
+
+        .actions-dropdown .dropdown-toggle::after {
+            display: none;
+        }
+
+        .badge {
+            font-weight: 500;
+        }
+
+        .agenda-cell {
+            max-width: 40ch;
             word-wrap: break-word;
-            /* break long words if needed */
-            overflow-wrap: break-word;
+            overflow: hidden;
+            text-overflow: ellipsis
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const rescheduleModal = document.getElementById('rescheduleModal');
+            if (rescheduleModal) {
+                rescheduleModal.addEventListener('show.bs.modal', function(event) {
+                    const button = event.relatedTarget;
+                    const meetingId = button.getAttribute('data-meeting-id');
+                    const meetingDate = button.getAttribute('data-meeting-date');
+                    const meetingTime = button.getAttribute('data-meeting-time');
+
+                    const form = document.getElementById('rescheduleForm');
+                    form.action = `/meets/${meetingId}/reschedule`;
+                    form.querySelector('#reschedule_date').value = meetingDate;
+                    form.querySelector('#reschedule_time').value = meetingTime;
+                });
+            }
+        });
+    </script>
 @endpush

@@ -53,10 +53,13 @@ Route::middleware(['auth'])->group(function () {
             Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('change-password');
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
-    Route::post('/import-staff', [StaffController::class, 'import'])->name('import.staff');
+    Route::post('/import-staff', action: [StaffController::class, 'import'])->name('import.staff');
 
     // Meets
     Route::resource('meets', MeetController::class);
+    Route::get('/meets/show/{id}', [MeetController::class, 'show'])->name('meets.show');
+    Route::get('/meets/details/{id}', [MeetController::class, 'details'])->name('meets.details');
+    Route::get('/meets/dashboard', [MeetController::class, 'dashbaord'])->name('meets.dashboard');
     Route::get('/meets/{meet}/notes', [MeetController::class, 'notes'])->name('meets.notes');
     Route::put('/meets/{meet}/notes', [MeetController::class, 'updateNotes'])->name('meets.updateNotes');
     Route::get('/meets/{meet}/export/pdf', [MeetController::class, 'exportPdf'])->name('meets.exportPdf');
