@@ -23,7 +23,7 @@ class MeetController extends Controller
 
     public function index()
     {
-        $meets = Meet::latest()->get();
+        $meets = Meet::withCount('attendees')->latest()->get();
         $projects = Project::all();
         // $users = User::all()->groupBy('role'); // Assuming you have role-based categories
         $usersByRole = [

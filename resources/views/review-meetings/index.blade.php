@@ -78,7 +78,8 @@
                                     </td>
 
                                     <td><i class="bi bi-people"></i>
-                                        {{ is_array($meeting['user_ids']) ? count($meeting['user_ids']) : count(json_decode($meeting['user_ids'] ?? '[]')) }}
+                                        {{-- FIXME: I want to show number of attendees here --}}
+                                        {{ $meeting->attendees_count }}
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="dropdown actions-dropdown">
@@ -91,7 +92,7 @@
                                                         target="_blank"><i class="bi bi-box-arrow-in-right me-2"></i>Join
                                                         Meeting</a></li>
                                                 <li><a class="dropdown-item"
-                                                        href={{ route('meets.details', $meeting['id']) }}>
+                                                        href={{ route('meets.details', parameters: $meeting['id']) }}>
                                                         <i class="bi bi-eye me-2"></i>
                                                         View Meeting
                                                     </a></li>
