@@ -255,6 +255,7 @@ class MeetController extends Controller
             'meet_time_from' => 'required',
             'meet_time_to' => 'required',
             'type' => 'required|string',
+            'users' => 'required|array|min:1',
         ]);
 
         $meet = Meet::create([
