@@ -63,6 +63,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/meets/{meet}/notes', [MeetController::class, 'notes'])->name('meets.notes');
     Route::put('/meets/{meet}/notes', [MeetController::class, 'updateNotes'])->name('meets.updateNotes');
     Route::get('/meets/{meet}/export/pdf', [MeetController::class, 'exportPdf'])->name('meets.exportPdf');
+    // ADD THIS NEW ROUTE for storing the new discussion point/task
+    Route::post('/discussion-points/store', [MeetController::class, 'storeDiscussionPoint'])->name('discussion-points.store');
+
 
     // optional
     Route::get('/meets/{meet}/export/excel', [MeetController::class, 'exportExcel'])->name('meets.exportExcel');

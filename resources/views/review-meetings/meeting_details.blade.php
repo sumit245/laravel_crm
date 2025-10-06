@@ -86,7 +86,7 @@
                             aria-selected="false">Follow-ups</button>
                     </li>
                 </ul>
-
+                {{-- Tab 1 - Overview --}}
                 <div class="tab-pane mt-4 fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
                     <h4 class="mb-3">Meeting Details</h4>
                     <div class="mb-3">
@@ -96,7 +96,7 @@
                     <div class="mb-3">
                         <h6 class="text-muted">Description</h6>
                         {{-- Assuming description is part of notes or another field. Let's use agenda for now if no description field exists. --}}
-                        <p>{{ $meet->agenda ?? 'No description provided.' }}</p>
+                        <p>{{ $meet->description ?? 'No description provided.' }}</p>
                     </div>
                     <div>
                         <h6 class="text-muted">Status</h6>
@@ -109,20 +109,22 @@
                     </div>
                 </div>
 
+                {{-- Tab 2 - Discussion Points & Tasks --}}
                 <div class="tab-pane mt-4 fade" id="discussion" role="tabpanel" aria-labelledby="discussion-tab">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="mb-0">Discussion Points & Tasks</h4>
                         <div class="d-flex gap-2">
                             <select class="form-select w-auto">
-                                {{-- TODO: show all departments here --}}
                                 <option selected>All Departments</option>
-                                <option value="1">Design</option>
-                                <option value="2">Engineering</option>
-                                <option value="3">Product</option>
+                                @foreach ($departments as $department)
+                                    @if ($department)
+                                        <option value="{{ $department }}">{{ $department }}</option>
+                                    @endif
+                                @endforeach
                             </select>
-                            {{-- TODO: Clicking this add task button will open a popup to add task --}}
-                            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addTaskModal"><i
-                                    class="bi bi-plus-lg me-2"></i>Add Task</button>
+                            <button class="btn btn-primary" data-bs-toggle="modal"
+                                data-bs-target="#addDiscussionPointModal"><i class="bi bi-plus me-2"></i>Add
+                                Task</button>
                         </div>
                     </div>
                     @forelse ($meet->discussionPoints as $point)
@@ -293,6 +295,86 @@
                     </div>
                 </div>
 
+            </div>
+        </div>
+    </div>
+    <!-- Add New Discussion Point Modal -->
+    <div class="modal fade" id="addDiscussionPointModal" tabindex="-1" aria-labelledby="addDiscussionPointModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-lg">
+            <div class="modal-content">
+                <form action="{{ route('discussion-points.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="meet_id" value="{{ $meet->id }}">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addDiscussionPointModalLabel">Add New Discussion Point</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="title" class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" name="title"
+                                placeholder="Enter task title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" style="height:100px;"
+                                placeholder="Enter task description"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label for="assignee_id" class="form-label">Assigned To</label>
+                                <select class="form-select" id="assignee_id" name="assigned_to">
+                                    <option value="">Select Assignee</option>
+                                    @foreach ($assignees as $assignee)
+                                        <option value="{{ $assignee->id }}">{{ $assignee->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="assignee_id" class="form-label">Assigned By</label>
+                                <select class="form-select" id="assignee_id" name="assignee_id">
+                                    <option value="">Select Assignee</option>
+                                    @foreach ($assignees as $assignee)
+                                        <option value="{{ $assignee->id }}">{{ $assignee->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="department" class="form-label">Department</label>
+                                <select class="form-select" id="department" name="department">
+                                    <option value="">Select Department</option>
+                                    <option value="Design">Design</option>
+                                    <option value="Engineering">Engineering</option>
+                                    <option value="Product">Product</option>
+                                    <option value="QA">QA</option>
+                                    <option value="Client">Client</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="priority" class="form-label">Priority</label>
+                                <select class="form-select" id="priority" name="priority">
+                                    <option value="High">High</option>
+                                    <option value="Medium" selected>Medium</option>
+                                    <option value="Low">Low</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="due_date" class="form-label">Due Date</label>
+                                <input type="date" class="form-control" id="due_date" name="due_date">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Add Task</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

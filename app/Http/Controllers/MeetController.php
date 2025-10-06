@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\WhatsappHelper;
 use App\Http\Controllers\Controller;
+use App\Models\DiscussionPoints;
 use App\Models\Meet;
 use App\Models\Project;
 use App\Models\User;
@@ -68,8 +69,14 @@ class MeetController extends Controller
             // Group discussion points by assignee for the Responsibilities tab
             $responsibilities = $meet->discussionPoints->groupBy('assignee.name');
 
+            // Get unique departments from attendees for the filter dropdown
+            $departments = $meet->attendees->pluck('department')->filter()->unique();
 
-            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities'));
+            // Get all users who can be assigned tasks (attendees of the current meeting)
+            $assignees = $meet->attendees;
+
+
+            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees'));
 
         } catch (\Exception $e) {
             return response()->json([
@@ -77,6 +84,24 @@ class MeetController extends Controller
                 "message" => $e->getMessage()
             ], 404);
         }
+    }
+
+    public function storeDiscussionPoint(Request $request)
+    {
+        $request->validate([
+            'meet_id' => 'required|exists:meets,id',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'assignee_id' => 'nullable|exists:users,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'department' => 'nullable|string',
+            'priority' => 'required|string',
+            'due_date' => 'nullable|date',
+        ]);
+
+        DiscussionPoints::create($request->all());
+
+        return back()->with('success', 'New discussion point added successfully!');
     }
 
     public function store(Request $request)

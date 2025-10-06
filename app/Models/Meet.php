@@ -60,7 +60,7 @@ class Meet extends Model
 
     public function discussionPoints()
     {
-        return $this->hasMany(DiscussionPoints::class);
+        return $this->hasMany(DiscussionPoints::class, 'id');
     }
 
     public function followUps()

@@ -9,10 +9,15 @@ class DiscussionPointUpdates extends Model
 {
     use HasFactory;
 
+    /**
+     * The table associated with the model.
+     * @var string
+     */
+    protected $table = 'discussion_points_updates';
     protected $fillable = ['discussion_point_id', 'update_text'];
 
     public function discussionPoint()
     {
-        return $this->belongsTo(DiscussionPoints::class);
+        return $this->belongsTo(DiscussionPoints::class, 'discussion_point_id');
     }
 }
