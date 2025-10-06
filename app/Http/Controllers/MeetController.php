@@ -131,6 +131,7 @@ class MeetController extends Controller
         return back()->with('success', 'Note added successfully!');
     }
 
+    // TODO: while saving user_ids are not being saved in meet_user. The structure in meet_user table is meet_id, user_id,created_at_updated_at
     public function store(Request $request)
     {
         Log::info($request->all());

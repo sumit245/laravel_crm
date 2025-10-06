@@ -150,7 +150,7 @@ class HomeController extends Controller
             })->sum('total_poles');
 
             // Get surveyed and installed poles by this user in date range
-            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user,) {
+            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, ) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isSurveyDone', true)
@@ -167,7 +167,7 @@ class HomeController extends Controller
             $performanceSurvey = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
             $performanceinstallation = $totalPoles > 0 ? ($installedPoles / $totalPoles) * 100 : 0;
 
-            return (object)[
+            return (object) [
                 'id' => $user->id,
                 'name' => $user->firstName . " " . $user->lastName,
                 'vendor_name' => $user->name ?? "",
@@ -187,13 +187,14 @@ class HomeController extends Controller
                 ->whereBetween('updated_at', $dateRange);
 
             $totalTasks = $tasksQuery->count();
-            if ($totalTasks == 0) return null;
+            if ($totalTasks == 0)
+                return null;
 
             $completedTasks = $tasksQuery->where('status', 'Completed')->count();
             $performance = ($completedTasks / $totalTasks) * 100;
         }
 
-        return (object)[
+        return (object) [
             'id' => $user->id,
             'name' => $user->firstName . " " . $user->lastName,
             'vendor_name' => $user->name ?? "",
@@ -394,7 +395,7 @@ class HomeController extends Controller
         }
     }
 
-    
+
 
     public function exportToExcel()
     {
