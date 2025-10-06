@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Helpers\WhatsappHelper;
 use App\Http\Controllers\Controller;
-use App\Models\DiscussionPoints;
+use App\Models\DiscussionPoint;
 use App\Models\Meet;
 use App\Models\Project;
 use App\Models\User;
@@ -99,7 +99,7 @@ class MeetController extends Controller
             'due_date' => 'nullable|date',
         ]);
 
-        DiscussionPoints::create($request->all());
+        DiscussionPoint::create($request->all());
 
         return back()->with('success', 'New discussion point added successfully!');
     }

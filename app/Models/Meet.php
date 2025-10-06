@@ -42,6 +42,10 @@ class Meet extends Model
         // Make sure you have this relationship defined
         return $this->belongsToMany(User::class, 'meet_user');
     }
+    public function attendees()
+    {
+        return $this->belongsToMany(User::class);
+    }
 
     // app/Models/MeetingNoteHistory.php
     public function meet()
@@ -53,14 +57,11 @@ class Meet extends Model
     {
         return $this->belongsTo(User::class);
     }
-    public function attendees()
-    {
-        return $this->belongsToMany(User::class);
-    }
+
 
     public function discussionPoints()
     {
-        return $this->hasMany(DiscussionPoints::class, 'id');
+        return $this->hasMany(DiscussionPoint::class, 'id');
     }
 
     public function followUps()

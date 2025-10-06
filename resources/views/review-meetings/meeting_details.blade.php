@@ -161,7 +161,7 @@
                             <div class="d-flex justify-content-between text-muted small mt-2">
                                 <span>
                                     <i class="bi bi-person me-1"></i> {{ $point->assignee->name ?? 'Unassigned' }}
-                                    @if ($point->assignee->department)
+                                    @if ($point->assignee?->department)
                                         <span
                                             class="badge bg-light text-dark ms-1">{{ $point->assignee->department }}</span>
                                     @endif

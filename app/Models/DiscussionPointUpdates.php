@@ -18,6 +18,6 @@ class DiscussionPointUpdates extends Model
 
     public function discussionPoint()
     {
-        return $this->belongsTo(DiscussionPoints::class, 'discussion_point_id');
+        return $this->belongsTo(DiscussionPoint::class, 'discussion_point_id');
     }
 }

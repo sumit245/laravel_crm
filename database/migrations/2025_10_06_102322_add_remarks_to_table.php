@@ -12,6 +12,11 @@ return new class extends Migration {
     {
         Schema::table('discussion_points_updates', function (Blueprint $table) {
             //
+            // TODO: add two columns one for remarks by vertical head and other for remark by admin
+            // Add two new nullable text columns for remarks
+            $table->text('vertical_head_remark')->nullable()->after('update_text');
+            $table->text('admin_remark')->nullable()->after('vertical_head_remark');
+
         });
     }
 
