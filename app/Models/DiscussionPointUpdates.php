@@ -14,7 +14,7 @@ class DiscussionPointUpdates extends Model
      * @var string
      */
     protected $table = 'discussion_points_updates';
-    protected $fillable = ['discussion_point_id', 'update_text'];
+    protected $fillable = ['discussion_point_id', 'update_text', 'vertical_head_remark', 'admin_remark'];
 
     public function discussionPoint()
     {

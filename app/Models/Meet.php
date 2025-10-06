@@ -17,12 +17,10 @@ class Meet extends Model
         'meet_date',
         'meet_time',
         'type',
-        'user_ids',
         'notes',
     ];
 
     protected $casts = [
-        'user_ids' => 'array', // Automatically casts JSON to array
         'meet_date' => 'date',
         'meet_time' => 'datetime:H:i',
     ];
@@ -61,7 +59,7 @@ class Meet extends Model
 
     public function discussionPoints()
     {
-        return $this->hasMany(DiscussionPoint::class, 'id');
+        return $this->hasMany(DiscussionPoint::class);
     }
 
     public function followUps()

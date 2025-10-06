@@ -6,6 +6,7 @@ use App\Helpers\WhatsappHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DiscussionPoint;
 use App\Models\Meet;
+use App\Models\DiscussionPointUpdates; // Already imported
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -102,6 +103,32 @@ class MeetController extends Controller
         DiscussionPoint::create($request->all());
 
         return back()->with('success', 'New discussion point added successfully!');
+    }
+
+    public function updateDiscussionPointStatus(Request $request, DiscussionPoint $point)
+    {
+        $request->validate([
+            'status' => 'required|string|in:Pending,In Progress,Completed',
+        ]);
+
+        $point->update(['status' => $request->status]);
+
+        return back()->with('success', 'Task status updated successfully!');
+    }
+
+
+    public function storeDiscussionPointUpdate(Request $request)
+    {
+        $request->validate([
+            'discussion_point_id' => 'required|exists:discussion_points,id',
+            'update_text' => 'required|string',
+            'vertical_head_remark' => 'nullable|string',
+            'admin_remark' => 'nullable|string',
+        ]);
+
+        DiscussionPointUpdates::create($request->all());
+
+        return back()->with('success', 'Note added successfully!');
     }
 
     public function store(Request $request)
@@ -232,13 +259,12 @@ class MeetController extends Controller
             'users.*' => 'exists:users,id',
         ]);
 
-        // 6) Create meet (store user_ids JSON)
         $meet = Meet::create([
             ...$validated,
             'meet_time' => $validated['meet_time_from'],
-            'user_ids' => json_encode($validated['users']),
         ]);
 
+        $meet->attendees()->attach($validated['users']);
         // 7) Send WhatsApp invites
         $users = User::whereIn('id', $validated['users'])->get(['firstName', 'lastName', 'contactNo']);
         foreach ($users as $user) {

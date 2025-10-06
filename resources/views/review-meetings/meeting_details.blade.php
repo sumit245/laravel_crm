@@ -147,15 +147,31 @@
                                     @if ($point->priority)
                                         <span class="badge bg-primary">{{ $point->priority }}</span>
                                     @endif
-                                    <span
-                                        class="badge 
-                                        @if ($point->status == 'Completed') bg-success
-                                        @elseif($point->status == 'In Progress') bg-warning text-dark
-                                        @else bg-secondary @endif">
-                                        {{ $point->status }}
-                                    </span>
-                                    <button class="btn btn-sm btn-outline-secondary"><i class="bi bi-plus-lg"></i> Add
-                                        Note</button>
+                                    <div class="dropdown">
+                                        <button
+                                            class="badge-dropdown dropdown-toggle badge 
+                                            @if ($point->status == 'Completed') bg-success
+                                            @elseif($point->status == 'In Progress') bg-warning text-dark
+                                            @else bg-secondary @endif"
+                                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                            {{ $point->status }}
+                                        </button>
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#"
+                                                    onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-pending').submit();">Pending</a>
+                                            </li>
+                                            <li><a class="dropdown-item" href="#"
+                                                    onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-progress').submit();">In
+                                                    Progress</a></li>
+                                            <li><a class="dropdown-item" href="#"
+                                                    onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-completed').submit();">Completed</a>
+                                            </li>
+                                        </ul>
+                                    </div>
+
+                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                                        data-bs-target="#addNoteModal" data-point-id="{{ $point->id }}"><i
+                                            class="bi bi-plus-lg"></i> Add Note</button>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between text-muted small mt-2">
@@ -175,20 +191,51 @@
                                 <hr>
                                 <div class="task-updates">
                                     <h6 class="small">Updates</h6>
-                                    <ul>
+                                    <ul class="timeline">
                                         @foreach ($point->updates as $update)
-                                            <li><strong>{{ $update->created_at->format('Y-m-d') }}:</strong>
-                                                {{ $update->content }}</li>
+                                            <li class="timeline-item">
+                                                <div class="timeline-marker"></div>
+                                                <div class="timeline-content">
+                                                    <p class="mb-1">
+                                                        <strong>Update
+                                                            ({{ $update->created_at->format('Y-m-d') }})
+                                                            :</strong>
+                                                        {{ $update->update_text }}
+                                                    </p>
+                                                    @if ($update->vertical_head_remark)
+                                                        <p class="remark mb-1"><strong>Vertical Head:</strong>
+                                                            {{ $update->vertical_head_remark }}</p>
+                                                    @endif
+                                                    @if ($update->admin_remark)
+                                                        <p class="remark mb-0"><strong>Admin:</strong>
+                                                            {{ $update->admin_remark }}</p>
+                                                    @endif
+                                                </div>
+                                            </li>
                                         @endforeach
                                     </ul>
                                 </div>
                             @endif
                         </div>
+                        {{-- Hidden forms for status update --}}
+                        <form id="status-form-{{ $point->id }}-pending"
+                            action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
+                            class="d-none">
+                            @csrf <input type="hidden" name="status" value="Pending"></form>
+                        <form id="status-form-{{ $point->id }}-progress"
+                            action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
+                            class="d-none">
+                            @csrf <input type="hidden" name="status" value="In Progress"></form>
+                        <form id="status-form-{{ $point->id }}-completed"
+                            action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
+                            class="d-none">
+                            @csrf <input type="hidden" name="status" value="Completed"></form>
                     @empty
                         <div class="text-center text-muted p-4">No discussion points or tasks have been added yet.</div>
                     @endforelse
                 </div>
 
+                {{-- Tab 3 - Attendees --}}
                 <div class="tab-pane mt-4 fade" id="attendees" role="tabpanel" aria-labelledby="attendees-tab">
                     <h4 class="mb-3">Meeting Attendees</h4>
                     <div class="table-responsive">
@@ -198,6 +245,7 @@
                                     <th scope="col">Name</th>
                                     <th scope="col">Department</th>
                                     <th scope="col">Role</th>
+                                    <th scope="col">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -206,6 +254,12 @@
                                         <td>{{ $attendee->name }}</td>
                                         <td>{{ $attendee->department ?? 'N/A' }}</td>
                                         <td>{{ $attendee->role_name ?? 'Attendee' }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                                data-bs-target="#addDiscussionPointModal"
+                                                data-assignee-id="{{ $attendee->id }}"><i class="bi bi-plus"></i> Add
+                                                Task</button>
+                                        </td>
                                     </tr>
                                 @empty
                                     <tr>
@@ -251,10 +305,28 @@
                                         @endif
                                         {{ $task->title }}
                                     </div>
-                                    <div>
-                                        @if ($task->priority)
-                                            <span class="badge bg-primary me-2">{{ $task->priority }}</span>
-                                        @endif
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="dropdown">
+                                            <button
+                                                class="badge-dropdown dropdown-toggle badge 
+                                                @if ($task->status == 'Completed') bg-success
+                                                @elseif($task->status == 'In Progress') bg-warning text-dark
+                                                @else bg-secondary @endif"
+                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                {{ $task->status }}
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-pending').submit();">Pending</a>
+                                                </li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-progress').submit();">In
+                                                        Progress</a></li>
+                                                <li><a class="dropdown-item" href="#"
+                                                        onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-completed').submit();">Completed</a>
+                                                </li>
+                                            </ul>
+                                        </div>
                                         @if ($task->due_date)
                                             <span class="small text-muted">Due:
                                                 {{ \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') }}</span>
@@ -378,6 +450,43 @@
             </div>
         </div>
     </div>
+
+    <!-- Add Note Modal -->
+    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('discussion-points.updates.store') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="discussion_point_id" id="modal_discussion_point_id">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="addNoteModalLabel">Add Note/Update</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="update_text" class="form-label">Update Note</label>
+                            <textarea class="form-control" id="update_text" name="update_text" rows="3" style="height:100px;"required
+                                placeholder="Provide a short update on the task..."></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="vertical_head_remark" class="form-label">Vertical Head Remark</label>
+                            <textarea class="form-control" id="vertical_head_remark" name="vertical_head_remark"
+                                rows="2"style="height:100px;" placeholder="Add remark from the vertical head (optional)"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="admin_remark" class="form-label">Admin Remark</label>
+                            <textarea class="form-control" id="admin_remark" name="admin_remark" rows="2"
+                                style="height:100px;"placeholder="Add admin remark (optional)"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Save Note</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 @endsection
 
 @push('styles')
@@ -450,28 +559,48 @@
             padding: 1.25rem;
         }
 
-        .task-updates ul {
+        .timeline {
             list-style-type: none;
-            padding-left: 1.25rem;
+            padding-left: 0;
+            margin-left: 10px;
             border-left: 2px solid #e9ecef;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 0.5rem 0 0.5rem 1.5rem;
+        }
+
+        .timeline-marker {
+            position: absolute;
+            top: 1.0rem;
+            left: -7px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background-color: #fff;
+            border: 2px solid #0d6efd;
+        }
+
+        .timeline-item:last-child {
+            padding-bottom: 0;
+        }
+
+        .timeline-content {
             font-size: 0.875rem;
             color: #6c757d;
         }
 
-        .task-updates li {
-            position: relative;
-            padding-bottom: 0.5rem;
+        .timeline-content strong {
+            color: #343a40;
         }
 
-        .task-updates li::before {
-            content: '';
-            position: absolute;
-            left: -0.85rem;
-            top: 0.3rem;
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background-color: #ced4da;
+        .remark {
+            font-size: 0.8rem;
+            padding-left: 1rem;
+            border-left: 2px solid #f0f2f5;
+            margin-top: 0.5rem;
+            color: #495057;
         }
 
         .table {
@@ -484,4 +613,28 @@
             background-color: #f8f9fa;
         }
     </style>
+@endpush
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var addNoteModal = document.getElementById('addNoteModal');
+            addNoteModal.addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget;
+                var pointId = button.getAttribute('data-point-id');
+                var modalPointIdInput = addNoteModal.querySelector('#modal_discussion_point_id');
+                modalPointIdInput.value = pointId;
+            });
+
+            var addTaskModal = document.getElementById('addDiscussionPointModal');
+            addTaskModal.addEventListener('show.bs.modal', function(event) {
+                var button = event.relatedTarget;
+                var assigneeId = button.getAttribute('data-assignee-id');
+                if (assigneeId) {
+                    var assigneeSelect = addTaskModal.querySelector('select[name="assigned_to"]');
+                    assigneeSelect.value = assigneeId;
+                }
+            });
+        });
+    </script>
 @endpush

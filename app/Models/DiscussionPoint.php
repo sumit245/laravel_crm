@@ -14,6 +14,7 @@ class DiscussionPoint extends Model
         'title',
         'description',
         'assignee_id',
+        'assigned_to',
         'department',
         'priority',
         'status',
