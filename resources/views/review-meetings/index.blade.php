@@ -109,8 +109,15 @@
                                                 <li>
                                                     <hr class="dropdown-divider">
                                                 </li>
-                                                <li><a class="dropdown-item text-danger" href="#"><i
-                                                            class="bi bi-trash me-2"></i>Delete</a></li>
+                                                <li>
+                                                    <a class="dropdown-item text-danger" href="#"
+                                                        onclick="event.preventDefault(); if(confirm('Are you sure you want to delete this meeting?')) { document.getElementById('delete-form-{{ $meeting['id'] }}').submit(); }">
+                                                        <i class="bi bi-trash me-2"></i>Delete
+                                                    </a>
+                                                    <form id="delete-form-{{ $meeting['id'] }}"
+                                                        action="{{ route('meets.destroy', $meeting['id']) }}"
+                                                        method="POST" style="display: none;">@csrf @method('DELETE')</form>
+                                                </li>
                                             </ul>
                                         </div>
                                     </td>

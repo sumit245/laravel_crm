@@ -313,7 +313,7 @@ class MeetController extends Controller
     public function destroy(Meet $meet)
     {
         $meet->delete();
-        return redirect()->route('review-meetings.index')->with('success', 'Meeting deleted');
+        return redirect()->route('meets.index')->with('success', 'Meeting deleted');
     }
 
     public function notes(Meet $meet)

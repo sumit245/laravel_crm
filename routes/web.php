@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/discussion-points/store', [MeetController::class, 'storeDiscussionPoint'])->name('discussion-points.store');
     Route::post('/discussion-points/updates/store', [MeetController::class, 'storeDiscussionPointUpdate'])->name('discussion-points.updates.store');
     Route::post('/discussion-points/{point}/update-status', [MeetController::class, 'updateDiscussionPointStatus'])->name('discussion-points.update-status');
+    Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
 
 
     // optional
