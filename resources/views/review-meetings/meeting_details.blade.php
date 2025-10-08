@@ -271,73 +271,90 @@
                     </div>
                 </div>
 
+                {{-- Tab 4 - Responsibilities --}}
                 <div class="tab-pane mt-4 fade" id="responsibilities" role="tabpanel"
                     aria-labelledby="responsibilities-tab">
-                    <h4 class="mb-3">Staff Responsibilities Summary</h4>
-                    @forelse ($responsibilities as $assigneeName => $tasks)
-                        <div class="responsibility-card mb-3">
-                            <div class="d-flex justify-content-between">
-                                <div>
-                                    <h5 class="mb-0">{{ $assigneeName }}</h5>
-                                    <small class="text-muted">{{ $tasks->first()->assignee->department ?? 'N/A' }}</small>
-                                </div>
-                                <div class="text-end">
-                                    <span class="badge bg-secondary mb-1">{{ $tasks->count() }} Total</span>
-                                    <span
-                                        class="badge bg-success mb-1">{{ $tasks->where('status', 'Completed')->count() }}
-                                        Done</span>
-                                    <span
-                                        class="badge bg-warning text-dark mb-1">{{ $tasks->where('status', 'In Progress')->count() }}
-                                        Progress</span>
-                                    <span
-                                        class="badge bg-light text-dark mb-1">{{ $tasks->where('status', 'Pending')->count() }}
-                                        Pending</span>
-                                </div>
-                            </div>
-                            <hr>
-                            <h6>All Tasks:</h6>
-                            @foreach ($tasks as $task)
-                                <div class="p-2 rounded d-flex justify-content-between align-items-center mb-2"
-                                    style="background-color: #f8f9fa;">
-                                    <div>
-                                        @if ($task->status == 'Completed')
-                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        @endif
-                                        {{ $task->title }}
-                                    </div>
-                                    <div class="d-flex align-items-center gap-2">
-                                        <div class="dropdown">
-                                            <button
-                                                class="badge-dropdown dropdown-toggle badge 
-                                                @if ($task->status == 'Completed') bg-success
-                                                @elseif($task->status == 'In Progress') bg-warning text-dark
-                                                @else bg-secondary @endif"
-                                                type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                                {{ $task->status }}
-                                            </button>
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#"
-                                                        onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-pending').submit();">Pending</a>
-                                                </li>
-                                                <li><a class="dropdown-item" href="#"
-                                                        onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-progress').submit();">In
-                                                        Progress</a></li>
-                                                <li><a class="dropdown-item" href="#"
-                                                        onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-completed').submit();">Completed</a>
-                                                </li>
-                                            </ul>
-                                        </div>
-                                        @if ($task->due_date)
-                                            <span class="small text-muted">Due:
-                                                {{ \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') }}</span>
-                                        @endif
-                                    </div>
-                                </div>
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h4 class="mb-0">Staff Responsibilities Summary</h4>
+                        <select class="form-select w-auto" id="responsibility-filter">
+                            <option value="all">All Attendees</option>
+                            @foreach ($responsibilities->keys() as $assigneeName)
+                                @if ($assigneeName)
+                                    <option value="{{ $assigneeName }}">{{ $assigneeName }}</option>
+                                @endif
                             @endforeach
-                        </div>
-                    @empty
-                        <div class="text-center text-muted p-4">No one has been assigned any responsibilities yet.</div>
-                    @endforelse
+                        </select>
+                    </div>
+                    <div id="responsibility-list">
+                        @forelse ($responsibilities as $assigneeName => $tasks)
+                            @if ($assigneeName)
+                                <div class="responsibility-card mb-3" data-assignee-name="{{ $assigneeName }}">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h5 class="mb-0">{{ $assigneeName }}</h5>
+                                            <small
+                                                class="text-muted">{{ $tasks->first()->assignee->department ?? 'N/A' }}</small>
+                                        </div>
+                                        <div class="text-end">
+                                            <span class="badge bg-secondary mb-1">{{ $tasks->count() }} Total</span>
+                                            <span
+                                                class="badge bg-success mb-1">{{ $tasks->where('status', 'Completed')->count() }}
+                                                Done</span>
+                                            <span
+                                                class="badge bg-warning text-dark mb-1">{{ $tasks->where('status', 'In Progress')->count() }}
+                                                Progress</span>
+                                            <span
+                                                class="badge bg-light text-dark mb-1">{{ $tasks->where('status', 'Pending')->count() }}
+                                                Pending</span>
+                                        </div>
+                                    </div>
+                                    <hr>
+                                    <h6>All Tasks:</h6>
+                                    @foreach ($tasks as $task)
+                                        <div class="p-2 rounded d-flex justify-content-between align-items-center mb-2"
+                                            style="background-color: #f8f9fa;">
+                                            <div>
+                                                @if ($task->status == 'Completed')
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                @endif
+                                                {{ $task->title }}
+                                            </div>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="dropdown">
+                                                    <button
+                                                        class="badge-dropdown dropdown-toggle badge 
+                                                        @if ($task->status == 'Completed') bg-success
+                                                        @elseif($task->status == 'In Progress') bg-warning text-dark
+                                                        @else bg-secondary @endif"
+                                                        type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        {{ $task->status }}
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#"
+                                                                onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-pending').submit();">Pending</a>
+                                                        </li>
+                                                        <li><a class="dropdown-item" href="#"
+                                                                onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-progress').submit();">In
+                                                                Progress</a></li>
+                                                        <li><a class="dropdown-item" href="#"
+                                                                onclick="event.preventDefault(); document.getElementById('status-form-{{ $task->id }}-completed').submit();">Completed</a>
+                                                        </li>
+                                                    </ul>
+                                                </div>
+                                                @if ($task->due_date)
+                                                    <span class="small text-muted">Due:
+                                                        {{ \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') }}</span>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        @empty
+                            <div class="text-center text-muted p-4">No one has been assigned any responsibilities yet.
+                            </div>
+                        @endforelse
+                    </div>
                 </div>
 
                 <div class="tab-pane mt-4 fade" id="followups" role="tabpanel" aria-labelledby="followups-tab">
@@ -635,6 +652,20 @@
                     assigneeSelect.value = assigneeId;
                 }
             });
+
+            const responsibilityFilter = document.getElementById('responsibility-filter');
+            if (responsibilityFilter) {
+                responsibilityFilter.addEventListener('change', function() {
+                    const selectedAssignee = this.value;
+                    const responsibilityCards = document.querySelectorAll(
+                        '#responsibility-list .responsibility-card');
+
+                    responsibilityCards.forEach(card => {
+                        card.style.display = (selectedAssignee === 'all' || card.dataset
+                            .assigneeName === selectedAssignee) ? 'block' : 'none';
+                    });
+                });
+            }
         });
     </script>
 @endpush
