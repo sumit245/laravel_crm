@@ -306,7 +306,8 @@
                                                 class="text-muted">{{ $tasks->first()->assignee->department ?? 'N/A' }}</small>
                                         </div>
                                         <div class="text-end">
-                                            <span class="badge bg-secondary mb-1">{{ $tasks->count() }} Total</span>
+                                            <span class="badge bg-secondary text-dark mb-1">{{ $tasks->count() }}
+                                                Total</span>
                                             <span
                                                 class="badge bg-success mb-1">{{ $tasks->where('status', 'Completed')->count() }}
                                                 Done</span>
@@ -335,7 +336,7 @@
                                                         class="badge-dropdown dropdown-toggle badge 
                                                         @if ($task->status == 'Completed') bg-success
                                                         @elseif($task->status == 'In Progress') bg-warning text-dark
-                                                        @else bg-secondary @endif"
+                                                        @else bg-secondary text-dark @endif"
                                                         type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                                         {{ $task->status }}
                                                     </button>
