@@ -152,7 +152,7 @@
                                             class="badge-dropdown dropdown-toggle badge 
                                             @if ($point->status == 'Completed') bg-success
                                             @elseif($point->status == 'In Progress') bg-warning text-dark
-                                            @else bg-secondary @endif"
+                                            @else bg-secondary text-dark @endif"
                                             type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             {{ $point->status }}
                                         </button>
@@ -176,7 +176,8 @@
                             </div>
                             <div class="d-flex justify-content-between text-muted small mt-2">
                                 <span>
-                                    <i class="bi bi-person me-1"></i> Assigned To: {{ $point->assignedToUser->name ?? 'Unassigned' }}
+                                    <i class="bi bi-person me-1"></i> Assigned To:
+                                    {{ $point->assignedToUser->name ?? 'Unassigned' }}
                                     @if ($point->assignedToUser?->department)
                                         <span
                                             class="badge bg-light text-dark ms-1">{{ $point->assignedToUser->department }}</span>
