@@ -69,7 +69,7 @@ class MeetController extends Controller
             ];
 
             // Group discussion points by assignee for the Responsibilities tab
-            $responsibilities = $meet->discussionPoints->groupBy('assignee.name');
+            $responsibilities = $meet->discussionPoints->groupBy('assignedToUser.name');
 
             // Get unique departments from attendees for the filter dropdown
             $departments = $meet->attendees->pluck('department')->filter()->unique();
