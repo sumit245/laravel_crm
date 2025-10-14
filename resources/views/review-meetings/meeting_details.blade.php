@@ -199,7 +199,7 @@
                                                 <div class="timeline-content">
                                                     <p class="mb-1">
                                                         <strong>Update
-                                                            ({{ $update->created_at->format('Y-m-d') }})
+                                                            ({{ $update->created_at->format('d-m-Y') }})
                                                             :</strong>
                                                         {{ $update->update_text }}
                                                     </p>
