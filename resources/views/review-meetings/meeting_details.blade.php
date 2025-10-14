@@ -185,7 +185,7 @@
                                 </span>
                                 @if ($point->due_date)
                                     <span><i class="bi bi-calendar-event me-1"></i> Due:
-                                        {{ \Carbon\Carbon::parse($point->due_date)->format('Y-m-d') }}</span>
+                                        {{ \Carbon\Carbon::parse($point->due_date)->format('d-m-Y') }}</span>
                                 @endif
                             </div>
                             @if ($point->updates->isNotEmpty())
