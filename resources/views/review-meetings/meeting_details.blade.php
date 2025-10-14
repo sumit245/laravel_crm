@@ -664,7 +664,7 @@
             border-left: 2px solid #f0f2f5;
             margin-top: 0.5rem;
             color: #495057;
-            max-width: 600px;
+            max-width: 460px;
             white-space: normal;
             word-wrap: break-word;
         }
