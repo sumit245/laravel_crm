@@ -54,6 +54,7 @@ class MeetController extends Controller
             $meet = Meet::with([
                 'attendees',
                 'discussionPoints.assignee',
+                'discussionPoints.assignedToUser',
                 'discussionPoints.updates',
                 'followUps'
             ])->findOrFail($id);
@@ -314,6 +315,34 @@ class MeetController extends Controller
     {
         $meet->delete();
         return redirect()->route('meets.index')->with('success', 'Meeting deleted');
+    }
+
+    public function scheduleFollowUp(Request $request, Meet $meet)
+    {
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'meet_date' => 'required|date',
+            'meet_time_from' => 'required',
+            'meet_time_to' => 'required',
+        ]);
+
+        // Create the new follow-up meeting
+        $followUpMeet = Meet::create([
+            'title' => $validated['title'],
+            'agenda' => 'Follow-up for: ' . $meet->title,
+            'meet_link' => $meet->meet_link, // Re-use parent link or generate new
+            'platform' => $meet->platform,
+            'meet_date' => $validated['meet_date'],
+            'meet_time' => $validated['meet_time_from'],
+            'meet_end_time' => $validated['meet_time_to'],
+            'type' => $meet->type,
+            'parent_meet_id' => $meet->id, // Link to the parent meeting
+        ]);
+
+        // Attach the same attendees from the parent meeting
+        $followUpMeet->attendees()->attach($meet->attendees->pluck('id'));
+
+        return back()->with('success', 'Follow-up meeting scheduled successfully!');
     }
 
     public function notes(Meet $meet)

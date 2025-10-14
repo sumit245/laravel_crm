@@ -31,6 +31,11 @@ class DiscussionPoint extends Model
         return $this->belongsTo(User::class, 'assignee_id');
     }
 
+    public function assignedToUser()
+    {
+        return $this->belongsTo(User::class, 'assigned_to');
+    }
+
     public function updates()
     {
         return $this->hasMany(DiscussionPointUpdates::class)->latest();

@@ -176,10 +176,10 @@
                             </div>
                             <div class="d-flex justify-content-between text-muted small mt-2">
                                 <span>
-                                    <i class="bi bi-person me-1"></i> {{ $point->assignee->name ?? 'Unassigned' }}
-                                    @if ($point->assignee?->department)
+                                    <i class="bi bi-person me-1"></i> Assigned To: {{ $point->assignedToUser->name ?? 'Unassigned' }}
+                                    @if ($point->assignedToUser?->department)
                                         <span
-                                            class="badge bg-light text-dark ms-1">{{ $point->assignee->department }}</span>
+                                            class="badge bg-light text-dark ms-1">{{ $point->assignedToUser->department }}</span>
                                     @endif
                                 </span>
                                 @if ($point->due_date)
@@ -357,6 +357,7 @@
                     </div>
                 </div>
 
+                {{-- Tab 5 - Follow-up Meetings --}}
                 <div class="tab-pane mt-4 fade" id="followups" role="tabpanel" aria-labelledby="followups-tab">
                     <h4 class="mb-3">Follow-up Meetings</h4>
                     <div class="list-group">
@@ -379,8 +380,9 @@
                         @endforelse
                     </div>
                     <div class="mt-3">
-                        <a href="#" class="btn btn-primary w-100"><i class="bi bi-plus-lg me-2"></i>Schedule
-                            Follow-up Meeting</a>
+                        <button class="btn btn-primary w-100" data-bs-toggle="modal"
+                            data-bs-target="#scheduleFollowUpModal"><i class="bi bi-plus-lg me-2"></i>Schedule
+                            Follow-up Meeting</button>
                     </div>
                 </div>
 
@@ -499,6 +501,49 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
                         <button type="submit" class="btn btn-primary">Save Note</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Schedule Follow-up Modal -->
+    <div class="modal fade" id="scheduleFollowUpModal" tabindex="-1" aria-labelledby="scheduleFollowUpModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <form action="{{ route('meets.schedule-follow-up', $meet->id) }}" method="POST">
+                    @csrf
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="scheduleFollowUpModalLabel">Schedule Follow-up Meeting</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="followup_title" class="form-label">Follow-up Title</label>
+                            <input type="text" class="form-control" id="followup_title" name="title"
+                                value="Follow-up: {{ $meet->title }}" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="followup_date" class="form-label">New Date</label>
+                            <input type="date" class="form-control" id="followup_date" name="meet_date" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="followup_time_from" class="form-label">Start Time</label>
+                                <input type="time" class="form-control" id="followup_time_from" name="meet_time_from"
+                                    required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="followup_time_to" class="form-label">End Time</label>
+                                <input type="time" class="form-control" id="followup_time_to" name="meet_time_to"
+                                    required>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Schedule Follow-up</button>
                     </div>
                 </form>
             </div>
