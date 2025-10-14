@@ -113,8 +113,12 @@
                 <div class="tab-pane mt-4 fade" id="discussion" role="tabpanel" aria-labelledby="discussion-tab">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h4 class="mb-0">Discussion Points & Tasks</h4>
-                        <div class="d-flex gap-2">
-                            <select class="form-select w-auto">
+                        <div class="d-flex gap-2" id="action-buttons">
+                            <div class="input-group">
+                                <input type="text" id="task-search-input" class="form-control"
+                                    style="height: 2.4rem;" placeholder="Search tasks by user...">
+                            </div>
+                            <select class="form-select" style="height: 2.4rem;">
                                 <option selected>All Departments</option>
                                 @foreach ($departments as $department)
                                     @if ($department)
@@ -122,13 +126,14 @@
                                     @endif
                                 @endforeach
                             </select>
-                            <button class="btn btn-primary" data-bs-toggle="modal"
+                            <button class="btn btn-primary d-flex align-items-center justify-content-center"
+                                style="width:400px;height:2.4rem;" data-bs-toggle="modal"
                                 data-bs-target="#addDiscussionPointModal"><i class="bi bi-plus me-2"></i>Add
                                 Task</button>
                         </div>
                     </div>
                     @forelse ($meet->discussionPoints as $point)
-                        <div class="task-card mb-3">
+                        <div class="task-card mb-3" data-assignee-name="{{ $point->assignedToUser->name ?? '' }}">
                             <div class="d-flex justify-content-between align-items-start">
                                 <div>
                                     <h5>
@@ -145,13 +150,14 @@
                                 </div>
                                 <div class="d-flex gap-2">
                                     @if ($point->priority)
-                                        <span class="badge bg-primary">{{ $point->priority }}</span>
+                                        <span class="badge bg-primary d-flex align-items-center justify-content-center"
+                                            style="width: 110px;">{{ $point->priority }}</span>
                                     @endif
-                                    <div class="dropdown">
+                                    <div class="dropdown" style="width: 110px; ">
                                         <button
-                                            class="badge-dropdown dropdown-toggle badge 
+                                            class="badge-dropdown dropdown-toggle badge w-100
                                             @if ($point->status == 'Completed') bg-success
-                                            @elseif($point->status == 'In Progress') bg-warning text-dark
+                                            @elseif ($point->status == 'In Progress') bg-warning text-dark
                                             @else bg-secondary text-dark @endif"
                                             type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                             {{ $point->status }}
@@ -169,9 +175,12 @@
                                         </ul>
                                     </div>
 
-                                    <button class="btn btn-sm btn-outline-secondary" data-bs-toggle="modal"
+                                    <button
+                                        class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
+                                        style="width: 110px;max-height:1.8rem;" data-bs-toggle="modal"
                                         data-bs-target="#addNoteModal" data-point-id="{{ $point->id }}"><i
-                                            class="bi bi-plus-lg"></i> Add Note</button>
+                                            class="bi bi-plus-lg me-1"></i>Add
+                                        Note</button>
                                 </div>
                             </div>
                             <div class="d-flex justify-content-between text-muted small mt-2">
@@ -192,11 +201,11 @@
                                 <hr>
                                 <div class="task-updates">
                                     <h6 class="small">Updates</h6>
-                                    <ul class="timeline">
+                                    <ul class="timeliness">
                                         @foreach ($point->updates as $update)
-                                            <li class="timeline-item">
-                                                <div class="timeline-marker"></div>
-                                                <div class="timeline-content">
+                                            <li class="timeliness-item">
+                                                <div class="timeliness-marker"></div>
+                                                <div class="timeliness-content">
                                                     <p class="mb-1">
                                                         <strong>Update
                                                             ({{ $update->created_at->format('d-m-Y') }})
@@ -622,19 +631,20 @@
             padding: 1.25rem;
         }
 
-        .timeline {
+        .timeliness {
             list-style-type: none;
             padding-left: 0;
             margin-left: 10px;
             border-left: 2px solid #e9ecef;
+            border-right: none;
         }
 
-        .timeline-item {
+        .timeliness-item {
             position: relative;
             padding: 0.5rem 0 0.5rem 1.5rem;
         }
 
-        .timeline-marker {
+        .timeliness-marker {
             position: absolute;
             top: 1.0rem;
             left: -7px;
@@ -645,16 +655,16 @@
             border: 2px solid #0d6efd;
         }
 
-        .timeline-item:last-child {
+        .timeliness-item:last-child {
             padding-bottom: 0;
         }
 
-        .timeline-content {
+        .timeliness-content {
             font-size: 0.875rem;
             color: #6c757d;
         }
 
-        .timeline-content strong {
+        .timeliness-content strong {
             color: #343a40;
         }
 
@@ -684,6 +694,23 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const searchInput = document.getElementById('task-search-input');
+            if (searchInput) {
+                const taskCards = document.querySelectorAll('.task-card');
+                searchInput.addEventListener('input', function() {
+                    const searchTerm = this.value.toLowerCase();
+
+                    taskCards.forEach(card => {
+                        const assigneeName = (card.dataset.assigneeName || '').toLowerCase();
+                        if (assigneeName.includes(searchTerm)) {
+                            card.style.display = 'block';
+                        } else {
+                            card.style.display = 'none';
+                        }
+                    });
+                });
+            }
+
             var addNoteModal = document.getElementById('addNoteModal');
             addNoteModal.addEventListener('show.bs.modal', function(event) {
                 var button = event.relatedTarget;
