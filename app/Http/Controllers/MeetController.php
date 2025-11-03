@@ -56,6 +56,7 @@ class MeetController extends Controller
                 'discussionPoints.assignee',
                 'discussionPoints.assignedToUser',
                 'discussionPoints.updates',
+                'discussionPoints.project',
                 'followUps'
             ])->findOrFail($id);
 
@@ -77,8 +78,15 @@ class MeetController extends Controller
             // Get all users who can be assigned tasks (attendees of the current meeting)
             $assignees = $meet->attendees;
 
+            // Get all projects for the dropdown
+            $projects = Project::all();
 
-            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees'));
+            // Group discussion points by project
+            $discussionPointsByProject = $meet->discussionPoints->groupBy(function($point) {
+                return $point->project ? $point->project->id : 'no-project';
+            });
+
+            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees', 'projects', 'discussionPointsByProject'));
 
         } catch (\Exception $e) {
             return response()->json([
@@ -99,9 +107,25 @@ class MeetController extends Controller
             'department' => 'nullable|string',
             'priority' => 'required|string',
             'due_date' => 'nullable|date',
+            'project_id' => 'nullable|exists:projects,id',
+            'project_name' => 'nullable|string|max:255', // For new project
         ]);
 
-        DiscussionPoint::create($request->all());
+        $data = $request->all();
+
+        // Handle project - if project_name is provided but project_id is not, create new project
+        if (!empty($request->project_name) && empty($request->project_id)) {
+            $project = Project::create([
+                'project_name' => $request->project_name,
+                'project_type' => 'General',
+            ]);
+            $data['project_id'] = $project->id;
+        }
+
+        // Remove project_name from data as it's not a field in discussion_points
+        unset($data['project_name']);
+
+        DiscussionPoint::create($data);
 
         return back()->with('success', 'New discussion point added successfully!');
     }
@@ -161,14 +185,14 @@ class MeetController extends Controller
                 }
 
                 // Try to find existing user by email or contactNo; create if not found
-                $existingQuery = User::query();
-                if (!empty($np['email'])) {
-                    $existingQuery->where('email', $np['email']);
-                }
-                if (!empty($np['contactNo'])) {
-                    $existingQuery->orWhere('contactNo', $np['contactNo'])->orWhere('contactNo', $np['contactNo']);
-                }
-                $existing = $existingQuery->first();
+                $existing = User::where(function($query) use ($np) {
+                    if (!empty($np['email'])) {
+                        $query->where('email', $np['email']);
+                    }
+                    if (!empty($np['contactNo'])) {
+                        $query->orWhere('contactNo', $np['contactNo']);
+                    }
+                })->first();
 
                 if ($existing) {
                     $createdUserIds[] = $existing->id;
@@ -214,9 +238,9 @@ class MeetController extends Controller
 
                         $existing = User::where(function ($q) use ($email, $phone) {
                             if ($email)
-                                $q->orWhere('email', $email);
+                                $q->where('email', $email);
                             if ($phone)
-                                $q->orWhere('contactNo', $phone)->orWhere('contactNo', $phone);
+                                $q->orWhere('contactNo', $phone);
                         })->first();
 
                         if ($existing) {
@@ -302,13 +326,135 @@ class MeetController extends Controller
 
     public function edit(Meet $meet)
     {
-        $users = User::all();
-        return view('meets.edit', compact('meet', 'users'));
+        $meet->load('attendees');
+        $projects = Project::all();
+        // Return all users except role 3 (Vendors) - same as create method
+        $users = User::where('role', '<>', 3)->get();
+        return view('review-meetings.edit', compact('meet', 'users', 'projects'));
     }
 
     public function update(Request $request, Meet $meet)
     {
-        // similar to store logic, just with $meet->update()
+        Log::info('Update request', $request->all());
+
+        $createdUserIds = [];
+
+        // Handle "new_participants" from the form (array of objects)
+        $newParticipants = $request->input('new_participants', []);
+        if (!empty($newParticipants) && is_array($newParticipants)) {
+            foreach ($newParticipants as $idx => $np) {
+                $np = array_map('trim', (array) $np);
+                if (empty($np['firstName']) && empty($np['lastName']) && empty($np['email']) && empty($np['contactNo'])) {
+                    continue;
+                }
+
+                $v = Validator::make($np, [
+                    'firstName' => 'required|string|max:255',
+                    'lastName' => 'nullable|string|max:255',
+                    'email' => 'nullable|email|max:255',
+                    'contactNo' => 'nullable|string|max:50',
+                ]);
+
+                if ($v->fails()) {
+                    return back()->withErrors($v)->withInput();
+                }
+
+                // Try to find existing user by email or contactNo; create if not found
+                $existing = User::where(function($query) use ($np) {
+                    if (!empty($np['email'])) {
+                        $query->where('email', $np['email']);
+                    }
+                    if (!empty($np['contactNo'])) {
+                        $query->orWhere('contactNo', $np['contactNo']);
+                    }
+                })->first();
+
+                if ($existing) {
+                    $createdUserIds[] = $existing->id;
+                    continue;
+                }
+
+                // Create a minimal user
+                $password = Str::random(12);
+                $user = User::create([
+                    'firstName' => $np['firstName'] ?? null,
+                    'lastName' => $np['lastName'] ?? null,
+                    'email' => $np['email'] ?? null,
+                    'contactNo' => $np['contactNo'] ?? null,
+                    'role' => 100,
+                    'password' => bcrypt($password),
+                ]);
+
+                $createdUserIds[] = $user->id;
+            }
+        }
+
+        // Combine selected users with created users
+        $selectedUsers = $request->input('users', []);
+        if (!is_array($selectedUsers)) {
+            $selectedUsers = [];
+        }
+        $allUserIds = array_values(array_unique(array_merge($selectedUsers, $createdUserIds)));
+
+        // Validate the request
+        $request->merge(['users' => $allUserIds]);
+        $validated = $request->validate([
+            'title' => 'required|string',
+            'agenda' => 'nullable|string',
+            'meet_link' => 'required|url',
+            'platform' => 'required|string',
+            'meet_date' => 'required|date',
+            'meet_time_from' => 'required',
+            'meet_time_to' => 'required',
+            'type' => 'required|string',
+            'users' => 'required|array|min:1',
+        ]);
+
+        // Update the meeting
+        $meet->update([
+            'title' => $validated['title'],
+            'agenda' => $validated['agenda'] ?? null,
+            'meet_link' => $validated['meet_link'],
+            'platform' => $validated['platform'],
+            'meet_date' => $validated['meet_date'],
+            'meet_time' => $validated['meet_time_from'],
+            'type' => $validated['type'],
+        ]);
+
+        // Get existing attendee IDs to determine which are new
+        $existingAttendeeIds = $meet->attendees->pluck('id')->toArray();
+        
+        // Sync attendees (this will add new ones and remove ones not in the list)
+        $meet->attendees()->sync($validated['users']);
+
+        // Determine new attendees (those not in the existing list)
+        $newAttendeeIds = array_diff($validated['users'], $existingAttendeeIds);
+
+        // Send WhatsApp invites only to new attendees
+        if (!empty($newAttendeeIds)) {
+            $newUsers = User::whereIn('id', $newAttendeeIds)->get(['firstName', 'lastName', 'contactNo']);
+            foreach ($newUsers as $user) {
+                if ($user->contactNo) {
+                    try {
+                        WhatsappHelper::sendMeetLink($user->contactNo, $user->firstName . ' ' . $user->lastName, [
+                            'firstName' => $user->firstName,
+                            'lastName' => $user->lastName,
+                            'title' => $validated['title'],
+                            'meet_date' => $validated['meet_date'],
+                            'meet_time' => $validated['meet_time_from'] . ' - ' . $validated['meet_time_to'],
+                            'platform' => $validated['platform'],
+                            'meet_link' => $validated['meet_link'],
+                            'agenda' => $validated['agenda'] ?? '',
+                            'type' => $validated['type'],
+                        ]);
+                    } catch (\Exception $e) {
+                        Log::error("Failed to send WhatsApp to {$user->contactNo}: " . $e->getMessage());
+                    }
+                }
+            }
+        }
+
+        return redirect()->route('meets.index')->with('success', 'Meeting updated successfully!');
     }
 
     public function destroy(Meet $meet)

@@ -22256,3 +22256,67 @@ wala baag, datia, Datia, Data, Madhya pradesh - 475661","contact_number":6266286
 [2025-10-14 06:14:27] local.INFO: []  
 [2025-10-14 06:14:27] local.INFO: []  
 [2025-10-14 06:14:27] local.INFO: []  
+[2025-11-03 07:44:26] local.INFO: []  
+[2025-11-03 07:44:26] local.INFO: []  
+[2025-11-03 07:44:26] local.INFO: []  
+[2025-11-03 07:45:38] local.INFO: array (
+  '_token' => 'br4bgFwCohoXIOppa5l1I9wmuevP319t28anvGIX',
+  'title' => 'test',
+  'type' => 'Review',
+  'agenda' => 'dssf',
+  'meet_date' => '2025-11-03',
+  'meet_time_from' => '01:15',
+  'meet_time_to' => '15:15',
+  'platform' => 'Google Meet',
+  'meet_link' => 'https://meet.google.com/new?authuser=0&hs=178&pli=1',
+  'new_participants' => 
+  array (
+    'new_sumitranjan245gmailcom' => 
+    array (
+      'firstName' => 'Sumit',
+      'lastName' => 'Ranjan',
+      'email' => 'sumitranjan245@gmail.com',
+      'contactNo' => '9649240944',
+    ),
+  ),
+)  
+[2025-11-03 07:45:38] local.INFO: https://backend.api-wa.co/campaign/digintra/api/v2  
+[2025-11-03 07:45:38] local.INFO: array (
+  'apiKey' => 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NTk0NTlmNjAyNmI1MGMwNjc2ZDY4YiIsIm5hbWUiOiJTdWdzIDJuZCIsImFwcE5hbWUiOiJBaVNlbnN5IiwiY2xpZW50SWQiOiI2ODA4ZDY1ZThmNDU2ODBjMDFjNjg2NjgiLCJhY3RpdmVQbGFuIjoiTk9ORSIsImlhdCI6MTc1MDY4MDk5MX0.w7mQxiSDv14xUdyiEzM-PkqAA0YFGn6wAHxeOmqAndA',
+  'campaignName' => 'create_meet_link',
+  'destination' => '919649240944',
+  'userName' => 'Jack Doe',
+  'templateParams' => 
+  array (
+    0 => 'Jack',
+    1 => 'Doe',
+    2 => 'test',
+    3 => '2025-11-03',
+    4 => '01:15 - 15:15',
+    5 => 'Google Meet',
+    6 => 'https://meet.google.com/new?authuser=0&hs=178&pli=1',
+    7 => 'dssf',
+    8 => 'Review',
+  ),
+  'source' => 'new-landing-page form',
+  'media' => 
+  array (
+  ),
+  'buttons' => 
+  array (
+  ),
+  'carouselCards' => 
+  array (
+  ),
+  'location' => 
+  array (
+  ),
+  'attributes' => 
+  array (
+  ),
+  'paramsFallbackValue' => 
+  array (
+    'FirstName' => 'user',
+  ),
+)  
+[2025-11-03 08:03:50] local.INFO: Update request {"_token":"br4bgFwCohoXIOppa5l1I9wmuevP319t28anvGIX","_method":"PUT","users":["11"],"title":"test","type":"Review","agenda":"To Discuss the growth of company","meet_date":"2025-11-03","meet_time_from":"01:15","meet_time_to":"15:33","platform":"Google Meet","meet_link":"https://meet.google.com/new?authuser=0&hs=178&pli=1"} 

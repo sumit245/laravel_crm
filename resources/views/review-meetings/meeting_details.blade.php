@@ -132,114 +132,197 @@
                                 Task</button>
                         </div>
                     </div>
-                    @forelse ($meet->discussionPoints as $point)
-                        <div class="task-card mb-3" data-assignee-name="{{ $point->assignedToUser->name ?? '' }}">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <div>
-                                    <h5>
-                                        @if ($point->status == 'Completed')
-                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                        @elseif($point->status == 'In Progress')
-                                            <i class="bi bi-clock-history text-warning me-2"></i>
-                                        @else
-                                            <i class="bi bi-exclamation-circle-fill text-secondary me-2"></i>
-                                        @endif
-                                        {{ $point->title }}
-                                    </h5>
-                                    <p class="text-muted small">{{ $point->description }}</p>
-                                </div>
-                                <div class="d-flex gap-2">
-                                    @if ($point->priority)
-                                        <span class="badge bg-primary d-flex align-items-center justify-content-center"
-                                            style="width: 110px;">{{ $point->priority }}</span>
-                                    @endif
-                                    <div class="dropdown" style="width: 110px; ">
-                                        <button
-                                            class="badge-dropdown dropdown-toggle badge w-100
+                    @php
+                        // Color palettes for different projects - each project gets a distinct color scheme
+                        $projectColors = [
+                            'no-project' => ['border' => '#e0e0e0', 'bg' => '#f8f9fa', 'accent' => '#6c757d'],
+                        ];
+                        $colorIndex = 0;
+                        $colorSchemes = [
+                            ['border' => '#d4e5f7', 'bg' => '#e8f4f8', 'accent' => '#2196F3', 'text' => '#1565C0'],
+                            ['border' => '#ffe0b2', 'bg' => '#fff3e0', 'accent' => '#FF9800', 'text' => '#E65100'],
+                            ['border' => '#c8e6c9', 'bg' => '#e8f5e9', 'accent' => '#4CAF50', 'text' => '#2E7D32'],
+                            ['border' => '#f8bbd0', 'bg' => '#fce4ec', 'accent' => '#E91E63', 'text' => '#C2185B'],
+                            ['border' => '#d1c4e9', 'bg' => '#ede7f6', 'accent' => '#9C27B0', 'text' => '#7B1FA2'],
+                            ['border' => '#b3e5fc', 'bg' => '#e0f7fa', 'accent' => '#00BCD4', 'text' => '#00838F'],
+                        ];
+                    @endphp
+                    @forelse ($discussionPointsByProject as $projectKey => $points)
+                        @php
+                            if ($projectKey === 'no-project') {
+                                $project = null;
+                                $projectName = 'No Project';
+                                $colorScheme = $projectColors['no-project'];
+                            } else {
+                                $project = $points->first()->project;
+                                $projectName = $project->project_name ?? 'Unknown Project';
+                                if (!isset($projectColors[$projectKey])) {
+                                    $projectColors[$projectKey] = $colorSchemes[$colorIndex % count($colorSchemes)];
+                                    $colorIndex++;
+                                }
+                                $colorScheme = $projectColors[$projectKey];
+                            }
+                        @endphp
+                        <div class="project-group mb-4">
+                            <div class="project-header p-3 mb-3 rounded"
+                                style="background: linear-gradient(135deg, {{ $colorScheme['bg'] }} 0%, {{ $colorScheme['border'] }} 100%); border-left: 4px solid {{ $colorScheme['accent'] }};">
+                                <h5 class="mb-0 fw-bold"
+                                    style="color: {{ $colorScheme['text'] ?? $colorScheme['accent'] }};">
+                                    <i class="bi bi-folder me-2"></i>{{ $projectName }}
+                                    <span class="badge ms-2"
+                                        style="background-color: {{ $colorScheme['accent'] }}; color: white;">{{ $points->count() }}
+                                        Task{{ $points->count() > 1 ? 's' : '' }}</span>
+                                </h5>
+                            </div>
+                            @foreach ($points as $pointIndex => $point)
+                                <div class="task-card mb-3" data-assignee-name="{{ $point->assignedToUser->name ?? '' }}"
+                                    style="border-left: 4px solid {{ $colorScheme['accent'] }}; background-color: {{ $colorScheme['bg'] }}; border-top: 1px solid {{ $colorScheme['border'] }}; border-right: 1px solid {{ $colorScheme['border'] }}; border-bottom: 1px solid {{ $colorScheme['border'] }};">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div>
+                                            <h5 style="color: {{ $colorScheme['text'] ?? $colorScheme['accent'] }};">
+                                                @if ($point->status == 'Completed')
+                                                    <i class="bi bi-check-circle-fill me-2" style="color: #28a745;"></i>
+                                                @elseif($point->status == 'In Progress')
+                                                    <i class="bi bi-clock-history me-2" style="color: #ffc107;"></i>
+                                                @else
+                                                    <i class="bi bi-exclamation-circle-fill me-2"
+                                                        style="color: #dc3545;"></i>
+                                                @endif
+                                                {{ $point->title }}
+                                                @if ($point->priority == 'High')
+                                                    <span class="badge bg-danger ms-2"
+                                                        style="font-size: 0.7rem;">HIGH</span>
+                                                @elseif ($point->priority == 'Medium')
+                                                    <span class="badge bg-warning text-dark ms-2"
+                                                        style="font-size: 0.7rem;">MED</span>
+                                                @else
+                                                    <span class="badge bg-info ms-2" style="font-size: 0.7rem;">LOW</span>
+                                                @endif
+                                            </h5>
+                                            <p class="small" style="color: #495057; font-weight: 500;">
+                                                {{ $point->description }}</p>
+                                        </div>
+                                        <div class="d-flex gap-2">
+                                            <div class="dropdown" style="width: 110px; ">
+                                                <button
+                                                    class="badge-dropdown dropdown-toggle badge w-100
                                             @if ($point->status == 'Completed') bg-success
                                             @elseif ($point->status == 'In Progress') bg-warning text-dark
                                             @else bg-secondary text-dark @endif"
-                                            type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                            {{ $point->status }}
-                                        </button>
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-pending').submit();">Pending</a>
-                                            </li>
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-progress').submit();">In
-                                                    Progress</a></li>
-                                            <li><a class="dropdown-item" href="#"
-                                                    onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-completed').submit();">Completed</a>
-                                            </li>
-                                        </ul>
-                                    </div>
+                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    {{ $point->status }}
+                                                </button>
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#"
+                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-pending').submit();">Pending</a>
+                                                    </li>
+                                                    <li><a class="dropdown-item" href="#"
+                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-progress').submit();">In
+                                                            Progress</a></li>
+                                                    <li><a class="dropdown-item" href="#"
+                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-completed').submit();">Completed</a>
+                                                    </li>
+                                                </ul>
+                                            </div>
 
-                                    <button
-                                        class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
-                                        style="width: 110px;max-height:1.8rem;" data-bs-toggle="modal"
-                                        data-bs-target="#addNoteModal" data-point-id="{{ $point->id }}"><i
-                                            class="bi bi-plus-lg me-1"></i>Add
-                                        Note</button>
-                                </div>
-                            </div>
-                            <div class="d-flex justify-content-between text-muted small mt-2">
-                                <span>
-                                    <i class="bi bi-person me-1"></i> Assigned To:
-                                    {{ $point->assignedToUser->name ?? 'Unassigned' }}
-                                    @if ($point->assignedToUser?->department)
-                                        <span
-                                            class="badge bg-light text-dark ms-1">{{ $point->assignedToUser->department }}</span>
+                                            <button
+                                                class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
+                                                style="width: 110px;max-height:1.8rem;" data-bs-toggle="modal"
+                                                data-bs-target="#addNoteModal" data-point-id="{{ $point->id }}"><i
+                                                    class="bi bi-plus-lg me-1"></i>Add
+                                                Note</button>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex justify-content-between align-items-center mt-3 pt-2"
+                                        style="border-top: 1px solid {{ $colorScheme['border'] }};">
+                                        <span class="small"
+                                            style="color: {{ $colorScheme['text'] ?? $colorScheme['accent'] }}; font-weight: 600;">
+                                            <i class="bi bi-person-fill me-1"
+                                                style="color: {{ $colorScheme['accent'] }};"></i>
+                                            <strong>Responsible:</strong>
+                                            {{ $point->assignedToUser->name ?? 'Unassigned' }}
+                                            @if ($point->assignedToUser?->department)
+                                                <span class="badge ms-2"
+                                                    style="background-color: {{ $colorScheme['accent'] }}; color: white; font-size: 0.75rem;">{{ $point->assignedToUser->department }}</span>
+                                            @endif
+                                        </span>
+                                        @if ($point->due_date)
+                                            <span class="small fw-bold"
+                                                style="color: {{ $point->due_date < now() && $point->status != 'Completed' ? '#dc3545' : $colorScheme['text'] ?? $colorScheme['accent'] }};">
+                                                <i class="bi bi-calendar-event-fill me-1"></i>
+                                                Due: {{ \Carbon\Carbon::parse($point->due_date)->format('d-m-Y') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    @if ($point->updates->isNotEmpty())
+                                        <div class="task-updates mt-3 pt-3"
+                                            style="border-top: 2px dashed {{ $colorScheme['border'] }};">
+                                            <h6 class="small mb-3 fw-bold" style="color: {{ $colorScheme['accent'] }};">
+                                                <i class="bi bi-clock-history me-1"></i>Task Updates & Progress
+                                            </h6>
+                                            <ul class="timeliness">
+                                                @foreach ($point->updates as $updateIndex => $update)
+                                                    <li class="timeliness-item">
+                                                        <div class="timeliness-marker"
+                                                            style="border-color: {{ $colorScheme['accent'] }}; background-color: {{ $colorScheme['bg'] }};">
+                                                        </div>
+                                                        <div class="timeliness-content"
+                                                            style="background-color: rgba(255,255,255,0.7); padding: 12px; border-radius: 8px; margin-bottom: 12px; border-left: 3px solid {{ $colorScheme['accent'] }};">
+                                                            <p class="mb-2 fw-bold"
+                                                                style="color: {{ $colorScheme['text'] ?? $colorScheme['accent'] }}; font-size: 0.9rem;">
+                                                                <i class="bi bi-pencil-square me-1"></i>Update
+                                                                #{{ $updateIndex + 1 }}
+                                                                <span class="text-muted"
+                                                                    style="font-size: 0.8rem; font-weight: normal;">({{ $update->created_at->format('d-m-Y H:i') }})</span>
+                                                            </p>
+                                                            <p class="mb-2" style="color: #495057; line-height: 1.6;">
+                                                                {{ $update->update_text }}
+                                                            </p>
+                                                            @if ($update->vertical_head_remark)
+                                                                <div class="remark mb-2 p-2 rounded"
+                                                                    style="background-color: #fff3cd; border-left: 3px solid #ffc107;">
+                                                                    <strong style="color: #856404;"><i
+                                                                            class="bi bi-person-badge me-1"></i>Vertical
+                                                                        Head Remark:</strong>
+                                                                    <span
+                                                                        style="color: #856404;">{{ $update->vertical_head_remark }}</span>
+                                                                </div>
+                                                            @endif
+                                                            @if ($update->admin_remark)
+                                                                <div class="remark mb-0 p-2 rounded"
+                                                                    style="background-color: #d1ecf1; border-left: 3px solid #0dcaf0;">
+                                                                    <strong style="color: #0c5460;"><i
+                                                                            class="bi bi-shield-check me-1"></i>Admin
+                                                                        Remark:</strong>
+                                                                    <span
+                                                                        style="color: #0c5460;">{{ $update->admin_remark }}</span>
+                                                                </div>
+                                                            @endif
+                                                        </div>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </div>
                                     @endif
-                                </span>
-                                @if ($point->due_date)
-                                    <span><i class="bi bi-calendar-event me-1"></i> Due:
-                                        {{ \Carbon\Carbon::parse($point->due_date)->format('d-m-Y') }}</span>
-                                @endif
-                            </div>
-                            @if ($point->updates->isNotEmpty())
-                                <hr>
-                                <div class="task-updates">
-                                    <h6 class="small">Updates</h6>
-                                    <ul class="timeliness">
-                                        @foreach ($point->updates as $update)
-                                            <li class="timeliness-item">
-                                                <div class="timeliness-marker"></div>
-                                                <div class="timeliness-content">
-                                                    <p class="mb-1">
-                                                        <strong>Update
-                                                            ({{ $update->created_at->format('d-m-Y') }})
-                                                            :</strong>
-                                                        {{ $update->update_text }}
-                                                    </p>
-                                                    @if ($update->vertical_head_remark)
-                                                        <p class="remark mb-1"><strong>Vertical Head:</strong>
-                                                            {{ $update->vertical_head_remark }}</p>
-                                                    @endif
-                                                    @if ($update->admin_remark)
-                                                        <p class="remark mb-0"><strong>Admin:</strong>
-                                                            {{ $update->admin_remark }}</p>
-                                                    @endif
-                                                </div>
-                                            </li>
-                                        @endforeach
-                                    </ul>
                                 </div>
-                            @endif
+                            @endforeach
                         </div>
                         {{-- Hidden forms for status update --}}
-                        <form id="status-form-{{ $point->id }}-pending"
-                            action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
-                            class="d-none">
-                            @csrf <input type="hidden" name="status" value="Pending"></form>
-                        <form id="status-form-{{ $point->id }}-progress"
-                            action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
-                            class="d-none">
-                            @csrf <input type="hidden" name="status" value="In Progress"></form>
-                        <form id="status-form-{{ $point->id }}-completed"
-                            action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
-                            class="d-none">
-                            @csrf <input type="hidden" name="status" value="Completed"></form>
+                        @foreach ($points as $point)
+                            {{-- Hidden forms for status update --}}
+                            <form id="status-form-{{ $point->id }}-pending"
+                                action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
+                                class="d-none">
+                                @csrf <input type="hidden" name="status" value="Pending"></form>
+                            <form id="status-form-{{ $point->id }}-progress"
+                                action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
+                                class="d-none">
+                                @csrf <input type="hidden" name="status" value="In Progress"></form>
+                            <form id="status-form-{{ $point->id }}-completed"
+                                action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
+                                class="d-none">
+                                @csrf <input type="hidden" name="status" value="Completed"></form>
+                        @endforeach
                     @empty
                         <div class="text-center text-muted p-4">No discussion points or tasks have been added yet.</div>
                     @endforelse
@@ -422,6 +505,20 @@
                             <label for="description" class="form-label">Description</label>
                             <textarea class="form-control" id="description" name="description" rows="3" style="height:100px;"
                                 placeholder="Enter task description"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="project_select" class="form-label">Project <small class="text-muted">(Select
+                                    existing or type new)</small></label>
+                            <input type="text" class="form-control" id="project_select" name="project_name"
+                                list="projects_list" placeholder="Select project or type to create new..."
+                                autocomplete="off">
+                            <datalist id="projects_list">
+                                @foreach ($projects as $project)
+                                    <option value="{{ $project->project_name }}" data-project-id="{{ $project->id }}">
+                                @endforeach
+                            </datalist>
+                            <input type="hidden" id="project_id" name="project_id" value="">
+                            <small class="text-muted">Type to search existing projects or enter a new project name</small>
                         </div>
                         <div class="row">
                             <div class="col-md-12 mb-3">
@@ -689,6 +786,34 @@
         .table thead {
             background-color: #f8f9fa;
         }
+
+        .project-group {
+            margin-bottom: 2rem;
+        }
+
+        .project-header {
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s;
+        }
+
+        .project-header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .task-card {
+            transition: all 0.3s ease;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .task-card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(4px);
+        }
+
+        .task-updates {
+            background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.3) 50%, transparent 100%);
+        }
     </style>
 @endpush
 
@@ -741,6 +866,37 @@
                         card.style.display = (selectedAssignee === 'all' || card.dataset
                             .assigneeName === selectedAssignee) ? 'block' : 'none';
                     });
+                });
+            }
+
+            // Project selection handler
+            const projectSelect = document.getElementById('project_select');
+            const projectIdInput = document.getElementById('project_id');
+            const projectsList = document.getElementById('projects_list');
+
+            if (projectSelect) {
+                projectSelect.addEventListener('input', function() {
+                    const selectedValue = this.value;
+                    const matchingOption = Array.from(projectsList.options).find(option => option.value ===
+                        selectedValue);
+
+                    if (matchingOption && matchingOption.dataset.projectId) {
+                        projectIdInput.value = matchingOption.dataset.projectId;
+                    } else {
+                        projectIdInput.value = ''; // New project - will be created
+                    }
+                });
+
+                projectSelect.addEventListener('change', function() {
+                    const selectedValue = this.value;
+                    const matchingOption = Array.from(projectsList.options).find(option => option.value ===
+                        selectedValue);
+
+                    if (matchingOption && matchingOption.dataset.projectId) {
+                        projectIdInput.value = matchingOption.dataset.projectId;
+                    } else {
+                        projectIdInput.value = '';
+                    }
                 });
             }
         });

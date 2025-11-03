@@ -11,6 +11,7 @@ class DiscussionPoint extends Model
 
     protected $fillable = [
         'meet_id',
+        'project_id',
         'title',
         'description',
         'assignee_id',
@@ -39,5 +40,10 @@ class DiscussionPoint extends Model
     public function updates()
     {
         return $this->hasMany(DiscussionPointUpdates::class)->latest();
+    }
+
+    public function project()
+    {
+        return $this->belongsTo(Project::class);
     }
 }

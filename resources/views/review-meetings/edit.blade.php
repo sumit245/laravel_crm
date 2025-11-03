@@ -6,8 +6,8 @@
             <a href={{ route('meets.index') }} class="btn btn-light border mb-3"><i class="bi bi-arrow-left me-2"></i>Back to
                 Meetings</a>
             <div class="ms-3">
-                <h2 class="mb-1">Create New Meeting</h2>
-                <p class="text-muted-light">Schedule a new meeting and invite participants.</p>
+                <h2 class="mb-1">Edit Meeting</h2>
+                <p class="text-muted-light">Update meeting details and participants.</p>
             </div>
         </div>
 
@@ -23,29 +23,35 @@
 
         <div class="row">
             <div class="col-lg-8">
-                <form class="forms-sample" id="createMeetingForm" action="{{ route('meets.store') }}" method="POST">
+                <form class="forms-sample" id="editMeetingForm" action="{{ route('meets.update', $meet->id) }}" method="POST">
                     @csrf
+                    @method('PUT')
+                    @if ($meet->attendees->count() > 0)
+                        @foreach ($meet->attendees as $attendee)
+                            <input type="hidden" name="users[]" value="{{ $attendee->id }}" id="user-input-{{ $attendee->id }}">
+                        @endforeach
+                    @endif
                     <div class="card mb-4" style="border-radius: 0.35em !important;">
                         <div class="card-header">
                             <h5 class="mb-0">Meeting Details</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-md-6 mb-3 form-group">
-                                    <label for="meetingTitle" class="form-label">Meeting Title
-                                        <span class="text-danger small">*</span>
-                                    </label>
-                                    <input type="text" class="form-control" id="meetingTitle" name="title" required
-                                        placeholder="Enter meeting title">
-                                </div>
+                            <div class="col-md-6 mb-3 form-group">
+                                <label for="meetingTitle" class="form-label">Meeting Title
+                                    <span class="text-danger small">*</span>
+                                </label>
+                                <input type="text" class="form-control" id="meetingTitle" name="title" required
+                                    value="{{ old('title', $meet->title) }}" placeholder="Enter meeting title">
+                            </div>
                                 <div class="col-md-6 mb-3 form-group">
                                     <label for="meetingType" class="form-label">Meeting Type
                                         <span class="text-danger small">*</span>
                                     </label>
                                     <select name="type" class="form-select" required>
-                                        <option value="Review">Review</option>
-                                        <option value="Planning">Planning</option>
-                                        <option value="Discussion">Discussion</option>
+                                        <option value="Review" {{ old('type', $meet->type) == 'Review' ? 'selected' : '' }}>Review</option>
+                                        <option value="Planning" {{ old('type', $meet->type) == 'Planning' ? 'selected' : '' }}>Planning</option>
+                                        <option value="Discussion" {{ old('type', $meet->type) == 'Discussion' ? 'selected' : '' }}>Discussion</option>
                                     </select>
                                 </div>
                             </div>
@@ -54,7 +60,7 @@
                                     <span class="text-danger small">*</span>
                                 </label>
                                 <textarea name="agenda" class="form-control" id="meetingAgenda" rows="4"
-                                    placeholder="Describe the meeting agenda and objectives" style="height: 100px;"></textarea>
+                                    placeholder="Describe the meeting agenda and objectives" style="height: 100px;">{{ old('agenda', $meet->agenda) }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -70,10 +76,9 @@
                                         <span class="text-danger small">*</span>
                                     </label>
                                     <div class="input-group">
-                                        {{-- <span class="input-group-text"><i class="bi bi-calendar3"></i></span> --}}
                                         <input type="date" name="meet_date" id="meet_date" class="form-control"
-                                            value="{{ old('meet_date', date('Y-m-d')) }}" min="{{ date('Y-m-d') }}"
-                                            placeholder="pick a date" required>
+                                            value="{{ old('meet_date', $meet->meet_date->format('Y-m-d')) }}" 
+                                            min="{{ date('Y-m-d') }}" placeholder="pick a date" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -82,7 +87,7 @@
                                     </label>
                                     <div class="input-group">
                                         <input type="time" class="form-control" name="meet_time_from" id="meet_time1"
-                                            required>
+                                            value="{{ old('meet_time_from', $meet->meet_time ? \Carbon\Carbon::parse($meet->meet_time)->format('H:i') : '') }}" required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -91,7 +96,7 @@
                                     </label>
                                     <div class="input-group">
                                         <input type="time" class="form-control" name="meet_time_to" id="meet_time2"
-                                            required>
+                                            value="{{ old('meet_time_to', '') }}" required>
                                     </div>
                                 </div>
                             </div>
@@ -110,11 +115,11 @@
                                             <span class="text-danger small">*</span>
                                         </label>
                                         <select name="platform" id="platform-select" class="form-select" required>
-                                            <option value="" selected disabled>-- Choose Platform --</option>
-                                            <option value="Google Meet">Google Meet</option>
-                                            <option value="Zoom">Zoom</option>
-                                            <option value="Teams">Teams</option>
-                                            <option value="Other">Other</option>
+                                            <option value="" disabled>-- Choose Platform --</option>
+                                            <option value="Google Meet" {{ old('platform', $meet->platform) == 'Google Meet' ? 'selected' : '' }}>Google Meet</option>
+                                            <option value="Zoom" {{ old('platform', $meet->platform) == 'Zoom' ? 'selected' : '' }}>Zoom</option>
+                                            <option value="Teams" {{ old('platform', $meet->platform) == 'Teams' ? 'selected' : '' }}>Teams</option>
+                                            <option value="Other" {{ old('platform', $meet->platform) == 'Other' ? 'selected' : '' }}>Other</option>
                                         </select>
                                     </div>
                                 </div>
@@ -122,7 +127,7 @@
                                     <div class="form-group">
                                         <label class="form-label">Link to Join</label>
                                         <input type="url" class="form-control" name="meet_link" id="meet-link-input"
-                                            placeholder="Meeting Link" required>
+                                            value="{{ old('meet_link', $meet->meet_link) }}" placeholder="Meeting Link" required>
                                         <small id="link-helper" class="form-text text-muted" style="display: none;">
                                             Please create the meeting in the new tab or select a platform and paste the link
                                             here.
@@ -150,6 +155,7 @@
                                 4 => 'Store Incharge',
                                 5 => 'Coordinator',
                             ];
+                            $existingAttendeeIds = $meet->attendees->pluck('id')->toArray();
                         @endphp
                         <div class="input-group mb-3">
                             <input type="text" class="form-control participant-search"
@@ -157,15 +163,24 @@
                         </div>
 
                         <div id="selected-participants" class="mb-3">
-                            <div class="text-center text-muted-light py-3">
-                                No participants added yet.
-                            </div>
+                            @if ($meet->attendees->count() > 0)
+                                @foreach ($meet->attendees as $attendee)
+                                    <div class="selected-participant-badge bg-light border rounded-pill me-2 mb-2" id="badge-{{ $attendee->id }}">
+                                        <span>{{ $attendee->firstName }} {{ $attendee->lastName }}</span>
+                                        <button type="button" class="btn-close btn-sm ms-2 remove-participant-btn" aria-label="Close" data-user-id="{{ $attendee->id }}"></button>
+                                    </div>
+                                @endforeach
+                            @else
+                                <div class="text-center text-muted-light py-3">
+                                    No participants added yet.
+                                </div>
+                            @endif
                         </div>
 
                         <div class="border rounded p-2">
                             <div class="participant-scroll">
                                 @foreach ($users as $user)
-                                    <div class="participant-item d-flex justify-content-between align-items-center p-2"
+                                    <div class="participant-item d-flex justify-content-between align-items-center p-2 {{ in_array($user->id, $existingAttendeeIds) ? 'hidden' : '' }}"
                                         data-user-id="{{ $user->id }}"
                                         data-user-name="{{ $user->firstName }} {{ $user->lastName }}"
                                         data-user-email="{{ strtolower($user->email ?? '') }}"
@@ -194,10 +209,10 @@
                         </label>
                     </div>
 
-                    <button type="submit" form="createMeetingForm" class="btn btn-primary"><i
-                            class="bi bi-calendar-check me-2"></i>Create
+                    <button type="submit" form="editMeetingForm" class="btn btn-primary"><i
+                            class="bi bi-calendar-check me-2"></i>Update
                         Meeting</button>
-                    <button type="button" class="btn btn-light border">Cancel</button>
+                    <a href="{{ route('meets.index') }}" class="btn btn-light border">Cancel</a>
                 </div>
 
                 <div class="card mb-4" style="border-radius: 0.35em !important; display: none;" id="add-others-panel">
@@ -231,16 +246,6 @@
                         </div>
                     </div>
                 </div>
-
-
-
-
-
-
-
-
-
-
             </div>
         </div>
     </div>
@@ -294,77 +299,72 @@
 
 @push('scripts')
     <script>
-        // --- NEW SCRIPT FOR PLATFORM SELECTION ---
+        // --- PLATFORM SELECTION SCRIPT ---
         const platformSelect = document.getElementById('platform-select');
         const meetLinkInput = document.getElementById('meet-link-input');
         const linkHelper = document.getElementById('link-helper');
 
-        platformSelect.addEventListener('change', function(event) {
-            const selectedPlatform = event.target.value;
-            let url;
+        if (platformSelect) {
+            platformSelect.addEventListener('change', function(event) {
+                const selectedPlatform = event.target.value;
+                let url;
 
-            switch (selectedPlatform) {
-                case 'Google Meet':
-                    // 'meet.new' is a shortcut to instantly create a new Google Meet.
-                    url = 'https://meet.new';
-                    break;
-                case 'Zoom':
-                    // Directs to the page for scheduling a new meeting.
-                    url = 'https://zoom.us/meeting/schedule';
-                    break;
-                case 'Teams':
-                    // Opens the Teams web app to schedule a meeting.
-                    url = 'https://teams.microsoft.com/';
-                    break;
-                default:
-                    // For 'Other' or if no platform is selected, do nothing.
-                    url = null;
-            }
+                switch (selectedPlatform) {
+                    case 'Google Meet':
+                        url = 'https://meet.new';
+                        break;
+                    case 'Zoom':
+                        url = 'https://zoom.us/meeting/schedule';
+                        break;
+                    case 'Teams':
+                        url = 'https://teams.microsoft.com/';
+                        break;
+                    default:
+                        url = null;
+                }
 
-            if (url) {
-                // 1. Open the selected platform in a new tab.
-                window.open(url, '_blank');
-
-                // 2. Guide the user to paste the link.
-                linkHelper.style.display = 'block';
-                meetLinkInput.focus(); // Automatically focus on the input field.
-                meetLinkInput.placeholder = `Paste your ${selectedPlatform} link here`;
-            } else {
-                // Hide helper text if 'Other' is selected.
-                linkHelper.style.display = 'none';
-                meetLinkInput.placeholder = 'Meeting Link';
-            }
-        });
+                if (url) {
+                    window.open(url, '_blank');
+                    linkHelper.style.display = 'block';
+                    meetLinkInput.focus();
+                    meetLinkInput.placeholder = `Paste your ${selectedPlatform} link here`;
+                } else {
+                    linkHelper.style.display = 'none';
+                    meetLinkInput.placeholder = 'Meeting Link';
+                }
+            });
+        }
 
         // --- PARTICIPANT SELECTION SCRIPT ---
         const searchInput = document.querySelector('.participant-search');
         const participantItems = document.querySelectorAll('.participant-item');
         const selectedParticipantsContainer = document.getElementById('selected-participants');
-        const form = document.getElementById('createMeetingForm');
+        const form = document.getElementById('editMeetingForm');
 
         // --- "ADD OTHERS" SCRIPT ---
         const toggleAddOthersLink = document.getElementById('toggle-add-others');
         const backToSearchLink = document.getElementById('back-to-participants-search');
 
         // Search functionality
-        searchInput.addEventListener('input', function() {
-            const query = this.value.trim().toLowerCase();
-            participantItems.forEach(item => {
-                const searchTerm = item.dataset.searchTerm || '';
-                if (searchTerm.includes(query)) {
-                    item.classList.remove('hidden');
-                } else {
-                    item.classList.add('hidden');
-                }
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim().toLowerCase();
+                participantItems.forEach(item => {
+                    const searchTerm = item.dataset.searchTerm || '';
+                    if (searchTerm.includes(query)) {
+                        item.classList.remove('hidden');
+                    } else {
+                        item.classList.add('hidden');
+                    }
+                });
             });
-        });
+        }
 
         // Add/Remove participant
         document.querySelector('.col-lg-4').addEventListener('click', function(e) {
             const addButton = e.target.closest('.add-participant-btn');
             const removeButton = e.target.closest('.remove-participant-btn');
             const addNewBtn = e.target.closest('#add-new-participant-btn');
-
 
             if (addButton) {
                 const participantItem = addButton.closest('.participant-item');
@@ -378,8 +378,8 @@
 
                 // Create and add badge
                 const badge = document.createElement('div');
-                badge.className =
-                    'selected-participant-badge bg-light border rounded-pill me-2 mb-2';
+                badge.className = 'selected-participant-badge bg-light border rounded-pill me-2 mb-2';
+                badge.id = `badge-${userId}`;
                 badge.innerHTML = `
                     <span>${userName}</span>
                     <button type="button" class="btn-close btn-sm ms-2 remove-participant-btn" aria-label="Close" data-user-id="${userId}"></button>
@@ -402,13 +402,22 @@
                 const userId = removeButton.dataset.userId;
 
                 // Remove the badge
-                removeButton.closest('.selected-participant-badge').remove();
+                const badge = document.getElementById(`badge-${userId}`);
+                if (badge) {
+                    badge.remove();
+                }
 
                 // Remove the hidden input
-                document.getElementById(`user-input-${userId}`).remove();
+                const input = document.getElementById(`user-input-${userId}`);
+                if (input) {
+                    input.remove();
+                }
 
                 // Show the item in the list again
-                document.querySelector(`.participant-item[data-user-id="${userId}"]`).classList.remove('hidden');
+                const participantItem = document.querySelector(`.participant-item[data-user-id="${userId}"]`);
+                if (participantItem) {
+                    participantItem.classList.remove('hidden');
+                }
 
                 // Show "No participants" message if container is empty
                 if (selectedParticipantsContainer.children.length === 0) {
@@ -435,9 +444,7 @@
 
                 const lastName = lastNameInput.value.trim();
                 const userName = `${firstName} ${lastName}`.trim();
-                // Use contactNo for unique ID if email is not provided, otherwise use email
-                const uniqueId = email ? email.replace(/[^a-zA-Z0-9]/g, '') : contactNo.replace(/[^a-zA-Z0-9]/g,
-                    '');
+                const uniqueId = email ? email.replace(/[^a-zA-Z0-9]/g, '') : contactNo.replace(/[^a-zA-Z0-9]/g, '');
                 const newParticipantId = `new_${uniqueId}`;
 
                 // Check if already added
@@ -453,8 +460,7 @@
 
                 // Create and add badge
                 const badge = document.createElement('div');
-                badge.className =
-                    'selected-participant-badge bg-light border rounded-pill me-2 mb-2';
+                badge.className = 'selected-participant-badge bg-light border rounded-pill me-2 mb-2';
                 badge.innerHTML = `
                     <span>${userName} (New)</span>
                     <button type="button" class="btn-close btn-sm ms-2 remove-participant-btn" aria-label="Close" data-user-id="${newParticipantId}"></button>
@@ -481,19 +487,22 @@
             }
         });
 
-        const participantsCard = document.getElementById('participants-card');
-        const addOthersPanel = document.getElementById('add-others-panel');
+        if (toggleAddOthersLink) {
+            const participantsCard = document.getElementById('participants-card');
+            const addOthersPanel = document.getElementById('add-others-panel');
 
-        toggleAddOthersLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            participantsCard.style.display = 'none';
-            addOthersPanel.style.display = 'block';
-        });
+            toggleAddOthersLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                participantsCard.style.display = 'none';
+                addOthersPanel.style.display = 'block';
+            });
 
-        backToSearchLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            participantsCard.style.display = 'block';
-            addOthersPanel.style.display = 'none';
-        });
+            backToSearchLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                participantsCard.style.display = 'block';
+                addOthersPanel.style.display = 'none';
+            });
+        }
     </script>
 @endpush
+
