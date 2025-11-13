@@ -29,6 +29,7 @@ class User extends Authenticatable
         'address',
         'role',
         'category',
+        'department',
         'project_id',
         'accountName',
         'accountNumber',
@@ -43,6 +44,7 @@ class User extends Authenticatable
         'lastOnline',
         'project_id',
         'manager_id',
+        'vertical_head_id',
         'site_engineer_id',
         'image'
     ];
@@ -70,6 +72,19 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'site_engineer_id');
     }
+
+    // Relationship: User belongs to a Vertical Head
+    public function verticalHead()
+    {
+        return $this->belongsTo(User::class, 'vertical_head_id');
+    }
+
+    // Relationship: Vertical Head has many users
+    public function verticalHeadUsers()
+    {
+        return $this->hasMany(User::class, 'vertical_head_id');
+    }
+
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_user')->withPivot('role')->withTimestamps();

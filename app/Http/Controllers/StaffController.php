@@ -60,7 +60,7 @@ class StaffController extends Controller
             Excel::import($import, $file);
             
             $summary = $import->getSummary();
-            Log::info('' . $summary);
+            Log::info('Import summary', $summary);
 
             return redirect()->back()
                 ->with('success', $summary['message'])

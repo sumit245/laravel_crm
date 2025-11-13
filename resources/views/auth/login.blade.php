@@ -22,7 +22,7 @@
             <div class="content-wrapper d-flex align-items-center auth px-0">
                 <div class="row w-100 mx-0">
                     <div class="col-lg-4 mx-auto">
-                        <div class="auth-form-light px-sm-5 px-4 py-5 text-left">
+                        <div class="auth-form-light px-sm-5 px-4 py-5   text-left">
                             <div class="brand-logo">
                                 <img src="https://www.sugslloyds.com/sugs-assets/logo.png" alt="logo">
                             </div>
