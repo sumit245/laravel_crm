@@ -24,9 +24,17 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        // If user is NOT an admin (role 0) and NOT a project manager (role 2), check project_id
+        // Deny access to vendors (role 3)
+        if ($user->role == 3) {
+            Auth::logout();
+            return redirect()->route('login')->withErrors([
+                'error' => 'Vendor login is not allowed in this portal.',
+            ]);
+        }
+
+        // For non-admin and non-project manager users, check project_id
         if (!in_array($user->role, [0, 2]) && is_null($user->project_id)) {
-            Auth::logout(); // Log out the user
+            Auth::logout();
             return redirect()->route('login')->withErrors([
                 'error' => 'Access denied! Your project is not assigned yet.',
             ]);
@@ -38,7 +46,12 @@ class LoginController extends Controller
         // Store project_id in session
         if ($user->project_id) {
             session(['project_id' => $user->project_id]);
-            Session::save(); // Ensure session is saved immediately
+            Session::save();
+        }
+
+        // Redirect other users (role 1, 4, 5) to review meetings only
+        if (in_array($user->role, [1, 4, 5])) {
+            return redirect()->route('meets.index');
         }
 
         return redirect()->intended($this->redirectTo);

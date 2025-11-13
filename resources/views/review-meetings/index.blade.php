@@ -35,7 +35,7 @@
                 @endif
             </div>
             <div class="card-body p-0">
-                <div class="table-responsive">
+                <div class="table-responsive" style="overflow: visible;">
                     <table class="table table-hover mb-0">
                         <thead class="table-light">
                             <tr>
@@ -78,7 +78,6 @@
                                     </td>
 
                                     <td><i class="bi bi-people"></i>
-                                        {{-- FIXME: I want to show number of attendees here --}}
                                         {{ $meeting->attendees_count }}
                                     </td>
                                     <td class="text-end pe-3">
@@ -87,7 +86,7 @@
                                                 data-bs-toggle="dropdown" aria-expanded="false">
                                                 <i class="bi bi-three-dots-vertical"></i>
                                             </button>
-                                            <ul class="dropdown-menu dropdown-menu-end">
+                                            <ul class="dropdown-menu dropdown-menu-end shadow-sm">
                                                 <li><a class="dropdown-item" href="{{ $meeting['meet_link'] ?? '#' }}"
                                                         target="_blank"><i class="bi bi-box-arrow-in-right me-2"></i>Join
                                                         Meeting</a></li>
@@ -149,7 +148,8 @@
                         <div class="modal-body">
                             <div class="mb-3">
                                 <label for="reschedule_date" class="form-label">New Date</label>
-                                <input type="date" class="form-control" id="reschedule_date" name="meet_date" required>
+                                <input type="date" class="form-control" id="reschedule_date" name="meet_date"
+                                    required>
                             </div>
                             <div class="mb-3">
                                 <label for="reschedule_time" class="form-label">New Time</label>
@@ -196,6 +196,20 @@
             word-wrap: break-word;
             overflow: hidden;
             text-overflow: ellipsis
+        }
+
+        .table-responsive {
+            overflow-x: auto;
+            overflow-y: visible !important;
+        }
+
+        .card-body {
+            overflow: visible !important;
+        }
+
+        .actions-dropdown .dropdown-menu {
+            position: absolute !important;
+            z-index: 1050;
         }
     </style>
 @endpush

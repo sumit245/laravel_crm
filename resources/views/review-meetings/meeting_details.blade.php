@@ -93,11 +93,11 @@
                         <h6 class="text-muted">Agenda</h6>
                         <p>{{ $meet->agenda ?? 'No agenda provided.' }}</p>
                     </div>
-                    <div class="mb-3">
+                    {{-- Description field commented out - not provided during meeting creation --}}
+                    {{-- <div class="mb-3">
                         <h6 class="text-muted">Description</h6>
-                        {{-- Assuming description is part of notes or another field. Let's use agenda for now if no description field exists. --}}
                         <p>{{ $meet->description ?? 'No description provided.' }}</p>
-                    </div>
+                    </div> --}}
                     <div>
                         <h6 class="text-muted">Status</h6>
                         <p>

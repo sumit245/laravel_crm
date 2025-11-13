@@ -24,7 +24,7 @@ Route::get('terms-and-conditions', fn() => view('terms'));
 Route::get('/backup', fn() => view('data_backup.backup'))->name('backup.index');
 
 // Authenticated Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
