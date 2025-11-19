@@ -23,6 +23,9 @@ Route::get('privacy-policy', fn() => view('privacy'));
 Route::get('terms-and-conditions', fn() => view('terms'));
 Route::get('/backup', fn() => view('data_backup.backup'))->name('backup.index');
 Route::get('/certificate', fn() => view('certificate_1'))->name('certificate.view');
+Route::get('/certificate-2', fn() => view('certificate_2'))->name('certificate2.view');
+Route::get('/certificate-3', fn() => view('certificate_3'))->name('certificate3.view');
+Route::get('/certificate-4', fn() => view('certificate_4'))->name('certificate4.view');
 
 // Authenticated Routes
 Route::middleware(['auth', 'restrict.meetings'])->group(function () {
