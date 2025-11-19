@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Enums\UserRole;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -122,4 +122,35 @@ class User extends Authenticatable
         return $this->hasMany(DiscussionPoints::class, 'assignee_id');
     }
 
+    // Task relationships for performance tracking
+    public function managerTasks()
+    {
+        return $this->hasMany(Task::class, 'manager_id');
+    }
+
+    public function engineerTasks()
+    {
+        return $this->hasMany(Task::class, 'engineer_id');
+    }
+
+    public function vendorTasks()
+    {
+        return $this->hasMany(Task::class, 'vendor_id');
+    }
+
+    // Streetlight task relationships
+    public function streetlightTasks()
+    {
+        return $this->hasMany(\App\Models\StreetlightTask::class, 'manager_id');
+    }
+
+    public function streetlightEngineerTasks()
+    {
+        return $this->hasMany(\App\Models\StreetlightTask::class, 'engineer_id');
+    }
+
+    public function streetlightVendorTasks()
+    {
+        return $this->hasMany(\App\Models\StreetlightTask::class, 'vendor_id');
+    }
 }

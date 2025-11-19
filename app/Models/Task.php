@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -24,6 +25,12 @@ class Task extends Model
         'materials_consumed',
         'description',
         'approved_by',
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'materials_consumed' => 'array',
     ];
 
     public function project()

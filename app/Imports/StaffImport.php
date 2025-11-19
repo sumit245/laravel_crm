@@ -12,8 +12,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
-class StaffImport implements ToCollection, WithHeadingRow
+class StaffImport implements ToCollection, WithHeadingRow, WithCalculatedFormulas
 {
     public int $created = 0;
     public int $updated = 0;
@@ -27,7 +28,7 @@ class StaffImport implements ToCollection, WithHeadingRow
             try {
                 // Convert row to array if it's a Collection
                 $rowArray = $row instanceof \Illuminate\Support\Collection ? $row->toArray() : (array) $row;
-                
+
                 // Debug: Log first row to see actual keys (only once)
                 if ($index === 0) {
                     Log::info('First row keys', ['keys' => array_keys($rowArray)]);
@@ -155,7 +156,7 @@ class StaffImport implements ToCollection, WithHeadingRow
                     if (!empty($projectId) && is_numeric($projectId)) {
                         // Remove existing project assignments for this user
                         DB::table('project_user')->where('user_id', $user->id)->delete();
-                        
+
                         // Insert new project assignment
                         DB::table('project_user')->insert([
                             'user_id' => $user->id,
@@ -208,28 +209,28 @@ class StaffImport implements ToCollection, WithHeadingRow
             // Admin roles
             'admin' => 0,
             'administrator' => 0,
-            
+
             // Engineer roles
             'site engineer' => 1,
             'junior engineer' => 1,
             'engineer' => 1,
             'senior engineer' => 1,
-            
+
             // Manager roles
             'project manager' => 2,
             'assistant vice president' => 2,
             'avp' => 2,
             'vice president' => 2,
             'vp' => 2,
-            
+
             // Vendor
             'vendor' => 3,
-            
+
             // Store roles
             'store incharge' => 4,
             'store manager' => 4,
             'store incharge' => 4,
-            
+
             // Executive/Coordinator roles (default)
             'executive' => 5,
             'senior executive' => 5,
@@ -251,7 +252,7 @@ class StaffImport implements ToCollection, WithHeadingRow
 
         // Remove common prefixes
         $cleanName = trim(preg_replace('/^(Mr\.?|Mrs\.?|Miss|Ms\.?|Dr\.?|Prof\.?)\s*/i', '', $name));
-        
+
         if (empty($cleanName)) {
             return null;
         }
@@ -268,9 +269,9 @@ class StaffImport implements ToCollection, WithHeadingRow
         // Try exact match first
         $query = User::where('firstName', 'like', $firstName . '%');
         if ($lastName) {
-            $query->where(function($q) use ($lastName) {
+            $query->where(function ($q) use ($lastName) {
                 $q->where('lastName', 'like', $lastName . '%')
-                  ->orWhere('lastName', 'like', '%' . $lastName . '%');
+                    ->orWhere('lastName', 'like', '%' . $lastName . '%');
             });
         }
 

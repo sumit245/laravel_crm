@@ -2,25 +2,18 @@
 
 namespace App\Http\Controllers;
 
-use Exception;
+use App\Contracts\Services\Inventory\InventoryServiceInterface;
 use App\Imports\InventoryImport;
 use App\Imports\InventroyStreetLight;
-use App\Models\Inventory;
-use App\Models\InventoryDispatch;
-use App\Models\InventroyStreetLightModel;
-use App\Models\Pole;
-use App\Models\Project;
-use App\Models\Stores;
-use App\Models\User;
-use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
-
 class InventoryController extends Controller
 {
+    public function __construct(
+        protected InventoryServiceInterface $inventoryService
+    ) {}
     /**
      * Display a listing of the resource.
      */
@@ -91,83 +84,24 @@ class InventoryController extends Controller
      */
     public function store(Request $request)
     {
-        $projectType = $request->project_type;
-
-
-        if ($projectType == 1) {
-            // Validation for Street Light inventory (project_type == 1)
-            $validated = $request->validate([
-                'dropdown'      => 'required|string|max:255', // item name
-                'code'          => 'required|string|max:255', // item code
-                'manufacturer'  => 'required|string|max:255',
-                'model'         => 'required|string|max:255',
-                'serialnumber'  => 'required|string|max:255',
-                'make'          => 'required|string|max:255',
-                'rate'          => 'required|numeric',
-                'number'        => 'required|numeric', // quantity
-                'totalvalue'    => 'required|numeric',
-                'hsncode'       => 'required|string|max:255',
-                'description'   => 'nullable|string',
-                'unit'          => 'required|string|max:255',
-                'receiveddate'  => 'required|date',
-            ]);
-
-            try {
-                InventroyStreetLightModel::create([
-                    'project_id'    => $request->input('project_id'),
-                    'store_id'       => $request->input('store_id'),
-                    'item'      => $validated['dropdown'],
-                    'item_code'      => $validated['code'],
-                    'manufacturer'   => $validated['manufacturer'],
-                    'model'          => $validated['model'],
-                    'serial_number'  => $validated['serialnumber'],
-                    'make'           => $validated['make'],
-                    'rate'           => $validated['rate'],
-                    'quantity'       => $validated['number'],
-                    'total_value'    => $validated['totalvalue'],
-                    'hsn'       => $validated['hsncode'],
-                    'description'    => $validated['description'],
-                    'unit'           => $validated['unit'],
-                    'received_date'  => $validated['receiveddate'],
-                ]);
-
-                return redirect()->route('inventory.index', [
-                    'project_id' => $request->input('project_id'),
-                    'store_id' => $request->input('store_id'),
-                ])
-                    ->with('success', 'Inventory (Street Light) added successfully.');
-            } catch (\Exception $e) {
-                return redirect()->back()
-                    ->withErrors(['error' => $e->getMessage()])
-                    ->withInput();
-            }
-        } else {
-            $validated = $request->validate([
-                'productName'     => 'required|string|max:255',
-                'brand'           => 'nullable|string',
-                'description'     => 'nullable|string',
-                'initialQuantity' => 'required|string',
-                'quantityStock'   => 'nullable|string',
-                'unit'            => 'required|string|max:25',
-                'receivedDate'    => 'nullable|date',
-            ]);
-
-
-            try {
-
-                $inventory = Inventory::create($validated);
-
-                return redirect()->route('inventory.index')
-
-                    ->with('success', 'Inventory created successfully.');
-            } catch (\Exception $e) {
-                // Catch database or other errors
-                $errorMessage = $e->getMessage();
-
-                return redirect()->back()
-                    ->withErrors(['error' => $errorMessage])
-                    ->withInput();
-            }
+        try {
+            $projectType = (int) $request->project_type;
+            
+            // Use service to add inventory item
+            $inventory = $this->inventoryService->addInventoryItem(
+                $request->all(),
+                $projectType
+            );
+            
+            return redirect()->route('inventory.index', [
+                'project_id' => $request->input('project_id'),
+                'store_id' => $request->input('store_id'),
+            ])->with('success', 'Inventory added successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error creating inventory: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['error' => $e->getMessage()])
+                ->withInput();
         }
     }
 

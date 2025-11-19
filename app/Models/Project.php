@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\ProjectType;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
@@ -22,6 +23,12 @@ class Project extends Model
         'end_date',
         'description',
         'total'
+    ];
+
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+        'agreement_date' => 'date',
     ];
 
     public function sites()

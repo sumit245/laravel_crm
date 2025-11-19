@@ -2,28 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\DashboardServiceInterface;
+use App\Contracts\AnalyticsServiceInterface;
+use App\Contracts\PerformanceServiceInterface;
 use App\Helpers\ExcelHelper;
-use App\Models\Pole;
-use App\Models\Project; // Model for vendors
-use App\Models\Site;
-use App\Models\Streetlight;
-use App\Models\StreetlightTask;
-use App\Models\Task;
-use App\Models\User;
+use App\Models\Project;
 use Illuminate\Http\Request;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
     /**
      * Create a new controller instance.
-     *
-     * @return void
      */
-    public function __construct()
-    {
+    public function __construct(
+        protected DashboardServiceInterface $dashboardService,
+        protected AnalyticsServiceInterface $analyticsService,
+        protected PerformanceServiceInterface $performanceService
+    ) {
         $this->middleware('auth');
     }
 
@@ -33,203 +28,84 @@ class HomeController extends Controller
      * @return \Illuminate\Contracts\Support\Renderable
      */
 
+    /**
+     * Show the application dashboard with cached data.
+     */
     public function index(Request $request)
     {
         $user = auth()->user();
-        // Admin, Project Manager, Coordinator,
         $selectedProjectId = $this->getSelectedProject($request, $user);
-        // 10
         $project = Project::findOrFail($selectedProjectId);
-        // {project_name:BREDA, project_type:1 ... with all relations declared in Project Model}
-
-        $dateRange = $this->getDateRange($request->query('date_filter', 'today'));
-        //[12-05-2025, 30-05-2025] 
-
-        // Determine task and site models based on project type
         $isStreetLightProject = $project->project_type == 1;
-        // true
 
-        $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
-        // StreetlightTask model with all its relations
+        // Build filters from request
+        $filters = [
+            'project_id' => $selectedProjectId,
+            'date_filter' => $request->query('date_filter', 'today'),
+            'start_date' => $request->query('start_date'),
+            'end_date' => $request->query('end_date'),
+        ];
 
-        $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
-        // Streetlight model with all its relations
-
-        // Get site statistics
-        $siteStats = $this->getSiteStatistics($siteModel, $taskModel, $selectedProjectId, $dateRange, $isStreetLightProject);
-        // {
-        //     "total_sites" :225,
-        //     "total_poles" :2250,
-        //     "surveyed_poles":225,
-        //     "installed_poles":0
-        // }
-
-        // Get pole statistics for streetlight projects
-        $poleStats = $isStreetLightProject ?
-            $this->getPoleStatistics($selectedProjectId) :
-            ['totalSurveyedPoles' => null, 'totalInstalledPoles' => null];
-
-        // Calculate role performances
-        $rolePerformances = $this->calculateRolePerformances(
-            $user,
-            $selectedProjectId,
-            $taskModel,
-            $dateRange,
-            $isStreetLightProject
+        // Get dashboard data from service (with caching)
+        $dashboardData = $this->dashboardService->getDashboardData(
+            $user->id,
+            $this->getRoleName($user->role),
+            $filters
         );
-        // TODO:modify this callback
 
-        // Get user counts
-        $userCounts = $this->getUserCounts($user, $selectedProjectId);
+        // Get performance data for role-based hierarchies
+        $rolePerformances = $this->performanceService->getHierarchicalPerformance(
+            $user->id,
+            $user->role,
+            $selectedProjectId,
+            $filters
+        );
 
+        // Transform data for legacy view format
+        $statistics = $this->prepareStatistics($project, $selectedProjectId, $isStreetLightProject);
+        
+        // Get available projects for project switcher
+        $projects = $this->getAvailableProjects($user);
 
-        // Prepare statistics array
-        $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
-
-        // TODO: make it more efficient
-        return view('dashboard', array_merge(
-            compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
-            $siteStats,
-            $poleStats,
-            ['projects' => $this->getAvailableProjects($user)]
+        return view('dashboard', compact(
+            'statistics',
+            'rolePerformances', 
+            'isStreetLightProject',
+            'project',
+            'projects'
         ));
     }
 
-    // Start working from here
-    private function calculateRolePerformances($user, $projectId, $taskModel, $dateRange, $isStreetLightProject)
+    /**
+     * Map role ID to role name for service.
+     */
+    private function getRoleName($role): string
     {
-        $roles = ['Project Manager' => 2, 'Site Engineer' => 1, 'Vendor' => 3];
-        $rolePerformances = [];
-
-        foreach ($roles as $roleName => $roleId) {
-            $usersQuery = User::where('role', $roleId);
-
-            // Apply role-based filters
-            if ($user->role == 2) { // Project Manager
-                if ($roleId == 2) {
-                    // Show all project managers for the selected project
-                    $usersQuery->where('project_id', $projectId);
-                } else {
-                    // Show only related engineers and vendors for the selected project
-                    $usersQuery->where('manager_id', $user->id)
-                        ->where('project_id', $projectId);
-                }
-            } else {
-                // Non-admin users see only their project
-                $usersQuery->where('project_id', $projectId);
-            }
-
-            $users = $usersQuery->get()->map(function ($user) use ($taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject) {
-                return $this->calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject);
-            })->filter();
-
-            // Custom sorting logic based on the conditions provided
-            if ($isStreetLightProject) {
-                $users = $users->sortByDesc('surveyedPoles');
-            } else {
-                // Default sorting for non-streetlight projects
-                $users = $users->sortByDesc('completedTasks');
-            }
-
-            $users = $users->values(); // Re-index the collection after sorting
-
-            $rolePerformances[$roleName] = $users;
-            Log::info($users);
-        }
-
-        return $rolePerformances;
+        // Handle both integer and enum values
+        $roleValue = is_int($role) ? $role : $role->value;
+        
+        return match($roleValue) {
+            0 => 'Administrator',
+            1 => 'Site Engineer',
+            2 => 'Project Manager',
+            3 => 'Vendor',
+            default => 'Unknown',
+        };
     }
 
-    private function calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject)
+    /**
+     * Get selected project ID based on request or user context.
+     */
+    private function getSelectedProject(Request $request, $user): int
     {
-        if ($isStreetLightProject) {
-            // Get total poles for all panchayats assigned to this user in date range
-            $totalPoles = Streetlight::whereHas('streetlightTasks', function ($q) use ($user, $dateRange) {
-                $q->where($this->getRoleColumn($user->role), $user->id)
-                    ->whereBetween('created_at', $dateRange);
-            })->sum('total_poles');
-
-            // Get surveyed and installed poles by this user in date range
-            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, ) {
-                $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id);
-            })->where('isSurveyDone', true)
-                ->whereBetween('updated_at', $dateRange)->count();
-
-            $installedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, $dateRange) {
-                $q->where('project_id', $projectId)
-                    ->where($this->getRoleColumn($user->role), $user->id);
-            })->where('isInstallationDone', true)
-                ->whereBetween('updated_at', $dateRange)->count();
-
-
-            $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
-            $performanceSurvey = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
-            $performanceinstallation = $totalPoles > 0 ? ($installedPoles / $totalPoles) * 100 : 0;
-
-            return (object) [
-                'id' => $user->id,
-                'name' => $user->firstName . " " . $user->lastName,
-                'vendor_name' => $user->name ?? "",
-                'image' => $user->image,
-                'role' => $roleName,
-                'totalTasks' => $totalPoles,
-                'surveyedPoles' => $surveyedPoles,
-                'installedPoles' => $installedPoles,
-                'performance' => $performance,
-                'performanceSurvey' => $performanceSurvey,
-                'performanceInstallation' => $performanceinstallation,
-                // 'medal' => $surveyedPoles > 0 ? null : 'none'
-            ];
-        } else {
-            $tasksQuery = $taskModel::where('project_id', $projectId)
-                ->where($this->getRoleColumn($user->role), $user->id)
-                ->whereBetween('updated_at', $dateRange);
-
-            $totalTasks = $tasksQuery->count();
-            if ($totalTasks == 0)
-                return null;
-
-            $completedTasks = $tasksQuery->where('status', 'Completed')->count();
-            $performance = ($completedTasks / $totalTasks) * 100;
-        }
-
-        return (object) [
-            'id' => $user->id,
-            'name' => $user->firstName . " " . $user->lastName,
-            'vendor_name' => $user->name ?? "",
-            'image' => $user->image,
-            'role' => $roleName,
-            'totalTasks' => $totalTasks,
-            'completedTasks' => $completedTasks,
-            'performance' => $performance,
-            'medal' => $completedTasks > 0 ? null : 'none'
-        ];
-    }
-
-    private function getRoleColumn($role)
-    {
-        return [
-            1 => 'engineer_id',
-            2 => 'manager_id',
-            3 => 'vendor_id'
-        ][$role];
-    }
-    // Till Here
-
-    private function getSelectedProject(Request $request, User $user)
-    {
-        // First try to get from request
         if ($request->has('project_id')) {
-            return $request->project_id;
+            return (int) $request->project_id;
         }
 
-        // Then try user's assigned project
         if ($user->project_id) {
-            return $user->project_id;
+            return (int) $user->project_id;
         }
 
-        // Finally get first project user has access to
         return Project::when($user->role !== 0, function ($query) use ($user) {
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
@@ -238,161 +114,91 @@ class HomeController extends Controller
     }
 
 
-
-    private function getSiteStatistics($siteModel, $taskModel, $projectId, $dateRange, $isStreetLightProject)
-    {
-        if ($isStreetLightProject) {
-            $streetlightStats = Streetlight::where('project_id', $projectId)
-                ->selectRaw('COUNT(DISTINCT panchayat) as total_sites, SUM(total_poles) as total_poles')
-                ->first();
-
-            return [
-                'totalSites' => $streetlightStats->total_sites,
-                'totalPoles' => $streetlightStats->total_poles,
-                'surveyedPoles' => $this->getPoleStatistics($projectId)['totalSurveyedPoles'],
-                'installedPoles' => $this->getPoleStatistics($projectId)['totalInstalledPoles']
-            ];
-        }
-
-        // For rooftop projects - lifetime statistics
-        return [
-            'totalSites' => $siteModel::where('project_id', $projectId)->count(),
-            'completedTasks' => $taskModel::where('project_id', $projectId)
-                ->where('status', 'Completed')->count(),
-            'pendingTasks' => $taskModel::where('project_id', $projectId)
-                ->where('status', 'Pending')->count(),
-            'inProgressTasks' => $taskModel::where('project_id', $projectId)
-                ->where('status', 'In Progress')->count()
-        ];
-    }
-
-    private function getUserCounts(User $user, $projectId)
-    {
-        $query = User::where('project_id', $projectId);
-
-        // If user is project manager, only show their assigned users
-        if ($user->role == 2) {
-            $query->where(function ($q) use ($user) {
-                $q->where('manager_id', $user->id)
-                    ->orWhere('role', 2); // Include all project managers
-            });
-        }
-
-        return [
-            'projectManagers' => (clone $query)->where('role', 2)->count(),
-            'siteEngineers' => (clone $query)->where('role', 1)->count(),
-            'vendors' => (clone $query)->where('role', 3)->count()
-        ];
-    }
-
-    private function getPoleStatistics($projectId)
-    {
-        $totalSurvey = Pole::whereHas('task.site', function ($q) use ($projectId) {
-            $q->where('project_id', $projectId);
-        })->where('isSurveyDone', true)->count();
-        $totalInstalled = Pole::whereHas('task.site', function ($q) use ($projectId) {
-            $q->where('project_id', $projectId);
-        })->where('isInstallationDone', 1)->count();
-        return [
-            'totalSurveyedPoles' => $totalSurvey,
-            'totalInstalledPoles' => $totalInstalled
-        ];
-    }
-
-    private function getUserPoleStatistics($user, $projectId, $dateRange)
-    {
-        $poles = Pole::whereHas('task.site', function ($q) use ($projectId, $user) {
-            $q->where('project_id', $projectId)
-                ->where($this->getRoleColumn($user->role), $user->id);
-        })->whereBetween('created_at', $dateRange);
-
-        return [
-            'surveyedPoles' => (clone $poles)->where('isSurveyDone', true)->count(),
-            'installedPoles' => (clone $poles)->where('isInstallationDone', true)->count()
-        ];
-    }
-
-    private function prepareStatistics($siteStats, $userCounts, $isStreetLightProject = false)
-    {
-        if ($isStreetLightProject) {
-            return [
-                [
-                    'title' => 'Total Panchayats',
-                    'value' => $siteStats['totalSites'],
-                    'color' => '#cc943e'
-                ],
-                [
-                    'title' => 'Total Poles',
-                    'value' => $siteStats['totalPoles'],
-                    'color' => '#fcbda1'
-                ],
-                [
-                    'title' => 'Surveyed Poles',
-                    'value' => $siteStats['surveyedPoles'],
-                    'color' => '#51b1e1'
-                ],
-                [
-                    'title' => 'Installed Poles',
-                    'value' => $siteStats['installedPoles'],
-                    'color' => '#4da761'
-                ]
-            ];
-        }
-
-        return [
-            [
-                'title' => 'Total Sites',
-                'value' => $siteStats['totalSites'],
-                'color' => '#cc943e'
-            ],
-            [
-                'title' => 'Completed Sites',
-                'value' => $siteStats['completedTasks'],
-                'color' => '#4da761'
-            ],
-            [
-                'title' => 'Pending Sites',
-                'value' => $siteStats['pendingTasks'],
-                'color' => '#51b1e1'
-            ],
-            [
-                'title' => 'Rejected',
-                'value' => $siteStats['inProgressTasks'],
-                'color' => '#fcbda1'
-            ]
-        ];
-    }
-
-
-    private function getAvailableProjects(User $user)
+    /**
+     * Get projects accessible by the user.
+     */
+    private function getAvailableProjects($user)
     {
         return Project::when($user->role !== 0, function ($query) use ($user) {
-            // For non-admin users, get projects through project_user pivot table
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
         })->get();
     }
 
-    // Helper Function for Date Range
-    private function getDateRange($filter)
+    /**
+     * Prepare statistics for dashboard display.
+     */
+    private function prepareStatistics($project, $projectId, $isStreetLightProject)
     {
-        switch ($filter) {
-            case 'today':
-                return [now()->subDay(), now()]; // Last 24 hours
-            case 'this_week':
-                return [now()->startOfWeek(), now()->endOfWeek()];
-            case 'this_month':
-                return [now()->startOfMonth(), now()->endOfMonth()];
-            case 'all_time':
-                return [Carbon::createFromTimestamp(0), now()];
-            case 'custom':
-                $start = request()->start_date;
-                $end = request()->end_date;
-                return [Carbon::parse($start)->startOfDay(), Carbon::parse($end)->endOfDay()];
-            default:
-                return [now()->subDay(), now()]; // Last 24 hours
+        if ($isStreetLightProject) {
+            $streetlightStats = \App\Models\Streetlight::where('project_id', $projectId)
+                ->selectRaw('COUNT(DISTINCT panchayat) as total_sites, SUM(total_poles) as total_poles')
+                ->first();
+
+            $totalSurvey = \App\Models\Pole::whereHas('task.site', function ($q) use ($projectId) {
+                $q->where('project_id', $projectId);
+            })->where('isSurveyDone', true)->count();
+            
+            $totalInstalled = \App\Models\Pole::whereHas('task.site', function ($q) use ($projectId) {
+                $q->where('project_id', $projectId);
+            })->where('isInstallationDone', 1)->count();
+
+            return [
+                [
+                    'title' => 'Total Panchayats',
+                    'value' => $streetlightStats->total_sites ?? 0,
+                    'color' => '#cc943e'
+                ],
+                [
+                    'title' => 'Total Poles',
+                    'value' => $streetlightStats->total_poles ?? 0,
+                    'color' => '#fcbda1'
+                ],
+                [
+                    'title' => 'Surveyed Poles',
+                    'value' => $totalSurvey,
+                    'color' => '#51b1e1'
+                ],
+                [
+                    'title' => 'Installed Poles',
+                    'value' => $totalInstalled,
+                    'color' => '#4da761'
+                ]
+            ];
         }
+
+        // Rooftop project statistics
+        $totalSites = \App\Models\Site::where('project_id', $projectId)->count();
+        $completedTasks = \App\Models\Task::where('project_id', $projectId)
+            ->where('status', 'Completed')->count();
+        $pendingTasks = \App\Models\Task::where('project_id', $projectId)
+            ->where('status', 'Pending')->count();
+        $inProgressTasks = \App\Models\Task::where('project_id', $projectId)
+            ->where('status', 'In Progress')->count();
+
+        return [
+            [
+                'title' => 'Total Sites',
+                'value' => $totalSites,
+                'color' => '#cc943e'
+            ],
+            [
+                'title' => 'Completed Sites',
+                'value' => $completedTasks,
+                'color' => '#4da761'
+            ],
+            [
+                'title' => 'Pending Sites',
+                'value' => $pendingTasks,
+                'color' => '#51b1e1'
+            ],
+            [
+                'title' => 'Rejected',
+                'value' => $inProgressTasks,
+                'color' => '#fcbda1'
+            ]
+        ];
     }
 
 

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
+use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -22,13 +22,14 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 Route::get('privacy-policy', fn() => view('privacy'));
 Route::get('terms-and-conditions', fn() => view('terms'));
 Route::get('/backup', fn() => view('data_backup.backup'))->name('backup.index');
+Route::get('/certificate', fn() => view('certificate_1'))->name('certificate.view');
 
 // Authenticated Routes
 Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
-    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
+    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name(name: 'export.excel');
 
     // JICR
     Route::prefix('jicr')
@@ -54,6 +55,18 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
     Route::post('/import-staff', action: [StaffController::class, 'import'])->name('import.staff');
+
+    // Performance
+    Route::prefix('performance')
+        ->name('performance.')
+        ->group(function () {
+            Route::get('/', [PerformanceController::class, 'index'])->name('index');
+            Route::get('/user/{userId}', [PerformanceController::class, 'show'])->name('show');
+            Route::get('/subordinates/{managerId}/{type}', [PerformanceController::class, 'subordinates'])->name('subordinates');
+            Route::get('/leaderboard/{role}', [PerformanceController::class, 'leaderboard'])->name('leaderboard');
+            Route::get('/trends/{userId}', [PerformanceController::class, 'trends'])->name('trends');
+            Route::get('/debug', [PerformanceDebugController::class, 'debug'])->name('debug');
+        });
 
     // Meets
     Route::resource('meets', MeetController::class);

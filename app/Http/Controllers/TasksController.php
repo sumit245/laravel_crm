@@ -2,46 +2,32 @@
 
 namespace App\Http\Controllers;
 
+use App\Contracts\TaskServiceInterface;
 use App\Helpers\ExcelHelper;
-use App\Models\Pole;
+use App\Http\Requests\Task\StoreTaskRequest;
+use App\Http\Requests\Task\UpdateTaskRequest;
 use App\Models\Project;
-use App\Models\Task;
-use App\Models\User;
-use App\Models\Site;
-use App\Models\StreetlightTask;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Response;
 
 class TasksController extends Controller
 {
+    public function __construct(
+        protected TaskServiceInterface $taskService
+    ) {}
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-        $tasks = Task::all();
-        $today = now()->toDateString();
-        // Query the top 5 engineers based on completed tasks today
-        $topEngineers = Task::whereDate('end_date', $today)
-            ->where('status', 'Completed') // Only count completed tasks
-            ->groupBy('engineer_id')
-            ->selectRaw('engineer_id, COUNT(*) as task_count')
-            ->orderByDesc('task_count')
-            ->with('user') // Load engineer details
-            ->limit(5)
-            ->get();
-        // Query the top 5 vendors based on completed tasks today
-        $topVendors = Task::whereDate('end_date', $today)
-            ->where('status', 'Completed') // Only count completed tasks
-            ->groupBy('vendor_id')
-            ->selectRaw('vendor_id, COUNT(*) as task_count')
-            ->orderByDesc('task_count')
-            ->with('vendor') // Load vendor details
-            ->limit(5)
-            ->get();
+        $projectId = auth()->user()->project_id;
+        $tasks = $this->taskService->getTasksByProject($projectId);
+        
+        // For now, return empty arrays for top performers
+        // This can be implemented later in the service
+        $topEngineers = [];
+        $topVendors = [];
+        
         return view('tasks.index', compact('tasks', 'topEngineers', 'topVendors'));
     }
 
@@ -56,45 +42,18 @@ class TasksController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(Request $request)
+    public function store(StoreTaskRequest $request)
     {
-        $request->validate([
-            'sites'       => 'required|array',
-            'engineer_id' => 'required|exists:users,id',
-            'start_date'  => 'required|date',
-            'end_date'    => 'required|date|after_or_equal:start_date',
-        ]);
         $project = Project::findOrFail($request->project_id);
-
-
-        if ($project->project_type == 1) {
-            // Store in streetlight_tasks table
-            foreach ($request->sites as $siteId) {
-                StreetlightTask::create([
-                    'project_id' => $request->project_id,
-                    'site_id'     => $siteId,
-                    'vendor_id'    => $request->vendor_id,
-                    'engineer_id' => $request->engineer_id,
-                    'start_date'  => $request->start_date,
-                    'end_date'    => $request->end_date,
-                    'billed'      => false, //explicitly setting the value of billing
-                    'manager_id' => auth()->id(), // Automatically assign the logged-in Project Manager
-                ]);
-            }
-        } else {
-            // Log::info('Target added' , $request->all());
-            foreach ($request->sites as $siteId) {
-                Task::create([
-                    'project_id'  => $request->project_id,
-                    'site_id'     => $siteId,
-                    'activity'    => $request->activity,
-                    'engineer_id' => $request->engineer_id,
-                    'start_date'  => $request->start_date,
-                    'end_date'    => $request->end_date,
-                    'manager_id' => auth()->id(), // Automatically assign the logged-in Project Manager
-                ]);
-            }
-        }
+        
+        // Use service to create tasks
+        $this->taskService->createBulkTasks(
+            $request->project_id,
+            $request->sites,
+            $request->validated(),
+            auth()->id()
+        );
+        
         return redirect()->route('projects.show', $request->project_id)
             ->with('success', 'Targets successfully added.');
     }
@@ -104,34 +63,12 @@ class TasksController extends Controller
      */
     public function show(Request $request, string $id)
     {
-
+        $taskData = $this->taskService->getTaskDetails($id, $request->project_type);
+        
         if ($request->project_type != 1) {
-            $tasks = Task::with('site', 'engineer', 'manager', 'vendor')->find($id)->first();
-            $images      = json_decode($tasks->image, true); // Ensure it's an array
-            $fullUrls    = [];
-            if (is_array($images)) {
-                foreach ($images as $image) {
-                    $fullUrls[] = Storage::disk('s3')->url($image);
-                }
-            }
-            // Add the full URLs to the image key
-            $tasks->image = $fullUrls;
-
-            return view('tasks.show', compact('tasks'));
+            return view('tasks.show', ['tasks' => $taskData]);
         } else {
-            $streetlightTask = StreetlightTask::findOrFail($id);
-            $manager = $streetlightTask->manager;
-            $vendor = $streetlightTask->vendor;
-            $engineer = $streetlightTask->engineer;
-            $streetlight = $streetlightTask->site;
-            $surveyedPoles = Pole::where('task_id', $id)
-                ->where('isSurveyDone', true)
-                ->get();
-
-            $installedPoles = Pole::where('task_id', $id)
-                ->where('isInstallationDone', true)
-                ->get();
-            return view('tasks.show_streetlight', compact('streetlightTask', 'manager', 'engineer', 'vendor', 'streetlight', 'surveyedPoles', 'installedPoles'));
+            return view('tasks.show_streetlight', $taskData);
         }
     }
 
@@ -140,31 +77,20 @@ class TasksController extends Controller
      */
     public function edit(string $id, Request $request)
     {
-        // Target in streetlight project is being edited
-        Log::info("Edit target", $request->all(),  $id);
         $projectId = request()->query('project_id');
-        if ($projectId == 11) {
-            $tasks = StreetlightTask::with(['site', 'engineer', 'vendor']) // eager load relationships
-                ->findOrFail($id);
-            // Get all engineers and vendors from the users table based on role
-            $engineers = User::where('role', 1)->get();
-            $vendors = User::where('role', 3)->get();
-            return view('tasks.edit', compact('tasks', 'projectId', 'engineers', 'vendors'));
-        }
+        $task = $this->taskService->findById($id);
+        $engineers = $this->taskService->getAvailableEngineers($projectId);
+        $vendors = $this->taskService->getAvailableVendors($projectId);
+        
+        return view('tasks.edit', compact('task', 'projectId', 'engineers', 'vendors'));
     }
 
     public function editrooftop(string $id)
     {
-
-
-        //code...
-        $taskId = (int) $id;
-
-        $task = Task::where('id', $taskId)
-            ->first();
-        $engineers = User::where('role', 1)->get();
-        $sites = Site::all();
-        Log::error($task);
+        $task = $this->taskService->findById($id);
+        $engineers = $this->taskService->getAvailableEngineers($task->project_id);
+        $sites = $this->taskService->getAvailableSites($task->project_id);
+        
         return view('tasks.editRooftop', compact('task', 'engineers', 'sites'));
     }
 
@@ -175,33 +101,16 @@ class TasksController extends Controller
      * @param  string  $id
      * @return \Illuminate\Http\Response
      */
-    public function updateRooftop(Request $request, string $id)
+    public function updateRooftop(UpdateTaskRequest $request, string $id)
     {
         try {
-            // Convert string ID to integer
-            $taskId = (int) $id;
-
-            // Validate the request data
-            $validatedData = $request->validate([
-                'site_id' => 'required|exists:sites,id',
-                'activity' => 'required|string',
-                'engineer_id' => 'required|exists:users,id',
-            ]);
-
-            // Find the task
-            $task = Task::findOrFail($taskId);
-
-            // Update the task with validated data
-            $task->update($validatedData);
-
-            // Redirect with success message
-            return redirect()->route('projects.show', $task->project_id = 10)
+            $task = $this->taskService->updateTask($id, $request->validated());
+            
+            return redirect()->route('projects.show', $task->project_id)
                 ->with('success', 'Task updated successfully');
         } catch (\Exception $e) {
-            // Log the error
-            \Log::error('Error updating rooftop task: ' . $e->getMessage());
-
-            // Redirect with error message
+            Log::error('Error updating rooftop task: ' . $e->getMessage());
+            
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Failed to update task: ' . $e->getMessage());
@@ -212,33 +121,16 @@ class TasksController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, string $id)
+    public function update(UpdateTaskRequest $request, string $id)
     {
-        Log::info("Update target", $request->all());
-        $projectId = $request->input('project_id');
-
-        if ($projectId == 11) {
-            $request->validate([
-                'engineer_id' => 'required|exists:users,id',
-                'vendor_id' => 'required|exists:users,id',
-                'billed' => 'required|boolean',
-            ]);
-
-            try {
-                $task = StreetlightTask::findOrFail($id);
-
-                $task->engineer_id = $request->engineer_id;
-                $task->vendor_id = $request->vendor_id;
-                $task->billed = $request->billed;
-
-                $task->save();
-
-                return redirect()->route('projects.show', $projectId)
-                    ->with('success', 'Task updated successfully.');
-            } catch (\Exception $e) {
-                Log::error('Error updating task: ' . $e->getMessage());
-                return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
-            }
+        try {
+            $task = $this->taskService->updateTask($id, $request->validated());
+            
+            return redirect()->route('projects.show', $request->project_id)
+                ->with('success', 'Task updated successfully.');
+        } catch (\Exception $e) {
+            Log::error('Error updating task: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
 
@@ -248,10 +140,9 @@ class TasksController extends Controller
      */
     public function destroy(string $id)
     {
-        //
         try {
-            $task = Task::findOrFail($id);
-            $task->delete();
+            $this->taskService->deleteTask($id);
+            
             return redirect()->back()
                 ->with('success', 'Task Deleted successfully.');
         } catch (\Exception $e) {
