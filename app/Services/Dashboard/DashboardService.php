@@ -19,7 +19,8 @@ class DashboardService extends BaseService implements DashboardServiceInterface
 {
     public function __construct(
         protected AnalyticsServiceInterface $analytics
-    ) {}
+    ) {
+    }
 
     /**
      * Get dashboard data based on user role
@@ -27,11 +28,11 @@ class DashboardService extends BaseService implements DashboardServiceInterface
     public function getDashboardData(int $userId, string $userRole, array $filters = []): array
     {
         $cacheKey = "dashboard:{$userId}:{$userRole}:" . md5(json_encode($filters));
-        
+
         return Cache::remember($cacheKey, 900, function () use ($userId, $userRole, $filters) {
-            $role = is_numeric($userRole) ? UserRole::from((int)$userRole) : null;
-            
-            return match($userRole) {
+            $role = is_numeric($userRole) ? UserRole::from((int) $userRole) : null;
+
+            return match ($userRole) {
                 '0', 'Administrator' => $this->getAdminDashboard($filters),
                 '1', 'Site Engineer' => $this->getSiteEngineerDashboard($userId, $filters),
                 '2', 'Project Manager' => $this->getProjectManagerDashboard($userId, $filters),
@@ -84,10 +85,10 @@ class DashboardService extends BaseService implements DashboardServiceInterface
     public function getProjectManagerDashboard(int $userId, array $filters = []): array
     {
         return Cache::remember("dashboard:pm:{$userId}", 900, function () use ($userId) {
-            $projects = Project::where('project_id', $userId)->orWhereHas('users', function($q) use ($userId) {
-                $q->where('user_id', $userId);
+            $projects = Project::whereHas('users', function ($q) use ($userId) {
+                $q->where('users.id', $userId);
             })->get();
-            
+
             $projectIds = $projects->pluck('id');
 
             return [
@@ -97,7 +98,7 @@ class DashboardService extends BaseService implements DashboardServiceInterface
                 ],
                 'sites' => [
                     'total' => Site::whereIn('project_id', $projectIds)->count(),
-                    'pending' => Site::whereIn('project_id', $projectIds)->whereNull('completion_date')->count(),
+                    'pending' => Site::whereIn('project_id', $projectIds)->whereNull('commissioning_date')->count(),
                 ],
                 'tasks' => [
                     'total' => Task::whereIn('project_id', $projectIds)->count(),
@@ -132,7 +133,7 @@ class DashboardService extends BaseService implements DashboardServiceInterface
                 ],
                 'my_sites' => [
                     'total' => Site::where('site_engineer', $userId)->count(),
-                    'pending' => Site::where('site_engineer', $userId)->whereNull('completion_date')->count(),
+                    'pending' => Site::where('site_engineer', $userId)->whereNull('commissioning_date')->count(),
                 ],
                 'vendors' => [
                     'assigned' => User::where('role', '3')->where('engineer_id', $userId)->count(),
@@ -225,7 +226,7 @@ class DashboardService extends BaseService implements DashboardServiceInterface
     protected function getRecentActivities(int $limit = 10): array
     {
         $activities = collect();
-        
+
         // Recent tasks
         $recentTasks = Task::with(['engineer', 'project'])
             ->orderBy('updated_at', 'desc')
@@ -237,9 +238,9 @@ class DashboardService extends BaseService implements DashboardServiceInterface
                 'user' => $t->engineer?->name,
                 'timestamp' => $t->updated_at,
             ]);
-        
+
         $activities = $activities->merge($recentTasks);
-        
+
         return $activities->sortByDesc('timestamp')->take($limit)->values()->toArray();
     }
 
@@ -250,24 +251,26 @@ class DashboardService extends BaseService implements DashboardServiceInterface
     {
         if ($project->project_type === 'Streetlight') {
             $totalPoles = Streetlight::where('project_id', $project->id)->count();
-            if ($totalPoles === 0) return 0;
-            
+            if ($totalPoles === 0)
+                return 0;
+
             $completedTasks = StreetlightTask::where('project_id', $project->id)
                 ->where('status', 'Completed')
                 ->count();
-            
-            return (int)(($completedTasks / $totalPoles) * 100);
+
+            return (int) (($completedTasks / $totalPoles) * 100);
         }
-        
+
         // Rooftop
         $totalSites = Site::where('project_id', $project->id)->count();
-        if ($totalSites === 0) return 0;
-        
+        if ($totalSites === 0)
+            return 0;
+
         $completedSites = Site::where('project_id', $project->id)
-            ->whereNotNull('completion_date')
+            ->whereNotNull('commissioning_date')
             ->count();
-        
-        return (int)(($completedSites / $totalSites) * 100);
+
+        return (int) (($completedSites / $totalSites) * 100);
     }
 
     /**

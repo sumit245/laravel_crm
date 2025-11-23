@@ -49,8 +49,8 @@ class LoginController extends Controller
             Session::save();
         }
 
-        // Redirect other users (role 1, 4, 5) to review meetings only
-        if (in_array($user->role, [1, 4, 5])) {
+        // Redirect restricted users (Site Engineer and Store Incharge) to review meetings only
+        if (in_array($user->role, [1, 4])) {
             return redirect()->route('meets.index');
         }
 

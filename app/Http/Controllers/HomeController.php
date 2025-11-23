@@ -41,7 +41,7 @@ class HomeController extends Controller
         // Build filters from request
         $filters = [
             'project_id' => $selectedProjectId,
-            'date_filter' => $request->query('date_filter', 'today'),
+            'date_filter' => $request->query('date_filter', 'all_time'),
             'start_date' => $request->query('start_date'),
             'end_date' => $request->query('end_date'),
         ];
@@ -63,13 +63,13 @@ class HomeController extends Controller
 
         // Transform data for legacy view format
         $statistics = $this->prepareStatistics($project, $selectedProjectId, $isStreetLightProject);
-        
+
         // Get available projects for project switcher
         $projects = $this->getAvailableProjects($user);
 
         return view('dashboard', compact(
             'statistics',
-            'rolePerformances', 
+            'rolePerformances',
             'isStreetLightProject',
             'project',
             'projects'
@@ -83,8 +83,8 @@ class HomeController extends Controller
     {
         // Handle both integer and enum values
         $roleValue = is_int($role) ? $role : $role->value;
-        
-        return match($roleValue) {
+
+        return match ($roleValue) {
             0 => 'Administrator',
             1 => 'Site Engineer',
             2 => 'Project Manager',
@@ -139,7 +139,7 @@ class HomeController extends Controller
             $totalSurvey = \App\Models\Pole::whereHas('task.site', function ($q) use ($projectId) {
                 $q->where('project_id', $projectId);
             })->where('isSurveyDone', true)->count();
-            
+
             $totalInstalled = \App\Models\Pole::whereHas('task.site', function ($q) use ($projectId) {
                 $q->where('project_id', $projectId);
             })->where('isInstallationDone', 1)->count();

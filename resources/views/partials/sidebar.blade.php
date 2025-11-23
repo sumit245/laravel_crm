@@ -14,7 +14,8 @@
     $projectType = $selectedProject ? $selectedProject->project_type : null;
 
     // Check if user has restricted access (only review-meetings)
-    $isRestrictedUser = in_array(auth()->user()->role, [1, 4, 5]); // Site Engineer, Store Incharge, Coordinator
+    // Only Site Engineer (1) and Store Incharge (4) are restricted
+    $isRestrictedUser = in_array(auth()->user()->role, [1, 4]);
 @endphp
 
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
