@@ -5,6 +5,14 @@ namespace App\Http\Controllers;
 use App\Contracts\Services\Inventory\InventoryServiceInterface;
 use App\Imports\InventoryImport;
 use App\Imports\InventroyStreetLight;
+use App\Models\Inventory;
+use App\Models\InventoryDispatch;
+use App\Models\InventroyStreetLightModel;
+use App\Models\Project;
+use App\Models\Stores;
+use App\Models\User;
+use Carbon\Carbon;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
@@ -13,7 +21,8 @@ class InventoryController extends Controller
 {
     public function __construct(
         protected InventoryServiceInterface $inventoryService
-    ) {}
+    ) {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -44,7 +53,7 @@ class InventoryController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
         $projectId = $request->projectId;
-        $storeId   = $request->storeId;
+        $storeId = $request->storeId;
         try {
             Excel::import(new InventoryImport($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
@@ -59,7 +68,7 @@ class InventoryController extends Controller
             'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
         $projectId = $request->projectId;
-        $storeId   = $request->storeId;
+        $storeId = $request->storeId;
         try {
             Excel::import(new InventroyStreetLight($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
@@ -86,13 +95,13 @@ class InventoryController extends Controller
     {
         try {
             $projectType = (int) $request->project_type;
-            
+
             // Use service to add inventory item
             $inventory = $this->inventoryService->addInventoryItem(
                 $request->all(),
                 $projectType
             );
-            
+
             return redirect()->route('inventory.index', [
                 'project_id' => $request->input('project_id'),
                 'store_id' => $request->input('store_id'),
@@ -150,13 +159,13 @@ class InventoryController extends Controller
     {
         // Validate the incoming data
         $validated = $request->validate([
-            'productName'     => 'required|string|max:255',
-            'brand'           => 'nullable|string',
-            'description'     => 'nullable|string',
+            'productName' => 'required|string|max:255',
+            'brand' => 'nullable|string',
+            'description' => 'nullable|string',
             'initialQuantity' => 'required|string',
-            'quantityStock'   => 'nullable|string',
-            'unit'            => 'required|string|max:25',
-            'receivedDate'    => 'nullable|date',
+            'quantityStock' => 'nullable|string',
+            'unit' => 'required|string|max:25',
+            'receivedDate' => 'nullable|date',
         ]);
 
         try {
@@ -186,13 +195,13 @@ class InventoryController extends Controller
         //
         // Validate the incoming data without requiring a username
         $validated = $request->validate([
-            'productName'     => 'required|string|max:255',
-            'brand'           => 'nullable|string',
-            'description'     => 'nullable|string',
+            'productName' => 'required|string|max:255',
+            'brand' => 'nullable|string',
+            'description' => 'nullable|string',
             'initialQuantity' => 'required|string',
-            'quantityStock'   => 'nullable|string',
-            'unit'            => 'required|string|max:25',
-            'receivedDate'    => 'nullable|date',
+            'quantityStock' => 'nullable|string',
+            'unit' => 'required|string|max:25',
+            'receivedDate' => 'nullable|date',
         ]);
 
         try {
@@ -529,7 +538,7 @@ class InventoryController extends Controller
             'manufacturer' => $firstItem->manufacturer,
             'make' => $firstItem->make,
             'model' => $firstItem->model,
-            'rate' => (float)$firstItem->rate,
+            'rate' => (float) $firstItem->rate,
             'total_quantity' => $items->sum('total_quantity'),
             'total_value' => $items->sum('total_value'),
             'dispatch_date' => $firstItem->dispatch_date,
@@ -712,10 +721,10 @@ class InventoryController extends Controller
             InventroyStreetLightModel::whereIn('id', $ids)->delete();
 
             return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
-            } catch (\Throwable $th) {
-                \Log::error("Bulk delete error: " . $th->getMessage());
-                return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
-            }
+        } catch (\Throwable $th) {
+            \Log::error("Bulk delete error: " . $th->getMessage());
+            return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+        }
     }
 
 }
