@@ -4,12 +4,14 @@
         border-radius: 10px;
         padding: 20px;
         margin-bottom: 20px;
-        transition: box-shadow 0.3s ease;
+        transition: box-shadow 0.3s ease, transform 0.2s ease;
         background: #fff;
+        cursor: pointer;
     }
 
     .performance-card:hover {
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        transform: translateY(-2px);
     }
 
     .profile-img {
@@ -114,7 +116,8 @@
             <div class="row">
                 @foreach (array_slice($rolePerformances, 0, 3) as $managerData)
                     <div class="col-md-4 mb-3">
-                        <div class="performance-card">
+                        <div class="performance-card"
+                            onclick="viewInstalledPoles({{ $managerData['user']->id }}, 'manager', {{ $project->id ?? request('project_id') }})">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="{{ $managerData['user']->image ?? asset('images/default-avatar.png') }}"
@@ -135,13 +138,16 @@
                                     style="width: {{ $managerData['metrics']['performance_percentage'] }}%"></div>
                             </div>
                             <div class="metric">🎯 Tasks:
-                                <strong>{{ $managerData['metrics']['total_tasks'] ?? 0 }}</strong></div>
+                                <strong>{{ $managerData['metrics']['total_tasks'] ?? 0 }}</strong>
+                            </div>
                             @if ($isStreetLightProject ?? false)
                                 <div class="metric">💡 Installed:
-                                    <strong>{{ $managerData['metrics']['installed_poles'] ?? 0 }}</strong></div>
+                                    <strong>{{ $managerData['metrics']['installed_poles'] ?? 0 }}</strong>
+                                </div>
                             @else
                                 <div class="metric">✅ Completed:
-                                    <strong>{{ $managerData['metrics']['completed_tasks'] ?? 0 }}</strong></div>
+                                    <strong>{{ $managerData['metrics']['completed_tasks'] ?? 0 }}</strong>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -157,7 +163,8 @@
             <div class="row">
                 @foreach (array_slice($rolePerformances['engineers'], 0, 3) as $engineerData)
                     <div class="col-md-4 mb-3">
-                        <div class="performance-card">
+                        <div class="performance-card"
+                            onclick="viewInstalledPoles({{ $engineerData['user']->id }}, 'engineer', {{ $project->id ?? request('project_id') }})">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="{{ $engineerData['user']->image ?? asset('images/default-avatar.png') }}"
@@ -179,10 +186,12 @@
                             </div>
                             @if ($isStreetLightProject ?? false)
                                 <div class="metric">💡 Installed:
-                                    <strong>{{ $engineerData['metrics']['installed_poles'] ?? 0 }}</strong></div>
+                                    <strong>{{ $engineerData['metrics']['installed_poles'] ?? 0 }}</strong>
+                                </div>
                             @else
                                 <div class="metric">✅ Completed:
-                                    <strong>{{ $engineerData['metrics']['completed_tasks'] ?? 0 }}</strong></div>
+                                    <strong>{{ $engineerData['metrics']['completed_tasks'] ?? 0 }}</strong>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -196,7 +205,8 @@
             <div class="row">
                 @foreach (array_slice($rolePerformances['vendors'], 0, 3) as $vendorData)
                     <div class="col-md-4 mb-3">
-                        <div class="performance-card">
+                        <div class="performance-card"
+                            onclick="viewInstalledPoles({{ $vendorData['user']->id }}, 'vendor', {{ $project->id ?? request('project_id') }})">
                             <div class="d-flex justify-content-between align-items-start mb-2">
                                 <div class="d-flex align-items-center gap-2">
                                     <img src="{{ $vendorData['user']->image ?? asset('images/default-avatar.png') }}"
@@ -218,10 +228,12 @@
                             </div>
                             @if ($isStreetLightProject ?? false)
                                 <div class="metric">💡 Installed:
-                                    <strong>{{ $vendorData['metrics']['installed_poles'] ?? 0 }}</strong></div>
+                                    <strong>{{ $vendorData['metrics']['installed_poles'] ?? 0 }}</strong>
+                                </div>
                             @else
                                 <div class="metric">✅ Completed:
-                                    <strong>{{ $vendorData['metrics']['completed_tasks'] ?? 0 }}</strong></div>
+                                    <strong>{{ $vendorData['metrics']['completed_tasks'] ?? 0 }}</strong>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -282,5 +294,25 @@
             url.searchParams.delete('end_date');
             window.location.href = url.toString();
         }
+    }
+
+    function viewInstalledPoles(userId, userType, projectId) {
+        // Build the URL with appropriate filters based on user type
+        let url = '{{ route('installed.poles') }}';
+        let params = new URLSearchParams();
+
+        params.append('project_id', projectId);
+
+        // Add the appropriate filter based on user role
+        if (userType === 'manager') {
+            params.append('project_manager', userId);
+        } else if (userType === 'engineer') {
+            params.append('site_engineer', userId);
+        } else if (userType === 'vendor') {
+            params.append('vendor', userId);
+        }
+
+        // Navigate to the installed poles page with filters
+        window.location.href = url + '?' + params.toString();
     }
 </script>

@@ -35,22 +35,22 @@ class TaskController extends Controller
     {
         try {
             $validated = $request->validate([
-                'sites'       => 'required|array',
-                'activity'    => 'required|string',
+                'sites' => 'required|array',
+                'activity' => 'required|string',
                 'engineer_id' => 'required|exists:users,id',
-                'start_date'  => 'required|date',
-                'end_date'    => 'required|date|after_or_equal:start_date',
+                'start_date' => 'required|date',
+                'end_date' => 'required|date|after_or_equal:start_date',
             ]);
 
             $task = Task::create($validated);
             return response()->json([
                 'message' => 'Task created successfully',
-                'task'    => $task,
+                'task' => $task,
             ]);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([
                 'message' => 'Validation failed',
-                'errors'  => $e->errors(),
+                'errors' => $e->errors(),
             ], 422);
         } catch (\Exception $e) {
             return response()->json([
@@ -166,14 +166,14 @@ class TaskController extends Controller
 
             // Save task and return success response
             return response()->json([
-                'message'        => 'Task updated successfully.',
-                'task'           => $task,
+                'message' => 'Task updated successfully.',
+                'task' => $task,
                 'uploaded_files' => $uploadedFiles,
             ]);
         } catch (\Exception $e) {
             // Log the exception
             return response()->json([
-                'error'   => 'An error occurred during the update process.',
+                'error' => 'An error occurred during the update process.',
                 'message' => $e->getMessage(),
             ], 500);
         }
@@ -188,7 +188,7 @@ class TaskController extends Controller
             if (is_array($file) && isset($file['uri'], $file['name'])) {
                 // Decode the file URI and extract the file contents
                 $fileContents = file_get_contents($file['uri']);
-                $fileName     = time() . '_' . $file['name'];
+                $fileName = time() . '_' . $file['name'];
 
                 // Upload to S3 using the file contents
                 Storage::disk('s3')->put($path . '/' . $fileName, $fileContents);
@@ -207,7 +207,7 @@ class TaskController extends Controller
         } catch (\Exception $e) {
             // Return error response
             return response()->json([
-                'error'   => 'An error occurred while uploading the file.',
+                'error' => 'An error occurred while uploading the file.',
                 'message' => $e->getMessage(),
             ], 500);
         }
@@ -235,12 +235,13 @@ class TaskController extends Controller
                     $parts = explode('/', $poleNumber);
                     $count = count($parts);
 
-                    if ($count < 2) return null; // Ensure the format is valid
-
+                    if ($count < 2)
+                        return null; // Ensure the format is valid
+    
                     // Extract ward and pole number
                     $poleWard = (int) $parts[$count - 2]; // Second last part is ward
                     $poleNumber = (int) $parts[$count - 1]; // Last part is pole number
-
+    
                     return $poleWard === (int) $ward ? $poleNumber : null;
                 })
                 ->filter() // Remove null values
@@ -275,9 +276,9 @@ class TaskController extends Controller
 
         // Return the response
         return response()->json([
-            'status'    => 'success',
+            'status' => 'success',
             'vendor_id' => $vendorId,
-            'sites'     => $sites,
+            'sites' => $sites,
         ], 200);
     }
 
@@ -300,23 +301,23 @@ class TaskController extends Controller
     {
         // ✅ Step 1: Validation
         $validated = $request->validate([
-            'task_id'             => 'required|exists:streetlight_tasks,id',
+            'task_id' => 'required|exists:streetlight_tasks,id',
             'complete_pole_number' => 'required|string|max:255',
-            'ward_name'           => 'nullable|string|max:255',
-            'survey_image'        => 'nullable|array',
-            'isSurveyDone'      => 'nullable|string|in:true,false',
-            'isNetworkAvailable'  => 'nullable|string|in:true,false',
+            'ward_name' => 'nullable|string|max:255',
+            'survey_image' => 'nullable|array',
+            'isSurveyDone' => 'nullable|string|in:true,false',
+            'isNetworkAvailable' => 'nullable|string|in:true,false',
             'isInstallationDone' => 'nullable|string|in:true,false',
-            'beneficiary'         => 'nullable|string|max:255',
+            'beneficiary' => 'nullable|string|max:255',
             'beneficiary_contact' => 'nullable|string|max:20',
-            'remarks'             => 'nullable|string',
-            'luminary_qr'         => 'nullable|string|max:255',
-            'sim_number'          => 'nullable|string|max:200',
-            'panel_qr'            => 'nullable|string|max:255',
-            'battery_qr'          => 'nullable|string|max:255',
-            'submission_image'    => 'nullable|array',
-            'lat'                 => 'nullable|numeric',
-            'lng'                 => 'nullable|numeric',
+            'remarks' => 'nullable|string',
+            'luminary_qr' => 'nullable|string|max:255',
+            'sim_number' => 'nullable|string|max:200',
+            'panel_qr' => 'nullable|string|max:255',
+            'battery_qr' => 'nullable|string|max:255',
+            'submission_image' => 'nullable|array',
+            'lat' => 'nullable|numeric',
+            'lng' => 'nullable|numeric',
         ]);
 
         // ✅ Step 2: Fetch task & site
@@ -327,18 +328,18 @@ class TaskController extends Controller
         // ✅ Step 3: Create or get pole
         $pole = Pole::firstOrCreate(
             [
-                'task_id'              => $validated['task_id'],
+                'task_id' => $validated['task_id'],
                 'complete_pole_number' => $validated['complete_pole_number']
             ],
             [
-                'ward_name'           => $validated['ward_name'] ?? null,
-                'beneficiary'         => $validated['beneficiary'] ?? null,
+                'ward_name' => $validated['ward_name'] ?? null,
+                'beneficiary' => $validated['beneficiary'] ?? null,
                 'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
-                'remarks'             => $validated['remarks'] ?? null,
-                'isSurveyDone'        => true,
-                'isInstallationDone'  => false,
-                'lat'                 => $validated['lat'] ?? null,
-                'lng'                 => $validated['lng'] ?? null,
+                'remarks' => $validated['remarks'] ?? null,
+                'isSurveyDone' => true,
+                'isInstallationDone' => false,
+                'lat' => $validated['lat'] ?? null,
+                'lng' => $validated['lng'] ?? null,
             ]
         );
 
@@ -360,10 +361,10 @@ class TaskController extends Controller
         // ✅ Step 5: Update survey data
         if ($request->isSurveyDone && !$pole->isSurveyDone) {
             $pole->update([
-                'isSurveyDone'        => true,
-                'beneficiary'         => $validated['beneficiary'] ?? null,
-                'remarks'             => $validated['remarks'] ?? null,
-                'isNetworkAvailable'  => $validated['isNetworkAvailable'] ?? 0,
+                'isSurveyDone' => true,
+                'beneficiary' => $validated['beneficiary'] ?? null,
+                'remarks' => $validated['remarks'] ?? null,
+                'isNetworkAvailable' => $validated['isNetworkAvailable'] ?? 0,
             ]);
             $streetlight->increment('number_of_surveyed_poles');
         }
@@ -372,10 +373,10 @@ class TaskController extends Controller
         if ($request->isInstallationDone && !$pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
-                'luminary_qr'        => $validated['luminary_qr'] ?? null,
-                'sim_number'         => $validated['sim_number'] ?? null,
-                'panel_qr'           => $validated['panel_qr'] ?? null,
-                'battery_qr'         => $validated['battery_qr'] ?? null,
+                'luminary_qr' => $validated['luminary_qr'] ?? null,
+                'sim_number' => $validated['sim_number'] ?? null,
+                'panel_qr' => $validated['panel_qr'] ?? null,
+                'battery_qr' => $validated['battery_qr'] ?? null,
             ]);
 
             $streetlight->increment('number_of_installed_poles');
@@ -399,8 +400,8 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Pole details submitted successfully!',
-            'pole'    => $pole,
-            'task'    => $task,
+            'pole' => $pole,
+            'task' => $task,
         ]);
     }
 
@@ -436,7 +437,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Installed poles for Site Engineer',
-            'surveyed_poles'    => $surveyed_poles,
+            'surveyed_poles' => $surveyed_poles,
             'installed_poles' => $installed_poles
         ], 200);
     }
@@ -521,7 +522,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Installed poles for Vendor',
-            'surveyed_poles'    => $transformed_poles,
+            'surveyed_poles' => $transformed_poles,
             'installed_poles' => $transformed__installed_poles
         ], 200);
     }
@@ -545,7 +546,7 @@ class TaskController extends Controller
 
         return response()->json([
             'message' => 'Installed poles for Project Manager',
-            'surveyed_poles'    => $surveyed_poles,
+            'surveyed_poles' => $surveyed_poles,
             'installed_poles' => $installed_poles
         ], 200);
     }
@@ -608,7 +609,7 @@ class TaskController extends Controller
     public function getInstalledPoles(Request $request)
     {
         $query = Pole::with(['task.streetlight'])
-                 ->where('isInstallationDone', 1);
+            ->where('isInstallationDone', 1);
         if ($request->has('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
@@ -626,10 +627,126 @@ class TaskController extends Controller
                 $q->where('vendor_id', $request->vendor);
             });
         }
-        $clonedQuery = clone $query;
-        $poles = $query->get();
-        $totalInstalled = $clonedQuery->count();
-        return view('poles.installed', compact('poles', 'totalInstalled'));
+
+        if ($request->has('project_id')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('project_id', $request->project_id);
+            });
+        }
+
+        return view('poles.installed');
+    }
+
+    // AJAX endpoint for DataTables server-side processing
+    public function getInstalledPolesData(Request $request)
+    {
+        $query = Pole::with(['task.streetlight'])
+            ->where('isInstallationDone', 1);
+
+        // Apply filters
+        if ($request->filled('project_manager')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('manager_id', $request->project_manager);
+            });
+        }
+
+        if ($request->filled('site_engineer')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('engineer_id', $request->site_engineer);
+            });
+        }
+
+        if ($request->filled('vendor')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('vendor_id', $request->vendor);
+            });
+        }
+
+        if ($request->filled('project_id')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('project_id', $request->project_id);
+            });
+        }
+
+        // Get total count before filtering
+        $totalRecords = $query->count();
+
+        // Search functionality
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
+            $query->where(function ($q) use ($search) {
+                $q->where('complete_pole_number', 'like', "%{$search}%")
+                    ->orWhere('luminary_qr', 'like', "%{$search}%")
+                    ->orWhere('sim_number', 'like', "%{$search}%")
+                    ->orWhere('battery_qr', 'like', "%{$search}%")
+                    ->orWhere('panel_qr', 'like', "%{$search}%")
+                    ->orWhereHas('task.streetlight', function ($sq) use ($search) {
+                        $sq->where('block', 'like', "%{$search}%")
+                            ->orWhere('panchayat', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Get filtered count
+        $filteredRecords = $query->count();
+
+        // Ordering
+        $orderColumn = $request->input('order.0.column', 3); // Default to pole number
+        $orderDirection = $request->input('order.0.dir', 'asc');
+        $columns = ['id', 'block', 'panchayat', 'complete_pole_number', 'luminary_qr', 'sim_number', 'battery_qr', 'panel_qr'];
+
+        if (isset($columns[$orderColumn])) {
+            if (in_array($columns[$orderColumn], ['block', 'panchayat'])) {
+                $query->join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
+                    ->join('streetlights', 'streetlight_tasks.streetlight_id', '=', 'streetlights.id')
+                    ->orderBy('streetlights.' . $columns[$orderColumn], $orderDirection)
+                    ->select('poles.*');
+            } else {
+                $query->orderBy($columns[$orderColumn], $orderDirection);
+            }
+        }
+
+        // Pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 50);
+        $poles = $query->skip($start)->take($length)->get();
+
+        // Format data for DataTables
+        $data = $poles->map(function ($pole) {
+            return [
+                'checkbox' => '<input type="checkbox" class="pole-checkbox" value="' . $pole->id . '" />',
+                'block' => $pole->task?->streetlight?->block ?? 'N/A',
+                'panchayat' => $pole->task?->streetlight?->panchayat ?? 'N/A',
+                'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . $pole->lat . ', ' . $pole->lng . ')">' . ($pole->complete_pole_number ?? 'N/A') . '</span>',
+                'imei' => $pole->luminary_qr ?? 'N/A',
+                'sim_number' => $pole->sim_number ?? 'N/A',
+                'battery' => $pole->battery_qr ?? 'N/A',
+                'panel' => $pole->panel_qr ?? 'N/A',
+                'bill_raised' => '0',
+                'rms' => $pole->rms_status ?? 'N/A',
+                'actions' => '
+                    <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                        <i class="mdi mdi-eye"></i>
+                    </a>
+                    <a href="' . route('poles.edit', $pole->id) . '" class="btn btn-icon btn-warning">
+                        <i class="mdi mdi-pencil"></i>
+                    </a>
+                    <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
+                        title="Delete Pole" data-id="' . $pole->id . '"
+                        data-name="' . ($pole->complete_pole_number ?? 'this pole') . '"
+                        data-url="' . route('poles.destroy', $pole->id) . '">
+                        <i class="mdi mdi-delete"></i>
+                    </button>
+                '
+            ];
+        });
+
+        return response()->json([
+            'draw' => intval($request->input('draw')),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data
+        ]);
     }
 
     // Get Pole Details by ID 'Original'

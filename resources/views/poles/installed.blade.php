@@ -3,7 +3,6 @@
 @section('content')
     <div class="container-fluid p-3">
         <h3 class="fw-bold mt-2">Installed Lights</h3>
-        <p>Total Installed Lights: <strong>{{ $totalInstalled }}</strong></p>
 
         <x-data-table id="installedPole" class="table-striped table">
             <x-slot:thead>
@@ -24,40 +23,7 @@
                 </tr>
             </x-slot:thead>
             <x-slot:tbody>
-                @foreach ($poles as $pole)
-                    <tr>
-                        <td>
-                            <input type="checkbox" id="selectAll" />
-                        </td>
-                        <td>{{ $pole->task?->streetlight?->block ?? 'N/A' }}</td>
-                        <td>{{ $pole->task?->streetlight?->panchayat ?? 'N/A' }}</td>
-                        <td onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})" style="cursor:pointer;"> <span
-                                class="text-primary">{{ $pole->complete_pole_number ?? 'N/A' }}</span></td>
-                        <td>{{ $pole->luminary_qr ?? 'N/A' }}</td>
-                        <td>{{ $pole->sim_number ?? 'N/A' }}</td>
-                        <td>{{ $pole->battery_qr ?? 'N/A' }}</td>
-                        <td>{{ $pole->panel_qr ?? 'N/A' }}</td>
-                        <td>0</td>
-                        <td>{{ $pole->rms_status ?? 'N/A' }}</td>
-                        <td>
-                            <a href="{{ route('poles.show', $pole->id) }}" class="btn btn-icon btn-info"
-                                data-toggle="tooltip" title="View Details">
-                                <i class="mdi mdi-eye"></i>
-                            </a>
-
-                            <a href="{{ route('poles.edit', $pole->id) }}" class="btn btn-icon btn-warning">
-                                <i class="mdi mdi-pencil"></i>
-                            </a>
-
-                            <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
-                                title="Delete Pole" data-id="{{ $pole->id }}"
-                                data-name="{{ $pole->complete_pole_number ?? 'this pole' }}"
-                                data-url="{{ route('poles.destroy', $pole->id) }}">
-                                <i class="mdi mdi-delete"></i>
-                            </button>
-                        </td>
-                    </tr>
-                @endforeach
+                {{-- Data will be loaded via AJAX --}}
             </x-slot:tbody>
         </x-data-table>
     </div>
@@ -76,7 +42,68 @@
         }
 
         $(document).ready(function() {
+            // Destroy existing DataTable if it exists
+            if ($.fn.DataTable.isDataTable('#installedPole')) {
+                $('#installedPole').DataTable().destroy();
+            }
+
+            // Get filter parameters from URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const projectId = urlParams.get('project_id');
+            const projectManager = urlParams.get('project_manager');
+            const siteEngineer = urlParams.get('site_engineer');
+            const vendor = urlParams.get('vendor');
+
             $('#installedPole').DataTable({
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('installed.poles.data') }}',
+                    data: function(d) {
+                        d.project_id = projectId;
+                        d.project_manager = projectManager;
+                        d.site_engineer = siteEngineer;
+                        d.vendor = vendor;
+                    }
+                },
+                columns: [{
+                        data: 'checkbox',
+                        orderable: false,
+                        searchable: false
+                    },
+                    {
+                        data: 'block'
+                    },
+                    {
+                        data: 'panchayat'
+                    },
+                    {
+                        data: 'pole_number'
+                    },
+                    {
+                        data: 'imei'
+                    },
+                    {
+                        data: 'sim_number'
+                    },
+                    {
+                        data: 'battery'
+                    },
+                    {
+                        data: 'panel'
+                    },
+                    {
+                        data: 'bill_raised'
+                    },
+                    {
+                        data: 'rms'
+                    },
+                    {
+                        data: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
                 dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
                     "<'row'<'col-sm-12'tr>>" +
                     "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
@@ -99,24 +126,36 @@
                         titleAttr: 'Print Table'
                     }
                 ],
-                paging: true,
                 pageLength: 50,
-                searching: true,
-                ordering: true,
-                responsive: true,
-                autoWidth: false,
-                columnDefs: [ /* ... your column defs ... */ ],
+                lengthMenu: [
+                    [25, 50, 100, 500, 1000],
+                    [25, 50, 100, 500, 1000]
+                ],
+                order: [
+                    [3, 'asc']
+                ], // Order by pole number
                 language: {
                     search: '',
-                    searchPlaceholder: 'Search...'
+                    searchPlaceholder: 'Search...',
+                    processing: '<div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div>'
+                },
+                drawCallback: function() {
+                    // Reinitialize tooltips after each draw
+                    $('[data-toggle="tooltip"]').tooltip();
+                    // Reinitialize delete buttons
+                    initializeDeleteButtons();
                 }
             });
 
-            $('[data-toggle="tooltip"]').tooltip();
             $('.dataTables_filter input').addClass('form-control form-control-sm');
+        });
 
-            // --- MODIFIED JAVASCRIPT FOR DELETE CONFIRMATION ---
-            // We target the new class '.delete-pole-btn'
+        // Extract delete button logic into a function
+        function initializeDeleteButtons() {
+            // Remove old event handlers to prevent duplicates
+            $('.delete-pole-btn').off('click');
+
+            // Add new event handlers
             $('.delete-pole-btn').on('click', function() {
                 // Get the data from the button
                 let poleId = $(this).data('id');
@@ -167,6 +206,11 @@
                     }
                 });
             });
+        }
+
+        // Initialize delete buttons on page load
+        $(document).ready(function() {
+            initializeDeleteButtons();
         });
     </script>
 @endpush

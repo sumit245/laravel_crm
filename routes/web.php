@@ -181,6 +181,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Surveyed/Installed Poles
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');
     Route::get('/installed-poles', [TaskController::class, 'getInstalledPoles'])->name('installed.poles');
+    Route::get('/installed-poles/data', [TaskController::class, 'getInstalledPolesData'])->name('installed.poles.data');
     Route::get('/export-poles', [TaskController::class, 'exportPoles'])->name('poles.export');
     Route::get('/poles/show/{id}', [TaskController::class, 'viewPoleDetails'])->name('poles.show');
     Route::get('/poles/{id}/edit', [PoleController::class, 'edit'])->name('poles.edit');
