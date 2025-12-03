@@ -28,7 +28,7 @@ Route::get('/certificate-3', fn() => view('certificate_3'))->name('certificate3.
 Route::get('/certificate-4', fn() => view('certificate_4'))->name('certificate4.view');
 
 // Authenticated Routes
-Route::middleware(['auth', 'restrict.meetings'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
