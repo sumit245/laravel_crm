@@ -55,63 +55,70 @@
             const vendor = urlParams.get('vendor');
 
             $('#installedPole').DataTable({
-                processing: true,
-                serverSide: true,
-                ajax: {
-                    url: '{{ route('installed.poles.data') }}',
-                    data: function(d) {
-                        d.project_id = projectId;
-                        d.project_manager = projectManager;
-                        d.site_engineer = siteEngineer;
-                        d.vendor = vendor;
-                    }
-                },
-                columns: [{
-                        data: 'checkbox',
-                        orderable: false,
-                        searchable: false
+                    processing: true,
+                    serverSide: true,
+                    ajax: {
+                        url: '{{ route('installed.poles.data') }}',
+                        data: function(d) {
+                            d.project_id = projectId;
+                            d.project_manager = projectManager;
+                            d.site_engineer = siteEngineer;
+                            d.vendor = vendor;
+                        }
                     },
-                    {
-                        data: 'block'
-                    },
-                    {
-                        data: 'panchayat'
-                    },
-                    {
-                        data: 'pole_number'
-                    },
-                    {
-                        data: 'imei'
-                    },
-                    {
-                        data: 'sim_number'
-                    },
-                    {
-                        data: 'battery'
-                    },
-                    {
-                        data: 'panel'
-                    },
-                    {
-                        data: 'bill_raised'
-                    },
-                    {
-                        data: 'rms'
-                    },
-                    {
-                        data: 'actions',
-                        orderable: false,
-                        searchable: false
-                    }
-                ],
-                dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-                buttons: [{
-                        extend: 'excel',
-                        text: '<i class="mdi mdi-file-excel text-light"></i>',
-                        className: 'btn btn-icon  btn-success',
-                        titleAttr: 'Export to Excel'
+                    columns: [{
+                            data: 'checkbox',
+                            orderable: false,
+                            searchable: false
+                        },
+                        {
+                            data: 'block'
+                        },
+                        {
+                            data: 'panchayat'
+                        },
+                        {
+                            data: 'pole_number'
+                        },
+                        {
+                            data: 'imei'
+                        },
+                        {
+                            data: 'sim_number'
+                        },
+                        {
+                            data: 'battery'
+                        },
+                        {
+                            data: 'panel'
+                        },
+                        {
+                            data: 'bill_raised'
+                        },
+                        {
+                            data: 'rms'
+                        },
+                        {
+                            data: 'actions',
+                            orderable: false,
+                            searchable: false
+                        }
+                    ],
+                    dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
+                        "<'row'<'col-sm-12'tr>>" +
+                        "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
+                    buttons: [{
+                            extend: 'excel',
+                            text: '<i class="mdi mdi-file-excel text-light"></i>',
+                            className: 'btn btn-icon  btn-success',
+                            titleAttr: 'Export to Excel',
+                            exportOptions: {
+                                columns: ':not(.actions)',
+                                modifier: {
+                                    page: 'all'
+                                }
+                            }
+                        }
                     },
                     {
                         extend: 'pdf',
@@ -147,7 +154,7 @@
                 }
             });
 
-            $('.dataTables_filter input').addClass('form-control form-control-sm');
+        $('.dataTables_filter input').addClass('form-control form-control-sm');
         });
 
         // Extract delete button logic into a function
