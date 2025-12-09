@@ -608,42 +608,127 @@ class TaskController extends Controller
     // Fetch Installed Poles based on user role
     public function getInstalledPoles(Request $request)
     {
-        $query = Pole::with(['task.streetlight'])
-            ->where('isInstallationDone', 1);
-        if ($request->has('project_manager')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('manager_id', $request->project_manager);
-            });
-        }
-
-        if ($request->has('site_engineer')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('engineer_id', $request->site_engineer);
-            });
-        }
-
-        if ($request->has('vendor')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('vendor_id', $request->vendor);
-            });
-        }
-
-        if ($request->has('project_id')) {
-            $query->whereHas('task.streetlight', function ($q) use ($request) {
-                $q->where('project_id', $request->project_id);
-            });
-        }
-
+        // View uses AJAX to fetch data via getInstalledPolesData() method
+        // No need to build query here as it's not used
         return view('poles.installed');
     }
 
     // AJAX endpoint for DataTables server-side processing
+    // public function getInstalledPolesData(Request $request)
+    // {
+    //     $query = Pole::with(['task.streetlight'])
+    //         ->where('isInstallationDone', 1);
+
+    //     // Apply filters
+    //     if ($request->filled('project_manager')) {
+    //         $query->whereHas('task', function ($q) use ($request) {
+    //             $q->where('manager_id', $request->project_manager);
+    //         });
+    //     }
+
+    //     if ($request->filled('site_engineer')) {
+    //         $query->whereHas('task', function ($q) use ($request) {
+    //             $q->where('engineer_id', $request->site_engineer);
+    //         });
+    //     }
+
+    //     if ($request->filled('vendor')) {
+    //         $query->whereHas('task', function ($q) use ($request) {
+    //             $q->where('vendor_id', $request->vendor);
+    //         });
+    //     }
+
+    //     if ($request->filled('project_id')) {
+    //         $query->whereHas('task.streetlight', function ($q) use ($request) {
+    //             $q->where('project_id', $request->project_id);
+    //         });
+    //     }
+
+    //     // Get total count before filtering
+    //     $totalRecords = $query->count();
+
+    //     // Search functionality
+    //     if ($request->filled('search.value')) {
+    //         $search = $request->input('search.value');
+    //         $query->where(function ($q) use ($search) {
+    //             $q->where('complete_pole_number', 'like', "%{$search}%")
+    //                 ->orWhere('luminary_qr', 'like', "%{$search}%")
+    //                 ->orWhere('sim_number', 'like', "%{$search}%")
+    //                 ->orWhere('battery_qr', 'like', "%{$search}%")
+    //                 ->orWhere('panel_qr', 'like', "%{$search}%")
+    //                 ->orWhereHas('task.streetlight', function ($sq) use ($search) {
+    //                     $sq->where('block', 'like', "%{$search}%")
+    //                         ->orWhere('panchayat', 'like', "%{$search}%");
+    //                 });
+    //         });
+    //     }
+
+    //     // Get filtered count
+    //     $filteredRecords = $query->count();
+
+    //     // Ordering
+    //     $orderColumn = $request->input('order.0.column', 3); // Default to pole number
+    //     $orderDirection = $request->input('order.0.dir', 'asc');
+    //     $columns = ['id', 'block', 'panchayat', 'complete_pole_number', 'luminary_qr', 'sim_number', 'battery_qr', 'panel_qr'];
+
+    //     if (isset($columns[$orderColumn])) {
+    //         if (in_array($columns[$orderColumn], ['block', 'panchayat'])) {
+    //             $query->join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
+    //                 ->join('streetlights', 'streetlight_tasks.streetlight_id', '=', 'streetlights.id')
+    //                 ->orderBy('streetlights.' . $columns[$orderColumn], $orderDirection)
+    //                 ->select('poles.*');
+    //         } else {
+    //             $query->orderBy($columns[$orderColumn], $orderDirection);
+    //         }
+    //     }
+
+    //     // Pagination
+    //     $start = $request->input('start', 0);
+    //     $length = $request->input('length', 50);
+    //     $poles = $query->skip($start)->take($length)->get();
+
+    //     // Format data for DataTables
+    //     $data = $poles->map(function ($pole) {
+    //         return [
+    //             'checkbox' => '<input type="checkbox" class="pole-checkbox" value="' . $pole->id . '" />',
+    //             'block' => $pole->task?->streetlight?->block ?? 'N/A',
+    //             'panchayat' => $pole->task?->streetlight?->panchayat ?? 'N/A',
+    //             'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . $pole->lat . ', ' . $pole->lng . ')">' . ($pole->complete_pole_number ?? 'N/A') . '</span>',
+    //             'imei' => $pole->luminary_qr ?? 'N/A',
+    //             'sim_number' => $pole->sim_number ?? 'N/A',
+    //             'battery' => $pole->battery_qr ?? 'N/A',
+    //             'panel' => $pole->panel_qr ?? 'N/A',
+    //             'bill_raised' => '0',
+    //             'rms' => $pole->rms_status ?? 'N/A',
+    //             'actions' => '
+    //                 <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+    //                     <i class="mdi mdi-eye"></i>
+    //                 </a>
+    //                 <a href="' . route('poles.edit', $pole->id) . '" class="btn btn-icon btn-warning">
+    //                     <i class="mdi mdi-pencil"></i>
+    //                 </a>
+    //                 <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
+    //                     title="Delete Pole" data-id="' . $pole->id . '"
+    //                     data-name="' . ($pole->complete_pole_number ?? 'this pole') . '"
+    //                     data-url="' . route('poles.destroy', $pole->id) . '">
+    //                     <i class="mdi mdi-delete"></i>
+    //                 </button>
+    //             '
+    //         ];
+    //     });
+
+    //     return response()->json([
+    //         'draw' => intval($request->input('draw')),
+    //         'recordsTotal' => $totalRecords,
+    //         'recordsFiltered' => $filteredRecords,
+    //         'data' => $data
+    //     ]);
+    // }
     public function getInstalledPolesData(Request $request)
     {
         $query = Pole::with(['task.streetlight'])
             ->where('isInstallationDone', 1);
 
-        // Apply filters
         if ($request->filled('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
@@ -668,10 +753,10 @@ class TaskController extends Controller
             });
         }
 
-        // Get total count before filtering
+        // total before search
         $totalRecords = $query->count();
 
-        // Search functionality
+        // search
         if ($request->filled('search.value')) {
             $search = $request->input('search.value');
             $query->where(function ($q) use ($search) {
@@ -687,34 +772,47 @@ class TaskController extends Controller
             });
         }
 
-        // Get filtered count
         $filteredRecords = $query->count();
 
-        // Ordering
-        $orderColumn = $request->input('order.0.column', 3); // Default to pole number
+        // ordering
+        $orderColumn = $request->input('order.0.column', 3);
         $orderDirection = $request->input('order.0.dir', 'asc');
         $columns = ['id', 'block', 'panchayat', 'complete_pole_number', 'luminary_qr', 'sim_number', 'battery_qr', 'panel_qr'];
 
         if (isset($columns[$orderColumn])) {
             if (in_array($columns[$orderColumn], ['block', 'panchayat'])) {
-                $query->join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
-                    ->join('streetlights', 'streetlight_tasks.streetlight_id', '=', 'streetlights.id')
+                // Join for ordering by streetlight fields
+                $poleTable = (new Pole())->getTable();
+                $query->join('streetlight_tasks', $poleTable . '.task_id', '=', 'streetlight_tasks.id')
+                    ->join('streetlights', 'streetlight_tasks.site_id', '=', 'streetlights.id')
+                    ->groupBy($poleTable . '.id') // Prevent duplicates from join
                     ->orderBy('streetlights.' . $columns[$orderColumn], $orderDirection)
-                    ->select('poles.*');
+                    ->select($poleTable . '.*');
             } else {
-                $query->orderBy($columns[$orderColumn], $orderDirection);
+                $poleTable = (new Pole())->getTable();
+                $query->orderBy($poleTable . '.' . $columns[$orderColumn], $orderDirection);
             }
         }
 
-        // Pagination
+        // pagination
         $start = $request->input('start', 0);
         $length = $request->input('length', 50);
-        $poles = $query->skip($start)->take($length)->get();
 
-        // Format data for DataTables
+        // If length is -1, get all records (for export)
+        if ($length == -1) {
+            $poles = $query->get();
+        } else {
+            $poles = $query->skip($start)->take($length)->get();
+        }
+
+        // Reload relationships after join (join can interfere with eager loading)
+        $poles->load(['task.streetlight']);
+
+        // shape data to match DataTables columns config
         $data = $poles->map(function ($pole) {
             return [
                 'checkbox' => '<input type="checkbox" class="pole-checkbox" value="' . $pole->id . '" />',
+                'district' => $pole->task?->streetlight?->district ?? 'N/A',
                 'block' => $pole->task?->streetlight?->block ?? 'N/A',
                 'panchayat' => $pole->task?->streetlight?->panchayat ?? 'N/A',
                 'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . $pole->lat . ', ' . $pole->lng . ')">' . ($pole->complete_pole_number ?? 'N/A') . '</span>',
@@ -725,19 +823,19 @@ class TaskController extends Controller
                 'bill_raised' => '0',
                 'rms' => $pole->rms_status ?? 'N/A',
                 'actions' => '
-                    <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-                        <i class="mdi mdi-eye"></i>
-                    </a>
-                    <a href="' . route('poles.edit', $pole->id) . '" class="btn btn-icon btn-warning">
-                        <i class="mdi mdi-pencil"></i>
-                    </a>
-                    <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
-                        title="Delete Pole" data-id="' . $pole->id . '"
-                        data-name="' . ($pole->complete_pole_number ?? 'this pole') . '"
-                        data-url="' . route('poles.destroy', $pole->id) . '">
-                        <i class="mdi mdi-delete"></i>
-                    </button>
-                '
+                <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                    <i class="mdi mdi-eye"></i>
+                </a>
+                <a href="' . route('poles.edit', $pole->id) . '" class="btn btn-icon btn-warning">
+                    <i class="mdi mdi-pencil"></i>
+                </a>
+                <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
+                    title="Delete Pole" data-id="' . $pole->id . '"
+                    data-name="' . ($pole->complete_pole_number ?? 'this pole') . '"
+                    data-url="' . route('poles.destroy', $pole->id) . '">
+                    <i class="mdi mdi-delete"></i>
+                </button>
+            ',
             ];
         });
 
@@ -745,7 +843,7 @@ class TaskController extends Controller
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $filteredRecords,
-            'data' => $data
+            'data' => $data,
         ]);
     }
 

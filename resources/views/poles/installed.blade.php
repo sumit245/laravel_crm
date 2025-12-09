@@ -55,82 +55,201 @@
             const vendor = urlParams.get('vendor');
 
             $('#installedPole').DataTable({
-                    processing: true,
-                    serverSide: true,
-                    ajax: {
-                        url: '{{ route('installed.poles.data') }}',
-                        data: function(d) {
-                            d.project_id = projectId;
-                            d.project_manager = projectManager;
-                            d.site_engineer = siteEngineer;
-                            d.vendor = vendor;
-                        }
+                processing: true,
+                serverSide: true,
+                ajax: {
+                    url: '{{ route('installed.poles.data') }}',
+                    dataSrc: 'data',
+                    data: function(d) {
+                        d.project_id = projectId;
+                        d.project_manager = projectManager;
+                        d.site_engineer = siteEngineer;
+                        d.vendor = vendor;
+                    }
+                },
+                columns: [{
+                        data: 'checkbox',
+                        orderable: false,
+                        searchable: false
                     },
-                    columns: [{
-                            data: 'checkbox',
-                            orderable: false,
-                            searchable: false
-                        },
-                        {
-                            data: 'block'
-                        },
-                        {
-                            data: 'panchayat'
-                        },
-                        {
-                            data: 'pole_number'
-                        },
-                        {
-                            data: 'imei'
-                        },
-                        {
-                            data: 'sim_number'
-                        },
-                        {
-                            data: 'battery'
-                        },
-                        {
-                            data: 'panel'
-                        },
-                        {
-                            data: 'bill_raised'
-                        },
-                        {
-                            data: 'rms'
-                        },
-                        {
-                            data: 'actions',
-                            orderable: false,
-                            searchable: false
-                        }
-                    ],
-                    dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
-                        "<'row'<'col-sm-12'tr>>" +
-                        "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-                    buttons: [{
-                            extend: 'excel',
-                            text: '<i class="mdi mdi-file-excel text-light"></i>',
-                            className: 'btn btn-icon  btn-success',
-                            titleAttr: 'Export to Excel',
-                            exportOptions: {
-                                columns: ':not(.actions)',
-                                modifier: {
-                                    page: 'all'
+                    {
+                        data: 'block'
+                    },
+                    {
+                        data: 'panchayat'
+                    },
+                    {
+                        data: 'pole_number'
+                    },
+                    {
+                        data: 'imei'
+                    },
+                    {
+                        data: 'sim_number'
+                    },
+                    {
+                        data: 'battery'
+                    },
+                    {
+                        data: 'panel'
+                    },
+                    {
+                        data: 'bill_raised'
+                    },
+                    {
+                        data: 'rms'
+                    },
+                    {
+                        data: 'actions',
+                        orderable: false,
+                        searchable: false
+                    }
+                ],
+                dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
+                    "<'row'<'col-sm-12'tr>>" +
+                    "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
+                buttons: [{
+                        extend: 'excel',
+                        text: '<i class="mdi mdi-file-excel text-light"></i>',
+                        className: 'btn btn-icon btn-success',
+                        titleAttr: 'Export to Excel',
+                        // TODO: REFACTOR - User prefers Laravel MVC approach instead of heavy JavaScript
+                        // This export function should be moved to a Laravel controller/route for better maintainability
+                        // Current implementation uses client-side JavaScript with SheetJS library
+                        // Preferred approach: Create a dedicated export route in TaskController that handles Excel generation server-side
+                        action: function(e, dt, button, config) {
+                            // For server-side processing, fetch all data
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const params = {
+                                project_id: urlParams.get('project_id'),
+                                project_manager: urlParams.get('project_manager'),
+                                site_engineer: urlParams.get('site_engineer'),
+                                vendor: urlParams.get('vendor'),
+                                length: -1, // Get all records
+                                start: 0,
+                                draw: 1
+                            };
+
+                            // Show loading indicator
+                            const originalText = button.text();
+                            button.prop('disabled', true).html(
+                                '<i class="mdi mdi-loading mdi-spin"></i> Exporting...');
+
+                            // Fetch all data
+                            $.ajax({
+                                url: '{{ route('installed.poles.data') }}',
+                                data: params,
+                                success: function(response) {
+                                    // Prepare data for export (remove HTML tags)
+                                    const exportData = response.data.map(function(row) {
+                                        return {
+                                            district: row.district || 'N/A',
+                                            block: row.block || 'N/A',
+                                            panchayat: row.panchayat || 'N/A',
+                                            pole_number: $(row.pole_number)
+                                                .text() || 'N/A',
+                                            imei: row.imei || 'N/A',
+                                            sim_number: row.sim_number || 'N/A',
+                                            battery: row.battery || 'N/A',
+                                            panel: row.panel || 'N/A',
+                                            // bill_raised: row.bill_raised || '0',
+                                            // rms: row.rms || 'N/A'
+                                        };
+                                    });
+
+                                    // Use SheetJS (xlsx) library for proper Excel export
+                                    function exportToExcel(data) {
+                                        // Prepare worksheet data
+                                        const headers = [
+                                            ['District', 'Block', 'Panchayat',
+                                                'Pole Number',
+                                                'IMEI', 'Sim Number', 'Battery',
+                                                'Panel'
+                                            ]
+                                        ];
+                                        const rows = data.map(function(row) {
+                                            return [
+                                                row.district || 'N/A',
+                                                row.block || 'N/A',
+                                                row.panchayat || 'N/A',
+                                                row.pole_number || 'N/A',
+                                                row.imei || 'N/A',
+                                                row.sim_number || 'N/A',
+                                                row.battery || 'N/A',
+                                                row.panel || 'N/A',
+                                                // row.bill_raised || '0',
+                                                // row.rms || 'N/A'
+                                            ];
+                                        });
+
+                                        const wsData = headers.concat(rows);
+                                        const ws = XLSX.utils.aoa_to_sheet(wsData);
+
+                                        // Create workbook and add worksheet
+                                        const wb = XLSX.utils.book_new();
+                                        XLSX.utils.book_append_sheet(wb, ws,
+                                            'Installed Poles');
+
+                                        // Generate Excel file and download
+                                        XLSX.writeFile(wb, 'installed_poles_' +
+                                            new Date().getTime() + '.xlsx');
+
+                                        // Restore button
+                                        button.prop('disabled', false).html(
+                                            originalText);
+                                    }
+
+                                    // Load SheetJS from CDN if not already loaded
+                                    if (typeof XLSX === 'undefined') {
+                                        const script = document.createElement('script');
+                                        script.src =
+                                            'https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js';
+                                        script.onload = function() {
+                                            exportToExcel(exportData);
+                                        };
+                                        script.onerror = function() {
+                                            alert(
+                                                'Failed to load Excel export library. Please try again.'
+                                            );
+                                            button.prop('disabled', false).html(
+                                                originalText);
+                                        };
+                                        document.head.appendChild(script);
+                                    } else {
+                                        exportToExcel(exportData);
+                                    }
+
+                                },
+                                error: function() {
+                                    alert('Error exporting data. Please try again.');
+                                    button.prop('disabled', false).html(originalText);
                                 }
-                            }
+                            });
                         }
                     },
                     {
                         extend: 'pdf',
                         text: '<i class="mdi mdi-file-pdf"></i>',
                         className: 'btn btn-icon btn-danger',
-                        titleAttr: 'Export to PDF'
+                        titleAttr: 'Export to PDF',
+                        exportOptions: {
+                            columns: ':not(.actions)',
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
                     },
                     {
                         extend: 'print',
                         text: '<i class="mdi mdi-printer"></i>',
                         className: 'btn btn-icon btn-info',
-                        titleAttr: 'Print Table'
+                        titleAttr: 'Print Table',
+                        exportOptions: {
+                            columns: ':not(.actions)',
+                            modifier: {
+                                page: 'all'
+                            }
+                        }
                     }
                 ],
                 pageLength: 50,
@@ -154,7 +273,7 @@
                 }
             });
 
-        $('.dataTables_filter input').addClass('form-control form-control-sm');
+            $('.dataTables_filter input').addClass('form-control form-control-sm');
         });
 
         // Extract delete button logic into a function
