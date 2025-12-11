@@ -27,7 +27,8 @@ class Streetlight extends Model
         'lat',
         'lng',
         'project_id',
-        'total_poles'
+        'total_poles',
+        'mukhiya_contact'
     ];
 
     // Relationship: A streetlight has multiple poles

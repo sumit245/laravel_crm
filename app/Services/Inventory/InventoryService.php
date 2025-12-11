@@ -28,7 +28,7 @@ class InventoryService extends BaseService implements InventoryServiceInterface
      */
     public function setStrategy(int $projectType): self
     {
-        $type = ProjectType::fromValue($projectType);
+        $type = ProjectType::from($projectType);
 
         $this->strategy = match($type) {
             ProjectType::ROOFTOP_SOLAR => new RooftopInventoryStrategy(),

@@ -63,13 +63,51 @@ class SiteController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request, $projectId = null)
     {
-        $states   = State::all();
+        $project = null;
+        $projectType = null;
+
+        // Get project_id from route parameter or query string
+        $projectId = $projectId ?? $request->query('project_id');
+
+        if ($projectId) {
+            $project = Project::find($projectId);
+            if ($project) {
+                $projectType = $project->project_type;
+            }
+        }
+
+        $states = State::all();
         $projects = Project::all();
-        $vendors  = User::where('role', 3)->get();
-        $staffs   = User::whereIn('role', [1, 2])->get();
-        return view('sites.create', compact('states', 'projects', 'vendors', 'staffs'));
+        $vendors = User::where('role', 3)->get();
+        $staffs = User::whereIn('role', [1, 2])->get();
+
+        return view('sites.create', compact('states', 'projects', 'vendors', 'staffs', 'project', 'projectType'));
+    }
+
+    /**
+     * Generate task_id for streetlight sites based on district prefix
+     */
+    private function generateTaskId($district)
+    {
+        $districtPrefix = strtoupper(substr($district, 0, 3)); // Extract first 3 letters
+
+        // Find the last task_id with this district prefix
+        $lastTask = Streetlight::where('task_id', 'LIKE', "{$districtPrefix}%")
+            ->orderBy('task_id', 'desc')
+            ->first();
+
+        if ($lastTask) {
+            // Extract numeric part and increment
+            preg_match('/(\d+)$/', $lastTask->task_id, $matches);
+            $counter = isset($matches[1]) ? (int) $matches[1] + 1 : 1;
+        } else {
+            $counter = 1;
+        }
+
+        // Generate task_id in format: DISTRICT_PREFIX + 3-digit number
+        return sprintf('%s%03d', $districtPrefix, $counter);
     }
 
     /**
@@ -79,36 +117,74 @@ class SiteController extends Controller
     {
         try {
             Log::info('Request received for create site', $request->all());
-            
-            $validatedData = $request->validate([
-                'state' => 'required|integer',
-                'district' => 'required|integer',
-                'location' => 'required|string|max:255',
-                'project_id' => 'required|integer',
-                'site_name' => 'required|string|max:255',
-                'ic_vendor_name' => 'required|integer',
-                'site_engineer' => 'required|integer',
-                'contact_no' => 'required|string',
-                'meter_number' => 'required|string|max:50',
-                'net_meter_sr_no' => 'required|string|max:50',
-                'solar_meter_sr_no' => 'required|string|max:50',
-                'project_capacity' => 'required|numeric',
-                'ca_number' => 'required|string|max:50',
-                'sanction_load' => 'required|numeric',
-                'load_enhancement_status' => 'required|string|max:255',
-                'site_survey_status' => 'required|string|max:255',
-                'material_inspection_date' => 'required|date',
-                'spp_installation_date' => 'required|date',
-                'commissioning_date' => 'required|date',
-                'remarks' => 'nullable|string|max:1000',
-            ]);
 
-            $site = Site::create($validatedData);
-            
-            Log::info('Site created successfully', ['site_id' => $site->id, 'site_name' => $site->site_name]);
-            
-            return redirect()->route('sites.show', $site->id)
-                ->with('success', 'Site created successfully.');
+            // Get project to determine project type
+            $projectId = $request->input('project_id');
+            $project = Project::find($projectId);
+
+            if (!$project) {
+                return redirect()->back()
+                    ->withErrors(['error' => 'Project not found.'])
+                    ->withInput();
+            }
+
+            // Handle streetlight projects (project_type == 1)
+            if ($project->project_type == 1) {
+                $validatedData = $request->validate([
+                    'project_id' => 'required|integer',
+                    'state' => 'required|string|max:255',
+                    'district' => 'required|string|max:255',
+                    'block' => 'required|string|max:255',
+                    'panchayat' => 'required|string|max:255',
+                    'ward' => 'nullable|string|max:255',
+                    'total_poles' => 'nullable|integer|min:0',
+                    'mukhiya_contact' => 'nullable|string|max:255',
+                ]);
+
+                // Generate task_id based on district
+                $validatedData['task_id'] = $this->generateTaskId($validatedData['district']);
+
+                $streetlight = Streetlight::create($validatedData);
+
+                Log::info('Streetlight site created successfully', [
+                    'streetlight_id' => $streetlight->id,
+                    'task_id' => $streetlight->task_id
+                ]);
+
+                return redirect()->route('projects.show', $projectId)
+                    ->with('success', 'Streetlight site created successfully.');
+            } else {
+                // Handle rooftop projects (project_type == 0)
+                $validatedData = $request->validate([
+                    'state' => 'required|integer',
+                    'district' => 'required|integer',
+                    'location' => 'required|string|max:255',
+                    'project_id' => 'required|integer',
+                    'site_name' => 'required|string|max:255',
+                    'ic_vendor_name' => 'required|integer',
+                    'site_engineer' => 'required|integer',
+                    'contact_no' => 'required|string',
+                    'meter_number' => 'required|string|max:50',
+                    'net_meter_sr_no' => 'required|string|max:50',
+                    'solar_meter_sr_no' => 'required|string|max:50',
+                    'project_capacity' => 'required|numeric',
+                    'ca_number' => 'required|string|max:50',
+                    'sanction_load' => 'required|numeric',
+                    'load_enhancement_status' => 'required|string|max:255',
+                    'site_survey_status' => 'required|string|max:255',
+                    'material_inspection_date' => 'required|date',
+                    'spp_installation_date' => 'required|date',
+                    'commissioning_date' => 'required|date',
+                    'remarks' => 'nullable|string|max:1000',
+                ]);
+
+                $site = Site::create($validatedData);
+
+                Log::info('Site created successfully', ['site_id' => $site->id, 'site_name' => $site->site_name]);
+
+                return redirect()->route('sites.show', $site->id)
+                    ->with('success', 'Site created successfully.');
+            }
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::warning('Site creation failed - Validation errors', [
                 'errors' => $e->errors(),
@@ -158,11 +234,11 @@ class SiteController extends Controller
             // Prepare readable engineer, vendor, manager names
             $engineerName = optional($streetlightTask?->engineer)->firstName . " " . optional($streetlightTask?->engineer)->lastName ?? 'N/A';
 
-            $vendorName   = optional($streetlightTask?->vendor)->name ?? 'N/A';
-            $managerName  = optional($streetlightTask?->manager)->firstName . " " . optional($streetlightTask?->manager)->lastName ?? 'N/A';
+            $vendorName = optional($streetlightTask?->vendor)->name ?? 'N/A';
+            $managerName = optional($streetlightTask?->manager)->firstName . " " . optional($streetlightTask?->manager)->lastName ?? 'N/A';
 
             // Prepare state and district names if you have relationships, else keep as stored
-            $stateName    = $site->state;
+            $stateName = $site->state;
             $districtName = $site->district;
 
 
@@ -185,10 +261,10 @@ class SiteController extends Controller
         $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])
             ->findOrFail($id);
 
-        $states    = State::all();
+        $states = State::all();
         $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
-        $projects  = Project::all();
-        $users     = User::all(); // For vendor and engineer names
+        $projects = Project::all();
+        $users = User::all(); // For vendor and engineer names
 
         return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectType'));
     }

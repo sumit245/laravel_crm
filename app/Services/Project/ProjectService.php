@@ -163,7 +163,7 @@ class ProjectService extends BaseService implements ProjectServiceInterface
             return [];
         }
 
-        $projectType = ProjectType::fromValue($project->project_type);
+        $projectType = ProjectType::from($project->project_type);
 
         if ($projectType === ProjectType::STREETLIGHT) {
             return $this->getStreetlightProjectStatistics($project);

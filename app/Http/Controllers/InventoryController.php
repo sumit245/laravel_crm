@@ -14,6 +14,7 @@ use App\Models\User;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
@@ -257,56 +258,49 @@ class InventoryController extends Controller
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
 
-            // Query inventory based on store_name and store_id
+            // Query inventory with pagination to handle large datasets
             $inventory = $inventoryModel::where('project_id', $projectId)
-                ->where('store_id', $storeId) // Filter by store_id directly
+                ->where('store_id', $storeId)
                 ->with('dispatch')
-                ->get();
-            // Dispatch Inventory
+                ->orderBy('created_at', 'desc')
+                ->paginate(100)
+                ->appends($request->query()); // Preserve query parameters in pagination links
+            
+            // Dispatch Inventory - use query builder for aggregations instead of loading all
             $dispatch = InventoryDispatch::where('isDispatched', true)
                 ->where('store_id', $storeId)
                 ->get();
 
 
 
+            // Use database queries for aggregations instead of loading all records into memory
             // Battery Data
-            $totalBattery = $inventory->where('item_code', 'SL03')
-                ->count();
-            $batteryRate = $inventory->where('item_code', 'SL03')
-                ->value('rate');
-            $totalBatteryValue = $batteryRate * $totalBattery;
+            $batteryQuery = $inventoryModel::where('project_id', $projectId)
+                ->where('store_id', $storeId)
+                ->where('item_code', 'SL03');
+            $totalBattery = $batteryQuery->count();
+            $batteryRate = $batteryQuery->value('rate') ?? 0;
+            $totalBatteryValue = $batteryQuery->sum(DB::raw('quantity * rate'));
             $totalBatteryValue = number_format($totalBatteryValue, 2);
             // Battery Dispatch data
             $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
             $availableBattery = $totalBattery - $batteryDispatch;
-
             $dispatchAmountBattery = $dispatch->where('item_code', 'SL03')->sum('total_value');
             $dispatchAmountBattery = number_format($dispatchAmountBattery, 2);
 
             // Luminary Data
-            $totalLuminary = $inventory->where('item_code', 'SL02')->count();
-            $LuminaryRate = $inventory->where('item_code', 'SL02')
-                ->value('rate');
-            $totalLuminaryValue = $LuminaryRate * $totalLuminary;
+            $luminaryQuery = $inventoryModel::where('project_id', $projectId)
+                ->where('store_id', $storeId)
+                ->where('item_code', 'SL02');
+            $totalLuminary = $luminaryQuery->count();
+            $LuminaryRate = $luminaryQuery->value('rate') ?? 0;
+            $totalLuminaryValue = $luminaryQuery->sum(DB::raw('quantity * rate'));
             $totalLuminaryValue = number_format($totalLuminaryValue, 2);
             // Luminary Dispatch data
             $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
             $availableLuminary = $totalLuminary - $luminaryDispatch;
-
             $dispatchAmountLuminary = $dispatch->where('item_code', 'SL02')->sum('total_value');
             $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
-
-            //Structure Data
-            // $totalStructure = $inventory->where('item_code', 'SL04')->count();
-            // $StructureRate = $inventory->where('item_code', 'SL04')
-            // ->value('rate');
-            // $totalStructureValue = $StructureRate * $totalStructure;
-            // $totalStructureValue = number_format($totalStructureValue, 2);
-            // Structure Dispatch data
-            // $structureDispatch = $dispatch->where('item_code', 'SL04')->count();
-            // $availableStructure = $totalStructure - $structureDispatch;
-            // $dispatchAmountStructure = $dispatch->where('item_code', 'SL04')->sum('total_value');
-            // $dispatchAmountStructure = number_format($dispatchAmountStructure, 2);
 
             // Linking Battery to Structure
             $totalStructure = $totalBattery;
@@ -315,15 +309,16 @@ class InventoryController extends Controller
             $availableStructure = $availableBattery;
 
             // Module Data
-            $totalModule = $inventory->where('item_code', 'SL01')->count();
-            $ModuleRate = $inventory->where('item_code', 'SL01')
-                ->value('rate');
-            $totalModuleValue = $ModuleRate * $totalModule;
+            $moduleQuery = $inventoryModel::where('project_id', $projectId)
+                ->where('store_id', $storeId)
+                ->where('item_code', 'SL01');
+            $totalModule = $moduleQuery->count();
+            $ModuleRate = $moduleQuery->value('rate') ?? 0;
+            $totalModuleValue = $moduleQuery->sum(DB::raw('quantity * rate'));
             $totalModuleValue = number_format($totalModuleValue, 2);
             // Module Dispatch data
             $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
             $availableModule = $totalModule - $moduleDispatch;
-
             $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
             $dispatchAmountModule = number_format($dispatchAmountModule, 2);
 

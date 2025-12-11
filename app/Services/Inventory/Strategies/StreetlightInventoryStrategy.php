@@ -25,22 +25,24 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
      */
     public function getValidationRules(array $data): array
     {
+        // Accept form field names (code, dropdown, number, serialnumber, etc.)
+        // The prepareForStorage method will map them to the correct database fields
         return [
             'project_id' => 'required|exists:projects,id',
             'store_id' => 'required|exists:stores,id',
-            'item' => 'required|string|max:255',
-            'item_code' => 'required|string|max:255',
+            'code' => 'required|string|max:255', // Form field: item_code
+            'dropdown' => 'required|string|max:255', // Form field: item
             'manufacturer' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'serial_number' => 'required|string|max:255',
+            'serialnumber' => 'required|string|max:255', // Form field: serial_number
             'make' => 'required|string|max:255',
             'rate' => 'required|numeric|min:0',
-            'quantity' => 'required|numeric|min:0',
-            'total_value' => 'nullable|numeric|min:0',
-            'hsn' => 'required|string|max:50',
+            'number' => 'required|numeric|min:0', // Form field: quantity
+            'totalvalue' => 'nullable|numeric|min:0', // Form field: total_value
+            'hsncode' => 'required|string|max:50', // Form field: hsn
             'description' => 'nullable|string',
             'unit' => 'required|string|max:50',
-            'received_date' => 'required|date',
+            'receiveddate' => 'required|date', // Form field: received_date
         ];
     }
 
@@ -57,15 +59,39 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
      */
     public function prepareForStorage(array $data): array
     {
+        // Map form field names to expected database field names
+        $mappedData = [
+            'project_id' => $data['project_id'] ?? null,
+            'store_id' => $data['store_id'] ?? null,
+            'item_code' => $data['item_code'] ?? $data['code'] ?? null,
+            'item' => $data['item'] ?? $data['dropdown'] ?? null,
+            'manufacturer' => $data['manufacturer'] ?? null,
+            'model' => $data['model'] ?? null,
+            'serial_number' => $data['serial_number'] ?? $data['serialnumber'] ?? null,
+            'make' => $data['make'] ?? null,
+            'rate' => $data['rate'] ?? null,
+            'quantity' => $data['quantity'] ?? $data['number'] ?? 1,
+            'hsn' => $data['hsn'] ?? $data['hsncode'] ?? null,
+            'description' => $data['description'] ?? null,
+            'unit' => $data['unit'] ?? null,
+            'received_date' => $data['received_date'] ?? $data['receiveddate'] ?? null,
+        ];
+
         // Calculate total value if not provided
-        if (!isset($data['total_value']) && isset($data['quantity'], $data['rate'])) {
-            $data['total_value'] = $this->calculateTotalValue(
-                (float) $data['quantity'],
-                (float) $data['rate']
+        $totalValue = $data['total_value'] ?? $data['totalvalue'] ?? null;
+        if (!$totalValue && isset($mappedData['quantity'], $mappedData['rate'])) {
+            $mappedData['total_value'] = $this->calculateTotalValue(
+                (float) $mappedData['quantity'],
+                (float) $mappedData['rate']
             );
+        } else {
+            $mappedData['total_value'] = $totalValue;
         }
 
-        return $data;
+        // Remove null values to avoid issues
+        return array_filter($mappedData, function($value) {
+            return $value !== null;
+        });
     }
 
     /**
