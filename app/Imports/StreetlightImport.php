@@ -32,7 +32,7 @@ class StreetlightImport implements ToModel, WithHeadingRow, WithValidation
             if ($lastTask) {
                 // Extract numeric part and increment
                 preg_match('/(\d+)$/', $lastTask->task_id, $matches);
-                $this->districtCounters[$district] = isset($matches[1]) ? (int)$matches[1] + 1 : 1;
+                $this->districtCounters[$district] = isset($matches[1]) ? (int) $matches[1] + 1 : 1;
             } else {
                 $this->districtCounters[$district] = 1;
             }
@@ -46,40 +46,33 @@ class StreetlightImport implements ToModel, WithHeadingRow, WithValidation
         $ward = isset($row['ward']) && !empty($row['ward']) ? array_map('intval', explode(',', $row['ward'])) : [];
 
         return new Streetlight([
-            'task_id'           => $taskId,
-            'state'             => $row['state'],
-            'district'          => $row['district'],
-            'block'             => $row['block'],
-            'panchayat'         => $row['panchayat'],
-            'ward'              => isset($row['ward']) ? $row['ward'] : null,
-            'pole'              => isset($row['pole']) ? $row['pole'] : null,
-            'complete_pole_number' => isset($row['complete_pole_number']) ? $row['complete_pole_number'] : null,
-            'uname'             => isset($row['uname']) ? $row['uname'] : null,
-            'SID'               => isset($row['sid']), // Ensure column names match Excel header?$row['sid']:nulls
-            'district_id'       => isset($row['district_id']) ? $row['district_id'] : null,
-            'block_id'          => isset($row['block_id']) ? $row['block_id'] : null,
-            'panchayat_id'      => isset($row['panchayat_id']) ? $row['panchayat_id'] : null,
-            'ward_id'           => isset($row['ward_id']) ? $row['ward_id'] : null,
-            'pole_id'           => isset($row['pole_id']) ? $row['pole_id'] : null,
-            'luminary_qr'       => isset($row['luminary_qr']) ? $row['luminary_qr'] : null,
-            'battery_qr'        => isset($row['battery_qr']) ? $row['battery_qr'] : null,
-            'panel_qr'          => isset($row['panel_qr']) ? $row['panel_qr'] : null,
-            'file'              => isset($row['file']) ? $row['file'] : null,
-            'lat'               => isset($row['lat']) ? $row['lat'] : null,
-            'lng'               => isset($row['lng']) ? $row['lng'] : null,
-            'beneficiary'       => isset($row['beneficiary']) ? $row['beneficiary'] : null,
-            'remark'            => isset($row['remark']) ? $row['remark'] : null,
+            'task_id' => $taskId,
+            'state' => $row['state'],
+            'district' => $row['district'],
+            'block' => $row['block'],
+            'panchayat' => $row['panchayat'],
+            'ward' => isset($row['ward']) ? $row['ward'] : null,
+            // 'total_poles' => isset($row['total_scope']) ? $row['total_poles'] : (isset($row['pole']) ? $row['pole'] : null),
+            'mukhiya_contact' => isset($row['mukhiya_contact']) ? $row['mukhiya_contact'] : null,
             'project_id' => $this->projectId,
+            'district_code' => isset($row['district_code']) ? $row['district_code'] : null,
+            'block_code' => isset($row['block_code']) ? $row['block_code'] : null,
+            'panchayat_code' => isset($row['panchayat_code']) ? $row['panchayat_code'] : null,
+            'ward_type' => isset($row['ward_type']) ? $row['ward_type'] : null,
+            // Note: The following columns were dropped in migration 2025_08_06_204122:
+            // complete_pole_number, uname, SID, district_id, block_id, panchayat_id, ward_id,
+            // luminary_qr, battery_qr, panel_qr, file, lat, lng, remark
+            // These are now handled in the poles table or other related tables
         ]);
     }
     public function rules(): array
     {
         return [
-            'state'     => 'required',
-            'district'  => 'required',
-            'block'     => 'required',
+            'state' => 'required',
+            'district' => 'required',
+            'block' => 'required',
             'panchayat' => 'required',
-            'ward'      => 'nullable',   // ward is nullable and should be an array
+            'ward' => 'nullable',   // ward is nullable and should be an array
         ];
     }
 }

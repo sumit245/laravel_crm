@@ -30,7 +30,7 @@ class HomeController extends Controller
     /**
      * Show the application dashboard.
      *
-     * @return \Illuminate\Contracts\Support\Renderable
+     * @return \Illuminate\Contracts\Support\Renderable|\Illuminate\Http\RedirectResponse
      */
 
     public function index(Request $request)
@@ -38,6 +38,12 @@ class HomeController extends Controller
         $user = auth()->user();
         // Admin, Project Manager, Coordinator,
         $selectedProjectId = $this->getSelectedProject($request, $user);
+
+        // If no project is found, redirect to projects page or show error
+        if (!$selectedProjectId) {
+            return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project.');
+        }
+
         // 10
         $project = Project::findOrFail($selectedProjectId);
         // {project_name:BREDA, project_type:1 ... with all relations declared in Project Model}
@@ -230,11 +236,13 @@ class HomeController extends Controller
         }
 
         // Finally get first project user has access to
-        return Project::when($user->role !== 0, function ($query) use ($user) {
+        $project = Project::when($user->role !== 0, function ($query) use ($user) {
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
-        })->first()->id;
+        })->first();
+
+        return $project ? $project->id : null;
     }
 
 

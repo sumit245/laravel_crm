@@ -302,11 +302,17 @@ class SiteController extends Controller
     public function edit(string $id, Request $request)
     {
         $projectId = $request->query('project_id');
-        if ($projectId == 11) {
-            $streetlight = Streetlight::findOrFail($id);
-            return view('sites.edit', compact('streetlight', 'projectId'));
+
+        if ($projectId) {
+            $project = Project::find($projectId);
+            if ($project && $project->project_type == 1) {
+                // Streetlight project - use Streetlight model
+                $streetlight = Streetlight::findOrFail($id);
+                return view('sites.edit', compact('streetlight', 'projectId'));
+            }
         }
 
+        // Default to regular Site model (rooftop projects)
         $site = Site::findOrFail($id);
         return view('sites.edit', compact('site', 'projectId'));
     }
@@ -314,34 +320,42 @@ class SiteController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            if ($request->project_id == 11) {
-                $streetlight = Streetlight::findOrFail($id);
-                $streetlight->update($request->only([
-                    'task_id',
-                    'state',
-                    'district',
-                    'block',
-                    'panchayat',
-                    'ward',
-                    'mukhiya_contact',
-                    'total_poles'
-                ]));
-                return redirect()->route('projects.show', $request->project_id)
-                    ->with('success', 'Streetlight site updated successfully.');
-            } else {
-                $site = Site::findOrFail($id);
-                $site->update($request->only([
-                    'task_id',
-                    'state',
-                    'district',
-                    'block',
-                    'panchayat',
-                    'ward',
-                    'mukhiya_contact',
-                ]));
-                return redirect()->route('sites.show', $site->id)
-                    ->with('success', 'Site updated successfully.');
+            // Determine project type from project_id
+            $projectId = $request->query('project_id') ?? $request->input('project_id');
+
+            if ($projectId) {
+                $project = Project::find($projectId);
+                if ($project && $project->project_type == 1) {
+                    // Streetlight project - use Streetlight model
+                    $streetlight = Streetlight::findOrFail($id);
+                    $streetlight->update($request->only([
+                        'task_id',
+                        'state',
+                        'district',
+                        'block',
+                        'panchayat',
+                        'ward',
+                        'mukhiya_contact',
+                        'total_poles'
+                    ]));
+                    return redirect()->route('projects.show', $projectId)
+                        ->with('success', 'Streetlight site updated successfully.');
+                }
             }
+
+            // Default to regular Site model (rooftop projects)
+            $site = Site::findOrFail($id);
+            $site->update($request->only([
+                'task_id',
+                'state',
+                'district',
+                'block',
+                'panchayat',
+                'ward',
+                'mukhiya_contact',
+            ]));
+            return redirect()->route('sites.show', $site->id)
+                ->with('success', 'Site updated successfully.');
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
             return redirect()->back()
@@ -353,18 +367,28 @@ class SiteController extends Controller
     public function destroy(string $id, Request $request)
     {
         try {
-            if ($request->project_id == 11) {
-                $streetlight = Streetlight::findOrFail($id);
-                $streetlight->delete();
-                return redirect()->back()
-                    ->with('success', 'Streetlight site deleted successfully.');
-            } else {
-                $site = Site::findOrFail($id);
-                $site->delete();
-                return response()->json(['message' => 'Site deleted']);
+            // Determine project type from project_id
+            $projectId = $request->query('project_id') ?? $request->input('project_id');
+
+            if ($projectId) {
+                $project = Project::find($projectId);
+                if ($project && $project->project_type == 1) {
+                    // Streetlight project - use Streetlight model
+                    $streetlight = Streetlight::findOrFail($id);
+                    $streetlight->delete();
+                    return redirect()->back()
+                        ->with('success', 'Streetlight site deleted successfully.');
+                }
             }
+
+            // Default to regular Site model (rooftop projects)
+            $site = Site::findOrFail($id);
+            $site->delete();
+            return redirect()->back()
+                ->with('success', 'Site deleted successfully.');
         } catch (\Exception $e) {
-            return response()->json(['message' => $e->getMessage()], 500);
+            return redirect()->back()
+                ->with('error', 'Failed to delete site: ' . $e->getMessage());
         }
     }
 }

@@ -28,7 +28,7 @@ Route::get('/certificate-3', fn() => view('certificate_3'))->name('certificate3.
 Route::get('/certificate-4', fn() => view('certificate_4'))->name('certificate4.view');
 
 // Authenticated Routes
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
@@ -75,7 +75,7 @@ Route::middleware(['auth'])->group(function () {
     Route::resource('meets', MeetController::class);
     Route::get('/meets/show/{id}', [MeetController::class, 'show'])->name('meets.show');
     Route::get('/meets/details/{id}', [MeetController::class, 'details'])->name('meets.details');
-    Route::get('/meets/dashboard', [MeetController::class, 'dashbaord'])->name('meets.dashboard');
+    Route::get('/meets/dashboard', [MeetController::class, 'dashboard'])->name('meets.dashboard');
     Route::get('/meets/{meet}/notes', [MeetController::class, 'notes'])->name('meets.notes');
     Route::put('/meets/{meet}/notes', [MeetController::class, 'updateNotes'])->name('meets.updateNotes');
     Route::get('/meets/{meet}/export/pdf', [MeetController::class, 'exportPdf'])->name('meets.exportPdf');

@@ -5,17 +5,23 @@
     $selectedProjectId = 0;
     if (session()->has('project_id')) {
         $selectedProject = Project::find(session('project_id'));
-        $selectedProjectId = $selectedProject->id;
+        if ($selectedProject) {
+            $selectedProjectId = $selectedProject->id;
+        }
     }
     if (!$selectedProject) {
         $selectedProject = Project::first();
-        $selectedProjectId = $selectedProject->id;
+        if ($selectedProject) {
+            $selectedProjectId = $selectedProject->id;
+        }
     }
     $projectType = $selectedProject ? $selectedProject->project_type : null;
 
     // Check if user has restricted access (only review-meetings)
-    // Only Site Engineer (1) and Store Incharge (4) are restricted
-    $isRestrictedUser = in_array(auth()->user()->role, [1, 4]);
+    // Site Engineer (1), Store Incharge (4), and Review Meeting Only (11) are restricted
+    $userRole = (int) auth()->user()->role;
+    $restrictedRoles = [1, 4, 11];
+    $isRestrictedUser = in_array($userRole, $restrictedRoles, true);
 @endphp
 
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
@@ -135,7 +141,6 @@
                     <span class="menu-title">Inventory Management</span>
                 </a>
             </li>
-
             <hr />
         @endif
 

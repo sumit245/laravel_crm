@@ -23,12 +23,14 @@
 
         <div class="row">
             <div class="col-lg-8">
-                <form class="forms-sample" id="editMeetingForm" action="{{ route('meets.update', $meet->id) }}" method="POST">
+                <form class="forms-sample" id="editMeetingForm" action="{{ route('meets.update', $meet->id) }}"
+                    method="POST">
                     @csrf
                     @method('PUT')
                     @if ($meet->attendees->count() > 0)
                         @foreach ($meet->attendees as $attendee)
-                            <input type="hidden" name="users[]" value="{{ $attendee->id }}" id="user-input-{{ $attendee->id }}">
+                            <input type="hidden" name="users[]" value="{{ $attendee->id }}"
+                                id="user-input-{{ $attendee->id }}">
                         @endforeach
                     @endif
                     <div class="card mb-4" style="border-radius: 0.35em !important;">
@@ -37,22 +39,33 @@
                         </div>
                         <div class="card-body">
                             <div class="row">
-                            <div class="col-md-6 mb-3 form-group">
-                                <label for="meetingTitle" class="form-label">Meeting Title
-                                    <span class="text-danger small">*</span>
-                                </label>
-                                <input type="text" class="form-control" id="meetingTitle" name="title" required
-                                    value="{{ old('title', $meet->title) }}" placeholder="Enter meeting title">
-                            </div>
+                                <div class="col-md-6 mb-3 form-group">
+                                    <label for="meetingTitle" class="form-label">Meeting Title
+                                        <span class="text-danger small">*</span>
+                                    </label>
+                                    <input type="text" class="form-control" id="meetingTitle" name="title" required
+                                        value="{{ old('title', $meet->title) }}" placeholder="Enter meeting title">
+                                </div>
                                 <div class="col-md-6 mb-3 form-group">
                                     <label for="meetingType" class="form-label">Meeting Type
                                         <span class="text-danger small">*</span>
                                     </label>
-                                    <select name="type" class="form-select" required>
-                                        <option value="Review" {{ old('type', $meet->type) == 'Review' ? 'selected' : '' }}>Review</option>
-                                        <option value="Planning" {{ old('type', $meet->type) == 'Planning' ? 'selected' : '' }}>Planning</option>
-                                        <option value="Discussion" {{ old('type', $meet->type) == 'Discussion' ? 'selected' : '' }}>Discussion</option>
+                                    <select name="type" id="meetingTypeSelect" class="form-select" required>
+                                        <option value="Review" {{ old('type', $meet->type) == 'Review' ? 'selected' : '' }}>
+                                            Review</option>
+                                        <option value="Planning"
+                                            {{ old('type', $meet->type) == 'Planning' ? 'selected' : '' }}>Planning</option>
+                                        <option value="Discussion"
+                                            {{ old('type', $meet->type) == 'Discussion' ? 'selected' : '' }}>Discussion
+                                        </option>
+                                        <option value="Other"
+                                            {{ !in_array(old('type', $meet->type), ['Review', 'Planning', 'Discussion']) ? 'selected' : '' }}>
+                                            Other</option>
                                     </select>
+                                    <input type="text" name="custom_type" id="customMeetingType"
+                                        class="form-control mt-2" placeholder="Enter custom meeting type"
+                                        value="{{ !in_array(old('type', $meet->type), ['Review', 'Planning', 'Discussion']) ? old('type', $meet->type) : '' }}"
+                                        style="display: {{ !in_array(old('type', $meet->type), ['Review', 'Planning', 'Discussion']) ? 'block' : 'none' }};">
                                 </div>
                             </div>
                             <div class="mb-3 form-group">
@@ -77,7 +90,7 @@
                                     </label>
                                     <div class="input-group">
                                         <input type="date" name="meet_date" id="meet_date" class="form-control"
-                                            value="{{ old('meet_date', $meet->meet_date->format('Y-m-d')) }}" 
+                                            value="{{ old('meet_date', $meet->meet_date->format('Y-m-d')) }}"
                                             min="{{ date('Y-m-d') }}" placeholder="pick a date" required>
                                     </div>
                                 </div>
@@ -87,7 +100,8 @@
                                     </label>
                                     <div class="input-group">
                                         <input type="time" class="form-control" name="meet_time_from" id="meet_time1"
-                                            value="{{ old('meet_time_from', $meet->meet_time ? \Carbon\Carbon::parse($meet->meet_time)->format('H:i') : '') }}" required>
+                                            value="{{ old('meet_time_from', $meet->meet_time ? \Carbon\Carbon::parse($meet->meet_time)->format('H:i') : '') }}"
+                                            required>
                                     </div>
                                 </div>
                                 <div class="col-md-4 mb-3">
@@ -116,10 +130,18 @@
                                         </label>
                                         <select name="platform" id="platform-select" class="form-select" required>
                                             <option value="" disabled>-- Choose Platform --</option>
-                                            <option value="Google Meet" {{ old('platform', $meet->platform) == 'Google Meet' ? 'selected' : '' }}>Google Meet</option>
-                                            <option value="Zoom" {{ old('platform', $meet->platform) == 'Zoom' ? 'selected' : '' }}>Zoom</option>
-                                            <option value="Teams" {{ old('platform', $meet->platform) == 'Teams' ? 'selected' : '' }}>Teams</option>
-                                            <option value="Other" {{ old('platform', $meet->platform) == 'Other' ? 'selected' : '' }}>Other</option>
+                                            <option value="Google Meet"
+                                                {{ old('platform', $meet->platform) == 'Google Meet' ? 'selected' : '' }}>
+                                                Google Meet</option>
+                                            <option value="Zoom"
+                                                {{ old('platform', $meet->platform) == 'Zoom' ? 'selected' : '' }}>Zoom
+                                            </option>
+                                            <option value="Teams"
+                                                {{ old('platform', $meet->platform) == 'Teams' ? 'selected' : '' }}>Teams
+                                            </option>
+                                            <option value="Other"
+                                                {{ old('platform', $meet->platform) == 'Other' ? 'selected' : '' }}>Other
+                                            </option>
                                         </select>
                                     </div>
                                 </div>
@@ -127,7 +149,8 @@
                                     <div class="form-group">
                                         <label class="form-label">Link to Join</label>
                                         <input type="url" class="form-control" name="meet_link" id="meet-link-input"
-                                            value="{{ old('meet_link', $meet->meet_link) }}" placeholder="Meeting Link" required>
+                                            value="{{ old('meet_link', $meet->meet_link) }}" placeholder="Meeting Link"
+                                            required>
                                         <small id="link-helper" class="form-text text-muted" style="display: none;">
                                             Please create the meeting in the new tab or select a platform and paste the link
                                             here.
@@ -165,9 +188,11 @@
                         <div id="selected-participants" class="mb-3">
                             @if ($meet->attendees->count() > 0)
                                 @foreach ($meet->attendees as $attendee)
-                                    <div class="selected-participant-badge bg-light border rounded-pill me-2 mb-2" id="badge-{{ $attendee->id }}">
+                                    <div class="selected-participant-badge bg-light border rounded-pill me-2 mb-2"
+                                        id="badge-{{ $attendee->id }}">
                                         <span>{{ $attendee->firstName }} {{ $attendee->lastName }}</span>
-                                        <button type="button" class="btn-close btn-sm ms-2 remove-participant-btn" aria-label="Close" data-user-id="{{ $attendee->id }}"></button>
+                                        <button type="button" class="btn-close btn-sm ms-2 remove-participant-btn"
+                                            aria-label="Close" data-user-id="{{ $attendee->id }}"></button>
                                     </div>
                                 @endforeach
                             @else
@@ -444,7 +469,8 @@
 
                 const lastName = lastNameInput.value.trim();
                 const userName = `${firstName} ${lastName}`.trim();
-                const uniqueId = email ? email.replace(/[^a-zA-Z0-9]/g, '') : contactNo.replace(/[^a-zA-Z0-9]/g, '');
+                const uniqueId = email ? email.replace(/[^a-zA-Z0-9]/g, '') : contactNo.replace(/[^a-zA-Z0-9]/g,
+                '');
                 const newParticipantId = `new_${uniqueId}`;
 
                 // Check if already added
@@ -503,6 +529,54 @@
                 addOthersPanel.style.display = 'none';
             });
         }
+
+        // Handle custom meeting type
+        const meetingTypeSelect = document.getElementById('meetingTypeSelect');
+        const customMeetingTypeInput = document.getElementById('customMeetingType');
+
+        if (meetingTypeSelect) {
+            // Check if current type is custom (not in predefined list)
+            const predefinedTypes = ['Review', 'Planning', 'Discussion'];
+            const currentType = meetingTypeSelect.value;
+
+            if (!predefinedTypes.includes(currentType) && currentType !== 'Other') {
+                // Current type is custom, show input and set value
+                customMeetingTypeInput.style.display = 'block';
+                customMeetingTypeInput.required = true;
+                if (!customMeetingTypeInput.value) {
+                    customMeetingTypeInput.value = currentType;
+                }
+            }
+
+            meetingTypeSelect.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    customMeetingTypeInput.style.display = 'block';
+                    customMeetingTypeInput.required = true;
+                } else {
+                    customMeetingTypeInput.style.display = 'none';
+                    customMeetingTypeInput.required = false;
+                    if (predefinedTypes.includes(this.value)) {
+                        customMeetingTypeInput.value = '';
+                    }
+                }
+            });
+
+            // On form submit, if "Other" is selected, use custom value
+            const form = document.getElementById('editMeetingForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (meetingTypeSelect.value === 'Other' && customMeetingTypeInput.value.trim()) {
+                        // Create a hidden input with the custom type value
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'type';
+                        hiddenInput.value = customMeetingTypeInput.value.trim();
+                        form.appendChild(hiddenInput);
+                        // Remove the select from submission
+                        meetingTypeSelect.disabled = true;
+                    }
+                });
+            }
+        }
     </script>
 @endpush
-

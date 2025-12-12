@@ -15,20 +15,15 @@ class Streetlight extends Model
         'block',
         'panchayat',
         'ward',
-        'district_id',
-        'block_id',
-        'panchayat_id',
-        'ward_id',
-        'pole_id',
-        'number_of_poles',
-        'uname',
-        'SID',
-        'file',
-        'lat',
-        'lng',
         'project_id',
         'total_poles',
-        'mukhiya_contact'
+        'mukhiya_contact',
+        'number_of_surveyed_poles',
+        'number_of_installed_poles',
+        'district_code',
+        'block_code',
+        'panchayat_code',
+        'ward_type',
     ];
 
     // Relationship: A streetlight has multiple poles
@@ -46,23 +41,21 @@ class Streetlight extends Model
     // Scope for counting total poles
     public function scopeTotalPoles($query, $projectId)
     {
-        return $query->where('project_id', $projectId)->sum('pole');
+        return $query->where('project_id', $projectId)->sum('total_poles');
     }
 
     // Scope for counting surveyed poles
     public function scopeSurveyDone($query, $projectId)
     {
         return $query->where('project_id', $projectId)
-            ->where('isSurveyDone', true)
-            ->sum('pole');
+            ->sum('number_of_surveyed_poles');
     }
 
     // Scope for counting installed poles
     public function scopeInstallationDone($query, $projectId)
     {
         return $query->where('project_id', $projectId)
-            ->where('isInstallationDone', true)
-            ->sum('pole');
+            ->sum('number_of_installed_poles');
     }
 
     // Relationship with engineer

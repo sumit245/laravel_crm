@@ -102,4 +102,64 @@ interface TaskServiceInterface extends ServiceInterface
      * @return bool
      */
     public function deleteTask(int $taskId): bool;
+
+    /**
+     * Create bulk tasks for multiple sites
+     * 
+     * @param int $projectId
+     * @param array $siteIds
+     * @param array $taskData
+     * @param int $createdBy
+     * @return void
+     */
+    public function createBulkTasks(int $projectId, array $siteIds, array $taskData, int $createdBy): void;
+
+    /**
+     * Get tasks by project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getTasksByProject(int $projectId);
+
+    /**
+     * Get task details by ID
+     * 
+     * @param int $taskId
+     * @param int|null $projectType
+     * @return array
+     */
+    public function getTaskDetails(int $taskId, ?int $projectType = null): array;
+
+    /**
+     * Find task by ID
+     * 
+     * @param int $taskId
+     * @return Model|null
+     */
+    public function findById(int $taskId): ?Model;
+
+    /**
+     * Get available engineers for a project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableEngineers(int $projectId);
+
+    /**
+     * Get available vendors for a project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableVendors(int $projectId);
+
+    /**
+     * Get available sites for a project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableSites(int $projectId);
 }

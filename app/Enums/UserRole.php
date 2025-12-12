@@ -15,26 +15,31 @@ enum UserRole: int
     case PROJECT_MANAGER = 2;
     case VENDOR = 3;
     case STORE_INCHARGE = 4;
-    case HR_MANAGER = 5;
-    case REPORTING_MANAGER = 6;
-    case VERTICAL_HEAD = 7;
+    case COORDINATOR = 5;
+    case HR_MANAGER = 6;
+    case REPORTING_MANAGER = 7;
+    case VERTICAL_HEAD = 8;
+
     case CLIENT = 10;
+    case REVIEW_MEETING_ONLY = 11;
 
     /**
      * Get human-readable label for the role
      */
     public function label(): string
     {
-        return match($this) {
+        return match ($this) {
             self::ADMIN => 'Administrator',
             self::SITE_ENGINEER => 'Site Engineer',
             self::PROJECT_MANAGER => 'Project Manager',
             self::VENDOR => 'Vendor',
             self::STORE_INCHARGE => 'Store Incharge',
+            self::COORDINATOR => 'Coordinator',
             self::HR_MANAGER => 'HR Manager',
             self::REPORTING_MANAGER => 'Reporting Manager',
             self::VERTICAL_HEAD => 'Vertical Head',
             self::CLIENT => 'Client',
+            self::REVIEW_MEETING_ONLY => 'Review Meeting Only',
         };
     }
 
@@ -43,7 +48,7 @@ enum UserRole: int
      */
     public function description(): string
     {
-        return match($this) {
+        return match ($this) {
             self::ADMIN => 'Full system access with administrative privileges',
             self::SITE_ENGINEER => 'Field engineers managing on-ground operations',
             self::PROJECT_MANAGER => 'Oversees projects and manages site engineers and vendors',
@@ -53,6 +58,7 @@ enum UserRole: int
             self::REPORTING_MANAGER => 'Reporting Manager',
             self::VERTICAL_HEAD => 'Vertical Head',
             self::CLIENT => 'External stakeholders with limited view access',
+            self::REVIEW_MEETING_ONLY => 'Can only access review meetings module',
         };
     }
 

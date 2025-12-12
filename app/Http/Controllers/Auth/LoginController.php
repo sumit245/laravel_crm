@@ -20,7 +20,7 @@ class LoginController extends Controller
     }
 
     /**
-     * Handle user login with project_id validation.
+     * Handle user login.
      */
     protected function authenticated(Request $request, $user)
     {
@@ -32,25 +32,17 @@ class LoginController extends Controller
             ]);
         }
 
-        // For non-admin and non-project manager users, check project_id
-        if (!in_array($user->role, [0, 2]) && is_null($user->project_id)) {
-            Auth::logout();
-            return redirect()->route('login')->withErrors([
-                'error' => 'Access denied! Your project is not assigned yet.',
-            ]);
-        }
-
         // Clear old session data to avoid conflicts
         Session::forget('project_id');
 
-        // Store project_id in session
+        // Store project_id in session if it exists
         if ($user->project_id) {
             session(['project_id' => $user->project_id]);
             Session::save();
         }
 
-        // Redirect restricted users (Site Engineer and Store Incharge) to review meetings only
-        if (in_array($user->role, [1, 4])) {
+        // Redirect restricted users (Site Engineer, Store Incharge, and Review Meeting Only) to review meetings only
+        if (in_array($user->role, [1, 4, 11])) {
             return redirect()->route('meets.index');
         }
 

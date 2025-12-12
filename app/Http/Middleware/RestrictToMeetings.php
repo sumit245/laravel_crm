@@ -18,8 +18,8 @@ class RestrictToMeetings
     {
         $user = Auth::user();
 
-        // If user is Site Engineer (1) or Store Incharge (4) - restrict to meetings only
-        if (in_array($user->role, [1, 4])) {
+        // If user is Site Engineer (1), Store Incharge (4), or Review Meeting Only (11) - restrict to meetings only
+        if (in_array($user->role, [1, 4, 11])) {
             // Allow access only to review-meeting related routes
             $allowedRoutes = [
                 'meets.*',

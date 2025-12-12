@@ -465,8 +465,12 @@
                                 <div>
                                     <span
                                         class="badge bg-light text-dark me-2">{{ $followUp->status ?? 'scheduled' }}</span>
-                                    <a href="{{ route('meets.details', $followUp->id) }}"
-                                        class="btn btn-sm btn-outline-secondary">View Details</a>
+                                    @if ($followUp->meet_id)
+                                        <a href="{{ route('meets.details', $followUp->meet_id) }}"
+                                            class="btn btn-sm btn-outline-secondary">View Details</a>
+                                    @else
+                                        <span class="text-muted">No meeting details available</span>
+                                    @endif
                                 </div>
                             </div>
                         @empty
@@ -900,5 +904,32 @@
                 });
             }
         });
+
+        // Show session messages as toast using SweetAlert2
+        @if (session()->has('success'))
+            const successMsg = {!! json_encode(session('success')) !!};
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: successMsg,
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true
+            });
+        @endif
+
+        @if (session()->has('error'))
+            const errorMsg = {!! json_encode(session('error')) !!};
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: errorMsg,
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true
+            });
+        @endif
     </script>
 @endpush

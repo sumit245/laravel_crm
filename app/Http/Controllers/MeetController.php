@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Helpers\WhatsappHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DiscussionPoint;
+use App\Models\FollowUp;
 use App\Models\Meet;
 use App\Models\DiscussionPointUpdates; // Already imported
 use App\Models\Project;
@@ -18,7 +19,158 @@ class MeetController extends Controller
 {
     public function dashboard()
     {
-        return null;
+        // Total meetings done till date
+        $totalMeetings = Meet::where('meet_date', '<=', now())->count();
+
+        // Upcoming meetings count
+        $upcomingMeetingsCount = Meet::where('meet_date', '>', now())->count();
+
+        // Overdue tasks (due_date < today AND status != 'Completed')
+        $overdueTasksCount = DiscussionPoint::where('due_date', '<', now())
+            ->where('status', '!=', 'Completed')
+            ->count();
+
+        // Tasks in queue (status = 'Pending')
+        $tasksInQueueCount = DiscussionPoint::where('status', 'Pending')->count();
+
+        // Total tasks
+        $totalTasks = DiscussionPoint::count();
+        $completedTasks = DiscussionPoint::where('status', 'Completed')->count();
+
+        // Completion rate
+        $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
+
+        // Average tasks per meeting
+        $avgTasksPerMeeting = $totalMeetings > 0 ? round($totalTasks / $totalMeetings, 2) : 0;
+
+        // Department-wise performance
+        $departmentStats = DiscussionPoint::selectRaw('department, 
+            COUNT(*) as total,
+            SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as completed,
+            SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending,
+            SUM(CASE WHEN status = "In Progress" THEN 1 ELSE 0 END) as in_progress')
+            ->whereNotNull('department')
+            ->groupBy('department')
+            ->get()
+            ->mapWithKeys(function ($item) {
+                return [
+                    $item->department => [
+                        'total' => $item->total,
+                        'completed' => $item->completed,
+                        'pending' => $item->pending,
+                        'in_progress' => $item->in_progress,
+                    ]
+                ];
+            });
+
+        // Employee-wise performance
+        $employeeStats = DiscussionPoint::selectRaw('
+                COALESCE(assigned_to, assignee_id) as user_id,
+                COUNT(*) as total_tasks,
+                SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as completed_tasks,
+                SUM(CASE WHEN status = "Pending" THEN 1 ELSE 0 END) as pending_tasks,
+                SUM(CASE WHEN status = "In Progress" THEN 1 ELSE 0 END) as in_progress_tasks,
+                SUM(CASE WHEN due_date < CURDATE() AND status != "Completed" THEN 1 ELSE 0 END) as overdue_tasks
+            ')
+            ->where(function ($query) {
+                $query->whereNotNull('assigned_to')
+                    ->orWhereNotNull('assignee_id');
+            })
+            ->groupBy('user_id')
+            ->get()
+            ->map(function ($item) {
+                $user = User::find($item->user_id);
+                return [
+                    'user' => $user,
+                    'user_name' => $user ? ($user->firstName . ' ' . $user->lastName) : 'Unknown',
+                    'total_tasks' => $item->total_tasks,
+                    'completed_tasks' => $item->completed_tasks,
+                    'pending_tasks' => $item->pending_tasks,
+                    'in_progress_tasks' => $item->in_progress_tasks,
+                    'overdue_tasks' => $item->overdue_tasks,
+                    'completion_rate' => $item->total_tasks > 0 ? round(($item->completed_tasks / $item->total_tasks) * 100, 2) : 0,
+                ];
+            })
+            ->sortByDesc('completed_tasks')
+            ->values();
+
+        // Tasks by status
+        $tasksByStatus = DiscussionPoint::selectRaw('status, COUNT(*) as count')
+            ->groupBy('status')
+            ->pluck('count', 'status')
+            ->toArray();
+
+        // Tasks by priority
+        $tasksByPriority = DiscussionPoint::selectRaw('priority, COUNT(*) as count')
+            ->whereNotNull('priority')
+            ->groupBy('priority')
+            ->pluck('count', 'priority')
+            ->toArray();
+
+        // Meeting trends (monthly meeting counts for last 6 months)
+        $meetingTrends = Meet::selectRaw('
+                DATE_FORMAT(meet_date, "%Y-%m") as month,
+                COUNT(*) as count
+            ')
+            ->where('meet_date', '>=', now()->subMonths(6))
+            ->groupBy('month')
+            ->orderBy('month')
+            ->pluck('count', 'month')
+            ->toArray();
+
+        // Recent meetings (last 5)
+        $recentMeetings = Meet::withCount('discussionPoints')
+            ->latest('meet_date')
+            ->limit(5)
+            ->get();
+
+        // Top performers (top 5 employees by completed tasks)
+        $topPerformers = DiscussionPoint::selectRaw('
+                COALESCE(assigned_to, assignee_id) as user_id,
+                SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as completed_count
+            ')
+            ->where(function ($query) {
+                $query->whereNotNull('assigned_to')
+                    ->orWhereNotNull('assignee_id');
+            })
+            ->groupBy('user_id')
+            ->orderByDesc('completed_count')
+            ->limit(5)
+            ->get()
+            ->map(function ($item) {
+                $user = User::find($item->user_id);
+                return [
+                    'user' => $user,
+                    'user_name' => $user ? ($user->firstName . ' ' . $user->lastName) : 'Unknown',
+                    'completed_count' => $item->completed_count,
+                ];
+            });
+
+        // Meetings by type
+        $meetingsByType = Meet::selectRaw('type, COUNT(*) as count')
+            ->whereNotNull('type')
+            ->groupBy('type')
+            ->pluck('count', 'type')
+            ->toArray();
+
+        return view('review-meetings.dashboard', [
+            'totalMeetings' => $totalMeetings,
+            'overdueTasksCount' => $overdueTasksCount,
+            'tasksInQueueCount' => $tasksInQueueCount,
+            'completionRate' => $completionRate,
+            'upcomingMeetingsCount' => $upcomingMeetingsCount,
+            'avgTasksPerMeeting' => $avgTasksPerMeeting,
+            'departmentPerformance' => $departmentStats,
+            'employeePerformance' => $employeeStats,
+            'tasksByStatus' => $tasksByStatus,
+            'tasksByPriority' => $tasksByPriority,
+            'meetingTrends' => $meetingTrends,
+            'recentMeetings' => $recentMeetings,
+            'topPerformers' => $topPerformers,
+            'meetingsByType' => $meetingsByType,
+            'totalTasks' => $totalTasks,
+            'completedTasks' => $completedTasks,
+        ]);
     }
 
     public function index()
@@ -82,7 +234,7 @@ class MeetController extends Controller
             $projects = Project::all();
 
             // Group discussion points by project
-            $discussionPointsByProject = $meet->discussionPoints->groupBy(function($point) {
+            $discussionPointsByProject = $meet->discussionPoints->groupBy(function ($point) {
                 return $point->project ? $point->project->id : 'no-project';
             });
 
@@ -185,7 +337,7 @@ class MeetController extends Controller
                 }
 
                 // Try to find existing user by email or contactNo; create if not found
-                $existing = User::where(function($query) use ($np) {
+                $existing = User::where(function ($query) use ($np) {
                     if (!empty($np['email'])) {
                         $query->where('email', $np['email']);
                     }
@@ -360,7 +512,7 @@ class MeetController extends Controller
                 }
 
                 // Try to find existing user by email or contactNo; create if not found
-                $existing = User::where(function($query) use ($np) {
+                $existing = User::where(function ($query) use ($np) {
                     if (!empty($np['email'])) {
                         $query->where('email', $np['email']);
                     }
@@ -423,7 +575,7 @@ class MeetController extends Controller
 
         // Get existing attendee IDs to determine which are new
         $existingAttendeeIds = $meet->attendees->pluck('id')->toArray();
-        
+
         // Sync attendees (this will add new ones and remove ones not in the list)
         $meet->attendees()->sync($validated['users']);
 
@@ -487,6 +639,15 @@ class MeetController extends Controller
 
         // Attach the same attendees from the parent meeting
         $followUpMeet->attendees()->attach($meet->attendees->pluck('id'));
+
+        // Create the FollowUp record to track this followup in the follow_ups table
+        FollowUp::create([
+            'parent_meet_id' => $meet->id,
+            'meet_id' => $followUpMeet->id,
+            'title' => $validated['title'],
+            'meet_date' => $validated['meet_date'],
+            'status' => 'scheduled',
+        ]);
 
         return back()->with('success', 'Follow-up meeting scheduled successfully!');
     }

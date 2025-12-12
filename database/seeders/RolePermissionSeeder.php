@@ -18,6 +18,7 @@ class RolePermissionSeeder extends Seeder
             4 => 'store incharge',
             5 => 'hr manager',
             10 => 'client',
+            11 => 'review meeting only',
         ];
 
         foreach ($roles as $code => $name) {

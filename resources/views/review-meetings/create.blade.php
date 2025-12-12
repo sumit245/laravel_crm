@@ -42,11 +42,15 @@
                                     <label for="meetingType" class="form-label">Meeting Type
                                         <span class="text-danger small">*</span>
                                     </label>
-                                    <select name="type" class="form-select" required>
+                                    <select name="type" id="meetingTypeSelect" class="form-select" required>
                                         <option value="Review">Review</option>
                                         <option value="Planning">Planning</option>
                                         <option value="Discussion">Discussion</option>
+                                        <option value="Other">Other</option>
                                     </select>
+                                    <input type="text" name="custom_type" id="customMeetingType"
+                                        class="form-control mt-2" placeholder="Enter custom meeting type"
+                                        style="display: none;">
                                 </div>
                             </div>
                             <div class="mb-3 form-group">
@@ -495,5 +499,39 @@
             participantsCard.style.display = 'block';
             addOthersPanel.style.display = 'none';
         });
+
+        // Handle custom meeting type
+        const meetingTypeSelect = document.getElementById('meetingTypeSelect');
+        const customMeetingTypeInput = document.getElementById('customMeetingType');
+
+        if (meetingTypeSelect) {
+            meetingTypeSelect.addEventListener('change', function() {
+                if (this.value === 'Other') {
+                    customMeetingTypeInput.style.display = 'block';
+                    customMeetingTypeInput.required = true;
+                } else {
+                    customMeetingTypeInput.style.display = 'none';
+                    customMeetingTypeInput.required = false;
+                    customMeetingTypeInput.value = '';
+                }
+            });
+
+            // On form submit, if "Other" is selected, use custom value
+            const form = document.getElementById('createMeetingForm');
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    if (meetingTypeSelect.value === 'Other' && customMeetingTypeInput.value.trim()) {
+                        // Create a hidden input with the custom type value
+                        const hiddenInput = document.createElement('input');
+                        hiddenInput.type = 'hidden';
+                        hiddenInput.name = 'type';
+                        hiddenInput.value = customMeetingTypeInput.value.trim();
+                        form.appendChild(hiddenInput);
+                        // Remove the select from submission
+                        meetingTypeSelect.disabled = true;
+                    }
+                });
+            }
+        }
     </script>
 @endpush

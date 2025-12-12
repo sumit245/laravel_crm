@@ -74,79 +74,107 @@ class JICRController extends Controller
                 ->whereRaw("TRIM(LOWER(panchayat)) = ?", [$normalizedPanchayat])
                 ->first();
 
-            // Get streetlights based on the selected criteria
-            // $streetlight = Streetlight::whereRaw('LOWER(district) LIKE ?', ['%' . strtolower($request->district) . '%'])
-            //     ->whereRaw('LOWER(block) LIKE ?', ['%' . strtolower($request->block) . '%'])
-            //     ->whereRaw('LOWER(panchayat) LIKE ?', ['%' . strtolower($request->panchayat) . '%'])
-            //     ->first();
+            // Check if streetlight exists
+            if (!$streetlight) {
+                return back()->with('error', 'No streetlight data found for the selected panchayat.');
+            }
+
             Log::info($streetlight);
             $project = Project::where('id', $streetlight->project_id)->first();
-
 
             $assignedTasks = StreetlightTask::where('site_id', $streetlight->id)
                 ->with(['engineer', 'vendor', 'manager'])
                 ->first();
-            $data = [
-                'task_id' => $assignedTasks->id,
-                'state' => $streetlight->state,
-                'district' => $streetlight->district,
-                'block' => $streetlight->block,
-                'panchayat' => $streetlight->panchayat,
-                'ward' => array_map('intval', explode(',', $streetlight->ward)),
-                'number_of_surveyed_poles' => $streetlight->number_of_surveyed_poles,
-                'number_of_installed_poles' => $streetlight->number_of_installed_poles,
-                'total_poles' => $streetlight->total_poles,
-                'project_name' => $project->project_name ?? '',
-                'project_start_date' => $project->start_date ?? '',
-                'agreement_number' => $project->agreement_number,
-                'project_capacity' => $project->project_capacity,
-                'agreement_date' => $project->agreement_date,
-                'project_end_date' => $project->end_date ?? '',
-                'work_order_number' => $project->work_order_number ?? '',
 
-            ];
-            if ($assignedTasks) {
-                $data['engineer_name'] = optional($assignedTasks->engineer)->firstName . ' ' . optional($assignedTasks->engineer)->lastName;
-                $data['engineer_image'] = optional($assignedTasks->engineer)->image;
-                $data['engineer_contact'] = optional($assignedTasks->engineer)->contactNo;
-
-                $data['vendor_name'] = optional($assignedTasks->vendor)->firstName . ' ' . optional($assignedTasks->vendor)->lastName;
-                $data['vendor_image'] = optional($assignedTasks->vendor)->image;
-                $data['vendor_contact'] = optional($assignedTasks->vendor)->contactNo;
-
-                $data['project_manager_name'] = optional($assignedTasks->manager)->firstName . ' ' . optional($assignedTasks->manager)->lastName;
-                $data['project_manager_image'] = optional($assignedTasks->manager)->image;
-                $data['project_manager_contact'] = optional($assignedTasks->manager)->contactNo;
+            // Build data array with null-safe defaults
+            $wardArray = [];
+            if (!empty($streetlight->ward)) {
+                $wardArray = array_map('intval', explode(',', $streetlight->ward));
             }
 
-            $data['poles'] = Pole::where('task_id', $assignedTasks->id)
-		->where('isInstallationDone', true)
-                ->whereBetween('updated_at', [$request->from_date, $request->to_date])
-                ->get()
-                ->map(function ($pole) use ($streetlight) {
-                    return [
-                        'district' => $streetlight->district,
-                        'block' => $streetlight->block,
-                        'panchayat' => $streetlight->panchayat,
-                        'solar_panel_no' => $pole->panel_qr,
-                        'battery_no' => $pole->battery_qr,
-                        'luminary_no' => $pole->luminary_qr,
-                        'sim_no' => $pole->sim_number,
-                        'complete_pole_number' => $pole->complete_pole_number,
-                        'ward_no' => $pole->ward_name,
-                        'beneficiary' => $pole->beneficiary,
-                        'latitude' => $pole->lat,
-                        'longitude' => $pole->lng,
-                        'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
-                    ];
-                })
-                ->sortBy('ward_no') // Sorting by ward_no in ascending order
-                ->values(); // Reindex the collection
+            $data = [
+                'task_id' => $assignedTasks->id ?? null,
+                'state' => $streetlight->state ?? '',
+                'district' => $streetlight->district ?? '',
+                'block' => $streetlight->block ?? '',
+                'panchayat' => $streetlight->panchayat ?? '',
+                'ward' => $wardArray,
+                'number_of_surveyed_poles' => $streetlight->number_of_surveyed_poles ?? 0,
+                'number_of_installed_poles' => $streetlight->number_of_installed_poles ?? 0,
+                'total_poles' => $streetlight->total_poles ?? 0,
+                'project_name' => $project->project_name ?? '',
+                'project_start_date' => $project->start_date ?? '',
+                'agreement_number' => $project->agreement_number ?? '',
+                'project_capacity' => $project->project_capacity ?? '',
+                'agreement_date' => $project->agreement_date ?? '',
+                'project_end_date' => $project->end_date ?? '',
+                'work_order_number' => $project->work_order_number ?? '',
+            ];
+            // Set default values for engineer, vendor, and manager
+            $data['engineer_name'] = '';
+            $data['engineer_image'] = '';
+            $data['engineer_contact'] = '';
+            $data['vendor_name'] = '';
+            $data['vendor_image'] = '';
+            $data['vendor_contact'] = '';
+            $data['project_manager_name'] = '';
+            $data['project_manager_image'] = '';
+            $data['project_manager_contact'] = '';
+
+            if ($assignedTasks) {
+                $data['engineer_name'] = optional($assignedTasks->engineer)->firstName . ' ' . optional($assignedTasks->engineer)->lastName ?? '';
+                $data['engineer_image'] = optional($assignedTasks->engineer)->image ?? '';
+                $data['engineer_contact'] = optional($assignedTasks->engineer)->contactNo ?? '';
+
+                $data['vendor_name'] = optional($assignedTasks->vendor)->firstName . ' ' . optional($assignedTasks->vendor)->lastName ?? '';
+                $data['vendor_image'] = optional($assignedTasks->vendor)->image ?? '';
+                $data['vendor_contact'] = optional($assignedTasks->vendor)->contactNo ?? '';
+
+                $data['project_manager_name'] = optional($assignedTasks->manager)->firstName . ' ' . optional($assignedTasks->manager)->lastName ?? '';
+                $data['project_manager_image'] = optional($assignedTasks->manager)->image ?? '';
+                $data['project_manager_contact'] = optional($assignedTasks->manager)->contactNo ?? '';
+            }
+
+            // Query poles only if task exists, otherwise set empty array
+            if ($assignedTasks) {
+                $data['poles'] = Pole::where('task_id', $assignedTasks->id)
+                    ->where('isInstallationDone', true)
+                    ->whereBetween('updated_at', [$request->from_date, $request->to_date])
+                    ->get()
+                    ->map(function ($pole) use ($streetlight) {
+                        return [
+                            'district' => $streetlight->district ?? '',
+                            'block' => $streetlight->block ?? '',
+                            'panchayat' => $streetlight->panchayat ?? '',
+                            'solar_panel_no' => $pole->panel_qr ?? '',
+                            'battery_no' => $pole->battery_qr ?? '',
+                            'luminary_no' => $pole->luminary_qr ?? '',
+                            'sim_no' => $pole->sim_number ?? '',
+                            'complete_pole_number' => $pole->complete_pole_number ?? '',
+                            'ward_no' => $pole->ward_name ?? '',
+                            'beneficiary' => $pole->beneficiary ?? '',
+                            'latitude' => $pole->lat ?? '',
+                            'longitude' => $pole->lng ?? '',
+                            'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
+                        ];
+                    })
+                    ->sortBy('ward_no') // Sorting by ward_no in ascending order
+                    ->values(); // Reindex the collection
+            } else {
+                $data['poles'] = [];
+            }
             $data['showReport'] = true; // Flag to show the report
+
+            // Determine success message based on whether poles were found
+            $polesCount = count($data['poles']);
+            $successMessage = $polesCount > 0
+                ? 'JICR generated successfully with ' . $polesCount . ' pole(s).'
+                : 'JICR generated successfully. No poles found for the selected criteria.';
 
             // If it's a download request, generate PDF
             if ($request->has('download') && $request->download == 'pdf') {
                 $pdf = Pdf::loadView('jicr.show', $data);
+                // Note: PDF download response is a file download, which itself indicates success
                 return $pdf->download('jicr_report.pdf');
             }
             // Otherwise show the report in the browser
@@ -157,10 +185,11 @@ class JICRController extends Controller
                 'districts' => $districts,
                 'showReport' => true,
                 'data' => $data, // Make sure this is either an object or associative array
-            ]);
+            ])->with('success', $successMessage);
         } catch (\Exception $e) {
-            Log::error($e->getMessage());
-            return back()->with('error');
+            Log::error('JICR Generation Error: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
+            return back()->with('error', 'An error occurred while generating JICR: ' . $e->getMessage());
         }
     }
 }

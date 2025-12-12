@@ -14,7 +14,6 @@ class StreetlightTask extends Model
         'engineer_id',
         'manager_id',
         'vendor_id',
-        'activity',
         'status',
         'start_date',
         'end_date',
