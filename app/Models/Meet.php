@@ -22,7 +22,7 @@ class Meet extends Model
 
     protected $casts = [
         'meet_date' => 'date',
-        'meet_time' => 'datetime:H:i',
+        // meet_time is stored as TIME type in DB, no cast needed - Laravel handles it as string
     ];
 
     public function whiteboard()

@@ -312,12 +312,21 @@ class MeetController extends Controller
                 }
 
                 $password = Str::random(12);
+
+                // Ensure required DB constraints (email NOT NULL & unique, username NOT NULL & unique)
+                $email = !empty($np['email'])
+                    ? $np['email']
+                    : ('noemail+' . uniqid('meet_', true) . '@example.local');
+
+                $username = 'user_' . Str::random(10);
+
                 $user = User::create([
                     'firstName' => $np['firstName'] ?? null,
                     'lastName' => $np['lastName'] ?? null,
-                    'email' => $np['email'] ?? null,
+                    'email' => $email,
+                    'username' => $username,
                     'contactNo' => $np['contactNo'] ?? null,
-                    'role' => UserRole::COORDINATOR->value,
+                    'role' => UserRole::REVIEW_MEETING_ONLY->value,
                     'password' => bcrypt($password),
                 ]);
 
@@ -357,12 +366,20 @@ class MeetController extends Controller
                             continue;
                         }
 
+                        // Ensure required DB constraints (email NOT NULL & unique, username NOT NULL & unique)
+                        $emailValue = $email
+                            ? $email
+                            : ('noemail+' . uniqid('meet_csv_', true) . '@example.local');
+
+                        $username = 'user_' . Str::random(10);
+
                         $user = User::create([
                             'firstName' => $first ?: null,
                             'lastName' => $last ?: null,
-                            'email' => $email ?: null,
+                            'email' => $emailValue,
+                            'username' => $username,
                             'contactNo' => $phone ?: null,
-                            'role' => UserRole::COORDINATOR->value,
+                            'role' => UserRole::REVIEW_MEETING_ONLY->value,
                             'password' => bcrypt(Str::random(12)),
                         ]);
                         $createdUserIds[] = $user->id;
@@ -382,17 +399,28 @@ class MeetController extends Controller
             'title' => 'required|string',
             'agenda' => 'nullable|string',
             'meet_link' => 'required|url',
-            'platform' => 'required|string',
+            'platform' => 'required|in:Google Meet,Zoom,Teams,Other',
             'meet_date' => 'required|date',
-            'meet_time_from' => 'required',
-            'meet_time_to' => 'required',
+            'meet_time_from' => 'required|date_format:H:i',
+            'meet_time_to' => 'required|date_format:H:i',
             'type' => 'required|string',
             'users' => 'required|array|min:1',
         ]);
 
+        // Normalize meet_time to a proper time string compatible with the DB column
+        $meetTime = $validated['meet_time_from'] . ':00'; // from HTML time input "HH:MM" to "HH:MM:SS"
+
+        // Use the type as-is (will be validated by database after migration)
+        $meetingType = $validated['type'];
+
         $meet = Meet::create([
-            ...$validated,
-            'meet_time' => $validated['meet_time_from'],
+            'title' => $validated['title'],
+            'agenda' => $validated['agenda'] ?? null,
+            'meet_link' => $validated['meet_link'],
+            'platform' => $validated['platform'],
+            'meet_date' => $validated['meet_date'],
+            'meet_time' => $meetTime,
+            'type' => $meetingType,
         ]);
 
         $meet->attendees()->attach($validated['users']);
@@ -468,10 +496,19 @@ class MeetController extends Controller
                 }
 
                 $password = Str::random(12);
+
+                // Ensure required DB constraints (email NOT NULL & unique, username NOT NULL & unique)
+                $email = !empty($np['email'])
+                    ? $np['email']
+                    : ('noemail+' . uniqid('meet_update_', true) . '@example.local');
+
+                $username = 'user_' . Str::random(10);
+
                 $user = User::create([
                     'firstName' => $np['firstName'] ?? null,
                     'lastName' => $np['lastName'] ?? null,
-                    'email' => $np['email'] ?? null,
+                    'email' => $email,
+                    'username' => $username,
                     'contactNo' => $np['contactNo'] ?? null,
                     'role' => UserRole::COORDINATOR->value,
                     'password' => bcrypt($password),
@@ -491,13 +528,16 @@ class MeetController extends Controller
             'title' => 'required|string',
             'agenda' => 'nullable|string',
             'meet_link' => 'required|url',
-            'platform' => 'required|string',
+            'platform' => 'required|in:Google Meet,Zoom,Teams,Other',
             'meet_date' => 'required|date',
-            'meet_time_from' => 'required',
-            'meet_time_to' => 'required',
+            'meet_time_from' => 'required|date_format:H:i',
+            'meet_time_to' => 'required|date_format:H:i',
             'type' => 'required|string',
             'users' => 'required|array|min:1',
         ]);
+
+        // Normalize meet_time to a proper time string compatible with the DB column
+        $meetTime = $validated['meet_time_from'] . ':00'; // from HTML time input "HH:MM" to "HH:MM:SS"
 
         $meet->update([
             'title' => $validated['title'],
@@ -505,7 +545,7 @@ class MeetController extends Controller
             'meet_link' => $validated['meet_link'],
             'platform' => $validated['platform'],
             'meet_date' => $validated['meet_date'],
-            'meet_time' => $validated['meet_time_from'],
+            'meet_time' => $meetTime,
             'type' => $validated['type'],
         ]);
 
@@ -550,9 +590,12 @@ class MeetController extends Controller
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'meet_date' => 'required|date',
-            'meet_time_from' => 'required',
-            'meet_time_to' => 'required',
+            'meet_time_from' => 'required|date_format:H:i',
+            'meet_time_to' => 'required|date_format:H:i',
         ]);
+
+        // Normalize meet_time to "HH:MM:SS" for DB compatibility
+        $followupStart = $validated['meet_time_from'] . ':00';
 
         $followUpMeet = Meet::create([
             'title' => $validated['title'],
@@ -560,10 +603,10 @@ class MeetController extends Controller
             'meet_link' => $meet->meet_link, // Re-use parent link or generate new
             'platform' => $meet->platform,
             'meet_date' => $validated['meet_date'],
-            'meet_time' => $validated['meet_time_from'],
-            'meet_end_time' => $validated['meet_time_to'],
+            'meet_time' => $followupStart,
             'type' => $meet->type,
-            'parent_meet_id' => $meet->id, // Link to the parent meeting
+            // Note: parent_meet_id and meet_end_time don't exist in meets table
+            // The relationship is tracked via the follow_ups table instead
         ]);
 
         $followUpMeet->attendees()->attach($meet->attendees->pluck('id'));

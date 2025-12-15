@@ -6,32 +6,36 @@
             ['title' => '#', 'width' => '5%'],
             ['title' => 'Name'],
             ['title' => 'Email'],
-            ['title' => 'Address'],
+            ['title' => 'Project'],
+            ['title' => 'Department'],
             ['title' => 'Role'],
             ['title' => 'Phone'],
+            ['title' => 'Address'],
         ]" :addRoute="route('staff.create')" addButtonText="Add New Staff"
             :exportEnabled="true" :importEnabled="true" :importRoute="route('import.staff')" :importFormatUrl="null" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('staff.bulkDelete')"
             :deleteRoute="route('staff.destroy', ':id')" :editRoute="route('staff.edit', ':id')" :viewRoute="route('staff.show', ':id')" pageLength="50" searchPlaceholder="Search Staff..."
             :filters="[
                 [
-                    'type' => 'text',
-                    'name' => 'name',
-                    'label' => 'Name',
-                    'column' => 1,
+                    'type' => 'select',
+                    'name' => 'project',
+                    'label' => 'Project',
+                    'column' => 4,
                     'width' => 3,
+                    'options' => $projects->pluck('project_name', 'project_name')->toArray(),
                 ],
                 [
-                    'type' => 'text',
-                    'name' => 'email',
-                    'label' => 'Email',
-                    'column' => 2,
+                    'type' => 'select',
+                    'name' => 'department',
+                    'label' => 'Department',
+                    'column' => 5,
                     'width' => 3,
+                    'options' => $departments->pluck('category_code', 'category_code')->toArray(),
                 ],
                 [
                     'type' => 'select',
                     'name' => 'role',
                     'label' => 'Role',
-                    'column' => 4,
+                    'column' => 6,
                     'width' => 3,
                     'options' => [
                         '1' => 'Site Engineer',
@@ -42,6 +46,10 @@
                 ],
             ]">
             @foreach ($staff as $member)
+                @php
+                    $projectNames = $member->projects->pluck('project_name')->filter()->join(', ');
+                    $departmentName = optional($member->usercategory)->category_code ?? '-';
+                @endphp
                 <tr>
                     <td>
                         <input type="checkbox" class="row-checkbox" value="{{ $member->id }}">
@@ -49,7 +57,8 @@
                     <td>{{ $loop->iteration }}</td>
                     <td>{{ $member->firstName }} {{ $member->lastName }}</td>
                     <td>{{ $member->email }}</td>
-                    <td>{{ $member->address }}</td>
+                    <td>{{ $projectNames ?: '-' }}</td>
+                    <td>{{ $departmentName }}</td>
                     @php
                         $roles = [
                             1 => 'Site Engineer',
@@ -59,9 +68,10 @@
                     @endphp
                     <td>{{ $roles[$member->role] ?? 'Coordinator' }}</td>
                     <td>{{ $member->contactNo }}</td>
+                    <td>{{ $member->address }}</td>
                     <td class="text-center">
-                        <a href="{{ route('staff.show', $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
-                            title="View Details">
+                        <a href="{{ route('staff.show', $member->id) }}" class="btn btn-icon btn-info"
+                            data-toggle="tooltip" title="View Details">
                             <i class="mdi mdi-eye"></i>
                         </a>
                         <a href="{{ route('staff.edit', $member->id) }}" class="btn btn-icon btn-warning"

@@ -34,7 +34,7 @@ class StaffController extends Controller
             UserRole::PROJECT_MANAGER->value,
             UserRole::STORE_INCHARGE->value,
             UserRole::COORDINATOR->value
-        ])->get();
+        ])->with(['projects', 'usercategory'])->get();
         $staff->map(function ($staff) use ($today) {
             $staff->totalTasks = Task::where('engineer_id', $staff->id)->count();
             $staff->pendingTasks = Task::where('engineer_id', $staff->id)->where('status', 'Pending')->count();
@@ -45,7 +45,10 @@ class StaffController extends Controller
 
             return $staff;
         });
-        return view('staff.index', compact('staff'));
+        $projects = Project::all();
+        $departments = UserCategory::all();
+
+        return view('staff.index', compact('staff', 'projects', 'departments'));
     }
 
     public function import(Request $request)
@@ -280,6 +283,31 @@ class StaffController extends Controller
             return response()->json(['success' => true, 'message' => 'Staff deleted successfully.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
+        }
+    }
+
+    /**
+     * Bulk delete staff members.
+     */
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'exists:users,id',
+            ]);
+
+            $count = User::whereIn('id', $request->ids)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} staff member(s) deleted successfully"
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete staff members: ' . $e->getMessage()
+            ], 500);
         }
     }
 
