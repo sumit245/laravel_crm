@@ -17,6 +17,7 @@ class RemoteApiHelper
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
             'poleName' => $pole->complete_pole_number,
+	'projectName'=>"SUGS",
             'district' => $streetlight->district,
             'districtCode' => (string) $districtCode,
             'block' => $streetlight->block,
