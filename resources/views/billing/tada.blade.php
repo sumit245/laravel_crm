@@ -43,7 +43,7 @@
             ['title' => 'Amount'],
             ['title' => 'Status'],
         ]" :exportEnabled="true" :importEnabled="false"
-            :bulkDeleteEnabled="false" :viewRoute="route('billing.tadaDetails', ':id')" pageLength="50" searchPlaceholder="Search TADA Records..."
+            :bulkDeleteEnabled="true" :bulkDeleteRoute="null" :viewRoute="route('billing.tadaDetails', ':id')" pageLength="50" searchPlaceholder="Search TADA Records..."
             :filters="[
                 [
                     'type' => 'text',
@@ -214,7 +214,7 @@
                             },
                             error: function(xhr) {
                                 Swal.fire('Error!', `Failed to ${action} TADA record.`,
-                                'error');
+                                    'error');
                                 console.error(xhr.responseText);
                             }
                         });

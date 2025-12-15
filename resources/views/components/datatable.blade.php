@@ -158,7 +158,7 @@
                 <tr>
                     @if ($bulkDeleteEnabled)
                         <th width="30px" class="no-export no-colvis no-sort">
-                            <input type="checkbox" id="selectAll" class="select-all-checkbox">
+                            <input type="checkbox" id="{{ $id }}_selectAll" class="select-all-checkbox">
                         </th>
                     @endif
                     @foreach ($columns as $column)
@@ -653,7 +653,8 @@
                     }).nodes().to$();
                     const totalOnPage = currentPageRows.length;
                     const checkedOnPage = currentPageRows.find('.row-checkbox:checked').length;
-                    $('#selectAll').prop('checked', totalOnPage > 0 && totalOnPage === checkedOnPage);
+                    $('#{{ $id }}_selectAll').prop('checked', totalOnPage > 0 && totalOnPage ===
+                        checkedOnPage);
                 } catch (e) {
                     // Silently fail if table not ready
                 }
@@ -764,8 +765,18 @@
                 }
             }
 
+            // Remove any completely empty rows before DataTables initializes (prevents ghost/blank rows)
+            $(tableId + ' tbody tr').each(function() {
+                if ($(this).text().trim() === '') {
+                    $(this).remove();
+                }
+            });
+
             table = $(tableId).DataTable({
                 dom: "<'row'<'col-sm-12'tr>><'row'<'col-sm-12'p>>",
+                scrollX: true,
+                scrollCollapse: true,
+                autoWidth: false,
                 buttons: [
                     @if ($exportEnabled)
                         {
@@ -875,6 +886,7 @@
                     setTimeout(function() {
                         forceTableHeight32px();
                         updatePaginationInfo();
+                        table.columns.adjust();
                     }, 100);
                 }
             });
@@ -882,6 +894,9 @@
             // Initial pagination info update
             setTimeout(function() {
                 updatePaginationInfo();
+                if (table && table.columns) {
+                    table.columns.adjust();
+                }
             }, 200);
 
             // Custom length menu
@@ -898,7 +913,11 @@
             });
 
             // Custom column visibility with localStorage persistence
-            var storageKey = 'datatable_colvis_{{ $id }}';
+            // Use a versioned storage key so structural changes to the table
+            // automatically reset stale column-visibility preferences.
+            var storageKey = 'datatable_colvis_{{ $id }}_v2';
+            // Clean up legacy key to avoid stale visibility states
+            localStorage.removeItem('datatable_colvis_{{ $id }}');
 
             // Load saved column visibility on init
             function loadColumnVisibility() {
@@ -906,14 +925,22 @@
                     var saved = localStorage.getItem(storageKey);
                     if (saved) {
                         var columns = JSON.parse(saved);
-                        table.columns().every(function(index) {
-                            var column = this;
-                            var columnIndex = column.index();
-                            if (columns.hasOwnProperty(columnIndex)) {
-                                column.visible(columns[columnIndex], false);
-                            }
-                        });
-                        table.columns.adjust().draw(false);
+                        var currentCount = table.columns().count();
+                        var savedCount = Object.keys(columns).length;
+
+                        // If structure changed, drop the old preferences
+                        if (savedCount !== currentCount) {
+                            localStorage.removeItem(storageKey);
+                        } else {
+                            table.columns().every(function(index) {
+                                var column = this;
+                                var columnIndex = column.index();
+                                if (columns.hasOwnProperty(columnIndex)) {
+                                    column.visible(columns[columnIndex], false);
+                                }
+                            });
+                            table.columns.adjust().draw(false);
+                        }
                     }
                 } catch (e) {
                     console.error('Error loading column visibility:', e);
@@ -1083,7 +1110,7 @@
 
             @if ($bulkDeleteEnabled)
                 // Select All functionality - FIXED
-                $(document).on('click', tableId + ' thead #selectAll', function() {
+                $(document).on('click', tableId + ' thead #{{ $id }}_selectAll', function() {
                     const isChecked = $(this).is(':checked');
                     const currentPageRows = table.rows({
                         page: 'current'

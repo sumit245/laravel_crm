@@ -52,6 +52,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/vendor-data/{id}', [StaffController::class, 'vendorData'])->name('vendor.data');
     Route::get('/engineer-data/{id}', [StaffController::class, 'engineerData'])->name('engineer.data');
     Route::resource('staff', StaffController::class);
+    Route::post('/staff/bulk-delete', [StaffController::class, 'bulkDelete'])->name('staff.bulkDelete');
     Route::prefix('staff')
         ->name('staff.')
         ->group(function () {
