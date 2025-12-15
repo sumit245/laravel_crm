@@ -2,22 +2,23 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\Project;
 use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
+use App\Traits\GeneratesUniqueUsername;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class VendorController extends Controller
 {
+    use GeneratesUniqueUsername;
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        //
-        $vendors = User::where('role', 3)->get();
+        $vendors = User::where('role', UserRole::VENDOR->value)->get();
         return view('uservendors.index', compact('vendors'));
     }
 
@@ -26,30 +27,9 @@ class VendorController extends Controller
      */
     public function create()
     {
-        $siteEngineers = User::where('role', 2)->get();
+        $siteEngineers = User::where('role', UserRole::PROJECT_MANAGER->value)->get();
         $projects = Project::all();
         return view('uservendors.create', compact('siteEngineers', 'projects'));
-    }
-
-    /**
-     * Generate a unique username based on the user's name.
-     *
-     * @param string $name
-     * @return string
-     */
-    private function __generateUniqueUsername($name)
-    {
-        $baseUsername = strtolower(preg_replace('/\s+/', '', $name)); // Remove spaces and make lowercase
-        $randomSuffix = mt_rand(1000, 9999); // Generate a random 4-digit number
-        $username     = $baseUsername . $randomSuffix;
-
-        // Ensure the username is unique
-        while (User::where('username', $username)->exists()) {
-            $randomSuffix = mt_rand(1000, 9999); // Generate a new random suffix if it exists
-            $username     = $baseUsername . $randomSuffix;
-        }
-
-        return $username;
     }
 
     /**
@@ -57,43 +37,37 @@ class VendorController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate the incoming data without requiring a username
         $validated = $request->validate([
-            'name'          => 'required|string|max:255',
-            'firstName'     => 'required|string',
-            'manager_id'    => 'nullable|exists:users,id',
-            'project_id'    => 'nullable|exists:projects,id',
-            'lastName'      => 'required|string',
+            'name' => 'required|string|max:255',
+            'firstName' => 'required|string',
+            'manager_id' => 'nullable|exists:users,id',
+            'project_id' => 'nullable|exists:projects,id',
+            'lastName' => 'required|string',
             'contactPerson' => 'string',
-            'contactNo'     => 'string',
-            'address'       => 'string|max:255',
-            'aadharNumber'  => 'string',
-            'pan'     => 'string|max:10',
-            'gstNumber'     => 'nullable|string|max:15',
-            'accountName'   => 'string',
+            'contactNo' => 'string',
+            'address' => 'string|max:255',
+            'aadharNumber' => 'string',
+            'pan' => 'string|max:10',
+            'gstNumber' => 'nullable|string|max:15',
+            'accountName' => 'string',
             'accountNumber' => 'string',
-            'ifscCode'      => 'string|max:11',
-            'bankName'      => 'string',
-            'branch'        => 'string',
-            'email'         => 'required|email|unique:users,email',
-            'password'      => 'required|string|min:6|confirmed',
+            'ifscCode' => 'string|max:11',
+            'bankName' => 'string',
+            'branch' => 'string',
+            'email' => 'required|email|unique:users,email',
+            'password' => 'required|string|min:6|confirmed',
         ]);
 
         try {
-            // Generate a random unique username
-            $validated['username'] = $this->__generateUniqueUsername($validated['name']);
-            $validated['password'] = bcrypt($validated['password']); // Hash
-            $validated['role']     = 3;
-            // Create the staff user
-            // Log::info('Creating vendor: ' . $validated['project_id']);
+            $validated['username'] = $this->generateUniqueUsername($validated['name']);
+            $validated['password'] = bcrypt($validated['password']);
+            $validated['role'] = UserRole::VENDOR->value;
             $vendor = User::create($validated);
-            Log::info('Vendor created successfully: ' . $vendor->name);
-            return redirect()->route('uservendors.index', $vendor->id)
+
+            return redirect()->route('uservendors.index')
                 ->with('success', 'Vendor created successfully.');
         } catch (\Exception $e) {
-            // Catch database or other errors
             $errorMessage = $e->getMessage();
-            Log::info('Error creating vendor: ' . $errorMessage);
 
             return redirect()->back()
                 ->withErrors(['error' => $errorMessage])
@@ -106,39 +80,23 @@ class VendorController extends Controller
      */
     public function show($id)
     {
-        $vendor = User::where('role', 3) // Ensure it's a vendor
-            ->with(['siteEngineer', 'projects']) // Load relationships if needed
+        $vendor = User::where('role', UserRole::VENDOR->value)
+            ->with(['siteEngineer', 'projects'])
             ->findOrFail($id);
 
-        // Get the project_id of the staff
         $projectId = $vendor->project_id;
-
-        // Get the project and its type
         $project = Project::findOrFail($projectId);
 
-        // Check if the project type is 1 (indicating a streetlight project)
         if ($project->project_type == 1) {
-            // Fetch StreetlightTasks (equivalent to Task in the streetlight project)
             $tasks = StreetlightTask::with('site')
-                ->where(function ($query) use ($vendor) {
-                    $query->where('vendor_id', $vendor->id);
-                })
+                ->where('vendor_id', $vendor->id)
                 ->get();
         } else {
-            // Fetch regular Tasks
             $tasks = Task::with('site')
-                ->where(function ($query) use ($vendor) {
-                    $query->where('vendor_id', $vendor->id);
-                })
+                ->where('vendor_id', $vendor->id)
                 ->get();
         }
 
-        // // Fetch tasks assigned to the vendor
-        // $tasks = Task::with('site')
-        //     ->where('vendor_id', $vendor->id)
-        //     ->get();
-
-        // Categorize tasks
         $assignedTasks = $tasks;
         $assignedTasksCount = $tasks->count();
         $completedTasks = $tasks->where('status', 'Completed');
@@ -168,9 +126,8 @@ class VendorController extends Controller
      */
     public function edit(string $id)
     {
-        //
         $vendor = User::find($id);
-        $projectEngineers = User::where('role',2)->get();
+        $projectEngineers = User::where('role', UserRole::PROJECT_MANAGER->value)->get();
         $projects = Project::all();
         return view('uservendors.edit', compact('vendor', 'projects', 'projectEngineers'));
     }
@@ -185,26 +142,25 @@ class VendorController extends Controller
             $validated = $request->validate([
                 'project_id' => 'required|numeric',
                 'manager_id' => 'required|numeric',
-                'name'          => 'required|string|max:255',
-                'firstName'     => 'required|string',
-                'lastName'      => 'required|string',
+                'name' => 'required|string|max:255',
+                'firstName' => 'required|string',
+                'lastName' => 'required|string',
                 'contactPerson' => 'string',
-                'contactNo'     => 'string',
-                'address'       => 'string|max:255',
-                'aadharNumber'  => 'string|max:12',
-                'pan'     => 'string|max:10',
-                'gstNumber'     => 'nullable|string|max:15',
-                'accountName'   => 'string',
+                'contactNo' => 'string',
+                'address' => 'string|max:255',
+                'aadharNumber' => 'string|max:12',
+                'pan' => 'string|max:10',
+                'gstNumber' => 'nullable|string|max:15',
+                'accountName' => 'string',
                 'accountNumber' => 'string',
-                'ifscCode'      => 'string|max:11',
-                'bankName'      => 'string',
-                'branch'        => 'string',
-                'email'         => 'required|email',
+                'ifscCode' => 'string|max:11',
+                'bankName' => 'string',
+                'branch' => 'string',
+                'email' => 'required|email',
             ]);
             $vendor = User::find($id)->update($validated);
             return redirect()->route('uservendors.show', $id)->with('success', 'Vendor updated successfully.');
         } catch (\Exception $e) {
-            // Catch database or other errors
             $errorMessage = $e->getMessage();
 
             return redirect()->back()
@@ -218,7 +174,6 @@ class VendorController extends Controller
      */
     public function destroy(string $id)
     {
-        //
         try {
             $vendor = User::findOrFail($id);
             $vendor->delete();

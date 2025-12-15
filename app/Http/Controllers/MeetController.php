@@ -2,48 +2,37 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Helpers\WhatsappHelper;
 use App\Http\Controllers\Controller;
 use App\Models\DiscussionPoint;
 use App\Models\FollowUp;
 use App\Models\Meet;
-use App\Models\DiscussionPointUpdates; // Already imported
+use App\Models\DiscussionPointUpdates;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Maatwebsite\Excel\Facades\Excel;
 
 class MeetController extends Controller
 {
     public function dashboard()
     {
-        // Total meetings done till date
         $totalMeetings = Meet::where('meet_date', '<=', now())->count();
-
-        // Upcoming meetings count
         $upcomingMeetingsCount = Meet::where('meet_date', '>', now())->count();
-
-        // Overdue tasks (due_date < today AND status != 'Completed')
         $overdueTasksCount = DiscussionPoint::where('due_date', '<', now())
             ->where('status', '!=', 'Completed')
             ->count();
-
-        // Tasks in queue (status = 'Pending')
         $tasksInQueueCount = DiscussionPoint::where('status', 'Pending')->count();
-
-        // Total tasks
         $totalTasks = DiscussionPoint::count();
         $completedTasks = DiscussionPoint::where('status', 'Completed')->count();
-
-        // Completion rate
         $completionRate = $totalTasks > 0 ? round(($completedTasks / $totalTasks) * 100, 2) : 0;
-
-        // Average tasks per meeting
         $avgTasksPerMeeting = $totalMeetings > 0 ? round($totalTasks / $totalMeetings, 2) : 0;
-
-        // Department-wise performance
         $departmentStats = DiscussionPoint::selectRaw('department, 
             COUNT(*) as total,
             SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as completed,
@@ -94,20 +83,17 @@ class MeetController extends Controller
             ->sortByDesc('completed_tasks')
             ->values();
 
-        // Tasks by status
         $tasksByStatus = DiscussionPoint::selectRaw('status, COUNT(*) as count')
             ->groupBy('status')
             ->pluck('count', 'status')
             ->toArray();
 
-        // Tasks by priority
         $tasksByPriority = DiscussionPoint::selectRaw('priority, COUNT(*) as count')
             ->whereNotNull('priority')
             ->groupBy('priority')
             ->pluck('count', 'priority')
             ->toArray();
 
-        // Meeting trends (monthly meeting counts for last 6 months)
         $meetingTrends = Meet::selectRaw('
                 DATE_FORMAT(meet_date, "%Y-%m") as month,
                 COUNT(*) as count
@@ -118,13 +104,11 @@ class MeetController extends Controller
             ->pluck('count', 'month')
             ->toArray();
 
-        // Recent meetings (last 5)
         $recentMeetings = Meet::withCount('discussionPoints')
             ->latest('meet_date')
             ->limit(5)
             ->get();
 
-        // Top performers (top 5 employees by completed tasks)
         $topPerformers = DiscussionPoint::selectRaw('
                 COALESCE(assigned_to, assignee_id) as user_id,
                 SUM(CASE WHEN status = "Completed" THEN 1 ELSE 0 END) as completed_count
@@ -146,7 +130,6 @@ class MeetController extends Controller
                 ];
             });
 
-        // Meetings by type
         $meetingsByType = Meet::selectRaw('type, COUNT(*) as count')
             ->whereNotNull('type')
             ->groupBy('type')
@@ -177,14 +160,12 @@ class MeetController extends Controller
     {
         $meets = Meet::withCount('attendees')->latest()->get();
         $projects = Project::all();
-        // $users = User::all()->groupBy('role'); // Assuming you have role-based categories
         $usersByRole = [
-            'Admins' => User::where('role', 0)->get(),
-            'Site Engineers' => User::where('role', 1)->get(),
-            'Project Managers' => User::where('role', 2)->get(),
-            'Vendors' => User::where('role', 3)->get(),
-            'Coordinators' => User::where('role', 4)->get(),
-            // Add more roles as needed
+            'Admins' => User::where('role', UserRole::ADMIN->value)->get(),
+            'Site Engineers' => User::where('role', UserRole::SITE_ENGINEER->value)->get(),
+            'Project Managers' => User::where('role', UserRole::PROJECT_MANAGER->value)->get(),
+            'Vendors' => User::where('role', UserRole::VENDOR->value)->get(),
+            'Coordinators' => User::where('role', UserRole::STORE_INCHARGE->value)->get(),
         ];
         return view('review-meetings.index', compact('meets', 'usersByRole', 'projects'));
     }
@@ -193,10 +174,7 @@ class MeetController extends Controller
     {
         $meets = Meet::latest()->get();
         $projects = Project::all();
-
-        // Return all users except role 3 (Vendors)
-        $users = User::where('role', '<>', 3)->get();
-
+        $users = User::where('role', '<>', UserRole::VENDOR->value)->get();
         return view('review-meetings.create', compact('meets', 'users', 'projects'));
     }
 
@@ -212,7 +190,6 @@ class MeetController extends Controller
                 'followUps'
             ])->findOrFail($id);
 
-            // Calculate task statuses for the summary card
             $taskStatus = $meet->discussionPoints->countBy('status');
             $taskCounts = [
                 'total' => $meet->discussionPoints->count(),
@@ -220,20 +197,10 @@ class MeetController extends Controller
                 'progress' => $taskStatus->get('In Progress', 0),
                 'pending' => $taskStatus->get('Pending', 0),
             ];
-
-            // Group discussion points by assignee for the Responsibilities tab
             $responsibilities = $meet->discussionPoints->groupBy('assignedToUser.name');
-
-            // Get unique departments from attendees for the filter dropdown
             $departments = $meet->attendees->pluck('department')->filter()->unique();
-
-            // Get all users who can be assigned tasks (attendees of the current meeting)
             $assignees = $meet->attendees;
-
-            // Get all projects for the dropdown
             $projects = Project::all();
-
-            // Group discussion points by project
             $discussionPointsByProject = $meet->discussionPoints->groupBy(function ($point) {
                 return $point->project ? $point->project->id : 'no-project';
             });
@@ -265,7 +232,6 @@ class MeetController extends Controller
 
         $data = $request->all();
 
-        // Handle project - if project_name is provided but project_id is not, create new project
         if (!empty($request->project_name) && empty($request->project_id)) {
             $project = Project::create([
                 'project_name' => $request->project_name,
@@ -308,21 +274,16 @@ class MeetController extends Controller
         return back()->with('success', 'Note added successfully!');
     }
 
-    // TODO: while saving user_ids are not being saved in meet_user. The structure in meet_user table is meet_id, user_id,created_at_updated_at
     public function store(Request $request)
     {
-        Log::info($request->all());
 
         $createdUserIds = [];
-
-        // 2) Handle "new_participants" from the form (array of objects)
         $newParticipants = $request->input('new_participants', []);
         if (!empty($newParticipants) && is_array($newParticipants)) {
             foreach ($newParticipants as $idx => $np) {
-                // Basic validation per participant (skip empty rows)
                 $np = array_map('trim', (array) $np);
                 if (empty($np['firstName']) && empty($np['lastName']) && empty($np['email']) && empty($np['contactNo'])) {
-                    continue; // skip entirely empty row
+                    continue;
                 }
 
                 $v = Validator::make($np, [
@@ -336,7 +297,6 @@ class MeetController extends Controller
                     return back()->withErrors($v)->withInput();
                 }
 
-                // Try to find existing user by email or contactNo; create if not found
                 $existing = User::where(function ($query) use ($np) {
                     if (!empty($np['email'])) {
                         $query->where('email', $np['email']);
@@ -351,14 +311,13 @@ class MeetController extends Controller
                     continue;
                 }
 
-                // Create a minimal user. Adjust role as needed (using 4 as generic participant).
                 $password = Str::random(12);
                 $user = User::create([
                     'firstName' => $np['firstName'] ?? null,
                     'lastName' => $np['lastName'] ?? null,
                     'email' => $np['email'] ?? null,
                     'contactNo' => $np['contactNo'] ?? null,
-                    'role' => 100,
+                    'role' => UserRole::COORDINATOR->value,
                     'password' => bcrypt($password),
                 ]);
 
@@ -366,7 +325,6 @@ class MeetController extends Controller
             }
         }
 
-        // 3) Handle CSV import (optional file input name = import_participants)
         if ($request->hasFile('import_participants')) {
             $file = $request->file('import_participants');
             if ($file->isValid()) {
@@ -374,7 +332,6 @@ class MeetController extends Controller
                     $header = null;
                     while (($row = fgetcsv($handle, 0, ',')) !== false) {
                         if (!$header) {
-                            // assume header exists, normalize
                             $header = array_map('trim', $row);
                             continue;
                         }
@@ -405,7 +362,7 @@ class MeetController extends Controller
                             'lastName' => $last ?: null,
                             'email' => $email ?: null,
                             'contactNo' => $phone ?: null,
-                            'role' => 100,
+                            'role' => UserRole::COORDINATOR->value,
                             'password' => bcrypt(Str::random(12)),
                         ]);
                         $createdUserIds[] = $user->id;
@@ -415,14 +372,11 @@ class MeetController extends Controller
             }
         }
 
-        // 4) Combine selected checkboxes with created users
         $selectedUsers = $request->input('users', []);
         if (!is_array($selectedUsers)) {
             $selectedUsers = [];
         }
         $allUserIds = array_values(array_unique(array_merge($selectedUsers, $createdUserIds)));
-
-        // 5) Now validate users array (ensures they exist)
         $request->merge(['users' => $allUserIds]);
         $validated = $request->validate([
             'title' => 'required|string',
@@ -442,7 +396,6 @@ class MeetController extends Controller
         ]);
 
         $meet->attendees()->attach($validated['users']);
-        // 7) Send WhatsApp invites
         $users = User::whereIn('id', $validated['users'])->get(['firstName', 'lastName', 'contactNo']);
         foreach ($users as $user) {
             try {
@@ -466,13 +419,6 @@ class MeetController extends Controller
     }
     public function show(Meet $meet)
     {
-        // Load the relationship
-        // $historicalNotes = $meet->notesHistory()->with('user')->get();
-
-        // return view('review-meetings.notes', [
-        //     'meet' => $meet,
-        //     'historicalNotes' => $historicalNotes,
-        // ]);
         return view('review-meetings.show-details');
     }
 
@@ -480,18 +426,14 @@ class MeetController extends Controller
     {
         $meet->load('attendees');
         $projects = Project::all();
-        // Return all users except role 3 (Vendors) - same as create method
-        $users = User::where('role', '<>', 3)->get();
+        $users = User::where('role', '<>', UserRole::VENDOR->value)->get();
         return view('review-meetings.edit', compact('meet', 'users', 'projects'));
     }
 
     public function update(Request $request, Meet $meet)
     {
-        Log::info('Update request', $request->all());
 
         $createdUserIds = [];
-
-        // Handle "new_participants" from the form (array of objects)
         $newParticipants = $request->input('new_participants', []);
         if (!empty($newParticipants) && is_array($newParticipants)) {
             foreach ($newParticipants as $idx => $np) {
@@ -511,7 +453,6 @@ class MeetController extends Controller
                     return back()->withErrors($v)->withInput();
                 }
 
-                // Try to find existing user by email or contactNo; create if not found
                 $existing = User::where(function ($query) use ($np) {
                     if (!empty($np['email'])) {
                         $query->where('email', $np['email']);
@@ -526,14 +467,13 @@ class MeetController extends Controller
                     continue;
                 }
 
-                // Create a minimal user
                 $password = Str::random(12);
                 $user = User::create([
                     'firstName' => $np['firstName'] ?? null,
                     'lastName' => $np['lastName'] ?? null,
                     'email' => $np['email'] ?? null,
                     'contactNo' => $np['contactNo'] ?? null,
-                    'role' => 100,
+                    'role' => UserRole::COORDINATOR->value,
                     'password' => bcrypt($password),
                 ]);
 
@@ -541,14 +481,11 @@ class MeetController extends Controller
             }
         }
 
-        // Combine selected users with created users
         $selectedUsers = $request->input('users', []);
         if (!is_array($selectedUsers)) {
             $selectedUsers = [];
         }
         $allUserIds = array_values(array_unique(array_merge($selectedUsers, $createdUserIds)));
-
-        // Validate the request
         $request->merge(['users' => $allUserIds]);
         $validated = $request->validate([
             'title' => 'required|string',
@@ -562,7 +499,6 @@ class MeetController extends Controller
             'users' => 'required|array|min:1',
         ]);
 
-        // Update the meeting
         $meet->update([
             'title' => $validated['title'],
             'agenda' => $validated['agenda'] ?? null,
@@ -573,16 +509,10 @@ class MeetController extends Controller
             'type' => $validated['type'],
         ]);
 
-        // Get existing attendee IDs to determine which are new
         $existingAttendeeIds = $meet->attendees->pluck('id')->toArray();
-
-        // Sync attendees (this will add new ones and remove ones not in the list)
         $meet->attendees()->sync($validated['users']);
-
-        // Determine new attendees (those not in the existing list)
         $newAttendeeIds = array_diff($validated['users'], $existingAttendeeIds);
 
-        // Send WhatsApp invites only to new attendees
         if (!empty($newAttendeeIds)) {
             $newUsers = User::whereIn('id', $newAttendeeIds)->get(['firstName', 'lastName', 'contactNo']);
             foreach ($newUsers as $user) {
@@ -624,7 +554,6 @@ class MeetController extends Controller
             'meet_time_to' => 'required',
         ]);
 
-        // Create the new follow-up meeting
         $followUpMeet = Meet::create([
             'title' => $validated['title'],
             'agenda' => 'Follow-up for: ' . $meet->title,
@@ -637,10 +566,7 @@ class MeetController extends Controller
             'parent_meet_id' => $meet->id, // Link to the parent meeting
         ]);
 
-        // Attach the same attendees from the parent meeting
         $followUpMeet->attendees()->attach($meet->attendees->pluck('id'));
-
-        // Create the FollowUp record to track this followup in the follow_ups table
         FollowUp::create([
             'parent_meet_id' => $meet->id,
             'meet_id' => $followUpMeet->id,
@@ -654,7 +580,6 @@ class MeetController extends Controller
 
     public function notes(Meet $meet)
     {
-        // Show editor + whiteboard page
         return view('review-meetings.notes', compact('meet'));
     }
 
@@ -666,7 +591,6 @@ class MeetController extends Controller
             'insert_whiteboard_into_notes' => 'nullable|boolean',
         ]);
 
-        // Save drawing if provided
         if (!empty($data['whiteboard_dataurl']) && str_starts_with($data['whiteboard_dataurl'], 'data:image/png;base64,')) {
             $png = substr($data['whiteboard_dataurl'], strpos($data['whiteboard_dataurl'], ',') + 1);
             $png = base64_decode(str_replace(' ', '+', $png));
@@ -674,7 +598,6 @@ class MeetController extends Controller
             Storage::disk('public')->put($path, $png);
             $meet->whiteboard_image_path = $path;
 
-            // optionally insert the drawing <img> into notes content
             if ($request->boolean('insert_whiteboard_into_notes')) {
                 $imgTag = '<p><img src="' . asset('storage/' . $path) . '" alt="Whiteboard" style="max-width:100%"></p>';
                 $data['notes'] = ($data['notes'] ?? '') . $imgTag;
@@ -692,7 +615,6 @@ class MeetController extends Controller
 
     public function exportPdf(Meet $meet)
     {
-        // Embed whiteboard as base64 for dompdf (reliable)
         $whiteboardBase64 = null;
         if ($meet->whiteboard_image_path && Storage::disk('public')->exists($meet->whiteboard_image_path)) {
             $bytes = Storage::disk('public')->get($meet->whiteboard_image_path);
@@ -706,7 +628,7 @@ class MeetController extends Controller
 
         return $pdf->download('meeting_' . $meet->id . '.pdf');
     }
-    // OPTIONAL Excel export (simple single-sheet)
+
     public function exportExcel(Meet $meet)
     {
         return Excel::download(new \App\Exports\MeetingNotesExport($meet), 'meeting_' . $meet->id . '.xlsx');

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
@@ -24,25 +25,27 @@ class LoginController extends Controller
      */
     protected function authenticated(Request $request, $user)
     {
-        // Deny access to vendors (role 3)
-        if ($user->role == 3) {
+        if ($user->role === UserRole::VENDOR->value) {
             Auth::logout();
             return redirect()->route('login')->withErrors([
                 'error' => 'Vendor login is not allowed in this portal.',
             ]);
         }
 
-        // Clear old session data to avoid conflicts
         Session::forget('project_id');
 
-        // Store project_id in session if it exists
         if ($user->project_id) {
             session(['project_id' => $user->project_id]);
             Session::save();
         }
 
-        // Redirect restricted users (Site Engineer, Store Incharge, and Review Meeting Only) to review meetings only
-        if (in_array($user->role, [1, 4, 11])) {
+        if (
+            in_array($user->role, [
+                UserRole::SITE_ENGINEER->value,
+                UserRole::STORE_INCHARGE->value,
+                UserRole::REVIEW_MEETING_ONLY->value
+            ])
+        ) {
             return redirect()->route('meets.index');
         }
 

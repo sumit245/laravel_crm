@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\PerformanceServiceInterface;
+use App\Enums\UserRole;
 use App\Models\Project;
 use Illuminate\Http\Request;
 
@@ -38,11 +39,10 @@ class PerformanceController extends Controller
             $filters
         );
 
-        // Get leaderboard based on role
         $leaderboard = [];
-        if ($user->role == 0) { // Admin
+        if ($user->role == UserRole::ADMIN->value) {
             $leaderboard = $this->performanceService->getLeaderboard($projectId, 'manager', 10, $filters);
-        } elseif ($user->role == 2) { // Project Manager
+        } elseif ($user->role == UserRole::PROJECT_MANAGER->value) {
             $leaderboard = $this->performanceService->getLeaderboard($projectId, 'engineer', 10, $filters);
         }
 
@@ -112,7 +112,7 @@ class PerformanceController extends Controller
     public function leaderboard(Request $request, string $role)
     {
         $projectId = $this->getSelectedProject($request, auth()->user());
-        
+
         $filters = [
             'date_filter' => $request->query('date_filter', 'today'),
             'start_date' => $request->query('start_date'),
@@ -168,7 +168,7 @@ class PerformanceController extends Controller
             return (int) $user->project_id;
         }
 
-        return Project::when($user->role !== 0, function ($query) use ($user) {
+        return Project::when($user->role !== UserRole::ADMIN->value, function ($query) use ($user) {
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });

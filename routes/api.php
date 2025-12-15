@@ -1,10 +1,9 @@
 <?php
 
 use App\Http\Controllers\API\ConveyanceController;
-use App\Http\Controllers\ConveyanceController as ConvenienceController;
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\InventoryController;
-use App\Http\Controllers\InventoryController as InventoryControllers;
+use App\Http\Controllers\InventoryController as WebInventoryController;
 use App\Http\Controllers\API\LoginController;
 use App\Http\Controllers\API\ProjectController;
 use App\Http\Controllers\API\SiteController;
@@ -23,17 +22,14 @@ Route::prefix('staff')->group(function () {
 });
 
 Route::prefix('vendor')->group(function () {
-    Route::get('/', [VendorController::class, 'index']); //View all vendors
-    Route::post('/', [VendorController::class, 'create']); // Create vendor
-    // Route::post('/upload-avatar/{id}', [VendorController::class, 'uploadAvatar']);
-    Route::get('{id}', [VendorController::class, 'show']); // View a specific vendor
-    Route::get('{id}/edit', [VendorController::class, 'edit']); // Edit vendor (optional)
-    Route::put('{id}', [VendorController::class, 'update']); // Update vendor
-    Route::delete('{id}', [VendorController::class, 'destroy']); // Delete vendor
+    Route::get('/', [VendorController::class, 'index']);
+    Route::post('/', [VendorController::class, 'create']);
+    Route::get('{id}', [VendorController::class, 'show']);
+    Route::get('{id}/edit', [VendorController::class, 'edit']);
+    Route::put('{id}', [VendorController::class, 'update']);
+    Route::delete('{id}', [VendorController::class, 'destroy']);
     Route::get('{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 });
-
-Route::get('/vendors/{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
 
 Route::apiResource('projects', ProjectController::class);
 Route::apiResource('site', SiteController::class);
@@ -48,7 +44,7 @@ Route::apiResource('streetlight', StreetlightController::class);
 
 Route::apiResource('inventories', InventoryController::class);
 Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
-Route::get('get-inventory/vendor/{vendor_id}', [InventoryControllers::class, 'viewVendorInventory']);
+Route::get('get-inventory/vendor/{vendor_id}', [WebInventoryController::class, 'viewVendorInventory']);
 
 Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
 Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);

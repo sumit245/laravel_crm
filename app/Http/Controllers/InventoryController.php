@@ -29,19 +29,34 @@ class InventoryController extends Controller
      */
     public function index(Request $request)
     {
-        //
-        // $inventory = Inventory::all();
+        $user = auth()->user();
         $projectId = $request->query('project_id');
+
+        if (!$projectId && $user->project_id) {
+            $projectId = $user->project_id;
+        }
+        if (!$projectId) {
+            $project = Project::when($user->role !== \App\Enums\UserRole::ADMIN->value, function ($query) use ($user) {
+                $query->whereHas('users', function ($q) use ($user) {
+                    $q->where('users.id', $user->id);
+                });
+            })->first();
+            $projectId = $project ? $project->id : null;
+        }
+
+        if (!$projectId) {
+            return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project to view inventory.');
+        }
+
         $storeId = $request->query('store_id');
 
-        // If filtering values are provided, filter the data
         if ($projectId && $storeId) {
             $inventory = InventroyStreetLightModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
-                ->get();
+                ->paginate(50);
         } else {
-            // Otherwise return all entries
-            $inventory = InventroyStreetLightModel::all();
+            $inventory = InventroyStreetLightModel::where('project_id', $projectId)
+                ->paginate(50);
         }
 
 
@@ -74,7 +89,6 @@ class InventoryController extends Controller
             Excel::import(new InventroyStreetLight($projectId, $storeId), $request->file('file'));
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
         } catch (\Exception $e) {
-            //    return alert('Error importing inventory: ' . $e->getMessage());
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
@@ -97,7 +111,6 @@ class InventoryController extends Controller
         try {
             $projectType = (int) $request->project_type;
 
-            // Use service to add inventory item
             $inventory = $this->inventoryService->addInventoryItem(
                 $request->all(),
                 $projectType
@@ -139,17 +152,12 @@ class InventoryController extends Controller
         return view('inventory.edit', compact('item'));
     }
 
-    // Edit Inventory method
-
     /**
      * Show the form for editing the specified resource.
      */
     public function editInventory($id)
     {
-        // Fetch the inventory item by ID
         $inventoryItem = Inventory::findOrFail($id);
-
-        // Return the editInventory view and pass the item data
         return view('inventory.editInventory', compact('inventoryItem'));
     }
 
@@ -158,7 +166,6 @@ class InventoryController extends Controller
      */
     public function updateInventory(Request $request, $id)
     {
-        // Validate the incoming data
         $validated = $request->validate([
             'productName' => 'required|string|max:255',
             'brand' => 'nullable|string',
@@ -170,16 +177,12 @@ class InventoryController extends Controller
         ]);
 
         try {
-            // Find the inventory item
             $inventoryItem = Inventory::findOrFail($id);
-
-            // Update the inventory item
             $inventoryItem->update($validated);
 
             return redirect()->route('inventory.index')
                 ->with('success', 'Inventory updated successfully.');
         } catch (\Exception $e) {
-            // Catch database or other errors
             return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()])
                 ->withInput();
@@ -211,7 +214,6 @@ class InventoryController extends Controller
             return redirect()->route('inventory.show', compact('item'))
                 ->with('success', 'Inventory updated successfully.');
         } catch (\Exception $e) {
-            // Catch database or other errors
             $errorMessage = $e->getMessage();
 
             return redirect()->back()
@@ -225,7 +227,6 @@ class InventoryController extends Controller
      */
     public function destroy(string $id)
     {
-        //
         try {
             Inventory::findOrFail($id)->delete();
             return response()->json(['success' => true, 'message' => 'Item deleted successfully.']);
@@ -234,10 +235,8 @@ class InventoryController extends Controller
         }
     }
 
-    // View Inventory from store
     public function viewInventory(Request $request)
     {
-
         try {
             $projectId = $request->project_id;
             $storeId = $request->store_id;
@@ -246,35 +245,20 @@ class InventoryController extends Controller
             $storeIncharge = User::findOrFail($store->store_incharge_id);
             $inchargeName = $storeIncharge->firstName . ' ' . $storeIncharge->lastName;
 
-            // Fetch the project to determine the type
-            $project = Project::findOrFail($projectId);
-            // $storeName = "";
-
-            // Fetch the project to determine the type
             $project = Project::findOrFail($projectId);
             $projectType = $project->project_type;
-
-            // Determine the model to query based on project type
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
-
-            // Query inventory with pagination to handle large datasets
             $inventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
                 ->with('dispatch')
                 ->orderBy('created_at', 'desc')
                 ->paginate(100)
-                ->appends($request->query()); // Preserve query parameters in pagination links
-            
-            // Dispatch Inventory - use query builder for aggregations instead of loading all
+                ->appends($request->query());
+
             $dispatch = InventoryDispatch::where('isDispatched', true)
                 ->where('store_id', $storeId)
                 ->get();
-
-
-
-            // Use database queries for aggregations instead of loading all records into memory
-            // Battery Data
             $batteryQuery = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
                 ->where('item_code', 'SL03');
@@ -396,15 +380,12 @@ class InventoryController extends Controller
                 $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
                     ->where('project_id', $request->project_id)
                     ->where('store_id', $request->store_id)
+                    ->where('quantity', '>', 0)
                     ->first();
-                // TODO: also check quantity is greater than 0
 
                 if (!$inventoryItem) {
                     return redirect()->back()->with('error', "Item with serial number {$serialNumber} not found or already dispatched");
                 }
-
-
-                // Create dispatch record
                 $dispatch = InventoryDispatch::create([
                     'vendor_id' => $request->vendor_id,
                     'project_id' => $request->project_id,
@@ -420,9 +401,7 @@ class InventoryController extends Controller
                     'serial_number' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
                     "isDispatched" => true
-
                 ]);
-                // Reduce stock from inventory
                 $inventoryItem->decrement('quantity', 1);
                 $dispatchedItems[] = $dispatch;
             }
@@ -442,12 +421,8 @@ class InventoryController extends Controller
 
     public function viewVendorInventory($vendorId)
     {
-        Log::info("Fetching inventory for vendor_id: {$vendorId}");
-
         try {
-            $todayDate = now()->toDateString(); // Get today's date
-
-            // Fetch inventory dispatched to the vendor
+            $todayDate = now()->toDateString();
             $inventory = InventoryDispatch::where('vendor_id', $vendorId)
                 ->with(['project', 'store', 'storeIncharge'])
                 ->get();
@@ -466,12 +441,10 @@ class InventoryController extends Controller
                     return $this->formatInventoryItem($items);
                 })->values();
 
-            // Group inventory by item_code
             $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
                 return $this->formatInventoryItem($items);
             });
 
-            // Split into categories based on `is_consumed`
             $totalReceived = [];
             $inStock = [];
             $consumed = [];
@@ -482,17 +455,14 @@ class InventoryController extends Controller
                 $consumedItems = $matchingItems->where('is_consumed', 1);
                 $inStockItems = $matchingItems->where('is_consumed', 0);
 
-                // If any item is consumed, move to "consumed"
                 if ($consumedItems->isNotEmpty()) {
                     $consumed[] = $this->formatInventoryItem($consumedItems);
                 }
 
-                // If any item is still in stock, move to "in_stock"
                 if ($inStockItems->isNotEmpty()) {
                     $inStock[] = $this->formatInventoryItem($inStockItems);
                 }
 
-                // Add all items to total received
                 $totalReceived[] = $item;
             }
 
@@ -548,24 +518,21 @@ class InventoryController extends Controller
     public function checkQR(Request $request)
     {
         try {
-            Log::info($request->all());
             $exists = InventroyStreetLightModel::where('serial_number', $request->qr_code)
-                ->where('store_id', $request->store_id) // Ensure it belongs to the same store
-                ->where('item_code', $request->item_code) // Ensure it belongs to the same item code
-                ->where('quantity', '>', 0) // Ensure quantity is greater than 0
+                ->where('store_id', $request->store_id)
+                ->where('item_code', $request->item_code)
+                ->where('quantity', '>', 0)
                 ->exists();
             return response()->json(['exists' => $exists]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
-    // TODO: Streetlight show dispatch inventory code here
     public function showDispatchInventory(Request $request)
     {
         $itemCode = $request->item_code;
         $storeid = $request->store_id;
         try {
-            //code...
             $item = InventroyStreetLightModel::where('item_code', $itemCode)
                 ->where('store_id', $storeid)
                 ->get();
@@ -573,18 +540,15 @@ class InventoryController extends Controller
                 ->where('store_id', $storeid)->get();
             $availableQuantity = 0;
             $title = $itemCode;
-            // print_r($dispatchedItem->toArray());
             return view('inventory.dispatchedStock', compact('specificDispatch', 'availableQuantity', 'title'));
         } catch (\Exception $e) {
-            //throw $th;
-            echo ($e->getMessage());
+            return redirect()->back()->with('error', $e->getMessage());
         }
     }
 
     public function returnInventory(Request $request)
     {
         $serial_number = $request->input('serial_number');
-        Log::info('Return inventory', ['serial_number' => $serial_number]);
         try {
             $inventory = InventroyStreetLightModel::where('serial_number', $serial_number)->first();
             $dispatch = InventoryDispatch::where('serial_number', $serial_number)->whereNull('streetlight_pole_id')->first();
@@ -594,7 +558,6 @@ class InventoryController extends Controller
             }
             $inventory->quantity = 1;
             $inventory->save();
-            // Find and delete the corresponding dispatch record by serial number
 
             if ($dispatch) {
                 $dispatch->delete();
@@ -653,7 +616,6 @@ class InventoryController extends Controller
                 $newDispatch->save();
             }
 
-            // ---------- Step 2: Handle inventory_streetlight ----------
             $newStreet = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
 
             if ($newStreet) {
@@ -669,16 +631,13 @@ class InventoryController extends Controller
                 }
             }
 
-            // ---------- Step 3: Delete old item from dispatch ----------
             $oldDispatch->delete();
 
-            // ---------- Step 4: Update quantity of old item in streetlight ----------
             if (isset($oldStreet)) {
                 $oldStreet->quantity = 1;
                 $oldStreet->save();
             }
 
-            // ---------- Step 5: Update pole columns ----------
             $pole = Pole::find($newDispatch->streetlight_pole_id);
 
             if ($pole) {
@@ -699,7 +658,6 @@ class InventoryController extends Controller
             return back()->with('success', 'Item replaced successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::info($e->getMessage());
             return back()->withInput()->with('replace_error', 'Failed to replace item: ' . $e->getMessage());
         }
     }
@@ -717,7 +675,6 @@ class InventoryController extends Controller
 
             return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
         } catch (\Throwable $th) {
-            \Log::error("Bulk delete error: " . $th->getMessage());
             return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
         }
     }

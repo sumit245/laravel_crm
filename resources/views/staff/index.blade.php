@@ -2,269 +2,138 @@
 
 @section('content')
     <div class="container p-2">
-
-        <!-- Header row: Title + Add button -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="fw-bold mb-0">Staff Management</h3>
-
-            <a href="{{ route('staff.create') }}" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Add New Staff">
-                <i class="mdi mdi-plus-circle"></i>
-            </a>
-        </div>
-
-        <!-- Import Staff form -->
-        <form action="{{ route('import.staff') }}" method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="input-group input-group-sm mb-3" style="max-width: 600px;">
-                <input type="file" name="file" class="form-control form-height form-control-sm" required>
-                <button type="submit" class="btn btn-sm btn-primary" title="Import Staff">
-                    <i class="mdi mdi-upload"></i> Import Staff
-                </button>
-            </div>
-        </form>
-
-        <table id="staffTable" class="table-striped table-bordered table">
-            <thead>
+        <x-datatable id="staffTable" title="Staff Management" :columns="[
+            ['title' => '#', 'width' => '5%'],
+            ['title' => 'Name'],
+            ['title' => 'Email'],
+            ['title' => 'Address'],
+            ['title' => 'Role'],
+            ['title' => 'Phone'],
+        ]" :addRoute="route('staff.create')" addButtonText="Add New Staff"
+            :exportEnabled="true" :importEnabled="true" :importRoute="route('import.staff')" :importFormatUrl="null" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('staff.bulkDelete')"
+            :deleteRoute="route('staff.destroy', ':id')" :editRoute="route('staff.edit', ':id')" :viewRoute="route('staff.show', ':id')" pageLength="50" searchPlaceholder="Search Staff..."
+            :filters="[
+                [
+                    'type' => 'text',
+                    'name' => 'name',
+                    'label' => 'Name',
+                    'column' => 1,
+                    'width' => 3,
+                ],
+                [
+                    'type' => 'text',
+                    'name' => 'email',
+                    'label' => 'Email',
+                    'column' => 2,
+                    'width' => 3,
+                ],
+                [
+                    'type' => 'select',
+                    'name' => 'role',
+                    'label' => 'Role',
+                    'column' => 4,
+                    'width' => 3,
+                    'options' => [
+                        '1' => 'Site Engineer',
+                        '2' => 'Project Manager',
+                        '4' => 'Store Incharge',
+                        '5' => 'Coordinator',
+                    ],
+                ],
+            ]">
+            @foreach ($staff as $member)
                 <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Email</th>
-                    <th>Address</th>
-                    <th>Role</th>
-                    <th>Phone</th>
-                    <th>Actions</th>
+                    <td>
+                        <input type="checkbox" class="row-checkbox" value="{{ $member->id }}">
+                    </td>
+                    <td>{{ $loop->iteration }}</td>
+                    <td>{{ $member->firstName }} {{ $member->lastName }}</td>
+                    <td>{{ $member->email }}</td>
+                    <td>{{ $member->address }}</td>
+                    @php
+                        $roles = [
+                            1 => 'Site Engineer',
+                            2 => 'Project Manager',
+                            4 => 'Store Incharge',
+                        ];
+                    @endphp
+                    <td>{{ $roles[$member->role] ?? 'Coordinator' }}</td>
+                    <td>{{ $member->contactNo }}</td>
+                    <td class="text-center">
+                        <a href="{{ route('staff.show', $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+                            title="View Details">
+                            <i class="mdi mdi-eye"></i>
+                        </a>
+                        <a href="{{ route('staff.edit', $member->id) }}" class="btn btn-icon btn-warning"
+                            data-toggle="tooltip" title="Edit Staff">
+                            <i class="mdi mdi-pencil"></i>
+                        </a>
+                        <button type="button" class="btn btn-icon btn-danger delete-row" data-toggle="tooltip"
+                            title="Delete Staff" data-id="{{ $member->id }}"
+                            data-name="{{ $member->firstName }} {{ $member->lastName }}"
+                            data-url="{{ route('staff.destroy', $member->id) }}">
+                            <i class="mdi mdi-delete"></i>
+                        </button>
+                    </td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach ($staff as $member)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $member->firstName }} {{ $member->lastName }}</td>
-                        <td>{{ $member->email }}</td>
-                        <td>{{ $member->address }}</td>
-                        @php
-                            $roles = [
-                                1 => 'Site Engineer',
-                                2 => 'Project Manager',
-                                4 => 'Store Incharge',
-                            ];
-                        @endphp
-                        <td>
-                            {{ $roles[$member->role] ?? 'Coordinator' }}
-                        </td>
-                        <td>{{ $member->contactNo }}</td>
-                        <td>
-                            <a href="{{ route('staff.show', $member->id) }}" class="btn btn-icon btn-info"
-                                data-toggle="tooltip" title="View Details">
-                                <i class="mdi mdi-eye"></i>
-                            </a>
-                            <a href="{{ route('staff.edit', $member->id) }}" class="btn btn-icon btn-warning"
-                                data-toggle="tooltip" title="Edit Staff">
-                                <i class="mdi mdi-pencil"></i>
-                            </a>
-                            <button type="submit" class="btn btn-icon btn-danger delete-staff" data-toggle="tooltip"
-                                title="Delete Staff" data-id="{{ $member->id }}" data-name="{{ $member->name }}"
-                                data-url="{{ route('staff.destroy', $member->id) }}">
-                                <i class="mdi mdi-delete"></i>
-                            </button>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
+            @endforeach
+        </x-datatable>
     </div>
+
+    @if (session()->has('success'))
+        <script>
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'success',
+                title: {!! json_encode(session('success')) !!},
+                showConfirmButton: false,
+                timer: 4000,
+                timerProgressBar: true
+            });
+        </script>
+    @endif
+
+    @if (session()->has('error'))
+        <script>
+            Swal.fire({
+                toast: true,
+                position: 'top-end',
+                icon: 'error',
+                title: {!! json_encode(session('error')) !!},
+                showConfirmButton: false,
+                timer: 5000,
+                timerProgressBar: true
+            });
+        </script>
+    @endif
+
+    @if (session()->has('import_errors'))
+        <script>
+            const importErrors = {!! json_encode(session('import_errors')) !!};
+            const maxShow = 10;
+            const shortList = Array.isArray(importErrors) ? importErrors.slice(0, maxShow) : [importErrors];
+            Swal.fire({
+                title: 'Import completed with errors',
+                icon: 'warning',
+                html: shortList.join('<br>') + (importErrors.length > maxShow ? '<br><em>...more errors omitted</em>' :
+                    ''),
+                confirmButtonText: 'OK',
+                width: '600px'
+            });
+        </script>
+    @endif
+
+    @if ($errors->any())
+        <script>
+            const validationErrors = {!! json_encode($errors->all()) !!};
+            Swal.fire({
+                title: 'Validation errors',
+                icon: 'error',
+                html: validationErrors.join('<br>'),
+                confirmButtonText: 'OK',
+                width: '600px'
+            });
+        </script>
+    @endif
 @endsection
-
-@push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#staffTable').DataTable({
-                dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-                buttons: [{
-                        extend: 'excel',
-                        text: '<i class="mdi mdi-file-excel text-light"></i>',
-                        className: 'btn btn-icon  btn-success',
-                        titleAttr: 'Export to Excel'
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="mdi mdi-file-pdf"></i>',
-                        className: 'btn btn-icon btn-danger',
-                        titleAttr: 'Export to PDF'
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="mdi mdi-printer"></i>',
-                        className: 'btn btn-icon btn-info',
-                        titleAttr: 'Print Table'
-                    }
-                ],
-                paging: true,
-                pageLength: 50,
-                searching: true,
-                ordering: true,
-                responsive: true,
-                autoWidth: false,
-                columnDefs: [{
-                        targets: 0,
-                        width: "4%"
-                    },
-                    {
-                        targets: 1,
-                        width: "16%"
-                    },
-                    {
-                        targets: 2,
-                        width: "20%"
-                    },
-                    {
-                        targets: 3,
-                        width: "20%"
-                    },
-                    {
-                        targets: 4,
-                        width: "10%"
-                    },
-                    {
-                        targets: 5,
-                        width: "10%"
-                    },
-                    {
-                        targets: 6,
-                        width: "20%"
-                    },
-                ],
-                language: {
-                    search: '',
-                    searchPlaceholder: 'Search Staff...'
-                }
-            });
-
-            // show session / validation / import messages as toast / modal using SweetAlert2
-            @if (session()->has('success'))
-                const successMsg = {!! json_encode(session('success')) !!};
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'success',
-                    title: successMsg,
-                    showConfirmButton: false,
-                    timer: 4000,
-                    timerProgressBar: true
-                });
-            @endif
-
-            @if (session()->has('error'))
-                const errorMsg = {!! json_encode(session('error')) !!};
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'error',
-                    title: errorMsg,
-                    showConfirmButton: false,
-                    timer: 5000,
-                    timerProgressBar: true
-                });
-            @endif
-
-            @if (session()->has('import_errors'))
-                const importErrors = {!! json_encode(session('import_errors')) !!};
-                // show top X errors in a modal for readability
-                const maxShow = 10;
-                const shortList = Array.isArray(importErrors) ? importErrors.slice(0, maxShow) : [importErrors];
-                Swal.fire({
-                    title: 'Import completed with errors',
-                    icon: 'warning',
-                    html: shortList.join('<br>') + (importErrors.length > maxShow ?
-                        '<br><em>...more errors omitted</em>' : ''),
-                    confirmButtonText: 'OK',
-                    width: '600px'
-                });
-            @endif
-
-            @if ($errors->any())
-                const validationErrors = {!! json_encode($errors->all()) !!};
-                Swal.fire({
-                    title: 'Validation errors',
-                    icon: 'error',
-                    html: validationErrors.join('<br>'),
-                    confirmButtonText: 'OK',
-                    width: '600px'
-                });
-            @endif
-
-            $('[data-toggle="tooltip"]').tooltip();
-            $('.dataTables_filter input').addClass('form-control form-control-sm');
-
-            $('.delete-staff').on('click', function() {
-                let staffId = $(this).data('id');
-                let staffName = $(this).data('name');
-                let deleteUrl = $(this).data('url');
-
-                Swal.fire({
-                    title: `Are you sure?`,
-                    text: `You are about to delete ${staffName}. This action cannot be undone.`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, delete it!',
-                    cancelButtonText: 'Cancel',
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: deleteUrl,
-                            type: 'POST',
-                            data: {
-                                _method: 'DELETE',
-                                _token: "{{ csrf_token() }}",
-                            },
-                            success: function(response) {
-                                Swal.fire(
-                                    'Deleted!',
-                                    `${staffName} has been deleted.`,
-                                    'success'
-                                );
-                                $(`button[data-id="${staffId}"]`).closest('tr')
-                                    .remove();
-                            },
-                            error: function(xhr) {
-                                Swal.fire(
-                                    'Error!',
-                                    'There was an error deleting the staff member. Please try again.',
-                                    'error'
-                                );
-                            }
-                        });
-                    }
-                });
-            });
-        });
-    </script>
-@endpush
-
-@push('styles')
-    <style>
-        table.dataTable thead th,
-        table.dataTable thead td,
-        table.dataTable tfoot th,
-        table.dataTable tfoot td {
-            text-align: center;
-        }
-
-        .form-control:read-only,
-        .select2-container--default .select2-selection--single:read-only {
-            background: none;
-        }
-
-        .select2-container--default .select2-selection--single:read-only {
-            padding: 0;
-        }
-
-        .form-height {
-            height: 100%;
-        }
-    </style>
-@endpush

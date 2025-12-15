@@ -14,35 +14,26 @@ use App\Models\StreetlightTask;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SiteController extends Controller
 {
-    // Import Excel file for sites
     public function import(Request $request, $projectId)
     {
-        Log::info('Import method triggered for project ID: ' . $projectId);
         $request->validate([
             'file' => 'required|mimes:xlsx,xls,csv|max:2048',
         ]);
 
-        Log::info('Uploaded file:', ['file' => $request->file('file')]);
-
         $project = Project::find($request->project_id);
         if (!$project) {
-            Log::error('Project not found for ID: ' . $projectId);
             return back()->with('error', 'Project not found.');
         }
 
         try {
             if ($project->project_type == 1) {
-                Log::info('Importing Streetlight Data...');
                 Excel::import(new StreetlightImport($projectId), $request->file('file'));
-                Log::info('Streetlight Import Completed.');
                 return back()->with('success', 'Streetlight data imported successfully.');
             } else {
-                Log::info('Importing Rooftop Data...');
                 Excel::import(new SiteImport($projectId), $request->file('file'));
                 return back()->with('success', 'Sites imported successfully!');
             }
@@ -68,7 +59,6 @@ class SiteController extends Controller
         $project = null;
         $projectType = null;
 
-        // Get project_id from route parameter or query string
         $projectId = $projectId ?? $request->query('project_id');
 
         if ($projectId) {
@@ -80,8 +70,11 @@ class SiteController extends Controller
 
         $states = State::all();
         $projects = Project::all();
-        $vendors = User::where('role', 3)->get();
-        $staffs = User::whereIn('role', [1, 2])->get();
+        $vendors = User::where('role', \App\Enums\UserRole::VENDOR->value)->get();
+        $staffs = User::whereIn('role', [
+            \App\Enums\UserRole::SITE_ENGINEER->value,
+            \App\Enums\UserRole::PROJECT_MANAGER->value
+        ])->get();
 
         return view('sites.create', compact('states', 'projects', 'vendors', 'staffs', 'project', 'projectType'));
     }
@@ -91,22 +84,19 @@ class SiteController extends Controller
      */
     private function generateTaskId($district)
     {
-        $districtPrefix = strtoupper(substr($district, 0, 3)); // Extract first 3 letters
+        $districtPrefix = strtoupper(substr($district, 0, 3));
 
-        // Find the last task_id with this district prefix
         $lastTask = Streetlight::where('task_id', 'LIKE', "{$districtPrefix}%")
             ->orderBy('task_id', 'desc')
             ->first();
 
         if ($lastTask) {
-            // Extract numeric part and increment
             preg_match('/(\d+)$/', $lastTask->task_id, $matches);
             $counter = isset($matches[1]) ? (int) $matches[1] + 1 : 1;
         } else {
             $counter = 1;
         }
 
-        // Generate task_id in format: DISTRICT_PREFIX + 3-digit number
         return sprintf('%s%03d', $districtPrefix, $counter);
     }
 
@@ -116,9 +106,6 @@ class SiteController extends Controller
     public function store(Request $request)
     {
         try {
-            Log::info('Request received for create site', $request->all());
-
-            // Get project to determine project type
             $projectId = $request->input('project_id');
             $project = Project::find($projectId);
 
@@ -128,7 +115,6 @@ class SiteController extends Controller
                     ->withInput();
             }
 
-            // Handle streetlight projects (project_type == 1)
             if ($project->project_type == 1) {
                 $validatedData = $request->validate([
                     'project_id' => 'required|integer',
@@ -141,20 +127,12 @@ class SiteController extends Controller
                     'mukhiya_contact' => 'nullable|string|max:255',
                 ]);
 
-                // Generate task_id based on district
                 $validatedData['task_id'] = $this->generateTaskId($validatedData['district']);
-
                 $streetlight = Streetlight::create($validatedData);
-
-                Log::info('Streetlight site created successfully', [
-                    'streetlight_id' => $streetlight->id,
-                    'task_id' => $streetlight->task_id
-                ]);
 
                 return redirect()->route('projects.show', $projectId)
                     ->with('success', 'Streetlight site created successfully.');
             } else {
-                // Handle rooftop projects (project_type == 0)
                 $validatedData = $request->validate([
                     'state' => 'required|integer',
                     'district' => 'required|integer',
@@ -180,24 +158,14 @@ class SiteController extends Controller
 
                 $site = Site::create($validatedData);
 
-                Log::info('Site created successfully', ['site_id' => $site->id, 'site_name' => $site->site_name]);
-
                 return redirect()->route('sites.show', $site->id)
                     ->with('success', 'Site created successfully.');
             }
         } catch (\Illuminate\Validation\ValidationException $e) {
-            Log::warning('Site creation failed - Validation errors', [
-                'errors' => $e->errors(),
-                'input' => $request->all()
-            ]);
             return redirect()->back()
                 ->withErrors($e->errors())
                 ->withInput();
         } catch (\Exception $e) {
-            Log::error('Site creation failed - Exception', [
-                'error' => $e->getMessage(),
-                'input' => $request->all()
-            ]);
             return redirect()->back()
                 ->withErrors(['error' => 'An error occurred while creating the site. Please try again.'])
                 ->withInput();
@@ -212,38 +180,21 @@ class SiteController extends Controller
         $projectType = $request->query('project_type');
 
         if ($projectType == 1) {
-            // Step 1. Find the streetlight that will return id, district, state, block, panchayat, ward, number_of_surveyed_poles and number_of_installed_poles 
             $site = Streetlight::with('streetlightTasks')->findOrFail($id);
-
-            // Step 2. Use the id of streetlight to find streetlight_task allotted corresponding to the site by column site_id
-            // Return engineer_id, vendor_id, manager_id, start_date, end_date, billed with names via eager loading
 
             $streetlightTask = StreetlightTask::with(['engineer', 'vendor', 'manager'])
                 ->where('site_id', $site->id)
                 ->first();
 
-            // Step 3: Use the id of streetlight_task to find streelight_poles corresponding to task_id
-            // Group poles according to ward_name so that frontend can filter poles specific to a ward
-
             $poles = Pole::where('task_id', $streetlightTask->id ?? null)
                 ->get();
-            // ->groupBy('ward_name');
 
-            Log::info($poles);
-
-            // Prepare readable engineer, vendor, manager names
             $engineerName = optional($streetlightTask?->engineer)->firstName . " " . optional($streetlightTask?->engineer)->lastName ?? 'N/A';
-
             $vendorName = optional($streetlightTask?->vendor)->name ?? 'N/A';
             $managerName = optional($streetlightTask?->manager)->firstName . " " . optional($streetlightTask?->manager)->lastName ?? 'N/A';
-
-            // Prepare state and district names if you have relationships, else keep as stored
             $stateName = $site->state;
             $districtName = $site->district;
 
-
-
-            // Return to view with all required data
             return view('sites.show', compact(
                 'site',
                 'streetlightTask',
@@ -257,14 +208,13 @@ class SiteController extends Controller
             ));
         }
 
-        // For non-streetlight projects (default site)
         $site = Site::with(['stateRelation', 'districtRelation', 'projectRelation', 'vendorRelation', 'engineerRelation'])
             ->findOrFail($id);
 
         $states = State::all();
-        $districts = City::where('state_id', $site->state)->get(); // Dynamically load districts based on state
+        $districts = City::where('state_id', $site->state)->get();
         $projects = Project::all();
-        $users = User::all(); // For vendor and engineer names
+        $users = User::all();
 
         return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectType'));
     }
@@ -306,13 +256,11 @@ class SiteController extends Controller
         if ($projectId) {
             $project = Project::find($projectId);
             if ($project && $project->project_type == 1) {
-                // Streetlight project - use Streetlight model
                 $streetlight = Streetlight::findOrFail($id);
                 return view('sites.edit', compact('streetlight', 'projectId'));
             }
         }
 
-        // Default to regular Site model (rooftop projects)
         $site = Site::findOrFail($id);
         return view('sites.edit', compact('site', 'projectId'));
     }
@@ -320,13 +268,11 @@ class SiteController extends Controller
     public function update(Request $request, string $id)
     {
         try {
-            // Determine project type from project_id
             $projectId = $request->query('project_id') ?? $request->input('project_id');
 
             if ($projectId) {
                 $project = Project::find($projectId);
                 if ($project && $project->project_type == 1) {
-                    // Streetlight project - use Streetlight model
                     $streetlight = Streetlight::findOrFail($id);
                     $streetlight->update($request->only([
                         'task_id',
@@ -343,7 +289,6 @@ class SiteController extends Controller
                 }
             }
 
-            // Default to regular Site model (rooftop projects)
             $site = Site::findOrFail($id);
             $site->update($request->only([
                 'task_id',
@@ -367,13 +312,11 @@ class SiteController extends Controller
     public function destroy(string $id, Request $request)
     {
         try {
-            // Determine project type from project_id
             $projectId = $request->query('project_id') ?? $request->input('project_id');
 
             if ($projectId) {
                 $project = Project::find($projectId);
                 if ($project && $project->project_type == 1) {
-                    // Streetlight project - use Streetlight model
                     $streetlight = Streetlight::findOrFail($id);
                     $streetlight->delete();
                     return redirect()->back()
@@ -381,7 +324,6 @@ class SiteController extends Controller
                 }
             }
 
-            // Default to regular Site model (rooftop projects)
             $site = Site::findOrFail($id);
             $site->delete();
             return redirect()->back()

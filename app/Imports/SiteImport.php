@@ -5,7 +5,6 @@ namespace App\Imports;
 use App\Models\City;
 use App\Models\Site;
 use App\Models\State;
-use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
@@ -26,40 +25,19 @@ class SiteImport implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
-        // // Fetch the district ID based on the exact district name
-        // $districtId = $this->getDistrictId($row['district']);
-        // $stateId    = $this->getStateId($row['state']);
-        // Initialize districtId and stateId as null
-        // $districtId = null;
-        // $stateId = null;
-
-        // // If 'district' key exists, fetch its ID
-        // if (isset($row['district'])) {
-        //     $districtId = $this->getDistrictId($row['district']);
-        //     if (!$districtId) {
-        //         Log::warning('Invalid district in import row.', $row);
-        //         return null;
-        //     }
-        // }
-
-        // If no matching district or state is found, log an error and skip this row
-        // if (!$districtId || !$stateId) {
-        //     return null;
-        // }
-
         $data = [
-            'project_id'          => $this->projectId,
-            'state'               => $stateId ?? null,
-            'district'            => $districtId ?? null,
-            'breda_sl_no'         => $row['breda_sl_no'] ?? null,
-            'division'            => $row['division'] ?? null,
-            'site_name'           => $row['site_name'] ?? null,
-            'location'            => $row['location'] ?? null,
-            'sanction_load'       => $row['sanction_load_in_kwp'] ?? null,
-            'ca_number'           => $row['ca_number'] ?? null,
-            'meter_number'        => $row['meter_no'] ?? null,
+            'project_id' => $this->projectId,
+            'state' => null,
+            'district' => null,
+            'breda_sl_no' => $row['breda_sl_no'] ?? null,
+            'division' => $row['division'] ?? null,
+            'site_name' => $row['site_name'] ?? null,
+            'location' => $row['location'] ?? null,
+            'sanction_load' => $row['sanction_load_in_kwp'] ?? null,
+            'ca_number' => $row['ca_number'] ?? null,
+            'meter_number' => $row['meter_no'] ?? null,
             'bts_department_name' => $row['bts_department_name'] ?? null,
-            'contact_no'          => $row['contact_no'] ?? null,
+            'contact_no' => $row['contact_no'] ?? null,
             'installation_status' => isset($row['installation_status'])
                 ? (strtolower(trim($row['installation_status'])) === 'yes' ? 1 : 0)
                 : null,

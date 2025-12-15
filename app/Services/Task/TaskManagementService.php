@@ -455,43 +455,21 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
      */
     public function createBulkTasks(int $projectId, array $siteIds, array $taskData, int $createdBy): void
     {
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:447', 'message' => 'createBulkTasks entry', 'data' => ['project_id' => $projectId, 'site_ids_count' => count($siteIds), 'site_ids' => $siteIds, 'task_data_keys' => array_keys($taskData), 'created_by' => $createdBy], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion
-
         $this->executeInTransaction(function () use ($projectId, $siteIds, $taskData, $createdBy) {
             $project = Project::findOrFail($projectId);
 
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:454', 'message' => 'project found', 'data' => ['project_type' => $project->project_type], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion
-
             // Handle streetlight projects (project_type == 1)
             if ($project->project_type == 1) {
-                // #region agent log
-                file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:459', 'message' => 'streetlight project detected', 'data' => [], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                // #endregion
-
                 foreach ($siteIds as $siteId) {
-                    // #region agent log
-                    file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:463', 'message' => 'processing site', 'data' => ['site_id' => $siteId], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                    // #endregion
-
                     // Check if task already exists for this site
                     $existingTask = StreetlightTask::where('site_id', $siteId)->first();
                     if ($existingTask) {
-                        // #region agent log
-                        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:468', 'message' => 'task already exists, skipping', 'data' => ['site_id' => $siteId, 'existing_task_id' => $existingTask->id], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                        // #endregion
                         continue;
                     }
 
                     // Verify streetlight site exists
                     $streetlight = Streetlight::find($siteId);
                     if (!$streetlight) {
-                        // #region agent log
-                        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:476', 'message' => 'streetlight site not found', 'data' => ['site_id' => $siteId], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                        // #endregion
                         throw new InvalidArgumentException("Streetlight site with ID {$siteId} not found");
                     }
 
@@ -507,31 +485,15 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
                         'end_date' => $taskData['end_date'] ?? null,
                     ];
 
-                    // #region agent log
-                    file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:492', 'message' => 'before creating streetlight task', 'data' => ['task_data' => $streetlightTaskData], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                    // #endregion
-
                     StreetlightTask::create($streetlightTaskData);
-
-                    // #region agent log
-                    file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:496', 'message' => 'streetlight task created', 'data' => ['site_id' => $siteId], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                    // #endregion
                 }
             } else {
                 // Handle rooftop projects (project_type == 0)
-                // #region agent log
-                file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:502', 'message' => 'rooftop project detected', 'data' => [], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-                // #endregion
-
                 foreach ($siteIds as $siteId) {
                     $taskData['site_id'] = $siteId;
                     $this->createTask($taskData);
                 }
             }
-
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'TaskManagementService.php:512', 'message' => 'createBulkTasks completed', 'data' => ['sites_processed' => count($siteIds)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion
         });
     }
 
