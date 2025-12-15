@@ -18,7 +18,7 @@ class RemoteApiHelper
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
             'poleName' => $pole->complete_pole_number,
-            "project" => "BREDASSL", //TODO: Get project from .env
+            "project" => "SUGS", //TODO: Get project from .env
             'district' => $streetlight->district,
             'districtCode' => (string) $districtCode,
             'block' => $streetlight->block,
