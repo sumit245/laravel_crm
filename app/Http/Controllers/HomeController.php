@@ -2,9 +2,9 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\ExcelHelper;
+use App\Enums\UserRole;
 use App\Models\Pole;
-use App\Models\Project; // Model for vendors
+use App\Models\Project;
 use App\Models\Site;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
@@ -12,8 +12,6 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
 
 class HomeController extends Controller
 {
@@ -36,46 +34,21 @@ class HomeController extends Controller
     public function index(Request $request)
     {
         $user = auth()->user();
-        // Admin, Project Manager, Coordinator,
         $selectedProjectId = $this->getSelectedProject($request, $user);
 
-        // If no project is found, redirect to projects page or show error
         if (!$selectedProjectId) {
             return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project.');
         }
 
-        // 10
         $project = Project::findOrFail($selectedProjectId);
-        // {project_name:BREDA, project_type:1 ... with all relations declared in Project Model}
-
         $dateRange = $this->getDateRange($request->query('date_filter', 'today'));
-        //[12-05-2025, 30-05-2025] 
-
-        // Determine task and site models based on project type
         $isStreetLightProject = $project->project_type == 1;
-        // true
-
         $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
-        // StreetlightTask model with all its relations
-
         $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
-        // Streetlight model with all its relations
-
-        // Get site statistics
         $siteStats = $this->getSiteStatistics($siteModel, $taskModel, $selectedProjectId, $dateRange, $isStreetLightProject);
-        // {
-        //     "total_sites" :225,
-        //     "total_poles" :2250,
-        //     "surveyed_poles":225,
-        //     "installed_poles":0
-        // }
-
-        // Get pole statistics for streetlight projects
         $poleStats = $isStreetLightProject ?
             $this->getPoleStatistics($selectedProjectId) :
             ['totalSurveyedPoles' => null, 'totalInstalledPoles' => null];
-
-        // Calculate role performances
         $rolePerformances = $this->calculateRolePerformances(
             $user,
             $selectedProjectId,
@@ -83,16 +56,9 @@ class HomeController extends Controller
             $dateRange,
             $isStreetLightProject
         );
-        // TODO:modify this callback
-
-        // Get user counts
         $userCounts = $this->getUserCounts($user, $selectedProjectId);
-
-
-        // Prepare statistics array
         $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
 
-        // TODO: make it more efficient
         return view('dashboard', array_merge(
             compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
             $siteStats,
@@ -101,27 +67,26 @@ class HomeController extends Controller
         ));
     }
 
-    // Start working from here
     private function calculateRolePerformances($user, $projectId, $taskModel, $dateRange, $isStreetLightProject)
     {
-        $roles = ['Project Manager' => 2, 'Site Engineer' => 1, 'Vendor' => 3];
+        $roles = [
+            'Project Manager' => UserRole::PROJECT_MANAGER->value,
+            'Site Engineer' => UserRole::SITE_ENGINEER->value,
+            'Vendor' => UserRole::VENDOR->value
+        ];
         $rolePerformances = [];
 
         foreach ($roles as $roleName => $roleId) {
             $usersQuery = User::where('role', $roleId);
 
-            // Apply role-based filters
-            if ($user->role == 2) { // Project Manager
-                if ($roleId == 2) {
-                    // Show all project managers for the selected project
+            if ($user->role === UserRole::PROJECT_MANAGER->value) {
+                if ($roleId === UserRole::PROJECT_MANAGER->value) {
                     $usersQuery->where('project_id', $projectId);
                 } else {
-                    // Show only related engineers and vendors for the selected project
                     $usersQuery->where('manager_id', $user->id)
                         ->where('project_id', $projectId);
                 }
             } else {
-                // Non-admin users see only their project
                 $usersQuery->where('project_id', $projectId);
             }
 
@@ -129,18 +94,14 @@ class HomeController extends Controller
                 return $this->calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject);
             })->filter();
 
-            // Custom sorting logic based on the conditions provided
             if ($isStreetLightProject) {
                 $users = $users->sortByDesc('surveyedPoles');
             } else {
-                // Default sorting for non-streetlight projects
                 $users = $users->sortByDesc('completedTasks');
             }
 
-            $users = $users->values(); // Re-index the collection after sorting
-
+            $users = $users->values();
             $rolePerformances[$roleName] = $users;
-            Log::info($users);
         }
 
         return $rolePerformances;
@@ -149,14 +110,12 @@ class HomeController extends Controller
     private function calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject)
     {
         if ($isStreetLightProject) {
-            // Get total poles for all panchayats assigned to this user in date range
             $totalPoles = Streetlight::whereHas('streetlightTasks', function ($q) use ($user, $dateRange) {
                 $q->where($this->getRoleColumn($user->role), $user->id)
                     ->whereBetween('created_at', $dateRange);
             })->sum('total_poles');
 
-            // Get surveyed and installed poles by this user in date range
-            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user, ) {
+            $surveyedPoles = Pole::whereHas('task', function ($q) use ($projectId, $user) {
                 $q->where('project_id', $projectId)
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isSurveyDone', true)
@@ -167,7 +126,6 @@ class HomeController extends Controller
                     ->where($this->getRoleColumn($user->role), $user->id);
             })->where('isInstallationDone', true)
                 ->whereBetween('updated_at', $dateRange)->count();
-
 
             $performance = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
             $performanceSurvey = $totalPoles > 0 ? ($surveyedPoles / $totalPoles) * 100 : 0;
@@ -185,7 +143,6 @@ class HomeController extends Controller
                 'performance' => $performance,
                 'performanceSurvey' => $performanceSurvey,
                 'performanceInstallation' => $performanceinstallation,
-                // 'medal' => $surveyedPoles > 0 ? null : 'none'
             ];
         } else {
             $tasksQuery = $taskModel::where('project_id', $projectId)
@@ -193,8 +150,9 @@ class HomeController extends Controller
                 ->whereBetween('updated_at', $dateRange);
 
             $totalTasks = $tasksQuery->count();
-            if ($totalTasks == 0)
+            if ($totalTasks == 0) {
                 return null;
+            }
 
             $completedTasks = $tasksQuery->where('status', 'Completed')->count();
             $performance = ($completedTasks / $totalTasks) * 100;
@@ -216,27 +174,23 @@ class HomeController extends Controller
     private function getRoleColumn($role)
     {
         return [
-            1 => 'engineer_id',
-            2 => 'manager_id',
-            3 => 'vendor_id'
+            UserRole::SITE_ENGINEER->value => 'engineer_id',
+            UserRole::PROJECT_MANAGER->value => 'manager_id',
+            UserRole::VENDOR->value => 'vendor_id'
         ][$role];
     }
-    // Till Here
 
     private function getSelectedProject(Request $request, User $user)
     {
-        // First try to get from request
         if ($request->has('project_id')) {
             return $request->project_id;
         }
 
-        // Then try user's assigned project
         if ($user->project_id) {
             return $user->project_id;
         }
 
-        // Finally get first project user has access to
-        $project = Project::when($user->role !== 0, function ($query) use ($user) {
+        $project = Project::when($user->role !== UserRole::ADMIN->value, function ($query) use ($user) {
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
@@ -262,7 +216,6 @@ class HomeController extends Controller
             ];
         }
 
-        // For rooftop projects - lifetime statistics
         return [
             'totalSites' => $siteModel::where('project_id', $projectId)->count(),
             'completedTasks' => $taskModel::where('project_id', $projectId)
@@ -278,18 +231,17 @@ class HomeController extends Controller
     {
         $query = User::where('project_id', $projectId);
 
-        // If user is project manager, only show their assigned users
-        if ($user->role == 2) {
+        if ($user->role === UserRole::PROJECT_MANAGER->value) {
             $query->where(function ($q) use ($user) {
                 $q->where('manager_id', $user->id)
-                    ->orWhere('role', 2); // Include all project managers
+                    ->orWhere('role', UserRole::PROJECT_MANAGER->value);
             });
         }
 
         return [
-            'projectManagers' => (clone $query)->where('role', 2)->count(),
-            'siteEngineers' => (clone $query)->where('role', 1)->count(),
-            'vendors' => (clone $query)->where('role', 3)->count()
+            'projectManagers' => (clone $query)->where('role', UserRole::PROJECT_MANAGER->value)->count(),
+            'siteEngineers' => (clone $query)->where('role', UserRole::SITE_ENGINEER->value)->count(),
+            'vendors' => (clone $query)->where('role', UserRole::VENDOR->value)->count()
         ];
     }
 
@@ -307,18 +259,6 @@ class HomeController extends Controller
         ];
     }
 
-    private function getUserPoleStatistics($user, $projectId, $dateRange)
-    {
-        $poles = Pole::whereHas('task.site', function ($q) use ($projectId, $user) {
-            $q->where('project_id', $projectId)
-                ->where($this->getRoleColumn($user->role), $user->id);
-        })->whereBetween('created_at', $dateRange);
-
-        return [
-            'surveyedPoles' => (clone $poles)->where('isSurveyDone', true)->count(),
-            'installedPoles' => (clone $poles)->where('isInstallationDone', true)->count()
-        ];
-    }
 
     private function prepareStatistics($siteStats, $userCounts, $isStreetLightProject = false)
     {
@@ -374,20 +314,18 @@ class HomeController extends Controller
 
     private function getAvailableProjects(User $user)
     {
-        return Project::when($user->role !== 0, function ($query) use ($user) {
-            // For non-admin users, get projects through project_user pivot table
+        return Project::when($user->role !== UserRole::ADMIN->value, function ($query) use ($user) {
             $query->whereHas('users', function ($q) use ($user) {
                 $q->where('users.id', $user->id);
             });
         })->get();
     }
 
-    // Helper Function for Date Range
     private function getDateRange($filter)
     {
         switch ($filter) {
             case 'today':
-                return [now()->subDay(), now()]; // Last 24 hours
+                return [now()->subDay(), now()];
             case 'this_week':
                 return [now()->startOfWeek(), now()->endOfWeek()];
             case 'this_month':
@@ -399,7 +337,7 @@ class HomeController extends Controller
                 $end = request()->end_date;
                 return [Carbon::parse($start)->startOfDay(), Carbon::parse($end)->endOfDay()];
             default:
-                return [now()->subDay(), now()]; // Last 24 hours
+                return [now()->subDay(), now()];
         }
     }
 
@@ -407,10 +345,7 @@ class HomeController extends Controller
 
     public function exportToExcel()
     {
-        $data = [
-            (object) ['Name' => 'John Doe', 'Email' => 'john@example.com', 'Age' => 30],
-            (object) ['Name' => 'Jane Smith', 'Email' => 'jane@example.com', 'Age' => 28],
-        ];
-        return ExcelHelper::exportMultipleSheets($data, 'users.xlsx');
+        // TODO: Implement actual dashboard data export
+        return redirect()->back()->with('error', 'Export functionality not yet implemented.');
     }
 }

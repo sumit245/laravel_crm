@@ -16,7 +16,7 @@
         </tr>
     </thead>
     <tbody>
-        @foreach ($installedPoles as $survey)
+        @foreach ($installedPoles ?? [] as $survey)
             <tr>
                 <td>
                     <input type="checkbox" name="selected_tasks[]" value="{{ $survey->id }}" class="task-checkbox" />

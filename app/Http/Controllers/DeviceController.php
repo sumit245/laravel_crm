@@ -14,7 +14,8 @@ class DeviceController extends Controller
     public function index()
     {
         $districts = Streetlight::select('district')->distinct()->get();
-        $project = Project::where('id', 11)->first(); // Changed from 11 to 1 and using first() to get a single project
+        $projectId = env('JICR_DEFAULT_PROJECT_ID', null);
+        $project = $projectId ? Project::find($projectId) : Project::first();
         return view('poles.index', compact('districts', 'project'));
     }
     public function import(Request $request)

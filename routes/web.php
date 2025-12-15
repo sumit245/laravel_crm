@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
+use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -21,7 +21,10 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 
 Route::get('privacy-policy', fn() => view('privacy'));
 Route::get('terms-and-conditions', fn() => view('terms'));
-Route::get('/backup', fn() => view('data_backup.backup'))->name('backup.index');
+Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
+Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
+Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
 Route::get('/certificate', fn() => view('certificate_1'))->name('certificate.view');
 Route::get('/certificate-2', fn() => view('certificate_2'))->name('certificate2.view');
 Route::get('/certificate-3', fn() => view('certificate_3'))->name('certificate3.view');
@@ -72,10 +75,9 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
         });
 
     // Meets
-    Route::resource('meets', MeetController::class);
-    Route::get('/meets/show/{id}', [MeetController::class, 'show'])->name('meets.show');
-    Route::get('/meets/details/{id}', [MeetController::class, 'details'])->name('meets.details');
     Route::get('/meets/dashboard', [MeetController::class, 'dashboard'])->name('meets.dashboard');
+    Route::get('/meets/details/{id}', [MeetController::class, 'details'])->name('meets.details');
+    Route::resource('meets', MeetController::class);
     Route::get('/meets/{meet}/notes', [MeetController::class, 'notes'])->name('meets.notes');
     Route::put('/meets/{meet}/notes', [MeetController::class, 'updateNotes'])->name('meets.updateNotes');
     Route::get('/meets/{meet}/export/pdf', [MeetController::class, 'exportPdf'])->name('meets.exportPdf');
@@ -101,6 +103,9 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
 
     // Projects
     Route::resource('projects', ProjectsController::class);
+    Route::post('/projects/bulk-delete', [ProjectsController::class, 'bulkDelete'])->name('projects.bulkDelete');
+    Route::post('/projects/import', [ProjectsController::class, 'import'])->name('projects.import');
+    Route::get('/projects/import/format', [ProjectsController::class, 'downloadFormat'])->name('projects.importFormat');
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
     Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
 
@@ -193,13 +198,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
     Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
 
-    // Hiring
-    Route::get('/hirings', [CandidateController::class, 'index'])->name('hiring.index');
-    Route::post('/import-candidates', [CandidateController::class, 'importCandidates'])->name('import.candidates');
-    Route::post('/send-emails', [CandidateController::class, 'sendEmails'])->name('send.emails');
-    Route::get('/upload-documents/{id}', [CandidateController::class, 'showUploadForm']);
-    Route::post('/upload-documents/{id}', [CandidateController::class, 'uploadDocuments'])->name('upload.documents');
-    Route::get('admin-preview/{id}', [PreviewController::class, 'adminPreview'])->name('admin-preview');
+    // Hiring (using existing candidate routes, only adding authenticated-only routes)
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
     Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 

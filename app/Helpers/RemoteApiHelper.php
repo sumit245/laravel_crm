@@ -10,15 +10,13 @@ class RemoteApiHelper
 {
     public static function sendPoleDataToRemoteServer($pole, $streetlight, $approver)
     {
-        $url = 'https://ssl.slldm.com/insertMasterData.php';
-        // TODO: Read URL from env
+        $url = env('RMS_API_URL', 'https://ssl.slldm.com/insertMasterData.php');
         $districtCode = DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
        Log::info( basename($pole->complete_pole_number));
         $payload = [
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
             'poleName' => $pole->complete_pole_number,
-            "project" => "SUGS", //TODO: Get project from .env
             'district' => $streetlight->district,
             'districtCode' => (string) $districtCode,
             'block' => $streetlight->block,
