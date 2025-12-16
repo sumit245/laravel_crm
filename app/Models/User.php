@@ -112,6 +112,28 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
         'password'          => 'hashed',
     ];
+
+    /**
+     * Get the user's full name.
+     *
+     * @return string
+     */
+    public function getNameAttribute()
+    {
+        $name = trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? ''));
+        return !empty($name) ? $name : ($this->name ?? '');
+    }
+
+    /**
+     * Get the user's role name.
+     *
+     * @return string
+     */
+    public function getRoleNameAttribute()
+    {
+        return UserRole::tryFrom($this->role)?->label() ?? 'Unknown';
+    }
+
     public function meetings()
     {
         return $this->belongsToMany(Meet::class);
