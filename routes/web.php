@@ -86,7 +86,10 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::post('/discussion-points/store', [MeetController::class, 'storeDiscussionPoint'])->name('discussion-points.store');
     Route::post('/discussion-points/updates/store', [MeetController::class, 'storeDiscussionPointUpdate'])->name('discussion-points.updates.store');
     Route::post('/discussion-points/{point}/update-status', [MeetController::class, 'updateDiscussionPointStatus'])->name('discussion-points.update-status');
+    Route::delete('/discussion-points/{point}', [MeetController::class, 'deleteDiscussionPoint'])->name('discussion-points.delete');
     Route::post('/meets/{meet}/schedule-follow-up', [MeetController::class, 'scheduleFollowUp'])->name('meets.schedule-follow-up');
+    Route::delete('/meets/{meet}/attendees/{user}', [MeetController::class, 'removeAttendee'])->name('meets.attendees.remove');
+    Route::delete('/follow-ups/{followUp}', [MeetController::class, 'deleteFollowUp'])->name('follow-ups.delete');
     Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
 
 

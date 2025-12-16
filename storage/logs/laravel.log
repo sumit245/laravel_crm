@@ -17589,3 +17589,7 @@
 [stacktrace]
 #0 {main}
 "} 
+[2025-12-16 07:22:26] local.ERROR: Cannot use App\Models\User as User because the name is already in use {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Cannot use App\\Models\\User as User because the name is already in use at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/app/Http/Controllers/MeetController.php:14)
+[stacktrace]
+#0 {main}
+"} 

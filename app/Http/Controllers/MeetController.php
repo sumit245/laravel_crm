@@ -198,7 +198,25 @@ class MeetController extends Controller
                 'progress' => $taskStatus->get('In Progress', 0),
                 'pending' => $taskStatus->get('Pending', 0),
             ];
-            $responsibilities = $meet->discussionPoints->groupBy('assignedToUser.name');
+            // Group responsibilities by all assigned users (not just the first one)
+            $responsibilities = collect();
+            foreach ($meet->discussionPoints as $point) {
+                // Get all assigned users from the pivot table
+                $assignedUsers = $point->assignedUsers;
+                if ($assignedUsers->isEmpty() && $point->assignedToUser) {
+                    // Fallback to single assigned user if no multiple assignees
+                    $assignedUsers = collect([$point->assignedToUser]);
+                }
+                foreach ($assignedUsers as $user) {
+                    if ($user) {
+                        $userName = $user->name ?? 'Unknown';
+                        if (!$responsibilities->has($userName)) {
+                            $responsibilities[$userName] = collect();
+                        }
+                        $responsibilities[$userName]->push($point);
+                    }
+                }
+            }
             // Get unique departments from attendees and existing discussion points
             $attendeeDepartments = $meet->attendees->pluck('department')->filter()->unique();
             $discussionPointDepartments = DiscussionPoint::whereNotNull('department')
@@ -216,7 +234,11 @@ class MeetController extends Controller
             // Get active tab from request, default to 'overview'
             $activeTab = $request->input('tab', 'overview');
 
-            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees', 'projects', 'discussionPointsByProject', 'activeTab'));
+            // Check if current user can delete (admin or meeting creator)
+            // For now, we'll check if user is admin. If meets table has user_id/created_by, use that
+            $canDelete = auth()->check() && auth()->user()->role === UserRole::ADMIN->value;
+
+            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees', 'projects', 'discussionPointsByProject', 'activeTab', 'canDelete'));
 
         } catch (\Exception $e) {
             return response()->json([
@@ -668,6 +690,63 @@ class MeetController extends Controller
         $tab = $request->input('active_tab', 'followups');
         return redirect()->route('meets.details', ['id' => $meet->id, 'tab' => $tab])
             ->with('success', 'Follow-up meeting scheduled successfully!');
+    }
+
+    public function deleteDiscussionPoint(Request $request, DiscussionPoint $point)
+    {
+        // Check authorization: only admin or meeting creator can delete
+        $meet = $point->meet;
+        $canDelete = auth()->check() && auth()->user()->role === UserRole::ADMIN->value;
+
+        if (!$canDelete) {
+            return back()->with('error', 'You do not have permission to delete this task.');
+        }
+
+        $meetId = $point->meet_id;
+        $tab = $request->input('active_tab', 'discussion');
+        $point->delete();
+
+        return redirect()->route('meets.details', ['id' => $meetId, 'tab' => $tab])
+            ->with('success', 'Task deleted successfully!');
+    }
+
+    public function removeAttendee(Request $request, Meet $meet, User $user)
+    {
+        // Check authorization: only admin or meeting creator can remove attendees
+        $canDelete = auth()->check() && auth()->user()->role === UserRole::ADMIN->value;
+
+        if (!$canDelete) {
+            return back()->with('error', 'You do not have permission to remove attendees.');
+        }
+
+        $meet->attendees()->detach($user->id);
+        $tab = $request->input('active_tab', 'attendees');
+
+        return redirect()->route('meets.details', ['id' => $meet->id, 'tab' => $tab])
+            ->with('success', 'Attendee removed successfully!');
+    }
+
+    public function deleteFollowUp(Request $request, FollowUp $followUp)
+    {
+        // Check authorization: only admin or meeting creator can delete follow-ups
+        $canDelete = auth()->check() && auth()->user()->role === UserRole::ADMIN->value;
+
+        if (!$canDelete) {
+            return back()->with('error', 'You do not have permission to delete follow-ups.');
+        }
+
+        $meetId = $followUp->parent_meet_id;
+        $tab = $request->input('active_tab', 'followups');
+
+        // Also delete the associated meet if it exists
+        if ($followUp->meet_id) {
+            Meet::find($followUp->meet_id)?->delete();
+        }
+
+        $followUp->delete();
+
+        return redirect()->route('meets.details', ['id' => $meetId, 'tab' => $tab])
+            ->with('success', 'Follow-up meeting deleted successfully!');
     }
 
     public function notes(Meet $meet)
