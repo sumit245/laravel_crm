@@ -1119,20 +1119,23 @@
     <!-- Add New Discussion Point Modal -->
     <div class="modal fade modal-modern" id="addDiscussionPointModal" tabindex="-1"
         aria-labelledby="addDiscussionPointModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 700px;">
-            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: var(--shadow-xl);">
-                <form action="{{ route('discussion-points.store') }}" method="POST" id="addTaskForm">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 700px;">
+            <div class="modal-content"
+                style="border-radius: 16px; border: none; box-shadow: var(--shadow-xl); max-height: 90vh; display: flex; flex-direction: column;">
+                <form action="{{ route('discussion-points.store') }}" method="POST" id="addTaskForm"
+                    style="display: flex; flex-direction: column; height: 100%;">
                     @csrf
                     <input type="hidden" name="meet_id" value="{{ $meet->id }}">
                     <input type="hidden" name="active_tab" id="active_tab_discussion" value="discussion">
-                    <div class="modal-header" style="border-bottom: 1px solid var(--gray-200); padding: 24px 24px 20px;">
+                    <div class="modal-header"
+                        style="border-bottom: 1px solid var(--gray-200); padding: 24px 24px 20px; flex-shrink: 0;">
                         <h5 class="modal-title fw-bold mb-0" id="addDiscussionPointModalLabel"
                             style="color: var(--gray-900); font-size: 1.25rem;">
                             <i class="bi bi-plus-circle me-2" style="color: var(--primary-color);"></i>Create New Task
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body" style="padding: 24px;">
+                    <div class="modal-body" style="padding: 24px; overflow-y: auto; flex: 1; min-height: 0;">
                         <!-- Title -->
                         <div class="mb-4">
                             <label for="title" class="form-label fw-semibold mb-2"
@@ -1259,7 +1262,7 @@
                         </div>
                     </div>
                     <div class="modal-footer"
-                        style="border-top: 1px solid var(--gray-200); padding: 20px 24px; background: var(--gray-50);">
+                        style="border-top: 1px solid var(--gray-200); padding: 20px 24px; background: var(--gray-50); flex-shrink: 0;">
                         <button type="button" class="btn modern-btn" data-bs-dismiss="modal"
                             style="background: white; color: var(--gray-700); border: 1px solid var(--gray-300); padding: 10px 20px;">
                             Cancel
