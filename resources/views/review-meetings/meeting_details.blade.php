@@ -948,11 +948,11 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <button class="btn btn-sm modern-btn modern-btn-primary"
-                                                data-bs-toggle="modal" data-bs-target="#addDiscussionPointModal"
+                                            <button class="btn modern-btn modern-btn-primary" data-bs-toggle="modal"
+                                                data-bs-target="#addDiscussionPointModal"
                                                 data-assignee-id="{{ $attendee->id }}"
-                                                style="padding: 6px 14px; font-size: 0.875rem;">
-                                                <i class="bi bi-plus-lg me-1"></i>Add Task
+                                                style="padding: 8px 16px; font-size: 0.9rem; font-weight: 500; white-space: nowrap; min-width: 110px;">
+                                                <i class="bi bi-plus-lg me-2"></i>Add Task
                                             </button>
                                         </td>
                                     </tr>
