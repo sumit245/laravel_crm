@@ -110,7 +110,7 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'password'          => 'hashed',
+        'password' => 'hashed',
     ];
 
     /**
@@ -120,8 +120,16 @@ class User extends Authenticatable
      */
     public function getNameAttribute()
     {
-        $name = trim(($this->firstName ?? '') . ' ' . ($this->lastName ?? ''));
-        return !empty($name) ? $name : ($this->name ?? '');
+        $firstName = trim($this->attributes['firstName'] ?? '');
+        $lastName = trim($this->attributes['lastName'] ?? '');
+        $name = trim($firstName . ' ' . $lastName);
+
+        // If both firstName and lastName are empty, check if there's a 'name' column value
+        if (empty($name) && isset($this->attributes['name'])) {
+            return trim($this->attributes['name']);
+        }
+
+        return !empty($name) ? $name : 'Unknown User';
     }
 
     /**
