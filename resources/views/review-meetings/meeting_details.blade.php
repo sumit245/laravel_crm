@@ -805,6 +805,21 @@
                                                 data-point-id="{{ $point->id }}">
                                                 <i class="bi bi-plus-lg me-1"></i>Add Note
                                             </button>
+                                            @if (isset($canDelete) && $canDelete)
+                                                <form action="{{ route('discussion-points.delete', $point->id) }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <input type="hidden" name="active_tab" value="discussion">
+                                                    <button type="submit"
+                                                        class="btn btn-sm modern-btn d-flex align-items-center justify-content-center"
+                                                        style="background: #dc3545; color: white; padding: 6px 16px;"
+                                                        title="Delete Task">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-3 pt-2"
@@ -948,12 +963,30 @@
                                             </span>
                                         </td>
                                         <td>
-                                            <button class="btn modern-btn modern-btn-primary" data-bs-toggle="modal"
-                                                data-bs-target="#addDiscussionPointModal"
-                                                data-assignee-id="{{ $attendee->id }}"
-                                                style="padding: 8px 16px; font-size: 0.9rem; font-weight: 500; white-space: nowrap; min-width: 110px;">
-                                                <i class="bi bi-plus-lg me-2"></i>Add Task
-                                            </button>
+                                            <div class="d-flex gap-2 align-items-center">
+                                                <button class="btn modern-btn modern-btn-primary" data-bs-toggle="modal"
+                                                    data-bs-target="#addDiscussionPointModal"
+                                                    data-assignee-id="{{ $attendee->id }}"
+                                                    style="padding: 8px 16px; font-size: 0.9rem; font-weight: 500; white-space: nowrap; min-width: 110px;">
+                                                    <i class="bi bi-plus-lg me-2"></i>Add Task
+                                                </button>
+                                                @if (isset($canDelete) && $canDelete)
+                                                    <form
+                                                        action="{{ route('meets.attendees.remove', ['meet' => $meet->id, 'user' => $attendee->id]) }}"
+                                                        method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to remove {{ $attendee->name }} from this meeting?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <input type="hidden" name="active_tab" value="attendees">
+                                                        <button type="submit"
+                                                            class="btn modern-btn d-flex align-items-center justify-content-center"
+                                                            style="background: #dc3545; color: white; padding: 8px 12px; font-size: 0.9rem;"
+                                                            title="Remove Attendee">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                 @empty
@@ -991,8 +1024,15 @@
                                     <div class="d-flex justify-content-between">
                                         <div>
                                             <h5 class="mb-0">{{ $assigneeName }}</h5>
-                                            <small
-                                                class="text-muted">{{ $tasks->first()->assignee->department ?? 'N/A' }}</small>
+                                            @php
+                                                // Get department from the first task's assigned user
+$firstTask = $tasks->first();
+$user =
+    $firstTask->assignedUsers->firstWhere('name', $assigneeName) ??
+    ($firstTask->assignedToUser ?? $firstTask->assignee);
+$dept = $user->department ?? 'N/A';
+                                            @endphp
+                                            <small class="text-muted">{{ $dept }}</small>
                                         </div>
                                         <div class="text-end">
                                             <span class="badge bg-secondary text-dark mb-1">{{ $tasks->count() }}
@@ -1045,6 +1085,20 @@
                                                     <span class="small text-muted">Due:
                                                         {{ \Carbon\Carbon::parse($task->due_date)->format('Y-m-d') }}</span>
                                                 @endif
+                                                @if (isset($canDelete) && $canDelete)
+                                                    <form action="{{ route('discussion-points.delete', $task->id) }}"
+                                                        method="POST" class="d-inline"
+                                                        onsubmit="return confirm('Are you sure you want to delete this task?');">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <input type="hidden" name="active_tab" value="responsibilities">
+                                                        <button type="submit" class="btn btn-sm"
+                                                            style="background: #dc3545; color: white; padding: 4px 8px;"
+                                                            title="Delete Task">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
                                             </div>
                                         </div>
                                     @endforeach
@@ -1086,13 +1140,30 @@
                                                 </span>
                                             @endif
                                         </div>
-                                        @if ($followUp->meet_id)
-                                            <a href="{{ route('meets.details', $followUp->meet_id) }}"
-                                                class="btn btn-sm modern-btn modern-btn-primary"
-                                                style="white-space: nowrap; margin-left: 12px;">
-                                                <i class="bi bi-eye me-1"></i>View
-                                            </a>
-                                        @endif
+                                        <div class="d-flex gap-2 align-items-center">
+                                            @if ($followUp->meet_id)
+                                                <a href="{{ route('meets.details', $followUp->meet_id) }}"
+                                                    class="btn btn-sm modern-btn modern-btn-primary"
+                                                    style="white-space: nowrap;">
+                                                    <i class="bi bi-eye me-1"></i>View
+                                                </a>
+                                            @endif
+                                            @if (isset($canDelete) && $canDelete)
+                                                <form action="{{ route('follow-ups.delete', $followUp->id) }}"
+                                                    method="POST" class="d-inline"
+                                                    onsubmit="return confirm('Are you sure you want to delete this follow-up meeting?');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <input type="hidden" name="active_tab" value="followups">
+                                                    <button type="submit"
+                                                        class="btn btn-sm modern-btn d-flex align-items-center justify-content-center"
+                                                        style="background: #dc3545; color: white; padding: 6px 12px;"
+                                                        title="Delete Follow-up">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </div>
                                 </div>
                             </div>
