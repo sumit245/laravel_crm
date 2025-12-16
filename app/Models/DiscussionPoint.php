@@ -37,6 +37,15 @@ class DiscussionPoint extends Model
         return $this->belongsTo(User::class, 'assigned_to');
     }
 
+    /**
+     * Many-to-many relationship with users (multiple assignees)
+     */
+    public function assignedUsers()
+    {
+        return $this->belongsToMany(User::class, 'discussion_point_user')
+            ->withTimestamps();
+    }
+
     public function updates()
     {
         return $this->hasMany(DiscussionPointUpdates::class)->latest();

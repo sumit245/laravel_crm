@@ -185,6 +185,7 @@ class MeetController extends Controller
                 'attendees',
                 'discussionPoints.assignee',
                 'discussionPoints.assignedToUser',
+                'discussionPoints.assignedUsers',
                 'discussionPoints.updates',
                 'discussionPoints.project',
                 'followUps'
@@ -198,14 +199,24 @@ class MeetController extends Controller
                 'pending' => $taskStatus->get('Pending', 0),
             ];
             $responsibilities = $meet->discussionPoints->groupBy('assignedToUser.name');
-            $departments = $meet->attendees->pluck('department')->filter()->unique();
+            // Get unique departments from attendees and existing discussion points
+            $attendeeDepartments = $meet->attendees->pluck('department')->filter()->unique();
+            $discussionPointDepartments = DiscussionPoint::whereNotNull('department')
+                ->distinct()
+                ->pluck('department')
+                ->filter()
+                ->unique();
+            $departments = $attendeeDepartments->merge($discussionPointDepartments)->unique()->sort()->values();
             $assignees = $meet->attendees;
             $projects = Project::all();
             $discussionPointsByProject = $meet->discussionPoints->groupBy(function ($point) {
                 return $point->project ? $point->project->id : 'no-project';
             });
 
-            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees', 'projects', 'discussionPointsByProject'));
+            // Get active tab from request, default to 'overview'
+            $activeTab = $request->input('tab', 'overview');
+
+            return view('review-meetings.meeting_details', compact('meet', 'taskCounts', 'responsibilities', 'departments', 'assignees', 'projects', 'discussionPointsByProject', 'activeTab'));
 
         } catch (\Exception $e) {
             return response()->json([
@@ -222,7 +233,8 @@ class MeetController extends Controller
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
             'assignee_id' => 'nullable|exists:users,id',
-            'assigned_to' => 'nullable|exists:users,id',
+            'assigned_to' => 'nullable|array',
+            'assigned_to.*' => 'exists:users,id',
             'department' => 'nullable|string',
             'priority' => 'required|string',
             'due_date' => 'nullable|date',
@@ -233,19 +245,46 @@ class MeetController extends Controller
         $data = $request->all();
 
         if (!empty($request->project_name) && empty($request->project_id)) {
+            // Create a new project with default values for required fields
             $project = Project::create([
                 'project_name' => $request->project_name,
                 'project_type' => 'General',
+                'start_date' => now()->toDateString(), // Current date as default
+                'end_date' => now()->addYear()->toDateString(), // One year from now as default
+                'work_order_number' => 'WO-' . strtoupper(uniqid()), // Generate unique work order number
+                'rate' => 0.00,
+                'project_capacity' => 0.00,
+                'total' => 0.00,
+                'description' => 'Auto-created project from meeting task',
+                'project_in_state' => 'N/A',
             ]);
             $data['project_id'] = $project->id;
         }
 
-        // Remove project_name from data as it's not a field in discussion_points
+        // Handle multiple assignees
+        $assignedToUsers = $request->input('assigned_to', []);
+
+        // Remove project_name and assigned_to from data as they're not direct fields
         unset($data['project_name']);
+        unset($data['assigned_to']);
 
-        DiscussionPoint::create($data);
+        // Create the discussion point
+        $discussionPoint = DiscussionPoint::create($data);
 
-        return back()->with('success', 'New discussion point added successfully!');
+        // Sync multiple assignees to the pivot table
+        if (!empty($assignedToUsers)) {
+            $discussionPoint->assignedUsers()->sync($assignedToUsers);
+        }
+
+        // Keep backward compatibility: set assigned_to to first user if provided
+        if (!empty($assignedToUsers) && count($assignedToUsers) > 0) {
+            $discussionPoint->update(['assigned_to' => $assignedToUsers[0]]);
+        }
+
+        // Preserve the active tab (default to discussion tab for discussion points)
+        $tab = $request->input('active_tab', 'discussion');
+        return redirect()->route('meets.details', ['id' => $request->meet_id, 'tab' => $tab])
+            ->with('success', 'New discussion point added successfully!');
     }
 
     public function updateDiscussionPointStatus(Request $request, DiscussionPoint $point)
@@ -256,7 +295,10 @@ class MeetController extends Controller
 
         $point->update(['status' => $request->status]);
 
-        return back()->with('success', 'Task status updated successfully!');
+        // Preserve the active tab (default to discussion tab for status updates)
+        $tab = $request->input('active_tab', 'discussion');
+        return redirect()->route('meets.details', ['id' => $point->meet_id, 'tab' => $tab])
+            ->with('success', 'Task status updated successfully!');
     }
 
 
@@ -271,7 +313,11 @@ class MeetController extends Controller
 
         DiscussionPointUpdates::create($request->all());
 
-        return back()->with('success', 'Note added successfully!');
+        // Get the meet_id from the discussion point to preserve the tab
+        $discussionPoint = DiscussionPoint::find($request->discussion_point_id);
+        $tab = $request->input('active_tab', 'discussion');
+        return redirect()->route('meets.details', ['id' => $discussionPoint->meet_id, 'tab' => $tab])
+            ->with('success', 'Note added successfully!');
     }
 
     public function store(Request $request)
@@ -510,7 +556,7 @@ class MeetController extends Controller
                     'email' => $email,
                     'username' => $username,
                     'contactNo' => $np['contactNo'] ?? null,
-                    'role' => UserRole::COORDINATOR->value,
+                    'role' => UserRole::REVIEW_MEETING_ONLY->value,
                     'password' => bcrypt($password),
                 ]);
 
@@ -618,7 +664,10 @@ class MeetController extends Controller
             'status' => 'scheduled',
         ]);
 
-        return back()->with('success', 'Follow-up meeting scheduled successfully!');
+        // Preserve the active tab (default to followups tab for follow-up scheduling)
+        $tab = $request->input('active_tab', 'followups');
+        return redirect()->route('meets.details', ['id' => $meet->id, 'tab' => $tab])
+            ->with('success', 'Follow-up meeting scheduled successfully!');
     }
 
     public function notes(Meet $meet)

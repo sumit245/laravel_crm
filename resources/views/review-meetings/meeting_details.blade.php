@@ -1,135 +1,700 @@
 @extends('layouts.main')
 @section('content')
-    <div class="container my-4">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <div>
-                <a href="javascript:history.back()" class="btn btn-light border mb-2"><i class="bi bi-arrow-left me-2"></i>Back
-                    to Meetings</a>
-                <h2 class="mb-0">{{ $meet->title }}</h2>
-                <p class="text-muted">{{ \Carbon\Carbon::parse($meet->meet_date)->format('Y-m-d') }} •
-                    {{ \Carbon\Carbon::parse($meet->meet_time)->format('h:i A') }}</p>
+    <style>
+        :root {
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --danger-color: #ef4444;
+            --info-color: #3b82f6;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .modern-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--gray-200);
+            transition: all 0.3s ease;
+        }
+
+        .modern-card:hover {
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s ease;
+            border: none;
+        }
+
+        .stat-card:nth-child(2) {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+
+        .stat-card:nth-child(3) {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+
+        .stat-card .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 8px 0;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            font-weight: 500;
+        }
+
+        .modern-btn {
+            border-radius: 8px;
+            font-weight: 500;
+            padding: 10px 20px;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .modern-btn-primary {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .modern-btn-primary:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .modern-input {
+            border-radius: 8px;
+            border: 1px solid var(--gray-300);
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .modern-input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .modern-select {
+            border-radius: 8px;
+            border: 1px solid var(--gray-300);
+            padding: 10px 14px;
+            transition: all 0.2s ease;
+        }
+
+        .modern-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .task-card-modern {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border-left: 4px solid;
+            transition: all 0.2s ease;
+        }
+
+        .task-card-modern:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateX(4px);
+        }
+
+        /* Simple Horizontal Tabs */
+        .nav-tabs-modern {
+            border-bottom: 1px solid var(--gray-200);
+            background: transparent;
+            margin: 0;
+            padding: 0 24px;
+            display: flex;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .nav-tabs-modern::-webkit-scrollbar {
+            height: 4px;
+        }
+
+        .nav-tabs-modern::-webkit-scrollbar-track {
+            background: transparent;
+        }
+
+        .nav-tabs-modern::-webkit-scrollbar-thumb {
+            background: var(--gray-300);
+            border-radius: 2px;
+        }
+
+        .nav-tabs-modern .nav-item {
+            margin-bottom: 0;
+            flex-shrink: 0;
+        }
+
+        .nav-tabs-modern .nav-link {
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--gray-600);
+            font-weight: 500;
+            font-size: 0.9375rem;
+            padding: 14px 20px;
+            margin-bottom: -1px;
+            transition: all 0.2s ease;
+            background: transparent;
+            white-space: nowrap;
+            position: relative;
+        }
+
+        .nav-tabs-modern .nav-link:hover {
+            color: var(--primary-color);
+            background: transparent;
+            border-bottom-color: var(--gray-300);
+        }
+
+        .nav-tabs-modern .nav-link.active {
+            color: var(--primary-color);
+            border-bottom-color: var(--primary-color);
+            background: transparent;
+            font-weight: 600;
+        }
+
+        .nav-tabs-modern .nav-link i {
+            font-size: 0.875rem;
+            margin-right: 6px;
+            opacity: 0.8;
+        }
+
+        .nav-tabs-modern .nav-link.active i {
+            opacity: 1;
+        }
+
+        .modal-modern .modal-content {
+            border-radius: 16px;
+            border: none;
+            box-shadow: var(--shadow-xl);
+        }
+
+        .modal-modern .modal-header {
+            border-bottom: 1px solid var(--gray-200);
+            padding: 24px;
+        }
+
+        .modal-modern .modal-body {
+            padding: 24px;
+        }
+
+        .badge-modern {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.75rem;
+        }
+
+        .table-modern {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .table-modern thead {
+            background: var(--gray-50);
+        }
+
+        .table-modern thead th {
+            font-weight: 600;
+            color: var(--gray-700);
+            border-bottom: 2px solid var(--gray-200);
+            padding: 16px;
+        }
+
+        .table-modern tbody td {
+            padding: 16px;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .table-modern tbody tr:hover {
+            background: var(--gray-50);
+        }
+
+        /* Responsive improvements */
+        @media (max-width: 768px) {
+            .stat-card .stat-value {
+                font-size: 2rem;
+            }
+
+            .container-fluid {
+                padding-left: 16px !important;
+                padding-right: 16px !important;
+            }
+
+            .modern-card {
+                margin: 0 -16px;
+                border-radius: 0;
+            }
+        }
+
+        /* Form improvements */
+        .form-label {
+            margin-bottom: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        /* Better spacing for tab content */
+        .tab-pane {
+            min-height: 300px;
+        }
+
+        /* Discussion Points header - single line layout */
+        #discussion .d-flex.justify-content-between {
+            flex-wrap: nowrap !important;
+        }
+
+        #discussion #action-buttons {
+            flex-wrap: nowrap !important;
+        }
+
+        /* Responsive: wrap on smaller screens */
+        @media (max-width: 992px) {
+            #discussion .d-flex.justify-content-between {
+                flex-wrap: wrap !important;
+            }
+
+            #discussion #action-buttons {
+                flex-wrap: wrap !important;
+                width: 100%;
+                margin-top: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            #discussion #action-buttons>* {
+                flex: 1 1 auto;
+                min-width: 100% !important;
+                max-width: 100% !important;
+            }
+        }
+
+        /* Empty state styling */
+        .empty-state {
+            padding: 60px 20px;
+            text-align: center;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            opacity: 0.2;
+            color: var(--gray-400);
+            margin-bottom: 16px;
+        }
+
+        /* Project header improvements */
+        .project-header {
+            transition: all 0.2s ease;
+        }
+
+        .project-header:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+
+        /* Task card improvements */
+        .task-card-modern h5 {
+            font-size: 1.1rem;
+            margin-bottom: 8px;
+            line-height: 1.4;
+        }
+
+        .task-card-modern p {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            margin-bottom: 0;
+        }
+
+        /* Select multiple styling */
+        select[multiple].modern-select {
+            min-height: 140px;
+        }
+
+        select[multiple].modern-select option {
+            padding: 8px 12px;
+        }
+
+        select[multiple].modern-select option:checked {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* Better focus states */
+        select[multiple].modern-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        /* Select2 Modern ERP Styling */
+        .select2-container--default .select2-selection--multiple {
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            min-height: 42px;
+            padding: 4px 8px;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .select2-container--default.select2-container--focus .select2-selection--multiple {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice {
+            background: var(--primary-color);
+            border: none;
+            border-radius: 6px;
+            color: white;
+            padding: 4px 10px;
+            margin: 4px 4px 4px 0;
+            font-size: 0.875rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove {
+            color: white;
+            margin-right: 4px;
+            font-weight: bold;
+            font-size: 1rem;
+            line-height: 1;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__choice__remove:hover {
+            opacity: 1;
+            color: white;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__rendered {
+            padding: 0;
+        }
+
+        .select2-container--default .select2-selection--multiple .select2-selection__placeholder {
+            color: var(--gray-400);
+            margin-left: 4px;
+        }
+
+        .select2-container--default .select2-search--inline .select2-search__field {
+            margin-top: 4px;
+            padding: 4px 8px;
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            border: none;
+            outline: none;
+        }
+
+        .select2-container--default .select2-search--inline .select2-search__field::placeholder {
+            color: var(--gray-400);
+        }
+
+        .select2-dropdown {
+            border: 1px solid var(--gray-300);
+            border-radius: 8px;
+            box-shadow: var(--shadow-lg);
+            margin-top: 4px;
+        }
+
+        .select2-container--default .select2-results__option {
+            padding: 10px 14px;
+            font-size: 0.95rem;
+            color: var(--gray-700);
+            transition: all 0.2s ease;
+        }
+
+        .select2-container--default .select2-results__option--highlighted[aria-selected] {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .select2-container--default .select2-results__option[aria-selected=true] {
+            background: var(--gray-100);
+            color: var(--gray-900);
+        }
+
+        .select2-container--default .select2-results__option[aria-selected=true].select2-results__option--highlighted {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        .select2-container {
+            width: 100% !important;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field {
+            border: 1px solid var(--gray-300);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.95rem;
+        }
+
+        .select2-container--default .select2-search--dropdown .select2-search__field:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            outline: none;
+        }
+    </style>
+
+    <div class="container-fluid px-4 py-4" style="max-width: 1400px; margin: 0 auto;">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-start mb-4 flex-wrap gap-3">
+            <div class="flex-grow-1">
+                <a href="javascript:history.back()" class="btn btn-light border-0 mb-3 modern-btn"
+                    style="background: var(--gray-100); color: var(--gray-700); padding: 8px 16px;">
+                    <i class="bi bi-arrow-left me-2"></i>Back to Meetings
+                </a>
+                <h2 class="mb-2 fw-bold" style="color: var(--gray-900); font-size: 1.75rem; line-height: 1.2;">
+                    {{ $meet->title }}
+                </h2>
+                <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                    <i class="bi bi-calendar3 me-2"></i>{{ \Carbon\Carbon::parse($meet->meet_date)->format('F d, Y') }}
+                    <span class="mx-2">•</span>
+                    <i class="bi bi-clock me-2"></i>{{ \Carbon\Carbon::parse($meet->meet_time)->format('h:i A') }}
+                </p>
             </div>
-            <a href="{{ $meet->meet_link }}" target="_blank" class="btn btn-primary"><i
-                    class="bi bi-camera-video me-2"></i>Join Meeting</a>
+            <a href="{{ $meet->meet_link }}" target="_blank" class="btn modern-btn modern-btn-primary"
+                style="white-space: nowrap;">
+                <i class="bi bi-camera-video me-2"></i>Join Meeting
+            </a>
         </div>
 
-        <div class="row mb-4">
-            <div class="col-md-4">
-                <div class="card summary-card h-100">
-                    <div class="card-body d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted mb-1">Platform</p>
-                            <h1 class="mb-0">{{ $meet->platform }}</h1>
+        <!-- Stats Cards -->
+        <div class="row g-3 mb-4">
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-card h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="stat-label">Platform</div>
+                            <div class="stat-value">{{ $meet->platform }}</div>
                         </div>
-                        <i class="bi bi-camera-video fs-4 text-muted"></i>
+                        <div class="stat-icon">
+                            <i class="bi bi-camera-video"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card summary-card h-100">
-                    <div class="card-body d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted mb-1">Attendees</p>
-                            <h1 class="mb-0">{{ $meet->attendees->count() }}</h1>
+            <div class="col-lg-4 col-md-6">
+                <div class="stat-card h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="stat-label">Attendees</div>
+                            <div class="stat-value">{{ $meet->attendees->count() }}</div>
                         </div>
-                        <i class="bi bi-people fs-4 text-muted"></i>
+                        <div class="stat-icon">
+                            <i class="bi bi-people"></i>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-md-4">
-                <div class="card summary-card h-100">
-                    <div class="card-body d-flex justify-content-between align-items-start">
-                        <div>
-                            <p class="text-muted mb-1">Task Status</p>
-                            <h1 class="mb-0">{{ $taskCounts['total'] }} Total</h1>
-                            <div>
-                                <span class="small"><span class="task-status-dot dot-done"></span>{{ $taskCounts['done'] }}
-                                    Done</span>
-                                <span class="small mx-2"><span
-                                        class="task-status-dot dot-progress"></span>{{ $taskCounts['progress'] }}
-                                    Progress</span>
-                                <span class="small"><span
-                                        class="task-status-dot dot-pending"></span>{{ $taskCounts['pending'] }}
-                                    Pending</span>
+            <div class="col-lg-4 col-md-12">
+                <div class="stat-card h-100">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div class="flex-grow-1">
+                            <div class="stat-label">Tasks</div>
+                            <div class="stat-value">{{ $taskCounts['total'] }}</div>
+                            <div class="mt-2 d-flex gap-2 flex-wrap">
+                                <span class="badge badge-modern"
+                                    style="background: rgba(255,255,255,0.3); font-size: 0.7rem;">
+                                    <span class="task-status-dot dot-done"></span>{{ $taskCounts['done'] }} Done
+                                </span>
+                                <span class="badge badge-modern"
+                                    style="background: rgba(255,255,255,0.3); font-size: 0.7rem;">
+                                    <span class="task-status-dot dot-progress"></span>{{ $taskCounts['progress'] }} Progress
+                                </span>
+                                <span class="badge badge-modern"
+                                    style="background: rgba(255,255,255,0.3); font-size: 0.7rem;">
+                                    <span class="task-status-dot dot-pending"></span>{{ $taskCounts['pending'] }} Pending
+                                </span>
                             </div>
                         </div>
-                        <i class="bi bi-check2-circle fs-4 text-muted"></i>
+                        <div class="stat-icon">
+                            <i class="bi bi-check2-circle"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="card" style="border-radius: 0.5rem;">
-            <div class="tab-content" id="meetingTabContent">
-                <ul class="nav nav-tabs" id="meetingTab" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview"
-                            type="button" role="tab" aria-controls="overview" aria-selected="true">Overview</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="discussion-tab" data-bs-toggle="tab" data-bs-target="#discussion"
-                            type="button" role="tab" aria-controls="discussion" aria-selected="false">Discussion
-                            Points</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="attendees-tab" data-bs-toggle="tab" data-bs-target="#attendees"
-                            type="button" role="tab" aria-controls="attendees" aria-selected="false">Attendees</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="responsibilities-tab" data-bs-toggle="tab"
-                            data-bs-target="#responsibilities" type="button" role="tab"
-                            aria-controls="responsibilities" aria-selected="false">Responsibilities</button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="followups-tab" data-bs-toggle="tab" data-bs-target="#followups"
-                            type="button" role="tab" aria-controls="followups"
-                            aria-selected="false">Follow-ups</button>
-                    </li>
-                </ul>
+        <!-- Main Content Card -->
+        <div class="modern-card" style="padding: 0; overflow: hidden;">
+            <!-- Simple Horizontal Tabs -->
+            <ul class="nav nav-tabs nav-tabs-modern" id="meetingTab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ ($activeTab ?? 'overview') === 'overview' ? 'active' : '' }}"
+                        id="overview-tab" data-bs-toggle="tab" data-bs-target="#overview" type="button" role="tab"
+                        aria-controls="overview"
+                        aria-selected="{{ ($activeTab ?? 'overview') === 'overview' ? 'true' : 'false' }}">
+                        <i class="bi bi-info-circle"></i>Overview
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ ($activeTab ?? 'overview') === 'discussion' ? 'active' : '' }}"
+                        id="discussion-tab" data-bs-toggle="tab" data-bs-target="#discussion" type="button" role="tab"
+                        aria-controls="discussion"
+                        aria-selected="{{ ($activeTab ?? 'overview') === 'discussion' ? 'true' : 'false' }}">
+                        <i class="bi bi-list-check"></i>Discussion Points
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ ($activeTab ?? 'overview') === 'attendees' ? 'active' : '' }}"
+                        id="attendees-tab" data-bs-toggle="tab" data-bs-target="#attendees" type="button" role="tab"
+                        aria-controls="attendees"
+                        aria-selected="{{ ($activeTab ?? 'overview') === 'attendees' ? 'true' : 'false' }}">
+                        <i class="bi bi-people"></i>Attendees
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ ($activeTab ?? 'overview') === 'responsibilities' ? 'active' : '' }}"
+                        id="responsibilities-tab" data-bs-toggle="tab" data-bs-target="#responsibilities" type="button"
+                        role="tab" aria-controls="responsibilities"
+                        aria-selected="{{ ($activeTab ?? 'overview') === 'responsibilities' ? 'true' : 'false' }}">
+                        <i class="bi bi-person-check"></i>Responsibilities
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link {{ ($activeTab ?? 'overview') === 'followups' ? 'active' : '' }}"
+                        id="followups-tab" data-bs-toggle="tab" data-bs-target="#followups" type="button"
+                        role="tab" aria-controls="followups"
+                        aria-selected="{{ ($activeTab ?? 'overview') === 'followups' ? 'true' : 'false' }}">
+                        <i class="bi bi-calendar-event"></i>Follow-ups
+                    </button>
+                </li>
+            </ul>
+
+            <!-- Tab Content -->
+            <div class="tab-content" id="meetingTabContent" style="min-height: 400px;">
                 {{-- Tab 1 - Overview --}}
-                <div class="tab-pane mt-4 fade show active" id="overview" role="tabpanel" aria-labelledby="overview-tab">
-                    <h4 class="mb-3">Meeting Details</h4>
-                    <div class="mb-3">
-                        <h6 class="text-muted">Agenda</h6>
-                        <p>{{ $meet->agenda ?? 'No agenda provided.' }}</p>
-                    </div>
-                    {{-- Description field commented out - not provided during meeting creation --}}
-                    {{-- <div class="mb-3">
-                        <h6 class="text-muted">Description</h6>
-                        <p>{{ $meet->description ?? 'No description provided.' }}</p>
-                    </div> --}}
-                    <div>
-                        <h6 class="text-muted">Status</h6>
-                        <p>
-                            This meeting has tasks in various stages:
-                            <span class="badge bg-success">{{ $taskCounts['done'] }} Done</span>
-                            <span class="badge bg-warning text-dark">{{ $taskCounts['progress'] }} In Progress</span>
-                            <span class="badge bg-secondary">{{ $taskCounts['pending'] }} Pending</span>
-                        </p>
+                <div class="tab-pane fade {{ ($activeTab ?? 'overview') === 'overview' ? 'show active' : '' }}"
+                    id="overview" role="tabpanel" aria-labelledby="overview-tab" style="padding: 24px;">
+                    <div class="row">
+                        <div class="col-lg-8">
+                            <h4 class="mb-4 fw-bold" style="color: var(--gray-900);">Meeting Details</h4>
+                            <div class="mb-4">
+                                <label class="form-label fw-semibold text-muted mb-2"
+                                    style="font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Agenda</label>
+                                <div class="p-3 rounded"
+                                    style="background: var(--gray-50); border-left: 3px solid var(--primary-color);">
+                                    <p class="mb-0" style="color: var(--gray-700); line-height: 1.6;">
+                                        {{ $meet->agenda ?? 'No agenda provided.' }}
+                                    </p>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="form-label fw-semibold text-muted mb-2"
+                                    style="font-size: 0.875rem; text-transform: uppercase; letter-spacing: 0.5px;">Task
+                                    Status</label>
+                                <div class="d-flex gap-2 flex-wrap">
+                                    <span class="badge badge-modern bg-success">{{ $taskCounts['done'] }} Done</span>
+                                    <span class="badge badge-modern bg-warning text-dark">{{ $taskCounts['progress'] }} In
+                                        Progress</span>
+                                    <span class="badge badge-modern bg-secondary">{{ $taskCounts['pending'] }}
+                                        Pending</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-4">
+                            <div class="p-4 rounded"
+                                style="background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%); color: white;">
+                                <h5 class="mb-3 fw-bold">Quick Info</h5>
+                                <div class="mb-3">
+                                    <div class="small opacity-75 mb-1">Meeting Type</div>
+                                    <div class="fw-semibold">{{ $meet->type ?? 'N/A' }}</div>
+                                </div>
+                                <div class="mb-3">
+                                    <div class="small opacity-75 mb-1">Platform</div>
+                                    <div class="fw-semibold">{{ $meet->platform }}</div>
+                                </div>
+                                <div>
+                                    <div class="small opacity-75 mb-1">Total Attendees</div>
+                                    <div class="fw-semibold">{{ $meet->attendees->count() }} People</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
                 {{-- Tab 2 - Discussion Points & Tasks --}}
-                <div class="tab-pane mt-4 fade" id="discussion" role="tabpanel" aria-labelledby="discussion-tab">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="mb-0">Discussion Points & Tasks</h4>
-                        <div class="d-flex gap-2" id="action-buttons">
-                            <div class="input-group">
-                                <input type="text" id="task-search-input" class="form-control"
-                                    style="height: 2.4rem;" placeholder="Search tasks by user...">
+                <div class="tab-pane fade {{ ($activeTab ?? 'overview') === 'discussion' ? 'show active' : '' }}"
+                    id="discussion" role="tabpanel" aria-labelledby="discussion-tab" style="padding: 24px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 gap-3" style="flex-wrap: nowrap;">
+                        <h4 class="mb-0 fw-bold flex-shrink-0" style="color: var(--gray-900); white-space: nowrap;">
+                            Discussion Points & Tasks</h4>
+                        <div class="d-flex gap-2 align-items-center flex-nowrap" id="action-buttons"
+                            style="flex: 1; justify-content: flex-end; min-width: 0;">
+                            <div class="position-relative flex-shrink-1" style="min-width: 180px; max-width: 250px;">
+                                <i class="bi bi-search position-absolute"
+                                    style="left: 12px; top: 50%; transform: translateY(-50%); color: var(--gray-400); z-index: 1; pointer-events: none;"></i>
+                                <input type="text" id="task-search-input" class="form-control modern-input ps-4"
+                                    placeholder="Search tasks..." style="width: 100%;">
                             </div>
-                            <select class="form-select" style="height: 2.4rem;">
-                                <option selected>All Departments</option>
+                            <select class="form-select modern-select flex-shrink-0" id="department-filter"
+                                style="min-width: 160px; max-width: 200px;">
+                                <option selected value="all">All Departments</option>
                                 @foreach ($departments as $department)
                                     @if ($department)
                                         <option value="{{ $department }}">{{ $department }}</option>
                                     @endif
                                 @endforeach
                             </select>
-                            <button class="btn btn-primary d-flex align-items-center justify-content-center"
-                                style="width:400px;height:2.4rem;" data-bs-toggle="modal"
-                                data-bs-target="#addDiscussionPointModal"><i class="bi bi-plus me-2"></i>Add
-                                Task</button>
+                            <button
+                                class="btn modern-btn modern-btn-primary d-flex align-items-center justify-content-center flex-shrink-0"
+                                data-bs-toggle="modal" data-bs-target="#addDiscussionPointModal"
+                                style="white-space: nowrap;">
+                                <i class="bi bi-plus-lg me-2"></i>Add Task
+                            </button>
                         </div>
                     </div>
                     @php
@@ -165,18 +730,19 @@
                         @endphp
                         <div class="project-group mb-4">
                             <div class="project-header p-3 mb-3 rounded"
-                                style="background: linear-gradient(135deg, {{ $colorScheme['bg'] }} 0%, {{ $colorScheme['border'] }} 100%); border-left: 4px solid {{ $colorScheme['accent'] }};">
-                                <h5 class="mb-0 fw-bold"
+                                style="background: linear-gradient(135deg, {{ $colorScheme['bg'] }} 0%, {{ $colorScheme['border'] }} 100%); border-left: 4px solid {{ $colorScheme['accent'] }}; box-shadow: var(--shadow-sm);">
+                                <h5 class="mb-0 fw-bold d-flex align-items-center"
                                     style="color: {{ $colorScheme['text'] ?? $colorScheme['accent'] }};">
-                                    <i class="bi bi-folder me-2"></i>{{ $projectName }}
-                                    <span class="badge ms-2"
+                                    <i class="bi bi-folder-fill me-2"></i>{{ $projectName }}
+                                    <span class="badge ms-2 badge-modern"
                                         style="background-color: {{ $colorScheme['accent'] }}; color: white;">{{ $points->count() }}
                                         Task{{ $points->count() > 1 ? 's' : '' }}</span>
                                 </h5>
                             </div>
                             @foreach ($points as $pointIndex => $point)
-                                <div class="task-card mb-3" data-assignee-name="{{ $point->assignedToUser->name ?? '' }}"
-                                    style="border-left: 4px solid {{ $colorScheme['accent'] }}; background-color: {{ $colorScheme['bg'] }}; border-top: 1px solid {{ $colorScheme['border'] }}; border-right: 1px solid {{ $colorScheme['border'] }}; border-bottom: 1px solid {{ $colorScheme['border'] }};">
+                                <div class="task-card-modern"
+                                    data-assignee-name="{{ $point->assignedUsers->pluck('name')->join(', ') ?: $point->assignedToUser->name ?? '' }}"
+                                    style="border-left-color: {{ $colorScheme['accent'] }};">
                                     <div class="d-flex justify-content-between align-items-start">
                                         <div>
                                             <h5 style="color: {{ $colorScheme['text'] ?? $colorScheme['accent'] }};">
@@ -203,34 +769,42 @@
                                                 {{ $point->description }}</p>
                                         </div>
                                         <div class="d-flex gap-2">
-                                            <div class="dropdown" style="width: 110px; ">
+                                            <div class="dropdown">
                                                 <button
-                                                    class="badge-dropdown dropdown-toggle badge w-100
+                                                    class="badge-modern dropdown-toggle badge w-100 border-0
                                             @if ($point->status == 'Completed') bg-success
                                             @elseif ($point->status == 'In Progress') bg-warning text-dark
                                             @else bg-secondary text-dark @endif"
-                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                                    type="button" data-bs-toggle="dropdown" aria-expanded="false"
+                                                    style="cursor: pointer;">
                                                     {{ $point->status }}
                                                 </button>
-                                                <ul class="dropdown-menu">
+                                                <ul class="dropdown-menu shadow-md"
+                                                    style="border-radius: 8px; border: 1px solid var(--gray-200);">
                                                     <li><a class="dropdown-item" href="#"
-                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-pending').submit();">Pending</a>
+                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-pending').submit();">
+                                                            <i class="bi bi-clock me-2"></i>Pending
+                                                        </a>
                                                     </li>
                                                     <li><a class="dropdown-item" href="#"
-                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-progress').submit();">In
-                                                            Progress</a></li>
+                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-progress').submit();">
+                                                            <i class="bi bi-arrow-repeat me-2"></i>In Progress
+                                                        </a></li>
                                                     <li><a class="dropdown-item" href="#"
-                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-completed').submit();">Completed</a>
+                                                            onclick="event.preventDefault(); document.getElementById('status-form-{{ $point->id }}-completed').submit();">
+                                                            <i class="bi bi-check-circle me-2"></i>Completed
+                                                        </a>
                                                     </li>
                                                 </ul>
                                             </div>
 
                                             <button
-                                                class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center"
-                                                style="width: 110px;max-height:1.8rem;" data-bs-toggle="modal"
-                                                data-bs-target="#addNoteModal" data-point-id="{{ $point->id }}"><i
-                                                    class="bi bi-plus-lg me-1"></i>Add
-                                                Note</button>
+                                                class="btn btn-sm modern-btn d-flex align-items-center justify-content-center"
+                                                style="background: var(--gray-100); color: var(--gray-700); padding: 6px 16px;"
+                                                data-bs-toggle="modal" data-bs-target="#addNoteModal"
+                                                data-point-id="{{ $point->id }}">
+                                                <i class="bi bi-plus-lg me-1"></i>Add Note
+                                            </button>
                                         </div>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-3 pt-2"
@@ -240,10 +814,24 @@
                                             <i class="bi bi-person-fill me-1"
                                                 style="color: {{ $colorScheme['accent'] }};"></i>
                                             <strong>Responsible:</strong>
-                                            {{ $point->assignedToUser->name ?? 'Unassigned' }}
-                                            @if ($point->assignedToUser?->department)
-                                                <span class="badge ms-2"
-                                                    style="background-color: {{ $colorScheme['accent'] }}; color: white; font-size: 0.75rem;">{{ $point->assignedToUser->department }}</span>
+                                            @if ($point->assignedUsers->count() > 0)
+                                                @foreach ($point->assignedUsers as $assignedUser)
+                                                    <span class="badge me-1"
+                                                        style="background-color: {{ $colorScheme['accent'] }}; color: white; font-size: 0.75rem;">
+                                                        {{ $assignedUser->name }}
+                                                        @if ($assignedUser->department)
+                                                            <small>({{ $assignedUser->department }})</small>
+                                                        @endif
+                                                    </span>
+                                                @endforeach
+                                            @elseif ($point->assignedToUser)
+                                                {{ $point->assignedToUser->name }}
+                                                @if ($point->assignedToUser->department)
+                                                    <span class="badge ms-2"
+                                                        style="background-color: {{ $colorScheme['accent'] }}; color: white; font-size: 0.75rem;">{{ $point->assignedToUser->department }}</span>
+                                                @endif
+                                            @else
+                                                Unassigned
                                             @endif
                                         </span>
                                         @if ($point->due_date)
@@ -313,15 +901,21 @@
                             <form id="status-form-{{ $point->id }}-pending"
                                 action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
                                 class="d-none">
-                                @csrf <input type="hidden" name="status" value="Pending"></form>
+                                @csrf <input type="hidden" name="status" value="Pending">
+                                <input type="hidden" name="active_tab" value="discussion">
+                            </form>
                             <form id="status-form-{{ $point->id }}-progress"
                                 action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
                                 class="d-none">
-                                @csrf <input type="hidden" name="status" value="In Progress"></form>
+                                @csrf <input type="hidden" name="status" value="In Progress">
+                                <input type="hidden" name="active_tab" value="discussion">
+                            </form>
                             <form id="status-form-{{ $point->id }}-completed"
                                 action="{{ route('discussion-points.update-status', $point->id) }}" method="POST"
                                 class="d-none">
-                                @csrf <input type="hidden" name="status" value="Completed"></form>
+                                @csrf <input type="hidden" name="status" value="Completed">
+                                <input type="hidden" name="active_tab" value="discussion">
+                            </form>
                         @endforeach
                     @empty
                         <div class="text-center text-muted p-4">No discussion points or tasks have been added yet.</div>
@@ -329,34 +923,45 @@
                 </div>
 
                 {{-- Tab 3 - Attendees --}}
-                <div class="tab-pane mt-4 fade" id="attendees" role="tabpanel" aria-labelledby="attendees-tab">
-                    <h4 class="mb-3">Meeting Attendees</h4>
+                <div class="tab-pane fade {{ ($activeTab ?? 'overview') === 'attendees' ? 'show active' : '' }}"
+                    id="attendees" role="tabpanel" aria-labelledby="attendees-tab" style="padding: 24px;">
+                    <h4 class="mb-4 fw-bold" style="color: var(--gray-900);">Meeting Attendees</h4>
                     <div class="table-responsive">
-                        <table class="table">
+                        <table class="table table-modern mb-0">
                             <thead>
                                 <tr>
-                                    <th scope="col">Name</th>
-                                    <th scope="col">Department</th>
-                                    <th scope="col">Role</th>
-                                    <th scope="col">Actions</th>
+                                    <th scope="col" style="font-weight: 600; color: var(--gray-700);">Name</th>
+                                    <th scope="col" style="font-weight: 600; color: var(--gray-700);">Department</th>
+                                    <th scope="col" style="font-weight: 600; color: var(--gray-700);">Role</th>
+                                    <th scope="col" style="font-weight: 600; color: var(--gray-700);">Actions</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @forelse ($meet->attendees as $attendee)
                                     <tr>
-                                        <td>{{ $attendee->name }}</td>
-                                        <td>{{ $attendee->department ?? 'N/A' }}</td>
-                                        <td>{{ $attendee->role_name ?? 'Attendee' }}</td>
+                                        <td style="font-weight: 500; color: var(--gray-900);">{{ $attendee->name }}</td>
+                                        <td style="color: var(--gray-600);">{{ $attendee->department ?? 'N/A' }}</td>
                                         <td>
-                                            <button class="btn btn-sm btn-outline-primary" data-bs-toggle="modal"
+                                            <span class="badge badge-modern"
+                                                style="background: var(--gray-100); color: var(--gray-700);">
+                                                {{ $attendee->role_name ?? 'Attendee' }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <button class="btn modern-btn modern-btn-primary" data-bs-toggle="modal"
                                                 data-bs-target="#addDiscussionPointModal"
-                                                data-assignee-id="{{ $attendee->id }}"><i class="bi bi-plus"></i> Add
-                                                Task</button>
+                                                data-assignee-id="{{ $attendee->id }}"
+                                                style="padding: 8px 16px; font-size: 0.9rem; font-weight: 500; white-space: nowrap; min-width: 110px;">
+                                                <i class="bi bi-plus-lg me-2"></i>Add Task
+                                            </button>
                                         </td>
                                     </tr>
                                 @empty
                                     <tr>
-                                        <td colspan="3" class="text-center text-muted">No attendees found.</td>
+                                        <td colspan="4" class="text-center text-muted py-5">
+                                            <i class="bi bi-people fs-1 d-block mb-2" style="opacity: 0.3;"></i>
+                                            No attendees found.
+                                        </td>
                                     </tr>
                                 @endforelse
                             </tbody>
@@ -365,11 +970,12 @@
                 </div>
 
                 {{-- Tab 4 - Responsibilities --}}
-                <div class="tab-pane mt-4 fade" id="responsibilities" role="tabpanel"
-                    aria-labelledby="responsibilities-tab">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="mb-0">Staff Responsibilities Summary</h4>
-                        <select class="form-select w-auto" id="responsibility-filter">
+                <div class="tab-pane fade {{ ($activeTab ?? 'overview') === 'responsibilities' ? 'show active' : '' }}"
+                    id="responsibilities" role="tabpanel" aria-labelledby="responsibilities-tab" style="padding: 24px;">
+                    <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
+                        <h4 class="mb-0 fw-bold" style="color: var(--gray-900);">Staff Responsibilities Summary</h4>
+                        <select class="form-select modern-select w-auto" id="responsibility-filter"
+                            style="min-width: 200px;">
                             <option value="all">All Attendees</option>
                             @foreach ($responsibilities->keys() as $assigneeName)
                                 @if ($assigneeName)
@@ -452,35 +1058,58 @@
                 </div>
 
                 {{-- Tab 5 - Follow-up Meetings --}}
-                <div class="tab-pane mt-4 fade" id="followups" role="tabpanel" aria-labelledby="followups-tab">
-                    <h4 class="mb-3">Follow-up Meetings</h4>
-                    <div class="list-group">
+                <div class="tab-pane fade {{ ($activeTab ?? 'overview') === 'followups' ? 'show active' : '' }}"
+                    id="followups" role="tabpanel" aria-labelledby="followups-tab" style="padding: 24px;">
+                    <h4 class="mb-4 fw-bold" style="color: var(--gray-900);">Follow-up Meetings</h4>
+                    <div class="row g-3 mb-4">
                         @forelse ($meet->followUps as $followUp)
-                            <div class="list-group-item d-flex justify-content-between align-items-center">
-                                <div>
-                                    <h6 class="mb-0">{{ $followUp->title }}</h6>
-                                    <small
-                                        class="text-muted">{{ \Carbon\Carbon::parse($followUp->meet_date)->format('Y-m-d') }}</small>
-                                </div>
-                                <div>
-                                    <span
-                                        class="badge bg-light text-dark me-2">{{ $followUp->status ?? 'scheduled' }}</span>
-                                    @if ($followUp->meet_id)
-                                        <a href="{{ route('meets.details', $followUp->meet_id) }}"
-                                            class="btn btn-sm btn-outline-secondary">View Details</a>
-                                    @else
-                                        <span class="text-muted">No meeting details available</span>
-                                    @endif
+                            <div class="col-md-6">
+                                <div class="modern-card p-3 h-100" style="border-left: 4px solid var(--primary-color);">
+                                    <div class="d-flex justify-content-between align-items-start">
+                                        <div class="flex-grow-1">
+                                            <h6 class="mb-2 fw-bold" style="color: var(--gray-900);">
+                                                {{ $followUp->title }}</h6>
+                                            <p class="mb-2 text-muted small">
+                                                <i class="bi bi-calendar3 me-1"></i>
+                                                {{ \Carbon\Carbon::parse($followUp->meet_date)->format('F d, Y') }}
+                                            </p>
+                                            @if ($followUp->meet_time)
+                                                <p class="mb-2 text-muted small">
+                                                    <i class="bi bi-clock me-1"></i>
+                                                    {{ \Carbon\Carbon::parse($followUp->meet_time)->format('h:i A') }}
+                                                </p>
+                                            @endif
+                                            @if ($followUp->status)
+                                                <span class="badge badge-modern"
+                                                    style="background: var(--gray-100); color: var(--gray-700);">
+                                                    {{ $followUp->status }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                        @if ($followUp->meet_id)
+                                            <a href="{{ route('meets.details', $followUp->meet_id) }}"
+                                                class="btn btn-sm modern-btn modern-btn-primary"
+                                                style="white-space: nowrap; margin-left: 12px;">
+                                                <i class="bi bi-eye me-1"></i>View
+                                            </a>
+                                        @endif
+                                    </div>
                                 </div>
                             </div>
                         @empty
-                            <div class="text-center text-muted p-4">No follow-up meetings have been scheduled.</div>
+                            <div class="col-12">
+                                <div class="text-center text-muted py-5">
+                                    <i class="bi bi-calendar-x fs-1 d-block mb-2" style="opacity: 0.3;"></i>
+                                    <p class="mb-0">No follow-up meetings have been scheduled.</p>
+                                </div>
+                            </div>
                         @endforelse
                     </div>
-                    <div class="mt-3">
-                        <button class="btn btn-primary w-100" data-bs-toggle="modal"
-                            data-bs-target="#scheduleFollowUpModal"><i class="bi bi-plus-lg me-2"></i>Schedule
-                            Follow-up Meeting</button>
+                    <div class="mt-4">
+                        <button class="btn modern-btn modern-btn-primary w-100" data-bs-toggle="modal"
+                            data-bs-target="#scheduleFollowUpModal" style="padding: 12px;">
+                            <i class="bi bi-plus-lg me-2"></i>Schedule Follow-up Meeting
+                        </button>
                     </div>
                 </div>
 
@@ -488,94 +1117,156 @@
         </div>
     </div>
     <!-- Add New Discussion Point Modal -->
-    <div class="modal fade" id="addDiscussionPointModal" tabindex="-1" aria-labelledby="addDiscussionPointModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-lg">
-            <div class="modal-content">
-                <form action="{{ route('discussion-points.store') }}" method="POST">
+    <div class="modal fade modal-modern" id="addDiscussionPointModal" tabindex="-1"
+        aria-labelledby="addDiscussionPointModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable" style="max-width: 700px;">
+            <div class="modal-content" style="border-radius: 16px; border: none; box-shadow: var(--shadow-xl);">
+                <form action="{{ route('discussion-points.store') }}" method="POST" id="addTaskForm">
                     @csrf
                     <input type="hidden" name="meet_id" value="{{ $meet->id }}">
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="addDiscussionPointModalLabel">Add New Discussion Point</h5>
+                    <input type="hidden" name="active_tab" id="active_tab_discussion" value="discussion">
+                    <div class="modal-header" style="border-bottom: 1px solid var(--gray-200); padding: 24px 24px 20px;">
+                        <h5 class="modal-title fw-bold mb-0" id="addDiscussionPointModalLabel"
+                            style="color: var(--gray-900); font-size: 1.25rem;">
+                            <i class="bi bi-plus-circle me-2" style="color: var(--primary-color);"></i>Create New Task
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body">
-                        <div class="mb-3">
-                            <label for="title" class="form-label">Title</label>
-                            <input type="text" class="form-control" id="title" name="title"
-                                placeholder="Enter task title" required>
+                    <div class="modal-body" style="padding: 24px;">
+                        <!-- Title -->
+                        <div class="mb-4">
+                            <label for="title" class="form-label fw-semibold mb-2"
+                                style="color: var(--gray-700); font-size: 0.875rem;">
+                                Task Title <span class="text-danger">*</span>
+                            </label>
+                            <input type="text" class="form-control modern-input" id="title" name="title"
+                                placeholder="Enter task title" required style="font-size: 0.95rem;">
                         </div>
-                        <div class="mb-3">
-                            <label for="description" class="form-label">Description</label>
-                            <textarea class="form-control" id="description" name="description" rows="3" style="height:100px;"
-                                placeholder="Enter task description"></textarea>
+
+                        <!-- Description -->
+                        <div class="mb-4">
+                            <label for="description" class="form-label fw-semibold mb-2"
+                                style="color: var(--gray-700); font-size: 0.875rem;">
+                                Description
+                            </label>
+                            <textarea class="form-control modern-input" id="description" name="description" rows="3"
+                                style="min-height: 100px; resize: vertical; font-size: 0.95rem;" placeholder="Enter task description"></textarea>
                         </div>
-                        <div class="mb-3">
-                            <label for="project_select" class="form-label">Project <small class="text-muted">(Select
-                                    existing or type new)</small></label>
-                            <input type="text" class="form-control" id="project_select" name="project_name"
-                                list="projects_list" placeholder="Select project or type to create new..."
-                                autocomplete="off">
+
+                        <!-- Project -->
+                        <div class="mb-4">
+                            <label for="project_select" class="form-label fw-semibold mb-2"
+                                style="color: var(--gray-700); font-size: 0.875rem;">
+                                Project
+                            </label>
+                            <input type="text" class="form-control modern-input" id="project_select"
+                                name="project_name" list="projects_list"
+                                placeholder="Select project or type to create new..." autocomplete="off"
+                                style="font-size: 0.95rem;">
                             <datalist id="projects_list">
                                 @foreach ($projects as $project)
-                                    <option value="{{ $project->project_name }}" data-project-id="{{ $project->id }}">
+                                    <option value="{{ $project->project_name }}"
+                                        data-project-id="{{ $project->id }}">
                                 @endforeach
                             </datalist>
                             <input type="hidden" id="project_id" name="project_id" value="">
-                            <small class="text-muted">Type to search existing projects or enter a new project name</small>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.8rem;">
+                                <i class="bi bi-info-circle me-1"></i>Type to search existing projects or enter a new
+                                project name
+                            </small>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12 mb-3">
-                                <label for="assignee_id" class="form-label">Assigned To</label>
-                                <select class="form-select" id="assignee_id" name="assigned_to">
+
+                        <!-- Assigned To (Multiple) -->
+                        <div class="mb-4">
+                            <label for="assigned_to" class="form-label fw-semibold mb-2"
+                                style="color: var(--gray-700); font-size: 0.875rem;">
+                                Assigned To <small class="text-muted fw-normal">(Multiple selection allowed)</small>
+                            </label>
+                            <select class="form-select modern-select select2-assignees" id="assigned_to"
+                                name="assigned_to[]" multiple style="width: 100%; font-size: 0.95rem;">
+                                @foreach ($assignees as $assignee)
+                                    <option value="{{ $assignee->id }}">{{ $assignee->name }}</option>
+                                @endforeach
+                            </select>
+                            <small class="text-muted mt-1 d-block" style="font-size: 0.8rem;">
+                                <i class="bi bi-info-circle me-1"></i>Search and select multiple assignees. Selected items
+                                will appear as chips.
+                            </small>
+                        </div>
+
+                        <!-- Assigned By & Department Row -->
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label for="assignee_id" class="form-label fw-semibold mb-2"
+                                    style="color: var(--gray-700); font-size: 0.875rem;">
+                                    Assigned By
+                                </label>
+                                <select class="form-select modern-select" id="assignee_id" name="assignee_id"
+                                    style="font-size: 0.95rem;">
                                     <option value="">Select Assignee</option>
                                     @foreach ($assignees as $assignee)
                                         <option value="{{ $assignee->id }}">{{ $assignee->name }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="assignee_id" class="form-label">Assigned By</label>
-                                <select class="form-select" id="assignee_id" name="assignee_id">
-                                    <option value="">Select Assignee</option>
-                                    @foreach ($assignees as $assignee)
-                                        <option value="{{ $assignee->id }}">{{ $assignee->name }}</option>
+                            <div class="col-md-6">
+                                <label for="department" class="form-label fw-semibold mb-2"
+                                    style="color: var(--gray-700); font-size: 0.875rem;">
+                                    Department <small class="text-muted fw-normal">(Type to add custom)</small>
+                                </label>
+                                <input type="text" class="form-control modern-input" id="department"
+                                    name="department" list="departments_list"
+                                    placeholder="Select or type department name..." autocomplete="off"
+                                    style="font-size: 0.95rem;">
+                                <datalist id="departments_list">
+                                    @foreach ($departments as $dept)
+                                        <option value="{{ $dept }}">
                                     @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="department" class="form-label">Department</label>
-                                <select class="form-select" id="department" name="department">
-                                    <option value="">Select Department</option>
-                                    <option value="Design">Design</option>
-                                    <option value="Engineering">Engineering</option>
-                                    <option value="Product">Product</option>
-                                    <option value="QA">QA</option>
-                                    <option value="Client">Client</option>
-                                </select>
+                                    <option value="Design">
+                                    <option value="Engineering">
+                                    <option value="Product">
+                                    <option value="QA">
+                                    <option value="Client">
+                                </datalist>
+                                <small class="text-muted mt-1 d-block" style="font-size: 0.8rem;">
+                                    <i class="bi bi-info-circle me-1"></i>Select from list or type a custom department name
+                                </small>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="priority" class="form-label">Priority</label>
-                                <select class="form-select" id="priority" name="priority">
+                        <!-- Priority & Due Date Row -->
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label for="priority" class="form-label fw-semibold mb-2"
+                                    style="color: var(--gray-700); font-size: 0.875rem;">
+                                    Priority
+                                </label>
+                                <select class="form-select modern-select" id="priority" name="priority"
+                                    style="font-size: 0.95rem;">
                                     <option value="High">High</option>
                                     <option value="Medium" selected>Medium</option>
                                     <option value="Low">Low</option>
                                 </select>
                             </div>
-                            <div class="col-md-6 mb-3">
-                                <label for="due_date" class="form-label">Due Date</label>
-                                <input type="date" class="form-control" id="due_date" name="due_date">
+                            <div class="col-md-6">
+                                <label for="due_date" class="form-label fw-semibold mb-2"
+                                    style="color: var(--gray-700); font-size: 0.875rem;">
+                                    Due Date
+                                </label>
+                                <input type="date" class="form-control modern-input" id="due_date" name="due_date"
+                                    style="font-size: 0.95rem;">
                             </div>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Add Task</button>
+                    <div class="modal-footer"
+                        style="border-top: 1px solid var(--gray-200); padding: 20px 24px; background: var(--gray-50);">
+                        <button type="button" class="btn modern-btn" data-bs-dismiss="modal"
+                            style="background: white; color: var(--gray-700); border: 1px solid var(--gray-300); padding: 10px 20px;">
+                            Cancel
+                        </button>
+                        <button type="submit" class="btn modern-btn modern-btn-primary" style="padding: 10px 24px;">
+                            <i class="bi bi-check-lg me-2"></i>Create Task
+                        </button>
                     </div>
                 </form>
             </div>
@@ -583,36 +1274,44 @@
     </div>
 
     <!-- Add Note Modal -->
-    <div class="modal fade" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
+    <div class="modal fade modal-modern" id="addNoteModal" tabindex="-1" aria-labelledby="addNoteModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <form action="{{ route('discussion-points.updates.store') }}" method="POST">
                     @csrf
                     <input type="hidden" name="discussion_point_id" id="modal_discussion_point_id">
+                    <input type="hidden" name="active_tab" id="active_tab_note" value="discussion">
                     <div class="modal-header">
-                        <h5 class="modal-title" id="addNoteModalLabel">Add Note/Update</h5>
+                        <h5 class="modal-title fw-bold" id="addNoteModalLabel">
+                            <i class="bi bi-pencil-square me-2"></i>Add Note/Update
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
                         <div class="mb-3">
-                            <label for="update_text" class="form-label">Update Note</label>
-                            <textarea class="form-control" id="update_text" name="update_text" rows="3" style="height:100px;"required
-                                placeholder="Provide a short update on the task..."></textarea>
+                            <label for="update_text" class="form-label fw-semibold">Update Note <span
+                                    class="text-danger">*</span></label>
+                            <textarea class="form-control modern-input" id="update_text" name="update_text" rows="3"
+                                style="height:100px; min-height: 100px;" required placeholder="Provide a short update on the task..."></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="vertical_head_remark" class="form-label">Vertical Head Remark</label>
-                            <textarea class="form-control" id="vertical_head_remark" name="vertical_head_remark"
-                                rows="2"style="height:100px;" placeholder="Add remark from the vertical head (optional)"></textarea>
+                            <label for="vertical_head_remark" class="form-label fw-semibold">Vertical Head Remark</label>
+                            <textarea class="form-control modern-input" id="vertical_head_remark" name="vertical_head_remark" rows="2"
+                                style="height:100px; min-height: 100px;" placeholder="Add remark from the vertical head (optional)"></textarea>
                         </div>
                         <div class="mb-3">
-                            <label for="admin_remark" class="form-label">Admin Remark</label>
-                            <textarea class="form-control" id="admin_remark" name="admin_remark" rows="2"
-                                style="height:100px;"placeholder="Add admin remark (optional)"></textarea>
+                            <label for="admin_remark" class="form-label fw-semibold">Admin Remark</label>
+                            <textarea class="form-control modern-input" id="admin_remark" name="admin_remark" rows="2"
+                                style="height:100px; min-height: 100px;" placeholder="Add admin remark (optional)"></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
-                        <button type="submit" class="btn btn-primary">Save Note</button>
+                    <div class="modal-footer" style="border-top: 1px solid var(--gray-200); padding: 20px 24px;">
+                        <button type="button" class="btn btn-light modern-btn" data-bs-dismiss="modal"
+                            style="background: var(--gray-100); color: var(--gray-700);">Cancel</button>
+                        <button type="submit" class="btn modern-btn modern-btn-primary">
+                            <i class="bi bi-check-lg me-2"></i>Save Note
+                        </button>
                     </div>
                 </form>
             </div>
@@ -626,6 +1325,7 @@
             <div class="modal-content">
                 <form action="{{ route('meets.schedule-follow-up', $meet->id) }}" method="POST">
                     @csrf
+                    <input type="hidden" name="active_tab" value="followups">
                     <div class="modal-header">
                         <h5 class="modal-title" id="scheduleFollowUpModalLabel">Schedule Follow-up Meeting</h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
@@ -680,17 +1380,13 @@
             font-weight: 600;
         }
 
-        /* FIX: This style block overrides the conflicting rule from your style.css */
-        .card .nav-tabs {
-            position: relative;
-            /* Overrides position: fixed */
-            max-width: 100%;
-            /* Overrides max-width: 220px */
-            flex-wrap: nowrap;
-            /* Prevents wrapping */
+        /* Ensure tabs are horizontal and not fixed */
+        .modern-card .nav-tabs {
+            position: relative !important;
+            max-width: 100% !important;
+            flex-wrap: nowrap !important;
+            display: flex !important;
         }
-
-        /* END OF FIX */
 
         .nav-tabs .nav-link {
             border: 0;
@@ -824,6 +1520,38 @@
 @push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Activate the correct tab based on URL parameter or activeTab variable
+            var activeTab = '{{ $activeTab ?? 'overview' }}';
+            if (activeTab) {
+                var tabButton = document.querySelector('#' + activeTab + '-tab');
+                var tabPane = document.querySelector('#' + activeTab);
+                if (tabButton && tabPane) {
+                    // Remove active class from all tabs and panes
+                    document.querySelectorAll('.nav-link').forEach(function(link) {
+                        link.classList.remove('active');
+                        link.setAttribute('aria-selected', 'false');
+                    });
+                    document.querySelectorAll('.tab-pane').forEach(function(pane) {
+                        pane.classList.remove('show', 'active');
+                    });
+
+                    // Activate the correct tab
+                    tabButton.classList.add('active');
+                    tabButton.setAttribute('aria-selected', 'true');
+                    tabPane.classList.add('show', 'active');
+                }
+            }
+
+            // Track active tab when user clicks on tabs
+            document.querySelectorAll('[data-bs-toggle="tab"]').forEach(function(tabButton) {
+                tabButton.addEventListener('shown.bs.tab', function(event) {
+                    var targetTab = event.target.getAttribute('data-bs-target').replace('#', '');
+                    // Update hidden fields in forms
+                    document.querySelectorAll('input[name="active_tab"]').forEach(function(input) {
+                        input.value = targetTab;
+                    });
+                });
+            });
             const searchInput = document.getElementById('task-search-input');
             if (searchInput) {
                 const taskCards = document.querySelectorAll('.task-card');
@@ -847,15 +1575,62 @@
                 var pointId = button.getAttribute('data-point-id');
                 var modalPointIdInput = addNoteModal.querySelector('#modal_discussion_point_id');
                 modalPointIdInput.value = pointId;
+
+                // Set active tab to discussion for notes
+                var activeTabInput = addNoteModal.querySelector('#active_tab_note');
+                if (activeTabInput) {
+                    activeTabInput.value = 'discussion';
+                }
             });
 
-            var addTaskModal = document.getElementById('addDiscussionPointModal');
-            addTaskModal.addEventListener('show.bs.modal', function(event) {
+            // Initialize Select2 for assigned_to field
+            function initializeSelect2() {
+                const assigneeSelect = $('#assigned_to');
+                if (assigneeSelect.length && !assigneeSelect.hasClass('select2-hidden-accessible')) {
+                    assigneeSelect.select2({
+                        placeholder: 'Search and select assignees...',
+                        allowClear: false,
+                        width: '100%',
+                        closeOnSelect: false,
+                        tags: false,
+                        theme: 'default',
+                        dropdownParent: $('#addDiscussionPointModal')
+                    });
+                }
+            }
+
+            // Initialize Select2 when modal is shown
+            $('#addDiscussionPointModal').on('shown.bs.modal', function() {
+                // Small delay to ensure modal is fully rendered
+                setTimeout(function() {
+                    initializeSelect2();
+                }, 100);
+            });
+
+            // Handle modal show event for pre-selecting assignee
+            $('#addDiscussionPointModal').on('show.bs.modal', function(event) {
                 var button = event.relatedTarget;
-                var assigneeId = button.getAttribute('data-assignee-id');
-                if (assigneeId) {
-                    var assigneeSelect = addTaskModal.querySelector('select[name="assigned_to"]');
-                    assigneeSelect.value = assigneeId;
+                var assigneeId = button ? button.getAttribute('data-assignee-id') : null;
+
+                // Clear previous selections when modal opens
+                setTimeout(function() {
+                    const assigneeSelect = $('#assigned_to');
+                    if (assigneeSelect.hasClass('select2-hidden-accessible')) {
+                        assigneeSelect.val(null).trigger('change');
+
+                        // Pre-select the assignee if provided
+                        if (assigneeId) {
+                            assigneeSelect.val([assigneeId]).trigger('change');
+                        }
+                    }
+                }, 200);
+            });
+
+            // Clean up Select2 when modal is hidden
+            $('#addDiscussionPointModal').on('hidden.bs.modal', function() {
+                const assigneeSelect = $('#assigned_to');
+                if (assigneeSelect.hasClass('select2-hidden-accessible')) {
+                    assigneeSelect.select2('destroy');
                 }
             });
 

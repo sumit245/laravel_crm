@@ -59,7 +59,7 @@ class Meet extends Model
 
     public function discussionPoints()
     {
-        return $this->hasMany(DiscussionPoint::class);
+        return $this->hasMany(DiscussionPoint::class)->orderBy('created_at', 'desc');
     }
 
     public function followUps()
