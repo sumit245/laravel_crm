@@ -105,7 +105,9 @@
                     <!-- Vendors Tab -->
                     <div class="tab-pane fade" id="vendors" role="tabpanel" aria-labelledby="vendors-tab">
                         @include('projects.project_vendors', [
-                            'vendors' => $vendors,
+                            'project' => $project,
+                            'assignedVendors' => $assignedVendors,
+                            'availableVendors' => $availableVendors,
                         ])
                     </div>
 

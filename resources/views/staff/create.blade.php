@@ -24,25 +24,28 @@
 
           <div class="row">
             <!-- Project Selection Dropdown -->
-            {{-- <div class="form-group mb-4"> --}}
-            <div class="col-md-12">
+            <div class="col-md-6">
               <div class="form-group">
                 <label for="select_project" class="form-label">Select Project</label>
-                <select name="project_id" class="form-select" id="select_project">
+                <select name="project_id" class="form-select" id="select_project" required>
                   <option value="">-- Select Project --</option>
                   @foreach ($projects as $project)
-                    <option value="{{ $project->id }}">{{ $project->project_name }}</option>
+                    <option value="{{ $project->id }}" {{ (string) old('project_id') === (string) $project->id ? 'selected' : '' }}>
+                      {{ $project->project_name }}
+                    </option>
                   @endforeach
                 </select>
               </div>
             </div>
-            <div class="col-md-12">
+            <div class="col-md-6">
               <div class="form-group">
                 <label for="team_lead" class="form-label">Team Lead</label>
                 <select name="manager_id" class="form-select" id="team_lead">
                   <option value="">-- Select Team Lead --</option>
                   @foreach ($teamLeads as $teamLead)
-                    <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
+                    <option value="{{ $teamLead->id }}" {{ (string) old('manager_id') === (string) $teamLead->id ? 'selected' : '' }}>
+                      {{ $teamLead->firstName }} {{ $teamLead->lastName }}
+                    </option>
                   @endforeach
                 </select>
               </div>
@@ -114,10 +117,11 @@
                 <label for="role" class="form-label">Role</label>
                 <select name="role" class="form-select" id="role" required>
                   <option value="">-- Select Role --</option>
-                  <option value="2">Project Manager</option>
-                  <option value="1">Site Engineer</option>
-                  <option value="4">Store Incharge</option>
-                  <option value="5">Coordinator</option>
+                  <option value="2" {{ old('role') == 2 ? 'selected' : '' }}>Project Manager</option>
+                  <option value="1" {{ old('role') == 1 ? 'selected' : '' }}>Site Engineer</option>
+                  <option value="4" {{ old('role') == 4 ? 'selected' : '' }}>Store Incharge</option>
+                  <option value="5" {{ old('role') == 5 ? 'selected' : '' }}>Coordinator</option>
+                  <option value="11" {{ old('role') == 11 ? 'selected' : '' }}>Guest (Review Meetings Only)</option>
                 </select>
               </div>
             </div>
@@ -130,9 +134,110 @@
                 <select name="category" class="form-select" id="category">
                   <option value="">-- Select Category --</option>
                   @foreach ($usercategories as $category)
-                    <option value="{{ $category->id }}">{{ $category->category_code }}</option>
+                    <option value="{{ $category->id }}" {{ (string) old('category') === (string) $category->id ? 'selected' : '' }}>
+                      {{ $category->category_code }}
+                    </option>
                   @endforeach
                 </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-12">
+              <div class="form-group">
+                <label for="department" class="form-label">Department (Free Text)</label>
+                <input type="text"
+                       name="department"
+                       id="department"
+                       class="form-control"
+                       placeholder="e.g. Operations, HR, Finance"
+                       value="{{ old('department') }}">
+              </div>
+            </div>
+          </div>
+
+          <h5 class="mt-4 mb-3">Financial / KYC Details</h5>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="accountName" class="form-label">Account Name</label>
+                <input type="text" name="accountName" id="accountName" class="form-control"
+                       value="{{ old('accountName') }}" placeholder="Name as per bank account">
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="form-group">
+                <label for="accountNumber" class="form-label">Account Number</label>
+                <input type="text" name="accountNumber" id="accountNumber" class="form-control"
+                       value="{{ old('accountNumber') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="ifsc" class="form-label">IFSC</label>
+                <input type="text" name="ifsc" id="ifsc" class="form-control"
+                       value="{{ old('ifsc') }}">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="bankName" class="form-label">Bank Name</label>
+                <input type="text" name="bankName" id="bankName" class="form-control"
+                       value="{{ old('bankName') }}">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="branch" class="form-label">Branch</label>
+                <input type="text" name="branch" id="branch" class="form-control"
+                       value="{{ old('branch') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="gstNumber" class="form-label">GST Number</label>
+                <input type="text" name="gstNumber" id="gstNumber" class="form-control"
+                       value="{{ old('gstNumber') }}">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="pan" class="form-label">PAN</label>
+                <input type="text" name="pan" id="pan" class="form-control"
+                       value="{{ old('pan') }}">
+              </div>
+            </div>
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="aadharNumber" class="form-label">Aadhar Number</label>
+                <input type="text" name="aadharNumber" id="aadharNumber" class="form-control"
+                       value="{{ old('aadharNumber') }}">
+              </div>
+            </div>
+          </div>
+
+          <div class="row">
+            <div class="col-md-4">
+              <div class="form-group">
+                <label for="status" class="form-label">Status</label>
+                <input type="text" name="status" id="status" class="form-control"
+                       value="{{ old('status') }}" placeholder="Active / Inactive">
+              </div>
+            </div>
+            <div class="col-md-4 d-flex align-items-center">
+              <div class="form-check mt-4">
+                <input class="form-check-input" type="checkbox" value="1" id="disableLogin" name="disableLogin"
+                       {{ old('disableLogin') ? 'checked' : '' }}>
+                <label class="form-check-label" for="disableLogin">
+                  Disable Login
+                </label>
               </div>
             </div>
           </div>

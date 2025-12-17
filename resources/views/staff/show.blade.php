@@ -23,7 +23,7 @@
             <p><strong>Role:</strong>
               {{ $staff->role == 1 ? 'Site Engineer' : ($staff->role == 2 ? 'Project Manager' : ($staff->role == 3 ? 'Vendor' : ($staff->role == 4 ? 'Store Incharge' : 'Coordinator'))) }}
             </p>
-            <p><strong>Project:</strong> {{ $project->project_name ?? 'N/A' }}</p>
+            <p><strong>Project:</strong> {{ optional($project)->project_name ?? 'N/A' }}</p>
 
             @if ($staff->role != 2 && isset($staff->projectManager))
               <p><strong>Manager:</strong> {{ $staff->projectManager->firstName ?? 'N/A' }} {{ $staff->projectManager->lastName ?? 'N/A' }}</p>
@@ -47,7 +47,7 @@
 
           <!-- Staff Image -->
           <div>
-            <img src="{{ $staff->image }}" alt="user-avatar" class="custom-image">
+            <img src="{{ $staff->image ?? asset('images/faces/face8.jpg') }}" alt="user-avatar" class="custom-image">
           </div>
         </div>
 
@@ -55,7 +55,7 @@
 
         <!-- Performance Today Section -->
         <h3>Performance Today</h3>
-        @if ($project->project_type == 1)
+        @if ($isStreetlightProject)
           @include('staff.streetlight-performance')
         @endif
 

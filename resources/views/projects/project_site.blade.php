@@ -42,6 +42,9 @@
             ['title' => 'Block'],
             ['title' => 'Panchayat'],
             ['title' => 'Ward'],
+            ['title' => 'Scope'],
+            ['title' => 'Surveyed Poles'],
+            ['title' => 'Installed Poles'],
         ];
         $filters = [
             [
@@ -103,7 +106,10 @@
                 <td>{{ $site->district }}</td>
                 <td>{{ $site->block }}</td>
                 <td>{{ $site->panchayat }}</td>
-                <td>{{ $site->ward }}</td>
+                <td>{{ $site->ward ?? '-' }}</td>
+                <td>{{ $site->total_poles ?? 0 }}</td>
+                <td>{{ $site->number_of_surveyed_poles ?? 0 }}</td>
+                <td>{{ $site->number_of_installed_poles ?? 0 }}</td>
             @endif
             <td class="text-center">
                 <a href="{{ route('sites.show', $site->id) }}?project_type={{ $project->project_type }}"

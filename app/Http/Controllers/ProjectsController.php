@@ -14,6 +14,7 @@ use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
 class ProjectsController extends Controller
@@ -46,6 +47,7 @@ class ProjectsController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Project::class);
         $states = State::all();
         return view('projects.create', compact('states'));
     }
@@ -55,6 +57,7 @@ class ProjectsController extends Controller
      */
     public function store(Request $request)
     {
+        $this->authorize('create', Project::class);
         $validated = $request->validate([
             'project_type' => 'required|in:0,1',
             'project_name' => 'required|string',
@@ -130,37 +133,121 @@ class ProjectsController extends Controller
         $vendors = User::where('role', UserRole::VENDOR->value)->get();
         $state = State::where('id', $project->project_in_state)->get();
 
-        $assignedEngineers = User::whereIn('role', [UserRole::SITE_ENGINEER->value, UserRole::PROJECT_MANAGER->value])
-            ->where('project_id', $project->id)
-            ->whereIn('id', function ($query) use ($project) {
-                $query->select('user_id')->from('project_user');
-            })
-            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
-            ->get();
+        // Get assigned staff IDs from pivot table (excluding vendors - they're in Vendor Management tab)
+        $assignedStaffIds = DB::table('project_user')
+            ->join('users', 'project_user.user_id', '=', 'users.id')
+            ->where('project_user.project_id', $project->id)
+            ->whereNotIn('users.role', [UserRole::VENDOR->value])
+            ->pluck('project_user.user_id')
+            ->toArray();
 
-        $availableEngineers = User::whereIn('role', [
+        // Get assigned staff with role from pivot table (excluding vendors)
+        $assignedStaffQuery = User::whereIn('id', $assignedStaffIds)
+            ->whereNotIn('role', [UserRole::VENDOR->value])
+            ->when($isProjectManager, function($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            });
+
+        $assignedStaff = $assignedStaffQuery->get()->map(function($staff) use ($project) {
+            $pivot = DB::table('project_user')
+                ->where('project_id', $project->id)
+                ->where('user_id', $staff->id)
+                ->first();
+            $staff->pivot_role = $pivot->role ?? $staff->role;
+            return $staff;
+        });
+
+        // Group assigned staff by role (excluding vendors - they're in Vendor Management tab)
+        $assignedStaffByRole = $assignedStaff->groupBy('pivot_role')
+            ->filter(function($group, $role) {
+                // Exclude vendors from staff management
+                return (int)$role !== UserRole::VENDOR->value;
+            })
+            ->map(function($group, $role) {
+                return $group->map(function($staff) {
+                    return [
+                        'id' => $staff->id,
+                        'name' => trim($staff->firstName . ' ' . $staff->lastName),
+                        'firstName' => $staff->firstName,
+                        'lastName' => $staff->lastName,
+                        'role' => $staff->pivot_role ?? $staff->role,
+                        'manager_id' => $staff->manager_id
+                    ];
+                });
+            });
+
+        // Get available staff (not already assigned)
+        // Exclude vendors - they are managed in Vendor Management tab
+        // For Admin: Show all users with relevant roles
+        // For PM: Show only users with manager_id = current_user->id
+        $availableStaffQuery = User::whereIn('role', [
             UserRole::SITE_ENGINEER->value,
             UserRole::PROJECT_MANAGER->value,
             UserRole::STORE_INCHARGE->value,
             UserRole::COORDINATOR->value
         ])
-            ->where('project_id', $project->id)
-            ->whereNotIn('id', $assignedEngineers->pluck('id'))
-            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
-            ->get();
+            ->whereNotIn('id', $assignedStaffIds)
+            ->when($isProjectManager, function($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            });
 
-        $assignedVendors = User::where('role', UserRole::VENDOR->value)
-            ->where('project_id', $project->id)
-            ->whereIn('id', function ($query) use ($project) {
-                $query->select('user_id')->from('project_user');
-            })
-            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
-            ->get();
+        $availableStaff = $availableStaffQuery->get()->map(function($staff) {
+            return [
+                'id' => $staff->id,
+                'name' => trim($staff->firstName . ' ' . $staff->lastName),
+                'firstName' => $staff->firstName,
+                'lastName' => $staff->lastName,
+                'role' => $staff->role,
+                'manager_id' => $staff->manager_id
+            ];
+        });
 
+        // Group available staff by role
+        $availableStaffByRole = $availableStaff->groupBy('role');
+
+        // Legacy variables for backward compatibility
+        $assignedEngineers = $assignedStaff->filter(function($staff) {
+            $role = $staff->pivot_role ?? $staff->role;
+            return in_array($role, [UserRole::SITE_ENGINEER->value, UserRole::PROJECT_MANAGER->value]);
+        });
+
+        $availableEngineers = $availableStaff->filter(function($staff) {
+            return in_array($staff['role'], [
+                UserRole::SITE_ENGINEER->value,
+                UserRole::PROJECT_MANAGER->value,
+                UserRole::STORE_INCHARGE->value,
+                UserRole::COORDINATOR->value
+            ]);
+        })->map(function($staff) {
+            $user = new User();
+            $user->id = $staff['id'];
+            $user->firstName = $staff['firstName'];
+            $user->lastName = $staff['lastName'];
+            $user->role = $staff['role'];
+            return $user;
+        });
+
+        // Get assigned vendors separately (they're excluded from $assignedStaff)
+        $assignedVendorIds = DB::table('project_user')
+            ->where('project_user.project_id', $project->id)
+            ->join('users', 'project_user.user_id', '=', 'users.id')
+            ->where('users.role', UserRole::VENDOR->value)
+            ->pluck('project_user.user_id')
+            ->toArray();
+
+        $assignedVendorsQuery = User::whereIn('id', $assignedVendorIds)
+            ->when($isProjectManager, function($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            });
+
+        $assignedVendors = $assignedVendorsQuery->get();
+
+        // Get available vendors (not already assigned)
         $availableVendors = User::where('role', UserRole::VENDOR->value)
-            ->where('project_id', $project->id)
-            ->whereNotIn('id', $assignedVendors->pluck('id'))
-            ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
+            ->whereNotIn('id', $assignedVendorIds)
+            ->when($isProjectManager, function($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            })
             ->get();
 
         $assignedEngineersMessage = $assignedEngineers->isEmpty() ? "No engineers assigned." : null;
@@ -181,6 +268,10 @@ class ProjectsController extends Controller
             'assignedEngineersMessage' => $assignedEngineersMessage,
             'assignedVendors' => $assignedVendors,
             'availableVendors' => $availableVendors,
+            'assignedStaffByRole' => $assignedStaffByRole,
+            'availableStaffByRole' => $availableStaffByRole,
+            'isAdmin' => $isAdmin,
+            'isProjectManager' => $isProjectManager,
             'initialStockValue' => $initialStockValue,
             'inStoreStockValue' => $inStoreStockValue,
             'dispatchedStockValue' => $dispatchedStockValue
@@ -234,6 +325,7 @@ class ProjectsController extends Controller
     public function edit(string $id)
     {
         $project = Project::findOrFail($id);
+        $this->authorize('update', $project);
         $state = State::where('id', $project->project_in_state)->get();
 
         return view('projects.edit', compact('project', 'state'));
@@ -244,6 +336,7 @@ class ProjectsController extends Controller
      */
     public function update(Request $request, Project $project)
     {
+        $this->authorize('update', $project);
         try {
             $validated = $request->validate([
                 'project_name' => 'required|string',
@@ -275,6 +368,7 @@ class ProjectsController extends Controller
     {
         try {
             $project = Project::findOrFail($id);
+            $this->authorize('delete', $project);
             $project->delete();
             return response()->json(['message' => 'Project deleted successfully']);
         } catch (\Exception $e) {
@@ -293,6 +387,12 @@ class ProjectsController extends Controller
                 'ids.*' => 'exists:projects,id',
             ]);
 
+            // Check authorization for each project
+            $projects = Project::whereIn('id', $request->ids)->get();
+            foreach ($projects as $project) {
+                $this->authorize('delete', $project);
+            }
+
             $count = Project::whereIn('id', $request->ids)->delete();
 
             return response()->json([
@@ -305,15 +405,204 @@ class ProjectsController extends Controller
         }
     }
 
-    public function assignUsers(Request $request, $projectId)
+    public function assignUsers(Request $request, $id)
     {
-        $project = Project::findOrFail($projectId);
-        $validated = $request->validate([
-            'user_ids' => 'required|array',
-            'user_ids.*' => 'exists:users,id',
-        ]);
-        $project->users()->syncWithoutDetaching($validated['user_ids']);
-        return redirect()->back()->with('success', 'Users assigned successfully');
+        try {
+            $project = Project::findOrFail($id);
+            $this->authorize('assignStaff', $project);
+            
+            $validated = $request->validate([
+                'user_ids' => 'required|array',
+                'user_ids.*' => 'exists:users,id',
+            ]);
+
+            $user = auth()->user();
+            $isProjectManager = $user->role === UserRole::PROJECT_MANAGER->value;
+
+            // Get users with their roles to set pivot role correctly
+            $usersToAssign = User::whereIn('id', $validated['user_ids'])->get();
+
+            // For Project Managers: Verify all users being assigned have manager_id = current_user->id
+            if ($isProjectManager) {
+                foreach ($usersToAssign as $userToAssign) {
+                    if ($userToAssign->manager_id !== $user->id) {
+                        if ($request->expectsJson()) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'You can only assign staff members assigned to you as team lead.'
+                            ], 403);
+                        }
+                        return redirect()->back()->with('error', 'You can only assign staff members assigned to you as team lead.');
+                    }
+                }
+            }
+
+            DB::beginTransaction();
+            
+            // Sync with pivot role data - format: [user_id => ['role' => role_value]]
+            $syncData = [];
+            foreach ($usersToAssign as $userToAssign) {
+                $syncData[$userToAssign->id] = ['role' => $userToAssign->role];
+            }
+            $project->users()->syncWithoutDetaching($syncData);
+            
+            Log::info('Staff assigned to project', [
+                'project_id' => $id,
+                'user_ids' => $validated['user_ids'],
+                'assigned_by' => $user->id
+            ]);
+
+            DB::commit();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Staff assigned successfully'
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Users assigned successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to assign staff to project', [
+                'project_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to assign staff: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to assign staff: ' . $e->getMessage());
+        }
+    }
+
+    public function removeStaff(Request $request, $id)
+    {
+        try {
+            $project = Project::findOrFail($id);
+            $this->authorize('removeStaff', $project);
+            
+            $validated = $request->validate([
+                'user_ids' => 'required|array',
+                'user_ids.*' => 'exists:users,id',
+            ]);
+
+            $user = auth()->user();
+            $isAdmin = $user->role === UserRole::ADMIN->value;
+            $isProjectManager = $user->role === UserRole::PROJECT_MANAGER->value;
+
+            // For Project Managers: Verify all users being removed have manager_id = current_user->id
+            if ($isProjectManager) {
+                $usersToRemove = User::whereIn('id', $validated['user_ids'])->get();
+                foreach ($usersToRemove as $userToRemove) {
+                    if ($userToRemove->manager_id !== $user->id) {
+                        if ($request->expectsJson()) {
+                            return response()->json([
+                                'success' => false,
+                                'message' => 'You can only remove staff members assigned to you as team lead.'
+                            ], 403);
+                        }
+                        return redirect()->back()->with('error', 'You can only remove staff members assigned to you as team lead.');
+                    }
+                }
+            }
+
+            DB::beginTransaction();
+
+            // Determine who will receive reassigned targets
+            $reassignToUserId = $user->id; // Default to current user (PM or Admin)
+            
+            // For admin removing staff, try to find the Project Manager for the project
+            if ($isAdmin) {
+                $projectManager = $project->users()
+                    ->wherePivot('role', UserRole::PROJECT_MANAGER->value)
+                    ->where('users.id', '!=', $user->id)
+                    ->first();
+                if ($projectManager) {
+                    $reassignToUserId = $projectManager->id;
+                } else {
+                    // If no other PM found, use admin's ID
+                    $reassignToUserId = $user->id;
+                }
+            }
+            // For Project Manager removing their team members, reassign to themselves
+            elseif ($isProjectManager) {
+                $reassignToUserId = $user->id;
+            }
+
+            $removedUserIds = $validated['user_ids'];
+            $targetsReassigned = 0;
+
+            // Reassign StreetlightTask targets
+            foreach ($removedUserIds as $removedUserId) {
+                // Reassign tasks where removed user was engineer
+                $engineerTasks = StreetlightTask::where('project_id', $id)
+                    ->where('engineer_id', $removedUserId)
+                    ->get();
+                
+                foreach ($engineerTasks as $task) {
+                    $task->update(['engineer_id' => $reassignToUserId]);
+                    $targetsReassigned++;
+                }
+
+                // Reassign tasks where removed user was vendor
+                $vendorTasks = StreetlightTask::where('project_id', $id)
+                    ->where('vendor_id', $removedUserId)
+                    ->get();
+                
+                foreach ($vendorTasks as $task) {
+                    $task->update(['vendor_id' => $reassignToUserId]);
+                    $targetsReassigned++;
+                }
+            }
+
+            // Detach users from project
+            $project->users()->detach($removedUserIds);
+
+            Log::info('Staff removed from project', [
+                'project_id' => $id,
+                'user_ids' => $removedUserIds,
+                'targets_reassigned' => $targetsReassigned,
+                'reassigned_to' => $reassignToUserId,
+                'removed_by' => $user->id
+            ]);
+
+            DB::commit();
+
+            $message = count($removedUserIds) . ' staff member(s) removed successfully';
+            if ($targetsReassigned > 0) {
+                $message .= '. ' . $targetsReassigned . ' target(s) reassigned.';
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'targets_reassigned' => $targetsReassigned
+                ]);
+            }
+
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to remove staff from project', [
+                'project_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to remove staff: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to remove staff: ' . $e->getMessage());
+        }
     }
 
     public function destroyTarget($id)

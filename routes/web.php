@@ -35,7 +35,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
-    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name(name: 'export.excel');
+    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
 
     // JICR
     Route::prefix('jicr')
@@ -58,6 +58,8 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
         ->group(function () {
             Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
             Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
+            Route::post('mobile/send-otp', [StaffController::class, 'sendMobileChangeOtp'])->name('mobile.send-otp');
+            Route::post('mobile/verify-otp', [StaffController::class, 'verifyMobileChangeOtp'])->name('mobile.verify-otp');
             Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('change-password');
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
@@ -104,6 +106,11 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
 
     // Vendors
     Route::resource('uservendors', VendorController::class);
+    Route::post('/uservendors/bulk-delete', [VendorController::class, 'bulkDelete'])->name('uservendors.bulkDelete');
+    Route::post('/uservendors/bulk-assign-projects', [VendorController::class, 'bulkAssignProjects'])->name('uservendors.bulkAssignProjects');
+    Route::post('/uservendors/{id}/upload-avatar', [VendorController::class, 'uploadAvatar'])->name('uservendors.uploadAvatar');
+    Route::post('/import-vendors', [VendorController::class, 'import'])->name('import.vendors');
+    Route::get('/vendors/import-format', [VendorController::class, 'importFormat'])->name('vendors.importFormat');
 
     // Projects
     Route::resource('projects', ProjectsController::class);
@@ -111,6 +118,9 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::post('/projects/import', [ProjectsController::class, 'import'])->name('projects.import');
     Route::get('/projects/import/format', [ProjectsController::class, 'downloadFormat'])->name('projects.importFormat');
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
+    Route::post('/projects/{id}/remove-staff', [ProjectsController::class, 'removeStaff'])->name('projects.removeStaff');
+    Route::post('/projects/{id}/assign-vendors', [ProjectsController::class, 'assignUsers'])->name('projects.assignVendors');
+    Route::post('/projects/{id}/remove-vendors', [ProjectsController::class, 'removeStaff'])->name('projects.removeVendors');
     Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
 
     // Sites
@@ -145,7 +155,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::post('settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('updatecategory');
             Route::delete('settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('deletecategory');
 
-            Route::get('edit-city-category', fn() => view('billing.editCityCategory'))->name('editcitycategory');
+            Route::get('edit-city-category', [ConvenienceController::class, 'editCityCategory'])->name('editcitycategory');
             Route::get('allowed-expense/{id}', [ConvenienceController::class, 'editAllowedExpense'])->name('allowedexpense');
             Route::post('update-allowed-expense/{id}', [ConvenienceController::class, 'updateAllowedExpense'])->name('updateallowedexpense');
         });
@@ -155,7 +165,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
     Route::post('/conveyance/bulk-action', [ConvenienceController::class, 'bulkAction'])->name('conveyance.bulkAction');
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
-    Route::get('/view-bills', fn() => view('billing.viewBills'))->name('view.bills');
+    Route::get('/view-bills', [ConvenienceController::class, 'viewBills'])->name('view.bills');
 
     // Inventory
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);

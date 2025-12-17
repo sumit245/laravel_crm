@@ -49,7 +49,7 @@ class StoreController extends Controller
             ]);
 
             $project = Project::with('stores')->findOrFail($projectId);
-            $users   = User::where('role', '!=', 3)->get();
+            $users   = User::where('role', '!=', \App\Enums\UserRole::VENDOR->value)->get();
             // TODO: Also remove role 1
             // Redirect back to the project detail page with updated data
             return redirect()->back()->with('success', 'Store Created Successfully');

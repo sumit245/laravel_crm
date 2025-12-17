@@ -608,9 +608,78 @@ class TaskController extends Controller
     // Fetch Installed Poles based on user role
     public function getInstalledPoles(Request $request)
     {
-        // View uses AJAX to fetch data via getInstalledPolesData() method
-        // No need to build query here as it's not used
-        return view('poles.installed');
+        $query = Pole::with(['task.streetlight', 'task'])
+            ->where('isInstallationDone', 1);
+
+        // Apply URL parameter filters
+        if ($request->filled('project_manager')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('manager_id', $request->project_manager);
+            });
+        }
+
+        if ($request->filled('site_engineer')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('engineer_id', $request->site_engineer);
+            });
+        }
+
+        if ($request->filled('vendor')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                $q->where('vendor_id', $request->vendor);
+            });
+        }
+
+        if ($request->filled('project_id')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('project_id', $request->project_id);
+            });
+        }
+
+        if ($request->filled('panchayat')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('panchayat', $request->panchayat);
+            });
+        }
+
+        if ($request->filled('ward')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('ward', 'like', '%' . $request->ward . '%');
+            });
+        }
+
+        // Apply status filters
+        if ($request->filled('filter_surveyed')) {
+            if ($request->filter_surveyed == '1') {
+                $query->where('isSurveyDone', 1);
+            } elseif ($request->filter_surveyed == '0') {
+                $query->where('isSurveyDone', 0);
+            }
+        }
+
+        if ($request->filled('filter_installed')) {
+            if ($request->filter_installed == '1') {
+                $query->where('isInstallationDone', 1);
+            } elseif ($request->filter_installed == '0') {
+                $query->where('isInstallationDone', 0);
+            }
+        }
+
+        if ($request->filled('filter_billed')) {
+            if ($request->filter_billed == '1') {
+                $query->whereHas('task', function ($q) {
+                    $q->where('billed', 1);
+                });
+            } elseif ($request->filter_billed == '0') {
+                $query->whereHas('task', function ($q) {
+                    $q->where('billed', 0)->orWhereNull('billed');
+                });
+            }
+        }
+
+        $poles = $query->orderBy('complete_pole_number', 'asc')->get();
+
+        return view('poles.installed', compact('poles'));
     }
 
     // AJAX endpoint for DataTables server-side processing

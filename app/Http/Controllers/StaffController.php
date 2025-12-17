@@ -3,10 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Helpers\WhatsappHelper;
+use App\Imports\StaffImport;
 use App\Models\Pole;
-use App\Models\Task;
-use App\Models\StreetlightTask;
 use App\Models\Project;
+use App\Models\StreetlightTask;
+use App\Models\Task;
 use App\Models\User;
 use App\Models\UserCategory;
 use App\Traits\GeneratesUniqueUsername;
@@ -16,9 +18,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use function Laravel\Prompts\confirm;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Imports\StaffImport;
 
 class StaffController extends Controller
 {
@@ -28,6 +28,8 @@ class StaffController extends Controller
      */
     public function index()
     {
+        // Only non-admin staff are listed here for now. This can be extended later
+        // based on UserRole rules from the global auth plan.
         $today = Carbon::today();
         $staff = User::whereIn('role', [
             UserRole::SITE_ENGINEER->value,
@@ -103,11 +105,22 @@ class StaffController extends Controller
             'lastName' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'contactNo' => 'string',
-            'role' => 'string',
+            'role' => 'required|integer',
             'category' => 'nullable|numeric',
+            'department' => 'nullable|string|max:255',
             'address' => 'string|max:255',
             'password' => 'required|string|min:6|confirmed',
             'project_id' => 'required|exists:projects,id',
+            'accountName' => 'nullable|string|max:255',
+            'accountNumber' => 'nullable|string|max:255',
+            'ifsc' => 'nullable|string|max:50',
+            'bankName' => 'nullable|string|max:255',
+            'branch' => 'nullable|string|max:255',
+            'gstNumber' => 'nullable|string|max:50',
+            'pan' => 'nullable|string|max:20',
+            'aadharNumber' => 'nullable|string|max:20',
+            'status' => 'nullable|string|max:50',
+            'disableLogin' => 'nullable|boolean',
         ]);
 
         try {
@@ -139,17 +152,20 @@ class StaffController extends Controller
     public function show($id)
     {
         try {
-            $staff = User::with(['projectManager', 'siteEngineers', 'vendors'])->findOrFail($id);
+            $staff = User::with(['projectManager', 'siteEngineers', 'vendors', 'projects', 'usercategory', 'verticalHead'])
+                ->findOrFail($id);
             $userId = $staff->id;
             $projectId = $staff->project_id;
-            $project = Project::findOrFail($projectId);
+            // Project can now be nullable; handle gracefully instead of failing
+            $project = $projectId ? Project::find($projectId) : null;
 
             $surveyedPolesCount = 0;
             $installedPolesCount = 0;
             $surveyedPoles = 0;
             $installedPoles = 0;
 
-            $isStreetlightProject = ($project->project_type == 1) ? true : false;
+            // If there is no project or project_type, treat as non-streetlight
+            $isStreetlightProject = $project && $project->project_type == 1;
             if ($isStreetlightProject) {
                 $tasks = StreetlightTask::with(['site', 'poles'])
                     ->whereDate('created_at', Carbon::today())
@@ -257,10 +273,21 @@ class StaffController extends Controller
             'lastName' => 'nullable|string|max:25',
             'email' => 'required|email|unique:users,email,' . $staff->id,
             'contactNo' => 'string',
-            'category' => 'nullable|string',
+            'category' => 'nullable|numeric',
+            'department' => 'nullable|string|max:255',
             'address' => 'string|max:255',
             'password' => 'nullable|string|min:6|confirmed',
-            'role' => 'nullable|string',
+            'role' => 'nullable|integer',
+            'accountName' => 'nullable|string|max:255',
+            'accountNumber' => 'nullable|string|max:255',
+            'ifsc' => 'nullable|string|max:50',
+            'bankName' => 'nullable|string|max:255',
+            'branch' => 'nullable|string|max:255',
+            'gstNumber' => 'nullable|string|max:50',
+            'pan' => 'nullable|string|max:20',
+            'aadharNumber' => 'nullable|string|max:20',
+            'status' => 'nullable|string|max:50',
+            'disableLogin' => 'nullable|boolean',
 
         ]);
 
@@ -270,7 +297,9 @@ class StaffController extends Controller
 
         $staff->update($validated);
 
-        return redirect()->route('staff.show', compact('staff'))->with('success', 'Staff updated successfully.');
+        return redirect()
+            ->route('staff.show', $staff->id)
+            ->with('success', 'Staff updated successfully.');
     }
 
     /**
@@ -315,7 +344,13 @@ class StaffController extends Controller
 
     public function updateProfile($id)
     {
-        $user = User::findOrFail($id);
+        // Self-service: restrict to the logged-in user's own profile
+        if ((int) $id !== (int) Auth::id()) {
+            abort(403, 'You are not allowed to view this profile.');
+        }
+
+        $user = Auth::user();
+
         return view('staff.profile', compact('user'));
     }
 
@@ -355,17 +390,119 @@ class StaffController extends Controller
         }
     }
 
+    /**
+     * Initiate mobile number change by sending an OTP over WhatsApp.
+     *
+     * This is a self-service operation and is always scoped to the logged-in user.
+     */
+    public function sendMobileChangeOtp(Request $request)
+    {
+        $user = Auth::user();
 
+        $validated = $request->validate([
+            'new_mobile' => ['required', 'string', 'regex:/^[0-9]{10}$/'],
+        ]);
 
+        $otp = (string) random_int(100000, 999999);
 
+        // Store OTP details in session with a short expiry
+        session([
+            'mobile_change_otp'        => $otp,
+            'mobile_change_mobile'     => $validated['new_mobile'],
+            'mobile_change_expires_at' => now()->addMinutes(10)->toIso8601String(),
+        ]);
+
+        try {
+            WhatsappHelper::sendMobileChangeOtp(
+                $validated['new_mobile'],
+                $otp,
+                $user->name
+            );
+
+            return redirect()
+                ->back()
+                ->with('success', 'OTP has been sent to your new mobile number on WhatsApp.');
+        } catch (\Throwable $e) {
+            Log::error('Failed to send mobile change OTP', [
+                'user_id' => $user->id,
+                'error'   => $e->getMessage(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->with('error', 'Failed to send OTP over WhatsApp. Please try again later.');
+        }
+    }
+
+    /**
+     * Verify the OTP and update the logged-in user's mobile number.
+     */
+    public function verifyMobileChangeOtp(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'otp' => ['required', 'digits:6'],
+        ]);
+
+        $sessionOtp    = session('mobile_change_otp');
+        $sessionMobile = session('mobile_change_mobile');
+        $expiresAt     = session('mobile_change_expires_at');
+
+        if (!$sessionOtp || !$sessionMobile || !$expiresAt) {
+            return redirect()
+                ->back()
+                ->with('error', 'OTP session has expired. Please request a new OTP.');
+        }
+
+        if (now()->greaterThan(Carbon::parse($expiresAt))) {
+            session()->forget(['mobile_change_otp', 'mobile_change_mobile', 'mobile_change_expires_at']);
+
+            return redirect()
+                ->back()
+                ->with('error', 'OTP has expired. Please request a new OTP.');
+        }
+
+        if ($validated['otp'] !== $sessionOtp) {
+            return redirect()
+                ->back()
+                ->with('error', 'Invalid OTP. Please check the code and try again.');
+        }
+
+        // All good: update the user's contact number
+        $user->contactNo = $sessionMobile;
+        $user->save();
+
+        session()->forget(['mobile_change_otp', 'mobile_change_mobile', 'mobile_change_expires_at']);
+
+        return redirect()
+            ->back()
+            ->with('success', 'Your mobile number has been updated successfully.');
+    }
     public function changePassword($id)
     {
+        $authUser = Auth::user();
+
+        // Admins can change any user's password; others can only change their own
+        if ($authUser && UserRole::tryFrom($authUser->role)?->isAdmin() === false && (int) $id !== (int) $authUser->id) {
+            return redirect()
+                ->route('staff.index')
+                ->with('error', 'You are not allowed to change password for this user.');
+        }
+
         $staff = User::findOrFail($id);
         return view('staff.change-password', compact('staff'));
     }
 
     public function updatePassword(Request $request, $id)
     {
+        $authUser = Auth::user();
+        if ($authUser && UserRole::tryFrom($authUser->role)?->isAdmin() === false && (int) $id !== (int) $authUser->id) {
+            return redirect()
+                ->route('staff.index')
+                ->with('error', 'You are not allowed to change password for this user.');
+        }
+
         $request->validate([
             'password' => 'required|min:8|confirmed',
         ]);
@@ -374,8 +511,9 @@ class StaffController extends Controller
             'password' => bcrypt($request->password)
         ]);
 
-
-        return redirect()->route('staff.index')->with('success', 'Password updated successfully.');
+        return redirect()
+            ->route('staff.index')
+            ->with('success', 'Password updated successfully.');
     }
 
     public function showSurveyedPoles()

@@ -183,4 +183,50 @@ class User extends Authenticatable
     {
         return $this->hasMany(\App\Models\StreetlightTask::class, 'vendor_id');
     }
+
+    /**
+     * Get all assigned projects for this user (from pivot table)
+     */
+    public function getAssignedProjects()
+    {
+        return $this->projects()->get();
+    }
+
+    /**
+     * Assign user to a project (syncs pivot table)
+     */
+    public function assignToProject($projectId)
+    {
+        $this->projects()->syncWithoutDetaching([$projectId]);
+        
+        // Update primary project_id if not set
+        if (!$this->project_id) {
+            $this->update(['project_id' => $projectId]);
+        }
+    }
+
+    /**
+     * Remove user from a project
+     */
+    public function removeFromProject($projectId)
+    {
+        $this->projects()->detach($projectId);
+        
+        // If this was the primary project, set primary to first remaining project
+        if ($this->project_id == $projectId) {
+            $remainingProjects = $this->projects()->first();
+            $this->update(['project_id' => $remainingProjects ? $remainingProjects->id : null]);
+        }
+    }
+
+    /**
+     * Replace all project assignments with new ones
+     */
+    public function replaceProjects(array $projectIds)
+    {
+        $this->projects()->sync($projectIds);
+        
+        // Set primary project_id to first project
+        $this->update(['project_id' => !empty($projectIds) ? $projectIds[0] : null]);
+    }
 }

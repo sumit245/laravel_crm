@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API;
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -20,8 +21,8 @@ class VendorController extends Controller
 
     public function index()
     {
-        // Retrieve all vendors (users with roleId of 3)
-        $vendors = User::where('role', 3)->get();
+        // Retrieve all vendors (users with vendor role)
+        $vendors = User::where('role', UserRole::VENDOR->value)->get();
 
         if ($vendors->isEmpty()) {
             return response()->json([
@@ -49,7 +50,7 @@ class VendorController extends Controller
                 'status' => 'active', // Default status
                 'address' => $request->address,
                 'contactNo' => $request->contactNo,
-                'role' => 3, // Vendor role
+                'role' => UserRole::VENDOR->value,
                 'disableLogin' => 0, // Default
             ]);
 
@@ -75,7 +76,7 @@ class VendorController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user || $user->role != 3) {
+        if (!$user || $user->role != UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
@@ -96,7 +97,7 @@ class VendorController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user || $user->role != 3) {
+        if (!$user || $user->role != UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
@@ -129,7 +130,7 @@ class VendorController extends Controller
         // Find the vendor
         $user = User::find($id);
 
-        if (!$user || $user->role != 3) {
+        if (!$user || $user->role != UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
@@ -169,7 +170,7 @@ class VendorController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user || $user->role != 3) {
+        if (!$user || $user->role != UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);

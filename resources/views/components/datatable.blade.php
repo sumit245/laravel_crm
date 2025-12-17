@@ -213,7 +213,9 @@
             margin-bottom: 0;
         }
 
+        /* Modern sorting indicators - clean triangles */
         .datatable-wrapper .table thead th {
+            position: relative;
             background-color: #f8f9fa;
             border-bottom: 2px solid #dee2e6;
             font-weight: 600;
@@ -228,6 +230,124 @@
             line-height: 1.2 !important;
             vertical-align: middle !important;
             box-sizing: border-box !important;
+            cursor: pointer;
+        }
+
+        /* Hide ALL DataTables default icons/spans added to headers - MAXIMUM SPECIFICITY */
+        .datatable-wrapper .table thead th>span,
+        .datatable-wrapper .table thead th>i,
+        .datatable-wrapper .table thead th>.dtr-details,
+        .datatable-wrapper .table thead th .dt-orderable-asc,
+        .datatable-wrapper .table thead th .dt-orderable-desc,
+        .datatable-wrapper .table thead th .dt-orderable-none,
+        table.dataTable thead th>span,
+        table.dataTable thead th>i,
+        table.dataTable thead th::before,
+        #{{ $id }} thead th>span,
+        #{{ $id }} thead th>i,
+        #{{ $id }} thead th::before {
+            display: none !important;
+            content: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Hide DataTables default column visibility icons and any right-hand icons - ALL VARIANTS */
+        .datatable-wrapper .table thead th::before,
+        .datatable-wrapper .table thead th.sorting::before,
+        .datatable-wrapper .table thead th.sorting_asc::before,
+        .datatable-wrapper .table thead th.sorting_desc::before,
+        table.dataTable thead th::before,
+        table.dataTable thead th.sorting::before,
+        table.dataTable thead th.sorting_asc::before,
+        table.dataTable thead th.sorting_desc::before,
+        #{{ $id }} thead th::before,
+        #{{ $id }} thead th.sorting::before,
+        #{{ $id }} thead th.sorting_asc::before,
+        #{{ $id }} thead th.sorting_desc::before {
+            display: none !important;
+            content: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Remove any icons/spans added by DataTables on the right side - ALL SELECTORS */
+        .datatable-wrapper .table thead th .dtr-details,
+        .datatable-wrapper .table thead th>span:not(.sorting-indicator),
+        .datatable-wrapper .table thead th>i:last-child,
+        .datatable-wrapper .table thead th .dt-orderable-asc,
+        .datatable-wrapper .table thead th .dt-orderable-desc,
+        .datatable-wrapper .table thead th .dt-orderable-none,
+        table.dataTable thead th .dtr-details,
+        table.dataTable thead th>span,
+        table.dataTable thead th>i,
+        #{{ $id }} thead th .dtr-details,
+        #{{ $id }} thead th>span,
+        #{{ $id }} thead th>i {
+            display: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Hide DataTables default sorting icons that appear on the right - ALL VARIANTS */
+        .datatable-wrapper .table thead th.sorting:before,
+        .datatable-wrapper .table thead th.sorting_asc:before,
+        .datatable-wrapper .table thead th.sorting_desc:before,
+        table.dataTable thead th.sorting:before,
+        table.dataTable thead th.sorting_asc:before,
+        table.dataTable thead th.sorting_desc:before,
+        #{{ $id }} thead th.sorting:before,
+        #{{ $id }} thead th.sorting_asc:before,
+        #{{ $id }} thead th.sorting_desc:before {
+            display: none !important;
+            content: none !important;
+            visibility: hidden !important;
+        }
+
+        /* Sorting icons container - padding on left for arrow */
+        .datatable-wrapper .table thead th.sorting,
+        .datatable-wrapper .table thead th.sorting_asc,
+        .datatable-wrapper .table thead th.sorting_desc {
+            padding-left: 1.5rem !important;
+            padding-right: 0.5rem !important;
+        }
+
+        /* Sorting arrows container - positioned on LEFT side */
+        .datatable-wrapper .table thead th.sorting::after,
+        .datatable-wrapper .table thead th.sorting_asc::after,
+        .datatable-wrapper .table thead th.sorting_desc::after {
+            position: absolute;
+            left: 0.5rem;
+            top: 50%;
+            transform: translateY(-50%);
+            display: block;
+            opacity: 0.3;
+            font-size: 0.8rem;
+            font-family: 'Material Design Icons';
+            font-weight: normal;
+        }
+
+        /* Unsorted state - show chevron-down (neutral indicator) */
+        .datatable-wrapper .table thead th.sorting::after {
+            content: "\F0045";
+            /* mdi-chevron-down */
+        }
+
+        /* Ascending sort icon (upward chevron) */
+        .datatable-wrapper .table thead th.sorting_asc::after {
+            content: "\F005D";
+            /* mdi-chevron-up */
+            opacity: 1;
+        }
+
+        /* Descending sort icon (downward chevron) */
+        .datatable-wrapper .table thead th.sorting_desc::after {
+            content: "\F0045";
+            /* mdi-chevron-down */
+            opacity: 1;
+        }
+
+        /* No sort indicator for checkbox column */
+        .datatable-wrapper .table thead th.select-checkbox::after,
+        .datatable-wrapper .table thead th.no-sort::after {
+            display: none !important;
         }
 
         .datatable-wrapper .table tbody tr {
@@ -237,6 +357,7 @@
             max-height: 32px !important;
             line-height: 1.2 !important;
             box-sizing: border-box !important;
+            will-change: background-color;
         }
 
         .datatable-wrapper .table tbody tr:hover {
@@ -279,20 +400,73 @@
         .datatable-wrapper .btn {
             border-radius: 4px;
             font-weight: 500;
-            transition: all 0.2s ease;
+            transition: box-shadow 0.15s ease;
             display: inline-flex;
             align-items: center;
             gap: 4px;
+            will-change: box-shadow;
         }
 
         .datatable-wrapper .btn:hover {
-            transform: translateY(-1px);
+            /* Only animate box-shadow to prevent layout shifts and flickering */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
 
         .datatable-wrapper .btn-icon {
             padding: 6px 10px;
             margin: 0 2px;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            min-width: 30px !important;
+            opacity: 1 !important;
+            visibility: visible !important;
+        }
+
+        .datatable-wrapper .btn-icon i {
+            font-size: 1rem !important;
+        }
+
+        /* Ensure delete buttons specifically are visible */
+        .datatable-wrapper .btn-danger {
+            background-color: #dc3545 !important;
+            border-color: #dc3545 !important;
+            color: white !important;
+        }
+
+        .datatable-wrapper .btn-danger:hover {
+            background-color: #c82333 !important;
+            border-color: #bd2130 !important;
+        }
+
+        /* Ensure action column is always visible */
+        .datatable-wrapper .table td:last-child,
+        .datatable-wrapper .table th:last-child {
+            display: table-cell !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+        }
+
+        /* Ensure action buttons have proper spacing and don't stretch column - GENERAL RULE */
+        .datatable-wrapper .table td:last-child,
+        .datatable-wrapper .table th:last-child {
+            width: 120px !important;
+            min-width: 120px !important;
+            max-width: 120px !important;
+            white-space: nowrap !important;
+            overflow: visible !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+        }
+
+        .datatable-wrapper .table td:last-child .btn-icon {
+            margin: 0 2px !important;
+            padding: 6px 10px !important;
+            display: inline-flex !important;
+            flex-shrink: 0 !important;
+            width: auto !important;
+            min-width: auto !important;
+            max-width: none !important;
         }
 
         .datatable-wrapper .select-all-checkbox,
@@ -525,6 +699,82 @@
             content: "-";
             background-color: #dc3545;
         }
+
+        /* Hide default DataTables search box */
+        .dataTables_filter {
+            display: none !important;
+        }
+
+        /* Style custom search box */
+        .datatable-wrapper .input-group {
+            width: 100%;
+            max-width: 100%;
+        }
+
+        @media (min-width: 768px) {
+            .datatable-wrapper .input-group {
+                max-width: 400px;
+            }
+        }
+
+        .datatable-wrapper .form-control {
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .datatable-wrapper .input-group-text {
+            background-color: #e9ecef;
+            border: 1px solid #ced4da;
+            border-radius: 0.25rem 0 0 0.25rem;
+            padding: 0.375rem 0.75rem;
+        }
+
+        /* Fix pagination flickering */
+        .dataTables_paginate {
+            transition: none !important;
+            -webkit-transition: none !important;
+        }
+
+        .dataTables_paginate .paginate_button {
+            transition: none !important;
+            -webkit-transition: none !important;
+            cursor: pointer !important;
+        }
+
+        .dataTables_paginate .paginate_button:hover {
+            transition: none !important;
+            -webkit-transition: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background: #007bff !important;
+            color: white !important;
+            border: 1px solid #007bff !important;
+            transition: none !important;
+            -webkit-transition: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background: #e9ecef !important;
+            color: #0056b3 !important;
+            border: 1px solid #dee2e6 !important;
+            transition: none !important;
+            -webkit-transition: none !important;
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {
+            cursor: default !important;
+            color: #6c757d !important;
+            border: 1px solid transparent !important;
+            background: transparent !important;
+            transition: none !important;
+            -webkit-transition: none !important;
+        }
     </style>
 
     <!-- CRITICAL: Inline style to force 32px height - Highest priority -->
@@ -607,10 +857,23 @@
             user-select: none;
         }
 
-        /* Disable sorting indicator on checkbox column */
+        /* Disable sorting indicator on checkbox column - but allow checkbox clicks */
         #{{ $id }} thead th.select-checkbox,
         #{{ $id }} thead th.no-sort {
             cursor: default !important;
+        }
+
+        /* Ensure checkbox is always clickable */
+        #{{ $id }} thead th.select-checkbox input[type="checkbox"],
+        #{{ $id }} thead th.select-checkbox label,
+        #{{ $id }} thead th.select-checkbox {
+            cursor: pointer !important;
+            pointer-events: auto !important;
+        }
+
+        /* Prevent sorting on checkbox column header click (except checkbox) */
+        #{{ $id }} thead th.select-checkbox {
+            position: relative;
         }
 
         #{{ $id }} thead th.select-checkbox:before,
@@ -618,6 +881,72 @@
         #{{ $id }} thead th.no-sort:before,
         #{{ $id }} thead th.no-sort:after {
             display: none !important;
+        }
+
+        /* Prevent sorting arrows on checkbox column */
+        #{{ $id }} thead th.select-checkbox.sorting:before,
+        #{{ $id }} thead th.select-checkbox.sorting:after,
+        #{{ $id }} thead th.select-checkbox.sorting_asc:before,
+        #{{ $id }} thead th.select-checkbox.sorting_asc:after,
+        #{{ $id }} thead th.select-checkbox.sorting_desc:before,
+        #{{ $id }} thead th.select-checkbox.sorting_desc:after {
+            display: none !important;
+        }
+
+        /* Fix column width distortion - use auto layout for better flexibility */
+        #{{ $id }} {
+            table-layout: auto !important;
+            width: 100% !important;
+        }
+
+        /* Set default column widths and text truncation */
+        #{{ $id }} thead th,
+        #{{ $id }} tbody td {
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            white-space: nowrap !important;
+        }
+
+        /* Ensure checkbox column has fixed width */
+        #{{ $id }} thead th.select-checkbox,
+        #{{ $id }} tbody td:first-child {
+            width: 30px !important;
+            min-width: 30px !important;
+            max-width: 30px !important;
+        }
+
+        /* Ensure actions column has fixed width and doesn't stretch - MAXIMUM SPECIFICITY */
+        #{{ $id }} thead th:last-child,
+        #{{ $id }} tbody td:last-child,
+        table#{{ $id }} thead th:last-child,
+        table#{{ $id }} tbody td:last-child,
+        .datatable-wrapper #{{ $id }} thead th:last-child,
+        .datatable-wrapper #{{ $id }} tbody td:last-child {
+            width: 120px !important;
+            min-width: 120px !important;
+            max-width: 120px !important;
+            white-space: nowrap !important;
+            text-align: center !important;
+            padding: 4px 8px !important;
+            box-sizing: border-box !important;
+        }
+
+        /* Ensure action buttons don't stretch the column */
+        #{{ $id }} tbody td:last-child .btn-icon,
+        table#{{ $id }} tbody td:last-child .btn-icon,
+        .datatable-wrapper #{{ $id }} tbody td:last-child .btn-icon {
+            display: inline-flex !important;
+            flex-shrink: 0 !important;
+            margin: 0 2px !important;
+            padding: 6px 10px !important;
+            min-width: auto !important;
+            max-width: none !important;
+            width: auto !important;
+        }
+
+        /* Address column should wrap and truncate (if it's not the actions column) */
+        #{{ $id }} tbody td:not(:last-child):not(:first-child) {
+            max-width: none !important;
         }
     </style>
 @endpush
@@ -634,6 +963,7 @@
                 try {
                     // Count only checked checkboxes, not DataTables selected rows
                     const checkedCount = $(tableId + ' tbody .row-checkbox:checked').length;
+
                     if (checkedCount > 0) {
                         $('#bulkActions').slideDown(200);
                         $('#selectedCount').text(checkedCount);
@@ -660,6 +990,26 @@
                 }
             }
 
+            // Debounce function to prevent rapid firing of events
+            function debounce(func, wait) {
+                let timeout;
+                return function executedFunction(...args) {
+                    const later = () => {
+                        clearTimeout(timeout);
+                        func(...args);
+                    };
+                    clearTimeout(timeout);
+                    timeout = setTimeout(later, wait);
+                };
+            }
+
+            // Debounced versions of update functions
+            const debouncedUpdateBulkActions = debounce(updateBulkActions, 50);
+            const debouncedUpdateSelectAllState = debounce(updateSelectAllState, 50);
+
+            // Track if pagination has been moved to prevent repeated DOM manipulation
+            let paginationMoved = false;
+
             function updatePaginationInfo() {
                 if (!table || typeof table.page === 'undefined') return;
                 try {
@@ -670,113 +1020,102 @@
                         infoElement.text(text).show();
                     }
 
-                    // Move pagination to custom container and ensure proper styling
-                    setTimeout(function() {
-                        const defaultPagination = $(tableId + '_wrapper').find('.dataTables_paginate');
-                        if (defaultPagination.length) {
-                            defaultPagination.appendTo('#' + '{{ $id }}' +
-                                '_pagination_wrapper');
-                            // Ensure pagination is visible
-                            const paginationWrapper = $('#' + '{{ $id }}' +
-                                '_pagination_wrapper');
-                            paginationWrapper.show();
-
-                            // Force proper styling on pagination buttons
-                            paginationWrapper.find('.paginate_button, a.paginate_button').each(function() {
-                                $(this).css({
-                                    'display': 'inline-block',
-                                    'margin': '0 2px',
-                                    'text-decoration': 'none',
-                                    'border': '1px solid #dee2e6',
-                                    'border-radius': '4px',
-                                    'padding': '6px 12px',
-                                    'background': '#fff',
-                                    'color': '#495057',
-                                    'min-width': '36px',
-                                    'text-align': 'center'
-                                });
-                            });
-                        } else {
-                            // If pagination doesn't exist, check if we need it
-                            const info = table.page.info();
-                            if (info.pages > 1) {
-                                // Force DataTables to render pagination
-                                table.draw(false);
+                    // Move pagination to custom container ONLY ONCE to prevent flickering
+                    if (!paginationMoved) {
+                        setTimeout(function() {
+                            const defaultPagination = $(tableId + '_wrapper').find('.dataTables_paginate');
+                            if (defaultPagination.length && defaultPagination.parent().attr('id') !==
+                                '{{ $id }}_pagination_wrapper') {
+                                defaultPagination.appendTo('#' + '{{ $id }}' +
+                                    '_pagination_wrapper');
+                                const paginationWrapper = $('#' + '{{ $id }}' +
+                                    '_pagination_wrapper');
+                                paginationWrapper.show();
+                                paginationMoved = true;
                             }
-                        }
-                    }, 100);
-
-                    // Also try after a longer delay to catch late renders
-                    setTimeout(function() {
-                        const defaultPagination = $(tableId + '_wrapper').find('.dataTables_paginate');
-                        if (defaultPagination.length) {
-                            defaultPagination.appendTo('#' + '{{ $id }}' +
-                                '_pagination_wrapper');
-                            const paginationWrapper = $('#' + '{{ $id }}' +
-                                '_pagination_wrapper');
-                            paginationWrapper.show();
-
-                            // Force proper styling on pagination buttons
-                            paginationWrapper.find('.paginate_button, a.paginate_button').each(function() {
-                                $(this).css({
-                                    'display': 'inline-block',
-                                    'margin': '0 2px',
-                                    'text-decoration': 'none',
-                                    'border': '1px solid #dee2e6',
-                                    'border-radius': '4px',
-                                    'padding': '6px 12px',
-                                    'background': '#fff',
-                                    'color': '#495057',
-                                    'min-width': '36px',
-                                    'text-align': 'center'
-                                });
-                            });
-                        }
-                    }, 500);
+                        }, 100);
+                    }
                 } catch (e) {
                     // Silently fail if table not ready
                 }
             }
 
-            // Function to force 32px height on table elements - SIMPLIFIED to prevent infinite loops
-            var isApplyingStyles = false; // Flag to prevent infinite loops
-            function forceTableHeight32px() {
-                if (isApplyingStyles) return; // Prevent recursive calls
-                isApplyingStyles = true;
-
-                try {
-                    $(tableId + ' thead th, ' + tableId + ' tbody td, ' + tableId + ' tbody tr').each(function() {
-                        var el = this;
-                        // Use setProperty with important flag - most reliable
-                        el.style.setProperty('height', '32px', 'important');
-                        el.style.setProperty('min-height', '32px', 'important');
-                        el.style.setProperty('max-height', '32px', 'important');
-                        el.style.setProperty('padding-top', '4px', 'important');
-                        el.style.setProperty('padding-bottom', '4px', 'important');
-                        el.style.setProperty('padding-left', '8px', 'important');
-                        el.style.setProperty('padding-right', '8px', 'important');
-                        el.style.setProperty('line-height', '1.2', 'important');
-                        el.style.setProperty('box-sizing', 'border-box', 'important');
-                        el.style.setProperty('margin', '0', 'important');
-                        el.style.setProperty('vertical-align', 'middle', 'important');
-                    });
-                } finally {
-                    isApplyingStyles = false;
-                }
-            }
-
-            // Remove any completely empty rows before DataTables initializes (prevents ghost/blank rows)
+            // Remove any completely empty rows BEFORE DataTables initializes (prevents ghost/blank rows)
+            // This must run synchronously before DataTables initialization
             $(tableId + ' tbody tr').each(function() {
-                if ($(this).text().trim() === '') {
-                    $(this).remove();
+                const $row = $(this);
+                const $cells = $row.find('td');
+                let isEmpty = true;
+
+                // Check each cell for content
+                $cells.each(function() {
+                    const cellText = $(this).text().trim();
+                    const hasCheckbox = $(this).find('.row-checkbox').length > 0;
+                    const hasInput = $(this).find('input, select, textarea').length > 0;
+                    const hasContent = cellText !== '' || hasCheckbox || hasInput;
+
+                    if (hasContent) {
+                        isEmpty = false;
+                        return false; // break loop
+                    }
+                });
+
+                // Remove completely empty rows
+                if (isEmpty && $cells.length > 0) {
+                    $row.remove();
                 }
             });
 
             table = $(tableId).DataTable({
-                dom: "<'row'<'col-sm-12'tr>><'row'<'col-sm-12'p>>",
-                scrollX: true,
-                scrollCollapse: true,
+                dom: "<'row'<'col-sm-12'lf>>" + // Length menu and search box
+                    "<'row'<'col-sm-12'tr>>" + // Table
+                    "<'row'<'col-sm-5'i><'col-sm-7'p>>", // Info and pagination
+                scrollX: false,
+                scrollCollapse: false,
                 autoWidth: false,
+                fixedColumns: false,
+                columnDefs: [
+                    @if ($bulkDeleteEnabled)
+                        {
+                            orderable: false,
+                            searchable: false,
+                            targets: 0,
+                            className: 'select-checkbox no-export no-colvis no-sort',
+                            width: '30px'
+                        },
+                    @endif
+                    @foreach ($columns as $index => $column)
+                        @if (isset($column['width']) || (isset($column['orderable']) && !$column['orderable']))
+                            {
+                                targets: {{ $bulkDeleteEnabled ? $index + 1 : $index }},
+                                @if (isset($column['width']))
+                                    width: '{{ $column['width'] }}',
+                                @endif
+                                @if (isset($column['orderable']) && !$column['orderable'])
+                                    orderable: false,
+                                @endif
+                                @if (isset($column['searchable']) && !$column['searchable'])
+                                    searchable: false,
+                                @endif
+                            },
+                        @endif
+                    @endforeach {
+                        orderable: false,
+                        searchable: false,
+                        targets: -1,
+                        className: 'text-center no-export',
+                        width: '120px',
+                        createdCell: function(td, cellData, rowData, row, col) {
+                            $(td).css({
+                                'width': '120px',
+                                'min-width': '120px',
+                                'max-width': '120px',
+                                'white-space': 'nowrap',
+                                'text-align': 'center'
+                            });
+                        }
+                    }
+                ],
                 buttons: [
                     @if ($exportEnabled)
                         {
@@ -852,65 +1191,209 @@
                         previous: "Previous"
                     }
                 },
-                columnDefs: [
-                    @if ($bulkDeleteEnabled)
-                        {
-                            orderable: false,
-                            searchable: false,
-                            targets: 0,
-                            className: 'select-checkbox no-export no-colvis no-sort'
-                        },
-                    @endif {
-                        orderable: false,
-                        targets: -1,
-                        className: 'text-center no-export'
-                    }
-                ],
                 drawCallback: function() {
+                    // Remove any DataTables default icons that were added dynamically on every draw
+                    $(tableId + ' thead th').each(function() {
+                        var $th = $(this);
+                        // Remove any spans, icons, or other elements added by DataTables
+                        $th.find(
+                            'span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none'
+                            ).remove();
+                    });
+
+                    // Enforce actions column width on every draw to prevent stretching
+                    var $actionsHeader = $(tableId + ' thead th:last-child');
+                    var $actionsCells = $(tableId + ' tbody td:last-child');
+                    $actionsHeader.css({
+                        'width': '120px',
+                        'min-width': '120px',
+                        'max-width': '120px'
+                    });
+                    $actionsCells.css({
+                        'width': '120px',
+                        'min-width': '120px',
+                        'max-width': '120px',
+                        'white-space': 'nowrap'
+                    });
+
                     // Use setTimeout to ensure table is fully initialized
                     setTimeout(function() {
                         if (table && typeof table.page !== 'undefined') {
-                            updateBulkActions();
-                            updateSelectAllState();
-                            updatePaginationInfo();
-                            // Force 32px height after every draw - but only once per draw cycle
-                            if (!isApplyingStyles) {
-                                forceTableHeight32px();
+                            debouncedUpdateBulkActions();
+                            debouncedUpdateSelectAllState();
+                            // Only update pagination info text, not DOM manipulation
+                            const info = table.page.info();
+                            const text =
+                                `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
+                            const infoElement = $('#' + '{{ $id }}' + '_info');
+                            if (infoElement.length) {
+                                infoElement.text(text);
                             }
                         }
                     }, 0);
-                    $('[data-toggle="tooltip"]').tooltip();
+
+                    // Initialize tooltips only if not already initialized to prevent flickering
+                    $(tableId + ' [data-toggle="tooltip"]').each(function() {
+                        if (!$(this).data('bs.tooltip')) {
+                            $(this).tooltip();
+                        }
+                    });
                 },
-                initComplete: function() {
-                    // Force 32px height after initialization
+                initComplete: function(settings) {
+                    // Remove any DataTables default icons that were added dynamically
+                    $(tableId + ' thead th').each(function() {
+                        var $th = $(this);
+                        // Remove any spans, icons, or other elements added by DataTables
+                        $th.find(
+                            'span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none'
+                            ).remove();
+                        // Remove any ::before pseudo-element content by adding a class
+                        $th.addClass('custom-sort-header');
+                    });
+
+                    // Only run once to prevent blinking
+                    if (window['datatableInitComplete_{{ $id }}']) return;
+                    // Remove any empty rows DataTables might have added
+                    $(tableId + ' tbody tr').each(function() {
+                        const $row = $(this);
+                        const $cells = $row.find('td');
+                        let isEmpty = true;
+                        $cells.each(function() {
+                            const cellText = $(this).text().trim();
+                            const hasCheckbox = $(this).find('.row-checkbox').length >
+                                0;
+                            const hasInput = $(this).find('input, select, textarea')
+                                .length > 0;
+                            if (cellText !== '' || hasCheckbox || hasInput) {
+                                isEmpty = false;
+                                return false;
+                            }
+                        });
+                        if (isEmpty && $cells.length > 0) {
+                            $row.remove();
+                        }
+                    });
+
+                    // Apply column widths from column definitions
+                    @foreach ($columns as $index => $column)
+                        @if (isset($column['width']))
+                            var colIndex = {{ $bulkDeleteEnabled ? $index + 1 : $index }};
+                            var $th = $(tableId + ' thead th').eq(colIndex);
+                            var $tds = $(tableId + ' tbody td:nth-child(' + (colIndex + 1) + ')');
+                            var widthValue = '{{ $column['width'] }}';
+
+                            if ($th.length && widthValue) {
+                                // Apply width - percentages work better with auto layout
+                                $th.css('width', widthValue);
+                                $tds.css('width', widthValue);
+
+                                // For pixel values, also set min/max
+                                if (widthValue.includes('px')) {
+                                    $th.css('min-width', widthValue);
+                                    $th.css('max-width', widthValue);
+                                    $tds.css('min-width', widthValue);
+                                    $tds.css('max-width', widthValue);
+                                }
+                            }
+                        @endif
+                    @endforeach
+
+                    // Force actions column to maintain fixed width
+                    var $actionsHeader = $(tableId + ' thead th:last-child');
+                    var $actionsCells = $(tableId + ' tbody td:last-child');
+                    $actionsHeader.css({
+                        'width': '120px',
+                        'min-width': '120px',
+                        'max-width': '120px'
+                    });
+                    $actionsCells.css({
+                        'width': '120px',
+                        'min-width': '120px',
+                        'max-width': '120px',
+                        'white-space': 'nowrap'
+                    });
+
+                    // Force column adjustment after width application
                     setTimeout(function() {
-                        forceTableHeight32px();
-                        updatePaginationInfo();
-                        table.columns.adjust();
+                        if (table && table.columns) {
+                            // Re-enforce actions column width after adjustment
+                            $actionsHeader.css({
+                                'width': '120px',
+                                'min-width': '120px',
+                                'max-width': '120px'
+                            });
+                            $actionsCells.css({
+                                'width': '120px',
+                                'min-width': '120px',
+                                'max-width': '120px',
+                                'white-space': 'nowrap'
+                            });
+                            table.columns.adjust().draw(false);
+                        }
                     }, 100);
+
+                    // Initial pagination setup - move pagination once
+                    setTimeout(function() {
+                        const defaultPagination = $(tableId + '_wrapper').find(
+                            '.dataTables_paginate');
+                        if (defaultPagination.length && defaultPagination.parent().attr(
+                            'id') !== '{{ $id }}_pagination_wrapper') {
+                            defaultPagination.appendTo('#' + '{{ $id }}' +
+                                '_pagination_wrapper');
+                            const paginationWrapper = $('#' + '{{ $id }}' +
+                                '_pagination_wrapper');
+                            paginationWrapper.show();
+                            paginationMoved = true;
+                        }
+
+                        // Update pagination info text
+                        if (table && typeof table.page !== 'undefined') {
+                            const info = table.page.info();
+                            const text =
+                                `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
+                            const infoElement = $('#' + '{{ $id }}' + '_info');
+                            if (infoElement.length) {
+                                infoElement.text(text);
+                            }
+                        }
+                    }, 200);
+
+                    window['datatableInitComplete_{{ $id }}'] = true;
                 }
             });
 
-            // Initial pagination info update
+            // Initial pagination info update - only text, no DOM manipulation
             setTimeout(function() {
-                updatePaginationInfo();
-                if (table && table.columns) {
-                    table.columns.adjust();
+                if (table && typeof table.page !== 'undefined') {
+                    const info = table.page.info();
+                    const text = `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
+                    const infoElement = $('#' + '{{ $id }}' + '_info');
+                    if (infoElement.length) {
+                        infoElement.text(text);
+                    }
+                    if (table.columns) {
+                        table.columns.adjust();
+                    }
                 }
-            }, 200);
-
+            }, 300);
             // Custom length menu
             $('#' + '{{ $id }}' + '_length').on('change', function() {
                 table.page.len($(this).val()).draw();
                 setTimeout(function() {
-                    updatePaginationInfo();
+                    // Only update text, no DOM manipulation
+                    if (table && typeof table.page !== 'undefined') {
+                        const info = table.page.info();
+                        const text =
+                            `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
+                        const infoElement = $('#' + '{{ $id }}' + '_info');
+                        if (infoElement.length) {
+                            infoElement.text(text);
+                        }
+                    }
                 }, 100);
             });
 
-            // Custom search
-            $('#' + '{{ $id }}' + '_search').on('keyup', function() {
-                table.search($(this).val()).draw();
-            });
+            // Custom search - using enhanced version below
 
             // Custom column visibility with localStorage persistence
             // Use a versioned storage key so structural changes to the table
@@ -966,30 +1449,57 @@
                 e.preventDefault();
                 e.stopPropagation();
 
-                // Get button position for dropdown placement
+                // Get button position for dropdown placement - use getBoundingClientRect for viewport coordinates
                 var $button = $(this);
-                var buttonOffset = $button.offset();
-                var buttonWidth = $button.outerWidth();
-                var buttonHeight = $button.outerHeight();
+                var buttonRect = this.getBoundingClientRect();
+                var buttonWidth = buttonRect.width;
+                var buttonHeight = buttonRect.height;
+                var dropdownWidth = 200; // dropdown width
 
                 // Remove existing custom dropdown if any
                 $('.custom-colvis-dropdown').remove();
 
-                // Calculate dropdown position - align to right edge of button
-                var dropdownLeft = buttonOffset.left + buttonWidth - 200; // 200px is dropdown width
-                var dropdownTop = buttonOffset.top + buttonHeight + 5;
+                // Calculate dropdown position relative to viewport (for position: fixed)
+                // Position dropdown below button, aligned to right edge
+                var dropdownLeft = buttonRect.right - dropdownWidth;
+                var dropdownTop = buttonRect.bottom + 5; // 5px gap below button
+                var estimatedDropdownHeight = 300; // approximate height
 
-                // Ensure dropdown doesn't go off screen
-                if (dropdownLeft < 10) dropdownLeft = 10;
-                if (dropdownLeft + 200 > $(window).width() - 10) {
-                    dropdownLeft = $(window).width() - 210;
+                // Ensure dropdown doesn't go off right edge of screen
+                if (dropdownLeft < 10) {
+                    dropdownLeft = buttonRect.left; // Align to left edge of button if too far left
                 }
 
-                // Create custom dropdown
+                // Ensure dropdown doesn't go off left edge of screen
+                if (dropdownLeft < 10) {
+                    dropdownLeft = 10;
+                }
+
+                // Ensure dropdown doesn't go off right edge of screen
+                if (dropdownLeft + dropdownWidth > window.innerWidth - 10) {
+                    dropdownLeft = window.innerWidth - dropdownWidth - 10;
+                }
+
+                // Check if dropdown would go off bottom of screen
+                if (dropdownTop + estimatedDropdownHeight > window.innerHeight - 10) {
+                    // Show above button instead
+                    dropdownTop = buttonRect.top - estimatedDropdownHeight - 5;
+                    if (dropdownTop < 10) {
+                        dropdownTop = 10; // If still doesn't fit, show at top
+                    }
+                }
+
+                // Ensure dropdown doesn't go off top of screen
+                if (dropdownTop < 10) {
+                    dropdownTop = 10;
+                }
+
+                // Create custom dropdown with viewport-relative positioning
                 var $dropdown = $(
                     '<div class="custom-colvis-dropdown dropdown-menu show position-fixed" style="top: ' +
                     dropdownTop + 'px; left: ' + dropdownLeft +
-                    'px; min-width: 200px; z-index: 1050;"></div>');
+                    'px; min-width: ' + dropdownWidth + 'px; max-width: ' + dropdownWidth +
+                    'px; z-index: 1050;"></div>');
 
                 // Add column checkboxes
                 table.columns().every(function() {
@@ -1059,37 +1569,6 @@
                 loadColumnVisibility();
             }, 500);
 
-            // Force 32px height after table initialization - Limited attempts to prevent performance issues
-            setTimeout(function() {
-                forceTableHeight32px();
-            }, 100);
-
-            setTimeout(function() {
-                forceTableHeight32px();
-            }, 500);
-
-            setTimeout(function() {
-                forceTableHeight32px();
-            }, 1000);
-
-            // Also force on every draw event - but with protection against loops
-            table.on('draw', function() {
-                setTimeout(function() {
-                    if (!isApplyingStyles) {
-                        forceTableHeight32px();
-                    }
-                }, 50);
-            });
-
-            // Force on page change
-            table.on('page', function() {
-                setTimeout(function() {
-                    if (!isApplyingStyles) {
-                        forceTableHeight32px();
-                    }
-                }, 100);
-            });
-
             // Export button handlers
             @if ($exportEnabled)
                 $('#' + '{{ $id }}' + '_excel').on('click', function() {
@@ -1109,25 +1588,26 @@
 
 
             @if ($bulkDeleteEnabled)
-                // Select All functionality - FIXED
-                $(document).on('click', tableId + ' thead #{{ $id }}_selectAll', function() {
-                    const isChecked = $(this).is(':checked');
-                    const currentPageRows = table.rows({
-                        page: 'current'
-                    }).nodes();
-                    $(currentPageRows).find('.row-checkbox').prop('checked', isChecked);
-                    // Don't use DataTables select API, just track checkbox state
-                    updateBulkActions();
+                // Prevent sorting when clicking on checkbox column header (but allow checkbox clicks)
+                $(tableId + ' thead th.select-checkbox').on('click', function(e) {
+                    // Only stop propagation if not clicking directly on the checkbox
+                    if (!$(e.target).is('input[type="checkbox"], label')) {
+                        e.stopPropagation();
+                        e.preventDefault();
+                    }
+                });
+
+                // Ensure checkbox clicks work properly
+                $(tableId + ' thead th.select-checkbox input[type="checkbox"]').on('click', function(e) {
+                    e.stopPropagation(); // Prevent header click from interfering
                 });
 
                 // Individual checkbox selection
                 $(document).on('change', tableId + ' tbody .row-checkbox', function() {
                     // Don't use DataTables select API, just track checkbox state
-                    updateSelectAllState();
-                    updateBulkActions();
+                    debouncedUpdateSelectAllState();
+                    debouncedUpdateBulkActions();
                 });
-
-
                 // Bulk delete function
                 function performBulkDelete() {
                     const selectedIds = [];
@@ -1202,7 +1682,50 @@
                 $('#bulkDeleteBtn').on('click', function() {
                     performBulkDelete();
                 });
+
+                // After bulk delete, update select all state
+                table.on('draw', function() {
+                    debouncedUpdateSelectAllState();
+                });
             @endif
+
+            // Attach select all event after table initialization
+            if (@json($bulkDeleteEnabled)) {
+                // Select All functionality: listen on any visible select-all checkbox
+                // Use event delegation to ensure it works even if checkbox is recreated
+                $(document).on('change', '#{{ $id }}_selectAll', function() {
+                    if (!table || typeof table.rows === 'undefined') return;
+
+                    const $headerCheckbox = $(this);
+                    const isChecked = $headerCheckbox.is(':checked');
+
+                    // Get all rows on current page
+                    const currentPageRows = table.rows({
+                        page: 'current'
+                    }).nodes();
+
+                    // Update all checkboxes on current page
+                    $(currentPageRows).find('.row-checkbox').prop('checked', isChecked);
+
+                    // Update bulk actions and select all state
+                    debouncedUpdateBulkActions();
+                    debouncedUpdateSelectAllState();
+                });
+
+                // Also attach directly in case event delegation doesn't catch it
+                setTimeout(function() {
+                    $('#{{ $id }}_selectAll').off('change').on('change', function() {
+                        if (!table || typeof table.rows === 'undefined') return;
+                        const isChecked = $(this).is(':checked');
+                        const currentPageRows = table.rows({
+                            page: 'current'
+                        }).nodes();
+                        $(currentPageRows).find('.row-checkbox').prop('checked', isChecked);
+                        debouncedUpdateBulkActions();
+                        debouncedUpdateSelectAllState();
+                    });
+                }, 100);
+            }
 
             @if (!empty($filters))
                 let filterFunctions = [];
@@ -1288,6 +1811,18 @@
                     $('.filter-select, .filter-date, .filter-text').val('');
                     $.fn.dataTable.ext.search = filterFunctions = [];
                     table.search('').columns().search('').draw();
+                });
+
+                // Connect custom search box to DataTables search
+                $('#{{ $id }}_search').on('keyup', function() {
+                    table.search($(this).val()).draw();
+                });
+
+                // Also trigger search on Enter key
+                $('#{{ $id }}_search').on('keypress', function(e) {
+                    if (e.which === 13) {
+                        table.search($(this).val()).draw();
+                    }
                 });
             @endif
 

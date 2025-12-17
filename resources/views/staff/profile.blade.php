@@ -65,6 +65,51 @@
           </div>
         </div>
       </form>
+
+      <hr class="my-4">
+
+      <div class="row mt-3">
+        <div class="col-md-6">
+          <h6>Mobile Number</h6>
+          <p class="mb-1">
+            <strong>Current:</strong> {{ $user->contactNo ?? 'Not set' }}
+          </p>
+
+          {{-- Step 1: Request OTP --}}
+          <form method="POST" action="{{ route('staff.mobile.send-otp') }}" class="mt-2">
+            @csrf
+            <div class="mb-2">
+              <label for="new_mobile" class="form-label">New Mobile Number</label>
+              <input type="text"
+                     class="form-control"
+                     id="new_mobile"
+                     name="new_mobile"
+                     placeholder="10-digit mobile number"
+                     maxlength="10"
+                     pattern="[0-9]{10}"
+                     required>
+            </div>
+            <button type="submit" class="btn btn-sm btn-primary">Send OTP on WhatsApp</button>
+          </form>
+
+          {{-- Step 2: Verify OTP --}}
+          <form method="POST" action="{{ route('staff.mobile.verify-otp') }}" class="mt-3">
+            @csrf
+            <div class="mb-2">
+              <label for="otp" class="form-label">Enter OTP</label>
+              <input type="text"
+                     class="form-control"
+                     id="otp"
+                     name="otp"
+                     placeholder="6-digit OTP"
+                     maxlength="6"
+                     pattern="[0-9]{6}"
+                     required>
+            </div>
+            <button type="submit" class="btn btn-sm btn-success">Verify & Update Mobile</button>
+          </form>
+        </div>
+      </div>
     </div>
   </div>
 

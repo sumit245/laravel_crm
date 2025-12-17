@@ -110,4 +110,24 @@ class ProjectPolicy
         // Same as view permission
         return $this->view($user, $project);
     }
+
+    /**
+     * Determine if user can remove staff from project
+     */
+    public function removeStaff(User $user, Project $project): bool
+    {
+        $role = UserRole::fromValue($user->role);
+
+        // Admin can remove any staff
+        if ($role->isAdmin()) {
+            return true;
+        }
+
+        // Project Manager can remove staff from their projects
+        if ($role === UserRole::PROJECT_MANAGER) {
+            return $user->projects->contains($project->id);
+        }
+
+        return false;
+    }
 }
