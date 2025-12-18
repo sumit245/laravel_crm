@@ -739,7 +739,7 @@
         @endif
 
         <div class="edit-btn mt-4">
-          <a href="{{ route("hrm.apply") }}#documents" class="btn btn-outline-secondary">
+          <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#documents" class="btn btn-outline-secondary">
             <i class="fas fa-edit me-2"></i> Edit Documents
           </a>
         </div>
@@ -798,7 +798,7 @@
         </div>
 
         <div class="edit-btn mt-3 text-center">
-          <a href="{{ route("hrm.apply") }}#photo" class="btn btn-outline-primary">
+          <a href="{{ route("apply-now", ["id" => $data["id"]]) }}#photo" class="btn btn-outline-primary">
             <i class="fas fa-edit me-2"></i> Edit Photo
           </a>
         </div>

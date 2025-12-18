@@ -25,11 +25,11 @@
           <div class="row">
             <div class="col-md-12">
               <div class="form-group">
-                <label for="proejct_id" class="form-label">Select Project</label>
+                <label for="project_id" class="form-label">Select Project</label>
                 <select name="project_id" class="form-select" id="project_id">
                   <option value="">-- Select Project --</option>
                   @foreach ($projects as $category)
-                    <option value="{{ $category->id }}">{{ $category->project_name }}</option>
+                    <option value="{{ $category->id }}" {{ old('project_id', $vendor->project_id) == $category->id ? 'selected' : '' }}>{{ $category->project_name }}</option>
                   @endforeach
                 </select>
               </div>
@@ -43,7 +43,7 @@
                 <select name="manager_id" class="form-select" id="manager">
                   <option value="">-- Select Project Manager --</option>
                   @foreach ($projectEngineers as $teamLead)
-                    <option value="{{ $teamLead->id }}">{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
+                    <option value="{{ $teamLead->id }}" {{ old('manager_id', $vendor->manager_id) == $teamLead->id ? 'selected' : '' }}>{{ $teamLead->firstName }} {{ $teamLead->lastName }}</option>
                   @endforeach
                 </select>
               </div>
@@ -137,8 +137,8 @@
             </div>
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
-                <label for="panNumber">PAN</label>
-                <input type="text" id="pan" name="panNumber" class="form-control"
+                <label for="pan">PAN</label>
+                <input type="text" id="pan" name="pan" class="form-control"
                   value="{{ old("pan", $vendor->pan) }}">
                 @error("pan")
                   <small class="text-danger">{{ $message }}</small>

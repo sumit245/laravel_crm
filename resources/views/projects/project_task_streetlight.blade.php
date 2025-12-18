@@ -1,41 +1,42 @@
 <div>
-  <div class="d-flex justify-content-between mb-0">
-    <div class="d-flex mx-2">
-      <div class="card bg-success mx-2" style="min-width: 33%;">
-        <div class="card-body">
-          <h5 class="card-title">{{ $totalPoles ?? 0 }}</h5>
-          <p class="card-text">Total Poles</p>
+    <!-- Summary Cards -->
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="summary-card summary-card-total">
+                <div class="summary-card-body">
+                    <h5 class="summary-card-title mb-0">{{ $totalPoles ?? 0 }}</h5>
+                    <p class="summary-card-text mb-0">Total Poles</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card summary-card-surveyed">
+                <div class="summary-card-body">
+                    <h5 class="summary-card-title mb-0">{{ $totalSurveyedPoles ?? 0 }}</h5>
+                    <p class="summary-card-text mb-0">Surveyed Poles</p>
         </div>
       </div>
-      <div class="card bg-warning mx-2" style="min-width: 33%;">
-        <div class="card-body">
-          <h5 class="card-title">{{ $totalSurveyedPoles ?? 0 }}</h5>
-          <p class="card-text">Surveyed Poles</p>
+        </div>
+        <div class="col-md-4">
+            <div class="summary-card summary-card-installed">
+                <div class="summary-card-body">
+                    <h5 class="summary-card-title mb-0">{{ $totalInstalledPoles ?? 0 }}</h5>
+                    <p class="summary-card-text mb-0">Installed Poles</p>
+      </div>
         </div>
       </div>
-      <div class="card bg-info mx-2" style="min-width: 33%;">
-        <div class="card-body">
-          <h5 class="card-title">{{ $totalInstalledPoles ?? 0 }}</h5>
-          <p class="card-text">Installed Lights</p>
-        </div>
-      </div>
-    </div>
-    <!-- Button to trigger modal -->
-    <button type="button" class="btn btn-primary" style="max-height: 2.8rem;" data-bs-toggle="modal"
-      data-bs-target="#addTargetModal">
-      Add Target
-    </button>
   </div>
 
   <!-- Modal for adding a target -->
   <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-        <form action="{{ route("tasks.store") }}" method="POST">
+                <form action="{{ route('tasks.store') }}" method="POST">
           @csrf
           <input type="hidden" name="project_id" value="{{ $project->id }}" />
           <div class="modal-header">
-            <h5 class="modal-title" id="addTargetModalLabel">Add Target for Project: {{ $project->project_name }}</h5>
+                        <h5 class="modal-title" id="addTargetModalLabel">Add Target for Project:
+                            {{ $project->project_name }}</h5>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
           <div class="modal-body">
@@ -61,7 +62,8 @@
             <!-- Panchayat Search (Dependent on Block) -->
             <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
-              <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select" style="width: 100%;">
+                            <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select"
+                                style="width: 100%;">
                 <option value="">Select a Panchayat</option>
               </select>
             </div>
@@ -69,11 +71,10 @@
             <div class="mb-3">
               <label for="selectEngineer" class="form-label">Select Site Engineer</label>
               <select id="selectEngineer" name="engineer_id" class="form-select" required>
-
                 @foreach ($assignedEngineers as $engineer)
-                  <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
+                                    <option value="{{ $engineer->id }}">{{ $engineer->firstName }}
+                                        {{ $engineer->lastName }}</option>
                 @endforeach
-
               </select>
             </div>
             <div class="form-group mb-3">
@@ -86,11 +87,13 @@
             </div>
             <div class="form-group mb-3">
               <label for="startDate" class="form-label">Start Date</label>
-              <input onclick="document.getElementById('startDate').showPicker()" type="date" id="startDate" name="start_date" class="form-control" required>
+                            <input onclick="document.getElementById('startDate').showPicker()" type="date"
+                                id="startDate" name="start_date" class="form-control" required>
             </div>
             <div class="form-group mb-3">
               <label for="endDate" class="form-label">End Date</label>
-              <input onclick="document.getElementById('endDate').showPicker()" type="date" id="endDate" name="end_date" class="form-control" required>
+                            <input onclick="document.getElementById('endDate').showPicker()" type="date"
+                                id="endDate" name="end_date" class="form-control" required>
             </div>
           </div>
           <div class="modal-footer">
@@ -102,171 +105,472 @@
     </div>
   </div>
 
-  <!-- Table to display targets -->
-  <div class="table-responsive mt-3">
-    <table id="targetTable" class="table-striped table-bordered table-sm mt-4 table">
-      <thead>
-        <tr>
-          <th>Panchayat</th>
-          <th>Engineer Name</th>
-          <th>Vendor Name</th>
-          <th>Assigned Date</th>
-          <th>End Date</th>
-          <th>Wards</th>
-          <th>Status</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @foreach ($targets as $light)
-          <tr>
-            <td>{{ $light->site->panchayat ?? "N/A" }}</td>
-            <td>{{ $light->engineer->firstName ?? "N/A" }}</td>
-            <td>{{ $light->vendor->name ?? "N/A" }}</td>
-            <td>{{ $light->created_at }}</td>
-            <td>{{ $light->end_date ?? "N/A" }}</td>
-            <td>{{ $light->site->ward ?? "N/A" }}</td>
-            <td>
-              @if ($light->isInstallationDone)
-                <span class="badge bg-success">Installed</span>
+    <!-- Add Target Button (styled to match parent) -->
+    <div class="mb-3 d-flex justify-content-end">
+        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 add-target-btn"
+            style="max-height: 2.8rem;" data-bs-toggle="modal" data-bs-target="#addTargetModal">
+            <i class="mdi mdi-plus-circle"></i>
+            <span>Add Target</span>
+        </button>
+    </div>
+
+    <!-- DataTable Component -->
+    <x-datatable id="targetsTable" title="Targets" :columns="[
+        ['title' => 'Panchayat', 'width' => '12%'],
+        ['title' => 'Engineer Name', 'width' => '12%'],
+        ['title' => 'Vendor Name', 'width' => '12%'],
+        ['title' => 'Assigned Date', 'width' => '10%'],
+        ['title' => 'End Date', 'width' => '10%'],
+        ['title' => 'Wards', 'width' => '15%'],
+        ['title' => 'Status', 'width' => '10%'],
+    ]" :exportEnabled="true" :importEnabled="true"
+        :importRoute="route('tasks.import')" :importFormatUrl="route('tasks.importFormat')" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('tasks.bulkDelete')" :deleteRoute="route('tasks.destroystreetlight', ':id')" :editRoute="route('tasks.edit', [':id', 'project_id' => $project->id])"
+        :viewRoute="route('tasks.show', [':id', 'project_type' => 1])" pageLength="25" searchPlaceholder="Search Targets..." :filters="[
+            [
+                'type' => 'select',
+                'name' => 'filter_status',
+                'label' => 'Status',
+                'column' => -1,
+                'width' => 3,
+                'options' => [
+                    '' => 'All',
+                    'Pending' => 'Pending',
+                    'Installed' => 'Installed',
+                ],
+            ],
+            [
+                'type' => 'select',
+                'name' => 'filter_panchayat',
+                'label' => 'Panchayat',
+                'column' => 1,
+                'width' => 3,
+                'options' => $filterPanchayats ?? ['All' => ''],
+                'select2' => true,
+            ],
+            [
+                'type' => 'select',
+                'name' => 'filter_engineer',
+                'label' => 'Engineer',
+                'column' => 2,
+                'width' => 3,
+                'options' => $filterEngineers ?? ['All' => ''],
+                'select2' => true,
+            ],
+            [
+                'type' => 'select',
+                'name' => 'filter_vendor',
+                'label' => 'Vendor',
+                'column' => 3,
+                'width' => 3,
+                'options' => $filterVendors ?? ['All' => ''],
+                'select2' => true,
+            ],
+        ]">
+        @foreach ($targets as $target)
+            @php
+                $isInstalled =
+                    $target->status == 'Completed' ||
+                    ($target->poles && $target->poles->where('isInstallationDone', 1)->count() > 0);
+                $statusValue = $isInstalled ? 'Installed' : 'Pending';
+                $panchayatName = $target->site->panchayat ?? 'N/A';
+                $engineerName = trim(
+                    ($target->engineer->firstName ?? 'N/A') . ' ' . ($target->engineer->lastName ?? ''),
+                );
+                $vendorName = $target->vendor->name ?? 'N/A';
+            @endphp
+            <tr data-status="{{ $statusValue }}" data-id="{{ $target->id }}"
+                data-panchayat="{{ $panchayatName }}" data-engineer="{{ $engineerName }}"
+                data-vendor="{{ $vendorName }}">
+                <td>
+                    <input type="checkbox" class="row-checkbox" value="{{ $target->id }}">
+                </td>
+                <td>{{ $panchayatName }}</td>
+                <td>{{ $engineerName }}</td>
+                <td>{{ $vendorName }}</td>
+                <td>{{ $target->created_at ? $target->created_at->format('Y-m-d') : 'N/A' }}</td>
+                <td>{{ $target->end_date ? \Carbon\Carbon::parse($target->end_date)->format('Y-m-d') : 'N/A' }}</td>
+                <td class="wards-cell">
+                    <div class="wards-content" title="{{ $target->site->ward ?? 'N/A' }}">
+                        @php
+                            $wards = $target->site->ward ?? 'N/A';
+                            $wardsArray = is_string($wards) ? explode(',', $wards) : [$wards];
+                            $wardsArray = array_map('trim', $wardsArray);
+                        @endphp
+                        @if (count($wardsArray) > 3)
+                            <span class="wards-preview">{{ implode(', ', array_slice($wardsArray, 0, 3)) }},
+                                ...</span>
+                            <span class="wards-full d-none">{{ implode(', ', $wardsArray) }}</span>
               @else
-                <span class="badge bg-warning">Pending</span>
+                            {{ implode(', ', $wardsArray) }}
               @endif
+                    </div>
             </td>
             <td>
-              <a href="{{ route("tasks.show", [$light->id, "any" => ""]) }}?project_type=1"
-                class="btn btn-info btn-icon"><i class="mdi mdi-eye"></i></a>
-                 
-              <a href="{{ route("tasks.edit", $light->id) }}?project_id={{ $project->id }}" class="btn btn-warning btn-icon"><i class="mdi mdi-pencil"></i></a>
-              <form action="{{ route("tasks.destroystreetlight", $light->id) }}" method="POST" style="display: inline-block;" class="delete-task-form">
-                @csrf
-                @method("DELETE")
-                <button type="button" class="btn btn-danger btn-icon"><i class="mdi mdi-delete"></i></button>
-              </form>
+                    @if ($isInstalled)
+                        <span class="badge badge-success">Installed</span>
+                    @else
+                        <span class="badge badge-warning">Pending</span>
+                    @endif
+                </td>
+                <td class="text-center">
+                    <a href="{{ route('tasks.show', [$target->id, 'project_type' => 1]) }}"
+                        class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                        <i class="mdi mdi-eye"></i>
+                    </a>
+                    <a href="{{ route('tasks.edit', [$target->id, 'project_id' => $project->id]) }}"
+                        class="btn btn-icon btn-warning" data-toggle="tooltip" title="Edit Target">
+                        <i class="mdi mdi-pencil"></i>
+                    </a>
+                    <button type="button" class="btn btn-icon btn-danger delete-task-btn" data-toggle="tooltip"
+                        title="Delete Target" data-id="{{ $target->id }}"
+                        data-url="{{ route('tasks.destroystreetlight', $target->id) }}">
+                        <i class="mdi mdi-delete"></i>
+                    </button>
             </td>
           </tr>
         @endforeach
-      </tbody>
-    </table>
-  </div>
+    </x-datatable>
 </div>
 
-@push("scripts")
+@push('scripts')
   <script>
+        $(document).ready(function() {
+            // Add project_id to import form
+            $('form.import-form-group').append(
+                '<input type="hidden" name="project_id" value="{{ $project->id }}">');
 
-    // Data tables script begins
-    window.onload = function() {
-    const table = $('#targetTable').DataTable({
-      dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
-        "<'row'<'col-sm-12'tr>>" +
-        "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-      buttons: [{
-          extend: 'collection',
-          text: '<i class="mdi mdi-menu"></i> Actions',
-          className: 'btn btn-sm btn-secondary',
-          buttons: [{
-            text: 'Delete Selected',
-            action: function() {
-              performBulkAction('delete');
-            }
-          }]
-        },
-        {
-          extend: 'excel',
-          text: '<i class="mdi mdi-file-excel"></i>',
-          className: 'btn btn-sm btn-success',
-          titleAttr: 'Export to Excel'
-        },
-        {
-          extend: 'print',
-          text: '<i class="mdi mdi-printer"></i>',
-          className: 'btn btn-sm btn-info',
-          titleAttr: 'Print Table'
-        }
-      ],
-      order:[],
-      paging: true,
-      pageLength: {{ $pageLength ?? 25 }},
-      searching: true,
-      responsive: true,
-      language: {
-        search: '',
-        searchPlaceholder: 'Search...'
-      },
-      columnDefs: [{
-        orderable: false,
-        targets: [0, -1] // Targets the first column for select-checkbox
-      }],
-      ordering: true,
-      select: {
-        style: 'multi',
-        selector: 'td:first-child'
-      },
+            // Initialize Select2 for filter dropdowns
+            setTimeout(function() {
+                // Get the height of regular select to match Select2
+                const regularSelectHeight = $('.filter-select:not(.filter-select2)').first().outerHeight() || 31;
+                
+                $('.filter-select2').each(function() {
+                    const $select = $(this);
+                    if (!$select.hasClass('select2-hidden-accessible')) {
+                        $select.select2({
+                            placeholder: $select.closest('div').find('label').text() ||
+                                'Select...',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $select.closest('.datatable-wrapper'),
+                            minimumResultsForSearch: 0, // Always show search box
+                        });
+                        
+                        // Ensure Select2 has same height as regular select
+                        $select.next('.select2-container').find('.select2-selection--single').css({
+                            'height': regularSelectHeight + 'px',
+                            'line-height': (regularSelectHeight - 2) + 'px',
+                            'min-height': regularSelectHeight + 'px'
+                        });
+                    }
+                });
+            }, 500);
 
-    });
+            // Custom filters - integrate with datatable component's filter system
+            setTimeout(function() {
+                const table = $('#targetsTable').DataTable();
+                if (table) {
+                    let filterFunctions = [];
 
-    $('#selectAll').on('click', function() {
-      const isChecked = $(this).is(':checked');
-      table.rows().nodes().to$().find('input[type="checkbox"]').prop('checked', isChecked);
-      if (isChecked) {
-        table.rows().select();
-      } else {
-        table.rows().deselect();
-      }
-    });
-    // Track individual row selection to update "Select All" state
-    $('#targetTable tbody').on('click', 'input[type="checkbox"]', function() {
-      const allChecked = $('#targetTable tbody input[type="checkbox"]:checked').length === table
-        .rows()
-        .count();
-      $('#selectAll').prop('checked', allChecked);
-    });
-    // Bulk action function
-    function performBulkAction(action) {
+                    // Intercept applyFilters button click
+                    $(document).off('click', '#applyFilters').on('click', '#applyFilters', function(e) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+
+                        // Remove previous filter functions
+                        filterFunctions.forEach(function(filterFn) {
+                            const index = $.fn.dataTable.ext.search.indexOf(filterFn);
+                            if (index !== -1) {
+                                $.fn.dataTable.ext.search.splice(index, 1);
+                            }
+                        });
+                        filterFunctions = [];
+
+                        // Get filter values (Select2 compatible)
+                        const statusFilter = $('.filter-select[data-filter="filter_status"]').val();
+                        const panchayatSelect = $('.filter-select[data-filter="filter_panchayat"]');
+                        const panchayatFilter = panchayatSelect.hasClass(
+                                'select2-hidden-accessible') ?
+                            panchayatSelect.select2('val') : panchayatSelect.val();
+                        const engineerSelect = $('.filter-select[data-filter="filter_engineer"]');
+                        const engineerFilter = engineerSelect.hasClass(
+                            'select2-hidden-accessible') ?
+                            engineerSelect.select2('val') : engineerSelect.val();
+                        const vendorSelect = $('.filter-select[data-filter="filter_vendor"]');
+                        const vendorFilter = vendorSelect.hasClass('select2-hidden-accessible') ?
+                            vendorSelect.select2('val') : vendorSelect.val();
+
+                        // Create filter functions
+                        if (statusFilter) {
+                            const statusFilterFn = function(settings, data, dataIndex) {
+                                if (settings.nTable.id !== 'targetsTable') return true;
+                                const $row = $(table.row(dataIndex).node());
+                                const rowStatus = $row.data('status') || 'Pending';
+                                return rowStatus === statusFilter;
+                            };
+                            $.fn.dataTable.ext.search.push(statusFilterFn);
+                            filterFunctions.push(statusFilterFn);
+                        }
+
+                        if (panchayatFilter) {
+                            const panchayatFilterFn = function(settings, data, dataIndex) {
+                                if (settings.nTable.id !== 'targetsTable') return true;
+                                const $row = $(table.row(dataIndex).node());
+                                const rowPanchayat = $row.data('panchayat') || 'N/A';
+                                return rowPanchayat === panchayatFilter;
+                            };
+                            $.fn.dataTable.ext.search.push(panchayatFilterFn);
+                            filterFunctions.push(panchayatFilterFn);
+                        }
+
+                        if (engineerFilter) {
+                            const engineerFilterFn = function(settings, data, dataIndex) {
+                                if (settings.nTable.id !== 'targetsTable') return true;
+                                const $row = $(table.row(dataIndex).node());
+                                const rowEngineer = $row.data('engineer') || 'N/A';
+                                return rowEngineer === engineerFilter;
+                            };
+                            $.fn.dataTable.ext.search.push(engineerFilterFn);
+                            filterFunctions.push(engineerFilterFn);
+                        }
+
+                        if (vendorFilter) {
+                            const vendorFilterFn = function(settings, data, dataIndex) {
+                                if (settings.nTable.id !== 'targetsTable') return true;
+                                const $row = $(table.row(dataIndex).node());
+                                const rowVendor = $row.data('vendor') || 'N/A';
+                                return rowVendor === vendorFilter;
+                            };
+                            $.fn.dataTable.ext.search.push(vendorFilterFn);
+                            filterFunctions.push(vendorFilterFn);
+                        }
+
+                        // Apply filters and redraw
+                        table.draw();
+                    });
+
+                    // Clear filters
+                    $(document).off('click', '#clearFilters').on('click', '#clearFilters', function(e) {
+                        e.preventDefault();
+                        e.stopImmediatePropagation();
+
+                        // Remove all filter functions
+                        filterFunctions.forEach(function(filterFn) {
+                            const index = $.fn.dataTable.ext.search.indexOf(filterFn);
+                            if (index !== -1) {
+                                $.fn.dataTable.ext.search.splice(index, 1);
+                            }
+                        });
+                        filterFunctions = [];
+
+                        // Clear filter inputs and redraw
+                        $('.filter-select, .filter-date, .filter-text').val('');
+                        // Clear Select2 dropdowns
+                        $('.filter-select2').each(function() {
+                            if ($(this).hasClass('select2-hidden-accessible')) {
+                                $(this).val(null).trigger('change');
+                            }
+                        });
+                        table.search('').columns().search('').draw();
+                    });
+                }
+            }, 1500);
+
+            // Add Reassign button to bulk actions and ensure bulk actions are visible
+            setTimeout(function() {
+                const bulkActionsDiv = $('#targetsTable_bulkActions');
+                if (bulkActionsDiv.length && $('#bulkReassignBtn').length === 0) {
+                    const reassignBtn = $('<button>')
+                        .attr('type', 'button')
+                        .attr('id', 'bulkReassignBtn')
+                        .addClass(
+                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto ms-2'
+                        )
+                        .html('<i class="mdi mdi-account-switch"></i><span>Reassign Selected</span>');
+
+                    $('#targetsTable_bulkDeleteBtn').parent().append(reassignBtn);
+
+                    $('#bulkReassignBtn').on('click', function() {
+                        const table = $('#targetsTable').DataTable();
       const selectedIds = [];
-      table.rows({
-        selected: true
-      }).data().each(function(rowData) {
-        selectedIds.push(rowData[0]); // Assuming the ID is in the first column
+
+                        // Get all checked checkboxes
+                        $('#targetsTable tbody .row-checkbox:checked').each(function() {
+                            const taskId = $(this).val();
+                            if (taskId) {
+                                selectedIds.push(taskId);
+                            }
       });
 
       if (selectedIds.length === 0) {
-        alert('Please select at least one row.');
+                            Swal.fire('Error', 'Please select at least one target.', 'error');
         return;
       }
 
-      // Example: Show selected IDs in the console
-      console.log(`Performing "${action}" on IDs: `, selectedIds);
+                        reassignTargets(selectedIds);
+                    });
+                }
 
-      // Perform the actual action here
-      // Example:
-      // $.ajax({
-      //   url: `/bulk/${action}`,
-      //   method: 'POST',
-      //   data: { ids: selectedIds },
-      //   success: function(response) {
-      //     alert(`${action} successful!`);
-      //     table.ajax.reload();
-      //   },
-      //   error: function() {
-      //     alert(`Failed to perform ${action}.`);
-      //   }
-      // });
-    }
-  }
+                // Ensure bulk actions are visible when checkboxes are checked
+                function updateBulkActionsVisibility() {
+                    // Wait for table to be initialized and tab to be active
+                    const table = $('#targetsTable').DataTable();
+                    if (!table) return;
+                    
+                    // Check if the targets tab is active
+                    const targetsTab = $('#tasks');
+                    if (!targetsTab.hasClass('active') && !targetsTab.hasClass('show')) {
+                        return; // Don't update if tab is not visible
+                    }
+                    
+                    const checkedCount = $('#targetsTable tbody .row-checkbox:checked').length;
+                    const bulkActionsDiv = $('#targetsTable_bulkActions');
+                    const selectedCountSpan = $('#targetsTable_selectedCount');
+                    
+                    if (checkedCount > 0) {
+                        if (bulkActionsDiv.is(':hidden')) {
+                            bulkActionsDiv.slideDown(200);
+                        }
+                        selectedCountSpan.text(checkedCount);
+                    } else {
+                        if (bulkActionsDiv.is(':visible')) {
+                            bulkActionsDiv.slideUp(200);
+                        }
+                    }
+                }
+                
+                // Handle individual checkbox changes
+                $(document).on('change', '#targetsTable tbody .row-checkbox', function() {
+                    updateBulkActionsVisibility();
+                });
+                
+                // Handle select all checkbox changes - trigger change on all checkboxes
+                $(document).on('change', '#targetsTable_selectAll', function() {
+                    const isChecked = $(this).is(':checked');
+                    const table = $('#targetsTable').DataTable();
+                    if (!table) return;
+                    
+                    // Update all checkboxes on all pages
+                    table.$('.row-checkbox').prop('checked', isChecked);
+                    
+                    // Trigger change event on all checkboxes to ensure bulk actions update
+                    table.$('.row-checkbox').trigger('change');
+                    
+                    // Also directly update bulk actions
+                    setTimeout(updateBulkActionsVisibility, 100);
+                });
+                
+                // Update bulk actions when tab becomes active
+                $('#tasks-tab').on('shown.bs.tab', function() {
+                    setTimeout(updateBulkActionsVisibility, 300);
+                });
+                
+                // Force update after table is fully initialized and tab is active
+                setTimeout(function() {
+                    // Check if tasks tab is active (either from hash or default)
+                    const hash = window.location.hash;
+                    const isTasksTabActive = hash === '#tasks' || $('#tasks').hasClass('active');
+                    
+                    if (isTasksTabActive) {
+                        updateBulkActionsVisibility();
+                    }
+                }, 2000);
+            }, 500);
 
-    // Data table script ends
+            // Reassign functionality
+            function reassignTargets(selectedIds) {
+                if (selectedIds.length === 0) {
+                    Swal.fire('Error', 'Please select at least one target.', 'error');
+                    return;
+                }
 
-    // Delete target
-    $(document).ready(function() {
-  $('.delete-task-btn').on('click', function(e) {
+                Swal.fire({
+                    title: 'Reassign Targets',
+                    html: `
+            <div class="text-left">
+              <div class="mb-3">
+                <label for="reassignEngineer" class="form-label">Select Engineer (Optional)</label>
+                <select id="reassignEngineer" class="form-select">
+                  <option value="">No Change</option>
+                  @foreach ($assignedEngineers as $engineer)
+                    <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
+                  @endforeach
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="reassignVendor" class="form-label">Select Vendor (Optional)</label>
+                <select id="reassignVendor" class="form-select">
+                  <option value="">No Change</option>
+                  @foreach ($assignedVendors as $vendor)
+                    <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                  @endforeach
+                </select>
+              </div>
+            </div>
+          `,
+                    showCancelButton: true,
+                    confirmButtonText: 'Reassign',
+                    cancelButtonText: 'Cancel',
+                    preConfirm: () => {
+                        const engineerId = document.getElementById('reassignEngineer').value;
+                        const vendorId = document.getElementById('reassignVendor').value;
+
+                        if (!engineerId && !vendorId) {
+                            Swal.showValidationMessage('Please select at least one field to reassign');
+                            return false;
+                        }
+
+                        const data = {};
+                        if (engineerId) {
+                            data.engineer_id = engineerId;
+                        }
+                        if (vendorId) {
+                            data.vendor_id = vendorId;
+                        }
+                        return data;
+                    }
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: "{{ route('tasks.bulkReassign') }}",
+                            method: 'POST',
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                ids: selectedIds,
+                                engineer_id: result.value.engineer_id,
+                                vendor_id: result.value.vendor_id,
+                            },
+                            success: function(response) {
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Success!',
+                                    text: response.message || 'Targets reassigned successfully',
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                }).then(() => {
+                                    // Reload the page to refresh the table, preserving hash
+                                    const currentHash = window.location.hash;
+                                    window.location.reload();
+                                });
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error', xhr.responseJSON?.message ||
+                                    'Failed to reassign targets', 'error');
+                            }
+                        });
+                    }
+                });
+            };
+
+            // Delete button handler
+            $(document).on('click', '.delete-task-btn', function(e) {
     e.preventDefault();
-    
-    const form = $(this).closest('.delete-task-form');
+                const taskId = $(this).data('id');
+                const deleteUrl = $(this).data('url');
     
     Swal.fire({
       title: 'Are you sure?',
-      text: 'You are about to delete this task. This action cannot be undone.',
+                    text: 'You are about to delete this target. This action cannot be undone.',
       icon: 'warning',
       showCancelButton: true,
       confirmButtonColor: '#d33',
@@ -275,19 +579,34 @@
       cancelButtonText: 'Cancel',
     }).then((result) => {
       if (result.isConfirmed) {
-        form.submit();
-      }
-    });
+                        $.ajax({
+                            url: deleteUrl,
+                            type: 'POST',
+                            data: {
+                                _token: "{{ csrf_token() }}",
+                                _method: 'DELETE',
+                            },
+                            success: function(response) {
+                                Swal.fire('Deleted!', 'Target has been deleted.',
+                                    'success');
+                                setTimeout(() => window.location.reload(), 1500);
+                            },
+                            error: function(xhr) {
+                                Swal.fire('Error!', xhr.responseJSON?.message ||
+                                    'Failed to delete target.', 'error');
+                            }
+                        });
+                    }
   });
 });
     
-    $(document).ready(function() {
+            // Select2 for panchayat search
       $('#panchayatSearch').select2({
         placeholder: "Select a Panchayat",
         allowClear: true,
         dropdownParent: $('#addTargetModal'),
         ajax: {
-          url: "{{ route("streetlights.search") }}", // Laravel route
+                    url: "{{ route('streetlights.search') }}",
           dataType: 'json',
           method: "GET",
           delay: 250,
@@ -297,7 +616,6 @@
             };
           },
           processResults: function(data) {
-            console.log(data)
             return {
               results: data.map(item => ({
                 id: item.id,
@@ -307,10 +625,12 @@
           }
         }
       });
+
       // Fetch Blocks Based on Selected District
       $('#districtSearch').change(function() {
         let district = $(this).val();
-        $('#blockSearch').prop('disabled', false).empty().append('<option value="">Select a Block</option>');
+                $('#blockSearch').prop('disabled', false).empty().append(
+                    '<option value="">Select a Block</option>');
         $('#panchayatSearch').prop('disabled', true).empty().append(
           '<option value="">Select a Panchayat</option>');
 
@@ -320,15 +640,13 @@
             type: 'GET',
             dataType: 'json',
             success: function(data) {
-              console.log(data)
               $.each(data, function(index, block) {
-                $('#blockSearch').append('<option value="' + block + '">' + block + '</option>');
+                                $('#blockSearch').append('<option value="' + block +
+                                    '">' + block + '</option>');
               });
-
             },
             error: function(xhr, status, error) {
               console.error("AJAX Error:", status, error);
-              console.log("Response:", xhr.responseText);
             }
           });
         }
@@ -340,22 +658,20 @@
         $('#panchayatSearch').prop('disabled', false).empty().append(
           '<option value="">Select a Panchayat</option>');
 
-        if (block) { // You're checking 'district' instead of 'block'
+                if (block) {
           $.ajax({
-            url: '' + block,
+                        url: '/panchayats-by-block/' + block,
             type: 'GET',
             dataType: 'json',
             success: function(data) {
-              console.log(data);
               $.each(data, function(index, panchayat) {
-                $('#panchayatSearch').append('<option value="' + panchayat.panchayat + '">' + panchayat
-                  .panchayat +
-                  '</option>');
+                                $('#panchayatSearch').append('<option value="' +
+                                    panchayat.panchayat + '">' + panchayat
+                                    .panchayat + '</option>');
               });
             },
             error: function(xhr, status, error) {
               console.error("AJAX Error:", status, error);
-              console.log("Response:", xhr.responseText);
             }
           });
         }
@@ -364,19 +680,151 @@
   </script>
 @endpush
 
-@push("styles")
+@push('styles')
   <style>
+        /* Summary Cards Styling */
+        .summary-card {
+            border: 2px solid;
+            border-radius: 8px;
+            padding: 0;
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .summary-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .summary-card-total {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        }
+        
+        .summary-card-surveyed {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+        }
+        
+        .summary-card-installed {
+            border-color: #17a2b8;
+            background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+        }
+        
+        .summary-card-body {
+            padding: 1.25rem;
+        }
+        
+        .summary-card-title {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        
+        .summary-card-total .summary-card-title {
+            color: #155724;
+        }
+        
+        .summary-card-surveyed .summary-card-title {
+            color: #856404;
+        }
+        
+        .summary-card-installed .summary-card-title {
+            color: #0c5460;
+        }
+        
+        .summary-card-text {
+            font-size: 0.95rem;
+            font-weight: 500;
+            margin-bottom: 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        
+        .summary-card-total .summary-card-text {
+            color: #155724;
+        }
+        
+        .summary-card-surveyed .summary-card-text {
+            color: #856404;
+        }
+        
+        .summary-card-installed .summary-card-text {
+            color: #0c5460;
+        }
+        
+        /* Consistent button width for Add buttons */
+        .add-target-btn {
+            min-width: 140px;
+        }
+
+        /* Consistent height for all filter selects */
+        .filter-select {
+            height: 31px !important;
+            min-height: 31px !important;
+        }
+        
+        /* Select2 filter dropdowns - match regular select height */
+        .filter-select2 + .select2-container .select2-selection--single {
+            height: 31px !important;
+            min-height: 31px !important;
+            line-height: 29px !important;
+        }
+        
+        .filter-select2 + .select2-container .select2-selection__rendered {
+            line-height: 29px !important;
+            padding-left: 8px !important;
+            padding-right: 20px !important;
+        }
+        
+        .filter-select2 + .select2-container .select2-selection__arrow {
+            height: 29px !important;
+        }
+        
+        /* General Select2 styling (for other Select2 instances) */
     .select2-container--default .select2-selection--single {
       height: 38px;
       padding: 6px 12px;
       border: 1px solid #ccc;
       border-radius: 4px;
     }
+
     .select2-selection__choice {
         background-color: #E9EECF !important;
         padding: 6px 10px !important;
         color: #000 !important;     
         font-size: 0.875rem !important;
+      }
+
+        /* Wards column styling */
+        .wards-cell {
+            max-width: 200px !important;
+            width: 200px !important;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .wards-content {
+            max-height: 60px;
+            overflow-y: auto;
+            font-size: 0.875rem;
+            line-height: 1.4;
+            white-space: normal;
+            word-break: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .wards-preview {
+            cursor: help;
+        }
+
+        /* Add Target button styling to match parent */
+        .datatable-wrapper .add-new-btn {
+            max-height: 2.8rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
       }
     </style>
 @endpush

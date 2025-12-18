@@ -1,398 +1,397 @@
 <div>
-@if (session("success") || session("error"))
-<div id="flash-message" style="display: none;">
-   @if (session("success"))
-   <div class="alert alert-success">
-      {{ session("success") }}
-   </div>
-   @endif
-   @if (session("error"))
-   <div class="alert alert-danger">
-      {{ session("error") }}
-   </div>
-   @endif
-</div>
-@endif
-<div class="d-flex justify-content-between mb-4">
-   <div class="d-flex mx-2">
-      <div class="card bg-info mx-2">
-         <div class="card-body">
-            <h5 class="card-title">{{ $initialStockValue }}</h5>
-            <p class="card-text">Initial Stock Value</p>
-         </div>
-      </div>
-      <div class="card bg-success mx-2">
-         <div class="card-body">
-            <h5 class="card-title">{{ number_format($inStoreStockValue, 2) }}</h5>
-            <p class="card-text">In Store Stock Value</p>
-         </div>
-      </div>
-      <div class="card bg-warning mx-2">
-         <div class="card-body">
-            <h5 class="card-title">{{ $dispatchedStockValue }}</h5>
-            <p class="card-text">Dispatched Stock Value</p>
-         </div>
-      </div>
-    </div>
-    <button id="addStoreButton" class="btn btn-primary" style="max-height: 2.8rem;">
-      <span>Create Store</span>
-    </button>
-  </div>
+    @if (session('success') || session('error'))
+        <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} alert-dismissible fade show"
+            role="alert">
+            {{ session('success') ?? session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
 
-  <!-- Store Creation Form (Initially Hidden) -->
-  <div id="storeFormContainer" class="card mb-4 mt-4 p-3" style="display: none;">
-    <h6>Create Store</h6>
     @if ($errors->any())
-      <div class="alert alert-danger">
-        <ul>
-          @foreach ($errors->all() as $error)
-            <li>{{ $error }}</li>
-          @endforeach
-        </ul>
-      </div>
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <ul class="mb-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
     @endif
-    <form id="storeForm" action="{{ route("store.create", $project->id) }}" method="POST">
-      @csrf
-      <input type="hidden" name="project_id" value="{{ $project->id }}">
 
-      <div class="form-group">
-        <label for="name">Store Name:</label>
-        <input type="text" class="form-control" id="name" name="name" required>
-      </div>
-
-      <div class="form-group">
-        <label for="address">Address:</label>
-        <textarea class="form-control" id="address" name="address" rows="2"  style="height:70px;" required></textarea>
-      </div>
-
-      <div class="form-group">
-        <label for="storeIncharge">Store Incharge:</label>
-        <select class="form-select" id="storeIncharge" name="storeIncharge" required>
-          <option value="">Select Incharge</option>
-          @foreach ($users as $user)
-            <option value="{{ $user->id }}">{{ $user->firstName }} {{ $user->lastName }}</option>
-          @endforeach
-        </select>
-      </div>
-
-      <div class="d-flex justify-content-end">
-        <button type="button" id="cancelStoreButton" class="btn btn-secondary me-2">Cancel</button>
-        <button type="submit" id="dispatchSubmit" class="btn btn-primary">Save Store</button>
-      </div>
-    </form>
-  </div>
-
-  <!-- Existing Stores -->
-  <div id="storeList">
-    <h6>Existing Stores</h6>
-    @if ($stores->isEmpty())
-      <p>No stores available. Click "Create Store" to add one.</p>
-    @else
-      <ul class="list-group">
-        @foreach ($stores as $store)
-          <li class="list-group-item">
-            <div class="d-flex justify-content-between">
-              <div class="d-block mt-2" style="max-width: 60%;">
-                <strong>{{ $store->store_name }}</strong><br>
-                Address: {{ $store->address }}<br>
-                Incharge: {{ $store->store_incharge_id }}
-              </div>
-              <div class="d-flex mt-2" style="max-width: 40%;">
-                <button class="btn btn-success m-2" style="max-height: 3.4rem;" id="addInventoryBtn"
-                  onclick="toggleAddInventory({{ $store->id }})">
-               Add Inventory
-               </button>
-               <a href="{{ route("inventory.view", ["project_id" => $project->id, "store_id" => $store->id]) }}"
-               class="btn btn-primary m-2" style="max-height: 3.4rem;">
-               View Inventory
-               </a>
-               <button class="btn btn-warning m-2" style="max-height: 3.4rem;"
-                  onclick="openDispatchModal({{ $store->id }})">
-               Material Issue
-               </button>
-               {{-- <button class="btn btn-danger m-2" style="max-height: 3.4rem;"
-                  onclick="deleteStore({{ $store->id }})">
-                  Delete Store
-                </button> --}}
-              </div>
-            </div>
-            <!-- Add Inventory Form (Initially Hidden) -->
-            <div id="addInventoryForm-{{ $store->id }}" class="mt-3" style="display: none;">
-              @if ($errors->any())
-                <div class="alert alert-danger">
-                  <ul>
-                    @foreach ($errors->all() as $error)
-                      <li>{{ $error }}</li>
-                    @endforeach
-                  </ul>
+    <!-- Stock Summary Cards -->
+    @if ($project->project_type == 1)
+        <div class="row my-2">
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="metric-card-initial">
+                    <div class="metric-card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label class="font-10 text-uppercase mg-b-10 fw-bold text-muted">Initial Stock
+                                    Value</label>
+                                <h5 class="metric-card-title mb-0">{{ number_format($initialStockValue, 2) }}</h5>
+                            </div>
+                            <div class="text-primary">
+                                <i class="mdi mdi-package-variant" style="font-size: 2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-              @endif
-              @if ($project->project_type == 1)
-                <span><Strong>Add inventory for streetlight</Strong></span>
-                <form style="width:25%; float:right;"
-                  action="{{ route("inventory.import-streetlight", ["projectId" => $project->id, "storeId" => $store->id]) }}"
-                  method="POST" enctype="multipart/form-data">
-                  @csrf
-                  <div class="input-group" id="import-form">
-                    <input type="file" style="height:40px !important" name="file"
-                      class="form-control form-control-sm" required>
-                    <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
-                      title="Import Inventory">
-                      <i class="mdi mdi-upload"></i> Import
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="metric-card-instore">
+                    <div class="metric-card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label class="font-10 text-uppercase mg-b-10 fw-bold text-muted">In Store Stock
+                                    Value</label>
+                                <h5 class="metric-card-title mb-0">{{ number_format($inStoreStockValue, 2) }}</h5>
+                            </div>
+                            <div class="text-success">
+                                <i class="mdi mdi-warehouse" style="font-size: 2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3">
+                <div class="metric-card-dispatched">
+                    <div class="metric-card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <label class="font-10 text-uppercase mg-b-10 fw-bold text-muted">Dispatched Stock
+                                    Value</label>
+                                <h5 class="metric-card-title mb-0">{{ number_format($dispatchedStockValue, 2) }}</h5>
+                            </div>
+                            <div class="text-warning">
+                                <i class="mdi mdi-truck-delivery" style="font-size: 2rem;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6 mb-3 d-flex align-items-end">
+                @if (auth()->user()->role === \App\Enums\UserRole::ADMIN->value)
+                    <button id="addStoreButton" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2"
+                        style="max-height: 2.8rem;">
+                        <i class="mdi mdi-plus-circle"></i>
+                        <span>Create Store</span>
                     </button>
-                  </div>
-                </form>
-                <!-- Form for add inventory -->
-                <form action="{{ route("inventory.store") }}" method="POST" class="mt-5">
-                  @csrf
-                  <input type="hidden" name="project_type" value="{{ $project->project_type }}">
-                  <input type="hidden" name="project_id" value="{{ $project->id }}">
-                  <input type="hidden" name="store_id" value="{{ $store->id }}">
-                  <div class="form-group" id="inventoryForm">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="item_combined"><strong>Item</strong></label>
-                        <select id="item_combined" class="form-control">
-                          <option value="">-- Select Item --</option>
-                          <option value="SL01|Module">SL01 - Module</option>
-                          <option value="SL02|Luminary">SL02 - Luminary</option>
-                          <option value="SL03|Battery">SL03 - Battery</option>
-                          <option value="SL04|Structure">SL04 - Structure</option>
-                        </select>
-                      </div>
-                      <!-- Hidden inputs to hold separate values -->
-                      <input type="hidden" name="code" id="item_code">
-                      <input type="hidden" name="dropdown" id="item_name">
-                      <div class="col-6">
-                      <label for="quantity"><strong>Quantity</strong></label>
-                        <input type="number" id="number" name="number" class="form-control" value="1" readonly required>
-                      </div>
-                  </div>
-                  <div class="form-group">
-                     <div class="row">
-                        <div class="col-6">
-                           <label for="manufacturer"><strong>Manufacturer</strong></label>
-                           <input type="text" id="manufacturer" name="manufacturer" class="form-control"
-                              value="" required>
-                        </div>
-                        <div class="col-6">
-                           <label for="heading"><strong>Model</strong></label>
-                           <input type="text" id="model" name="model" class="form-control" value=""
-                              required>
-                        </div>
-                     </div>
-                  </div>
-                  <!-- Form group 3 -->
-                  <div class="form-group">
-                     <div class="row">
-                        <div class="col-6">
-                           <label for="serialNumber"><strong>Serial Number</strong></label>
-                           <input type="text" id="serialnumber" name="serialnumber" class="form-control"
-                              value="" required>
-                        </div>
-                        <div class="col-6">
-                           <label for="make"><strong>Make</strong></label>
-                           <input type="text" id="make" name="make" class="form-control" value=""
-                              required>
-                        </div>
-                     </div>
-                  </div>
-                  <!-- Form group 4 -->
-                  <div class="form-group">
-                    <div class="row">
-                      <div class="col-6">
-                        <label for="rate"><strong>Rate</strong></label>
-                        <input type="number" id="rate" name="rate" class="form-control" value=""
-                          required>
-                      </div>
-                      <div class="col-6">
-                        <label for="receiveddate"><strong>Received Date</strong></label>
-                        <input type="date" id="receiveddate" name="receiveddate" class="form-control"
-                          value="" required>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- Form group 5 -->
-                  <div class="form-group">
-                     <div class="row">
-                        <div class="col-6">
-                           <label for="totalvalue"><strong>Total Value</strong></label>
-                           <input type="number" id="totalvalue" name="totalvalue" class="form-control" value=""
-                              required>
-                        </div>
-                        <div class="col-6">
-                           <label for="hsncode"><strong>HSN Code</strong></label>
-                           <input type="text" id="hsncode" name="hsncode" class="form-control" value=""
-                              required>
-                        </div>
-                     </div>
-                  </div>
-                  <!-- Form group 6 -->
-                  <div class="form-group">
-                     <div class="row">
-                        <div class="col-6">
-                           <label for="description"><strong>Description</strong></label>
-                           <input type="text" id="description" name="description" class="form-control"
-                              value="" required>
-                        </div>
-                        <div class="col-6">
-                           <label for="unit"><strong>Unit</strong></label>
-                           <input type="number" id="unit" name="unit" class="form-control" value=""
-                              required>
-                        </div>
-                     </div>
-                  </div>
-                  <!-- Form group 7 -->
-                  <div class="form-group">
-                    <div class="row">
-                      
-                    </div>
-                  </div>
-                  <div class="form-group" style="float:right">
-                  <a href="javascript:void(0);" class="btn btn-secondary" onclick="closeInventoryForm({{ $store->id }})">Cancel</a>
-                    <button type="submit" class="btn btn-primary">Save</button>
-                  </div>
-            </form>
-            <!-- end form -->
-            @else
-            <form action="{{ route("inventory.import", ["projectId" => $project->id, "storeId" => $store->id]) }}"
-            method="POST" enctype="multipart/form-data">
-            @csrf
-            <div class="input-group">
-            <input type="file" name="file" class="form-control form-control-sm" required>
-            <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip"
-               title="Import Inventory">
-            <i class="mdi mdi-upload"></i> Import
-            </button>
+                @endif
             </div>
-            </form>
-            @endif
-            </div>
-          </li>
-        @endforeach
-      </ul>
+        </div>
     @endif
-  </div>
-  @include("projects.dispatchInventory")
+
+    <!-- Store Creation Form -->
+    <div id="storeFormContainer" class="row my-3" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title mb-3">Create Store</h6>
+                    <form id="storeForm" action="{{ route('store.create', $project->id) }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="project_id" value="{{ $project->id }}">
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="name" class="form-label">Store Name</label>
+                                <input type="text" class="form-control form-control-sm" id="name" name="name"
+                                    required>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="address" class="form-label">Address</label>
+                                <textarea class="form-control form-control-sm" id="address" name="address" rows="2" required></textarea>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="storeIncharge" class="form-label">Store Incharge</label>
+                                <select class="form-select form-select-sm" id="storeIncharge" name="storeIncharge"
+                                    required>
+                                    <option value="">Select Incharge</option>
+                                    @foreach ($users as $user)
+                                        <option value="{{ $user->id }}">{{ $user->firstName }}
+                                            {{ $user->lastName }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="button" id="cancelStoreButton"
+                                class="btn btn-secondary btn-sm me-2">Cancel</button>
+                            <button type="submit" class="btn btn-primary btn-sm">Save Store</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stores List -->
+    <div id="storeList" class="my-3">
+        <h6 class="mb-3">Stores</h6>
+        @if ($stores->isEmpty())
+            <p class="text-muted">No stores available. @if (auth()->user()->role === \App\Enums\UserRole::ADMIN->value)
+                    Click "Create Store" to add one.
+                @endif
+            </p>
+        @else
+            <div class="row">
+                @foreach ($stores as $store)
+                    <div class="col-md-6 col-lg-4 mb-3">
+                        <div class="card" style="cursor: pointer;"
+                            onclick="window.location.href='{{ route('store.show', $store->id) }}'">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h6 class="card-title mb-1">{{ $store->store_name }}</h6>
+                                        <p class="text-muted small mb-0">{{ $store->address }}</p>
+                                    </div>
+                                    <i class="mdi mdi-chevron-right text-muted"></i>
+                                </div>
+                                <div class="mt-2">
+                                    <small class="text-muted">Incharge: </small>
+                                    <small class="fw-semibold">{{ $store->storeIncharge->firstName ?? 'N/A' }}
+                                        {{ $store->storeIncharge->lastName ?? '' }}</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        @endif
+    </div>
+
+    @include('projects.dispatchInventory')
 </div>
+
+@push('styles')
+    <style>
+        /* Metric Cards - Enhanced Visual Distinction */
+        .row.my-2 .metric-card-initial,
+        .row.my-2 .metric-card-instore,
+        .row.my-2 .metric-card-dispatched {
+            border-radius: 8px;
+            border: 2px solid;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+            transition: all 0.2s ease;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            margin: 0;
+        }
+
+        /* Initial Stock Value Card - Blue Theme */
+        .row.my-2 .metric-card-initial {
+            border-color: #007bff;
+            background: linear-gradient(135deg, #ffffff 0%, #f0f7ff 100%);
+        }
+
+        .row.my-2 .metric-card-initial:hover {
+            border-color: #0056b3;
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* In Store Stock Value Card - Green Theme */
+        .row.my-2 .metric-card-instore {
+            border-color: #28a745;
+            background: linear-gradient(135deg, #ffffff 0%, #f0fdf4 100%);
+        }
+
+        .row.my-2 .metric-card-instore:hover {
+            border-color: #1e7e34;
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Dispatched Stock Value Card - Orange/Amber Theme */
+        .row.my-2 .metric-card-dispatched {
+            border-color: #ffc107;
+            background: linear-gradient(135deg, #ffffff 0%, #fffbf0 100%);
+        }
+
+        .row.my-2 .metric-card-dispatched:hover {
+            border-color: #e0a800;
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.2);
+            transform: translateY(-2px);
+        }
+
+        .row.my-2 .metric-card-body {
+            padding: 1.25rem 1.5rem;
+            flex: 1 1 auto;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .row.my-2 .metric-card-body>div {
+            width: 100%;
+        }
+
+        .row.my-2 .metric-card-body .d-flex {
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .row.my-2 .metric-card-body .d-flex>div:first-child {
+            flex: 1 1 auto;
+            min-width: 0;
+        }
+
+        .row.my-2 .metric-card-body .d-flex>div:last-child {
+            flex-shrink: 0;
+        }
+
+        .row.my-2 .metric-card-body i {
+            display: block;
+        }
+
+        .row.my-2 .metric-card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #212529;
+            margin-bottom: 0;
+            line-height: 1.2;
+        }
+
+        .row.my-2 [class*="col-"] .card .card-title {
+            font-size: 1.5rem !important;
+            font-weight: 600 !important;
+            color: #212529 !important;
+            margin-bottom: 0 !important;
+            line-height: 1.2 !important;
+        }
+
+        .row.my-2 [class*="col-"] .card label {
+            font-size: 0.75rem !important;
+            letter-spacing: 0.5px !important;
+            color: #6c757d !important;
+            margin-bottom: 0.5rem !important;
+            display: block !important;
+            font-weight: 600 !important;
+        }
+
+        /* Ensure equal height for metric cards */
+        .row.my-2 {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: stretch !important;
+        }
+
+        .row.my-2>[class*="col-"] {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Consistent button width for Add buttons */
+        #addStoreButton,
+        .add-target-btn {
+            min-width: 140px;
+        }
+
+        /* Store Cards - Higher Specificity */
+        #storeList .row {
+            display: flex !important;
+            flex-wrap: wrap !important;
+            align-items: stretch !important;
+        }
+
+        #storeList .row>[class*="col-"] {
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        #storeList .card,
+        #storeList .row .card {
+            border-radius: 8px !important;
+            border: 1px solid #e3e6f0 !important;
+            background: #ffffff !important;
+            transition: all 0.2s ease !important;
+            height: 100% !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        #storeList .card:hover,
+        #storeList .row .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08) !important;
+            transform: translateY(-2px) !important;
+            border-color: #ced4da !important;
+        }
+
+        #storeList .card .card-body,
+        #storeList .row .card .card-body {
+            padding: 1rem 1.25rem !important;
+            flex: 1 1 auto !important;
+            display: flex !important;
+            flex-direction: column !important;
+        }
+
+        /* Form Card - Higher Specificity */
+        #storeFormContainer .card {
+            border-radius: 8px !important;
+            border: 1px solid #e3e6f0 !important;
+            background: #ffffff !important;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        #storeFormContainer .card .card-body {
+            padding: 1.5rem !important;
+        }
+
+        /* Buttons - Higher Specificity */
+        #storeFormContainer .btn,
+        #storeList .btn,
+        .row.my-2 .btn {
+            border-radius: 4px !important;
+            font-weight: 500 !important;
+        }
+
+        #storeFormContainer .btn-sm,
+        #storeList .btn-sm,
+        .row.my-2 .btn-sm {
+            padding: 0.375rem 0.75rem !important;
+            font-size: 0.875rem !important;
+        }
+
+        #storeFormContainer .form-control-sm,
+        #storeFormContainer .form-select-sm,
+        #storeList .form-control-sm,
+        #storeList .form-select-sm {
+            border-radius: 4px !important;
+            font-size: 0.875rem !important;
+        }
+
+        #storeFormContainer .input-group-sm .form-control,
+        #storeFormContainer .input-group-sm .btn,
+        #storeList .input-group-sm .form-control,
+        #storeList .input-group-sm .btn {
+            border-radius: 4px !important;
+        }
+    </style>
+@endpush
+
 @push('scripts')
-<script>
-  document.addEventListener("DOMContentLoaded", function() {
-    const addStoreButton = document.getElementById("addStoreButton");
-    const cancelStoreButton = document.getElementById("cancelStoreButton");
-    const storeFormContainer = document.getElementById("storeFormContainer");
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const addStoreButton = document.getElementById("addStoreButton");
+            const cancelStoreButton = document.getElementById("cancelStoreButton");
+            const storeFormContainer = document.getElementById("storeFormContainer");
 
-    // Add inventory
-    const itemCombined = document.getElementById('item_combined');
-    if (itemCombined) {
-      itemCombined.addEventListener('change', function() {
-        const [code, name] = this.value.split('|');
-        document.getElementById('item_code').value = code || '';
-        document.getElementById('item_name').value = name || '';
-      });
-    }
+            // Only add event listeners if elements exist
+            if (addStoreButton && storeFormContainer) {
+                addStoreButton.addEventListener("click", (e) => {
+                    e.stopPropagation();
+                    storeFormContainer.style.display = "block";
+                    addStoreButton.style.display = "none";
+                });
+            }
 
-    if (addStoreButton && storeFormContainer) {
-      addStoreButton.addEventListener("click", () => {
-        storeFormContainer.style.display = "block";
-        addStoreButton.style.display = "none";
-      });
-    }
-
-    if (cancelStoreButton && storeFormContainer && addStoreButton) {
-      cancelStoreButton.addEventListener("click", () => {
-        storeFormContainer.style.display = "none";
-        addStoreButton.style.display = "block";
-      });
-    }
-  });
-
-  function toggleAddInventory(storeId) {
-    var form = document.getElementById("addInventoryForm-" + storeId);
-
-    if (!form) return; // Ensure the form exists
-
-    if (form.style.display === "none" || form.style.display === "") {
-      form.style.display = "block";
-
-      // Ensure the form is visible before scrolling
-      setTimeout(() => {
-        const formTop = form.getBoundingClientRect().top + window.scrollY;
-        window.scrollTo({
-          top: formTop - 110,
-          behavior: "smooth"
+            if (cancelStoreButton && storeFormContainer && addStoreButton) {
+                cancelStoreButton.addEventListener("click", () => {
+                    storeFormContainer.style.display = "none";
+                    if (addStoreButton) {
+                        addStoreButton.style.display = "block";
+                    }
+                });
+            }
         });
-      }, 100);
-    } else {
-      form.style.display = "none";
-    }
-  }
-
-  // Closing the add inventory form
-  function closeInventoryForm(storeId) {
-    var form = document.getElementById("addInventoryForm-" + storeId);
-    if (form) {
-      form.style.display = "none";
-    }
-  }
-
-  function addInventory(storeId) {
-    // Redirect to the inventory import route with the store ID
-    window.location.href = `/inventory/import-streetlight?store_id=${storeId}`;
-  }
-
-  function dispatchInventory(storeId) {
-    // Redirect to the dispatch inventory route with the store ID
-    window.location.href = `/inventory/dispatch?store_id=${storeId}`;
-  }
-
-  function deleteStore(storeId) {
-    if (confirm('Are you sure you want to delete this store?')) {
-      fetch('{{ url("store") }}/' + storeId, {
-          method: 'DELETE',
-          headers: {
-            'X-CSRF-TOKEN': '{{ csrf_token() }}',
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          }
-        })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error('Network response was not ok');
-          }
-          return response.json();
-        })
-        .then(data => {
-          if (data.success) {
-            // Show success message
-            alert('Store deleted successfully');
-            // Reload the page to reflect changes
-            location.reload();
-          } else {
-            alert(data.message || 'Failed to delete store');
-          }
-        })
-        .catch(error => {
-          console.error('Error:', error);
-          alert('An error occurred while deleting the store');
-        });
-    }
-  }
-
-  // Show the modal to dispatch inventory
-  function openDispatchModal(storeId) {
-    document.getElementById("dispatchStoreId").value = storeId;
-    $('#dispatchModal').modal('show');
-  }
-
-  // close the dispatch inventory modal
-  function closeDispatchModal() {
-    document.getElementById("dispatchModal").classList.add("hidden");
-  }
-
-  // Redirect to a page showing store inventory with export/print options
-  function viewStoreInventory(storeId) {
-    window.location.href = `/store/${storeId}/inventory/view`;
-  }
-</script>
+    </script>
 @endpush

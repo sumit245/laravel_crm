@@ -25,17 +25,13 @@ Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
 Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
 Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
 Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
-Route::get('/certificate', fn() => view('certificate_1'))->name('certificate.view');
-Route::get('/certificate-2', fn() => view('certificate_2'))->name('certificate2.view');
-Route::get('/certificate-3', fn() => view('certificate_3'))->name('certificate3.view');
-Route::get('/certificate-4', fn() => view('certificate_4'))->name('certificate4.view');
 
 // Authenticated Routes
 Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
-    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name(name: 'export.excel');
+    Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
 
     // JICR
     Route::prefix('jicr')
@@ -58,9 +54,12 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
         ->group(function () {
             Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
             Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
+            Route::post('mobile/send-otp', [StaffController::class, 'sendMobileChangeOtp'])->name('mobile.send-otp');
+            Route::post('mobile/verify-otp', [StaffController::class, 'verifyMobileChangeOtp'])->name('mobile.verify-otp');
             Route::get('{id}/change-password', [StaffController::class, 'changePassword'])->name('change-password');
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
+    Route::post('/staff/{id}/upload-avatar', [StaffController::class, 'uploadAvatar'])->name('staff.uploadAvatar');
     Route::post('/import-staff', action: [StaffController::class, 'import'])->name('import.staff');
 
     // Performance
@@ -104,6 +103,11 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
 
     // Vendors
     Route::resource('uservendors', VendorController::class);
+    Route::post('/uservendors/bulk-delete', [VendorController::class, 'bulkDelete'])->name('uservendors.bulkDelete');
+    Route::post('/uservendors/bulk-assign-projects', [VendorController::class, 'bulkAssignProjects'])->name('uservendors.bulkAssignProjects');
+    Route::post('/uservendors/{id}/upload-avatar', [VendorController::class, 'uploadAvatar'])->name('uservendors.uploadAvatar');
+    Route::post('/import-vendors', [VendorController::class, 'import'])->name('import.vendors');
+    Route::get('/vendors/import-format', [VendorController::class, 'importFormat'])->name('vendors.importFormat');
 
     // Projects
     Route::resource('projects', ProjectsController::class);
@@ -111,6 +115,9 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::post('/projects/import', [ProjectsController::class, 'import'])->name('projects.import');
     Route::get('/projects/import/format', [ProjectsController::class, 'downloadFormat'])->name('projects.importFormat');
     Route::post('/projects/{id}/assign-users', [ProjectsController::class, 'assignUsers'])->name('projects.assignStaff');
+    Route::post('/projects/{id}/remove-staff', [ProjectsController::class, 'removeStaff'])->name('projects.removeStaff');
+    Route::post('/projects/{id}/assign-vendors', [ProjectsController::class, 'assignUsers'])->name('projects.assignVendors');
+    Route::post('/projects/{id}/remove-vendors', [ProjectsController::class, 'removeStaff'])->name('projects.removeVendors');
     Route::post('/projects/{projectId}/stores', [StoreController::class, 'store'])->name('store.create');
 
     // Sites
@@ -145,7 +152,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::post('settings/update-category', [ConvenienceController::class, 'updateCategory'])->name('updatecategory');
             Route::delete('settings/delete-category/{id}', [ConvenienceController::class, 'deleteCategory'])->name('deletecategory');
 
-            Route::get('edit-city-category', fn() => view('billing.editCityCategory'))->name('editcitycategory');
+            Route::get('edit-city-category', [ConvenienceController::class, 'editCityCategory'])->name('editcitycategory');
             Route::get('allowed-expense/{id}', [ConvenienceController::class, 'editAllowedExpense'])->name('allowedexpense');
             Route::post('update-allowed-expense/{id}', [ConvenienceController::class, 'updateAllowedExpense'])->name('updateallowedexpense');
         });
@@ -155,16 +162,18 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::post('/conveyance/reject/{id}', [ConvenienceController::class, 'reject'])->name('conveyance.reject');
     Route::post('/conveyance/bulk-action', [ConvenienceController::class, 'bulkAction'])->name('conveyance.bulkAction');
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
-    Route::get('/view-bills', fn() => view('billing.viewBills'))->name('view.bills');
+    Route::get('/view-bills', [ConvenienceController::class, 'viewBills'])->name('view.bills');
 
     // Inventory
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
-    Route::prefix('inventory')
+        Route::prefix('inventory')
         ->name('inventory.')
         ->group(function () {
             Route::post('import', [InventoryController::class, 'import'])->name('import');
             Route::post('import-streetlight', [InventoryController::class, 'importStreetlight'])->name('import-streetlight');
+            Route::get('download-format/{projectId}', [InventoryController::class, 'downloadImportFormat'])->name('download-format');
+            Route::post('bulk-dispatch', [InventoryController::class, 'bulkDispatchFromExcel'])->name('bulk-dispatch');
             Route::post('checkQR', [InventoryController::class, 'checkQR'])->name('checkQR');
             Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
             Route::get('view', [InventoryController::class, 'viewInventory'])->name('view');
@@ -175,6 +184,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::get('dispatch', [InventoryController::class, 'showDispatchInventory'])->name('showDispatchInventory');
             Route::post('return', [InventoryController::class, 'returnInventory'])->name('return');
         });
+    Route::get('/store/{store}', [StoreController::class, 'show'])->name('store.show');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
 
@@ -182,10 +192,15 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::resource('tasks', TasksController::class)->except(['show']);
     Route::get('/tasks/rooftop/{id}', [TasksController::class, 'editrooftop'])->name('tasks.editrooftop');
     Route::post('/tasks/rooftop/update/{id}', [TasksController::class, 'updateRooftop'])->name('tasks.updaterooftop');
+    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
+    Route::get('/tasks/export/excel', [TasksController::class, 'exportToExcel'])->name('tasks.export');
+    Route::post('/tasks/bulk-delete', [ProjectsController::class, 'bulkDeleteTargets'])->name('tasks.bulkDelete');
+    Route::post('/tasks/bulk-reassign', [ProjectsController::class, 'bulkReassignTargets'])->name('tasks.bulkReassign');
+    Route::get('/tasks/download/import-format', [ProjectsController::class, 'downloadTargetImportFormat'])->name('tasks.importFormat');
+    Route::post('/tasks/import', [ProjectsController::class, 'importTargets'])->name('tasks.import');
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])
         ->where('any', '.*')
         ->name('tasks.show');
-    Route::delete('/tasks/delete/{id}', [ProjectsController::class, 'destroyTarget'])->name('tasks.destroystreetlight');
 
     // Surveyed/Installed Poles
     Route::get('/surveyed-poles', [TaskController::class, 'getSurveyedPoles'])->name('surveyed.poles');

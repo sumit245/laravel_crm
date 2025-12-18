@@ -3,7 +3,7 @@
 @section('content')
     <div class="container p-2">
         <x-datatable id="projectsTable" title="Projects" :columns="[
-            ['title' => '#', 'width' => '5%'],
+            ['title' => '#'],
             ['title' => 'Project Name'],
             ['title' => 'Work Order Number'],
             ['title' => 'Start Date'],

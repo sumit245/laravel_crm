@@ -46,7 +46,6 @@ class ConvenienceController extends Controller
         $disbursedAmount = Conveyance::where('user_id', $id)->where('status', 1)->sum('amount');
         $rejectedAmount = Conveyance::where('user_id', $id)->where('status', 0)->sum('amount');
         $dueclaimAmount = $appliedAmount - $disbursedAmount;
-        // dd($details);
         return view('billing.conveyanceDetails', compact('details', 'appliedAmount', 'disbursedAmount', 'rejectedAmount', 'dueclaimAmount'));
     }
 
@@ -194,7 +193,7 @@ class ConvenienceController extends Controller
     public function settings()
     {
         $vehicles = Vehicle::get();
-        $users = User::with('usercategory')->where('role', '!=', 3)->get();
+        $users = User::with('usercategory')->where('role', '!=', \App\Enums\UserRole::VENDOR->value)->get();
 
         $categories = UserCategory::get();
         $vehicleNames = $vehicles->pluck('name', 'id')->toArray();
@@ -516,5 +515,21 @@ class ConvenienceController extends Controller
     public function destroy(string $id)
     {
         //
+    }
+
+    /**
+     * Show edit city category page
+     */
+    public function editCityCategory()
+    {
+        return view('billing.editCityCategory');
+    }
+
+    /**
+     * Show view bills page
+     */
+    public function viewBills()
+    {
+        return view('billing.viewBills');
     }
 }

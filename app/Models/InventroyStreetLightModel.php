@@ -19,6 +19,7 @@ class InventroyStreetLightModel extends Model
         'make',             // Make of the item
         'model',            // Model of the item
         'serial_number',    // Serial number of the item
+        'sim_number',       // SIM number (for luminary items only - SL02)
         'hsn',              // HSN code
         'unit',             // Unit of measurement
         'rate',             // Unit rate

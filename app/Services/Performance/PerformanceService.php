@@ -227,8 +227,21 @@ class PerformanceService implements PerformanceServiceInterface
         });
 
         // Surveyed and installed poles
-        $surveyedPoles = Pole::whereIn('task_id', $taskIds)->where('isSurveyDone', 1)->count();
-        $installedPoles = Pole::whereIn('task_id', $taskIds)->where('isInstallationDone', 1)->count();
+        // For vendor role, use pole.vendor_id instead of task_id for accurate tracking after reassignments
+        if ($userRole == 3) { // Vendor role
+            $surveyedPoles = Pole::where('vendor_id', $userId)
+                ->whereIn('task_id', $taskIds)
+                ->where('isSurveyDone', 1)
+                ->count();
+            $installedPoles = Pole::where('vendor_id', $userId)
+                ->whereIn('task_id', $taskIds)
+                ->where('isInstallationDone', 1)
+                ->count();
+        } else {
+            // For engineer/manager roles, use task_id as before
+            $surveyedPoles = Pole::whereIn('task_id', $taskIds)->where('isSurveyDone', 1)->count();
+            $installedPoles = Pole::whereIn('task_id', $taskIds)->where('isInstallationDone', 1)->count();
+        }
 
         // Completed tasks
         $completedTasks = $tasks->where('status', 'Completed')->count();

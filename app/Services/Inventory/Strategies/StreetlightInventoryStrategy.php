@@ -27,10 +27,19 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
     {
         // Accept form field names (code, dropdown, number, serialnumber, etc.)
         // The prepareForStorage method will map them to the correct database fields
-        return [
+        $itemCode = $data['code'] ?? $data['item_code'] ?? null;
+        
+        // Valid streetlight item codes
+        $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
+        
+        $rules = [
             'project_id' => 'required|exists:projects,id',
             'store_id' => 'required|exists:stores,id',
-            'code' => 'required|string|max:255', // Form field: item_code
+            'code' => ['required', 'string', 'max:255', function ($attribute, $value, $fail) use ($validItemCodes) {
+                if (!in_array($value, $validItemCodes)) {
+                    $fail('Invalid item code for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).');
+                }
+            }], // Form field: item_code
             'dropdown' => 'required|string|max:255', // Form field: item
             'manufacturer' => 'required|string|max:255',
             'model' => 'required|string|max:255',
@@ -44,6 +53,14 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
             'unit' => 'required|string|max:50',
             'receiveddate' => 'required|date', // Form field: received_date
         ];
+
+        // Add sim_number validation for luminary items (SL02) only
+        // Note: Uniqueness will be checked in controller with custom rule to ensure it's only for SL02 items
+        if ($itemCode === 'SL02') {
+            $rules['sim_number'] = 'nullable|string|max:200';
+        }
+
+        return $rules;
     }
 
     /**
@@ -68,6 +85,7 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
             'manufacturer' => $data['manufacturer'] ?? null,
             'model' => $data['model'] ?? null,
             'serial_number' => $data['serial_number'] ?? $data['serialnumber'] ?? null,
+            'sim_number' => $data['sim_number'] ?? null, // Only for luminary items (SL02)
             'make' => $data['make'] ?? null,
             'rate' => $data['rate'] ?? null,
             'quantity' => $data['quantity'] ?? $data['number'] ?? 1,

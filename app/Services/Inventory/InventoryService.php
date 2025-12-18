@@ -6,6 +6,7 @@ use App\Contracts\InventoryStrategyInterface;
 use App\Contracts\Services\Inventory\InventoryServiceInterface;
 use App\Enums\ProjectType;
 use App\Services\BaseService;
+use App\Services\Inventory\InventoryHistoryService;
 use App\Services\Inventory\Strategies\RooftopInventoryStrategy;
 use App\Services\Inventory\Strategies\StreetlightInventoryStrategy;
 use Illuminate\Support\Facades\Validator;
@@ -19,6 +20,12 @@ use Illuminate\Validation\ValidationException;
 class InventoryService extends BaseService implements InventoryServiceInterface
 {
     protected InventoryStrategyInterface $strategy;
+    protected InventoryHistoryService $historyService;
+
+    public function __construct(InventoryHistoryService $historyService)
+    {
+        $this->historyService = $historyService;
+    }
 
     /**
      * Set the inventory strategy based on project type
@@ -62,6 +69,15 @@ class InventoryService extends BaseService implements InventoryServiceInterface
 
             // Create inventory record
             $inventory = $modelClass::create($preparedData);
+
+            // Log history
+            $inventoryType = ($projectType == 1) ? 'streetlight' : 'rooftop';
+            $this->historyService->logCreated(
+                $inventory,
+                $inventoryType,
+                $preparedData['project_id'] ?? $data['project_id'] ?? null,
+                $preparedData['store_id'] ?? $data['store_id'] ?? null
+            );
 
             $this->logInfo('Inventory item added', [
                 'project_type' => $projectType,
@@ -228,6 +244,71 @@ class InventoryService extends BaseService implements InventoryServiceInterface
         if ($validator->fails()) {
             throw new ValidationException($validator);
         }
+    }
+
+    /**
+     * Get all districts for a project
+     *
+     * @param int $projectId
+     * @return array
+     */
+    public function getProjectDistricts(int $projectId): array
+    {
+        $project = \App\Models\Project::findOrFail($projectId);
+        $districts = [];
+
+        if ($project->project_type == 1) {
+            // Streetlight project - get districts from streetlights table
+            $districts = \App\Models\Streetlight::where('project_id', $projectId)
+                ->whereNotNull('district')
+                ->distinct()
+                ->pluck('district')
+                ->toArray();
+        } else {
+            // Rooftop project - get districts from sites table
+            $districts = \App\Models\Site::where('project_id', $projectId)
+                ->whereNotNull('district')
+                ->with('districtRelation')
+                ->get()
+                ->map(function ($site) {
+                    return $site->districtRelation ? $site->districtRelation->name : $site->district;
+                })
+                ->filter()
+                ->unique()
+                ->values()
+                ->toArray();
+        }
+
+        return $districts;
+    }
+
+    /**
+     * Check if inventory can be used for a pole based on district matching
+     *
+     * @param int $dispatchId
+     * @param int $poleId
+     * @return bool
+     */
+    public function canUseInventoryForPole(int $dispatchId, int $poleId): bool
+    {
+        $dispatch = \App\Models\InventoryDispatch::findOrFail($dispatchId);
+        $pole = \App\Models\Pole::with('task.streetlight')->findOrFail($poleId);
+
+        // Get pole's district
+        $poleDistrict = null;
+        if ($pole->task && $pole->task->streetlight) {
+            $poleDistrict = $pole->task->streetlight->district;
+        }
+
+        if (!$poleDistrict) {
+            return false; // Pole must have a district
+        }
+
+        // Get project's districts
+        $projectDistricts = $this->getProjectDistricts($dispatch->project_id);
+
+        // Check if pole's district is in project's districts
+        return in_array($poleDistrict, $projectDistricts);
     }
 
     /**

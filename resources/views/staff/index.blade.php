@@ -4,13 +4,13 @@
     <div class="container p-2">
         <x-datatable id="staffTable" title="Staff Management" :columns="[
             ['title' => '#', 'width' => '5%'],
-            ['title' => 'Name'],
-            ['title' => 'Email'],
-            ['title' => 'Project'],
-            ['title' => 'Department'],
-            ['title' => 'Role'],
-            ['title' => 'Phone'],
-            ['title' => 'Address'],
+            ['title' => 'Name', 'width' => '15%'],
+            ['title' => 'Email', 'width' => '20%'],
+            ['title' => 'Project', 'width' => '15%'],
+            ['title' => 'Department', 'width' => '12%'],
+            ['title' => 'Role', 'width' => '12%'],
+            ['title' => 'Phone', 'width' => '10%'],
+            ['title' => 'Address', 'width' => '11%'],
         ]" :addRoute="route('staff.create')" addButtonText="Add New Staff"
             :exportEnabled="true" :importEnabled="true" :importRoute="route('import.staff')" :importFormatUrl="null" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('staff.bulkDelete')"
             :deleteRoute="route('staff.destroy', ':id')" :editRoute="route('staff.edit', ':id')" :viewRoute="route('staff.show', ':id')" pageLength="50" searchPlaceholder="Search Staff..."

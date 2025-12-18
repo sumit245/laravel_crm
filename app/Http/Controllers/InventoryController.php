@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\Services\Inventory\InventoryServiceInterface;
+use App\Exports\InventoryImportFormatExport;
+use App\Imports\InventoryDispatchImport;
 use App\Imports\InventoryImport;
 use App\Imports\InventroyStreetLight;
 use App\Models\Inventory;
@@ -21,7 +23,8 @@ use Maatwebsite\Excel\Facades\Excel;
 class InventoryController extends Controller
 {
     public function __construct(
-        protected InventoryServiceInterface $inventoryService
+        protected InventoryServiceInterface $inventoryService,
+        protected InventoryHistoryService $historyService
     ) {
     }
     /**
@@ -48,7 +51,30 @@ class InventoryController extends Controller
             return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project to view inventory.');
         }
 
+        // For Project Managers, ensure they can only see projects they're assigned to
+        if ($user->role === \App\Enums\UserRole::PROJECT_MANAGER->value) {
+            $isAssigned = DB::table('project_user')
+                ->where('project_id', $projectId)
+                ->where('user_id', $user->id)
+                ->exists();
+            
+            if (!$isAssigned) {
+                return redirect()->route('projects.index')->with('error', 'You do not have access to this project.');
+            }
+        }
+
         $storeId = $request->query('store_id');
+
+        // Get all projects for Admin (for sidebar project selector)
+        $allProjects = [];
+        if ($user->role === \App\Enums\UserRole::ADMIN->value) {
+            $allProjects = Project::orderBy('project_name')->get();
+        } elseif ($user->role === \App\Enums\UserRole::PROJECT_MANAGER->value) {
+            // PMs see only their assigned projects
+            $allProjects = Project::whereHas('users', function ($q) use ($user) {
+                $q->where('users.id', $user->id);
+            })->orderBy('project_name')->get();
+        }
 
         if ($projectId && $storeId) {
             $inventory = InventroyStreetLightModel::where('project_id', $projectId)
@@ -59,8 +85,11 @@ class InventoryController extends Controller
                 ->paginate(50);
         }
 
+        // Get stores for the selected project
+        $stores = Stores::where('project_id', $projectId)->get();
+        $selectedProject = Project::find($projectId);
 
-        return view('inventory.index', compact('inventory'));
+        return view('inventory.index', compact('inventory', 'allProjects', 'selectedProject', 'stores', 'projectId', 'storeId'));
     }
 
     public function import(Request $request)
@@ -110,6 +139,30 @@ class InventoryController extends Controller
     {
         try {
             $projectType = (int) $request->project_type;
+            $itemCode = $request->input('code') ?? $request->input('item_code');
+
+            // Validate streetlight item code restrictions
+            if ($projectType == 1) {
+                $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
+                if (!in_array($itemCode, $validItemCodes)) {
+                    return redirect()->back()
+                        ->withErrors(['code' => 'Invalid item code for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).'])
+                        ->withInput();
+                }
+            }
+
+            // Validate sim_number uniqueness for luminary items (SL02) only
+            if ($projectType == 1 && $itemCode === 'SL02' && $request->filled('sim_number')) {
+                $existing = InventroyStreetLightModel::where('sim_number', $request->sim_number)
+                    ->where('item_code', 'SL02')
+                    ->exists();
+                
+                if ($existing) {
+                    return redirect()->back()
+                        ->withErrors(['sim_number' => 'This SIM number is already in use for a luminary item.'])
+                        ->withInput();
+                }
+            }
 
             $inventory = $this->inventoryService->addInventoryItem(
                 $request->all(),
@@ -403,6 +456,11 @@ class InventoryController extends Controller
                     "isDispatched" => true
                 ]);
                 $inventoryItem->decrement('quantity', 1);
+                
+                // Log history
+                $inventoryType = ($project->project_type == 1) ? 'streetlight' : 'rooftop';
+                $this->historyService->logDispatched($dispatch, $inventoryItem, $inventoryType);
+                
                 $dispatchedItems[] = $dispatch;
             }
             if ($request->ajax()) {
@@ -418,6 +476,186 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Bulk dispatch inventory from Excel file
+     */
+    public function bulkDispatchFromExcel(Request $request)
+    {
+        try {
+            $request->validate([
+                'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+                'vendor_id' => 'required|exists:users,id',
+                'project_id' => 'required|exists:projects,id',
+                'store_id' => 'required|exists:stores,id',
+                'store_incharge_id' => 'required|exists:users,id',
+            ]);
+
+            $project = Project::findOrFail($request->project_id);
+            $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
+
+            // Import Excel data
+            $import = new InventoryDispatchImport($request->project_id, $request->store_id);
+            $data = Excel::toCollection($import, $request->file('file'))->first();
+
+            $validItems = [];
+            $alreadyDispatched = [];
+            $invalidItems = [];
+
+            DB::beginTransaction();
+
+            try {
+                foreach ($data as $row) {
+                    $itemCode = $row['item_code'] ?? $row['ITEM_CODE'] ?? null;
+                    $itemName = $row['item'] ?? $row['ITEM NAME'] ?? $row['item_name'] ?? null;
+                    $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
+                    $simNumber = ($itemCode === 'SL02') ? ($row['sim_number'] ?? $row['SIM_NUMBER'] ?? null) : null;
+
+                    if (!$itemCode || !$itemName || !$serialNumber) {
+                        $invalidItems[] = [
+                            'row' => $row->toArray(),
+                            'error' => 'Missing required fields: item_code, item, or serial_number'
+                        ];
+                        continue;
+                    }
+
+                    // Check if serial number exists in inventory
+                    $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
+                        ->where('project_id', $request->project_id)
+                        ->where('store_id', $request->store_id)
+                        ->where('item_code', $itemCode)
+                        ->first();
+
+                    if (!$inventoryItem) {
+                        $invalidItems[] = [
+                            'row' => $row->toArray(),
+                            'error' => "Serial number {$serialNumber} not found in inventory"
+                        ];
+                        continue;
+                    }
+
+                    // Check if quantity is 1
+                    if ($inventoryItem->quantity != 1) {
+                        $invalidItems[] = [
+                            'row' => $row->toArray(),
+                            'error' => "Serial number {$serialNumber} has quantity {$inventoryItem->quantity}, expected 1"
+                        ];
+                        continue;
+                    }
+
+                    // Check if already dispatched
+                    $existingDispatch = InventoryDispatch::where('serial_number', $serialNumber)
+                        ->where('isDispatched', true)
+                        ->exists();
+
+                    if ($existingDispatch) {
+                        $alreadyDispatched[] = [
+                            'item_code' => $itemCode,
+                            'item' => $itemName,
+                            'serial_number' => $serialNumber,
+                            'sim_number' => $simNumber,
+                        ];
+                        continue;
+                    }
+
+                    // Validate SIM number for luminary items
+                    if ($itemCode === 'SL02' && $simNumber) {
+                        $existingSim = InventroyStreetLightModel::where('sim_number', $simNumber)
+                            ->where('item_code', 'SL02')
+                            ->where('id', '!=', $inventoryItem->id)
+                            ->exists();
+                        
+                        if ($existingSim) {
+                            $invalidItems[] = [
+                                'row' => $row->toArray(),
+                                'error' => "SIM number {$simNumber} already exists for another luminary item"
+                            ];
+                            continue;
+                        }
+                    }
+
+                    // Add to valid items
+                    $validItems[] = [
+                        'inventory_item' => $inventoryItem,
+                        'item_code' => $itemCode,
+                        'item' => $itemName,
+                        'serial_number' => $serialNumber,
+                        'sim_number' => $simNumber,
+                        'rate' => $inventoryItem->rate,
+                        'make' => $inventoryItem->make,
+                        'model' => $inventoryItem->model,
+                    ];
+                }
+
+                // If there are already dispatched items and user hasn't removed them, disable dispatch
+                if (!empty($alreadyDispatched) && $request->input('remove_dispatched') !== 'true') {
+                    DB::rollBack();
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => 'Some items are already dispatched. Please remove them before dispatching.',
+                        'already_dispatched' => $alreadyDispatched,
+                        'valid_items' => $validItems,
+                        'invalid_items' => $invalidItems,
+                    ], 400);
+                }
+
+                // Dispatch valid items
+                $dispatchedCount = 0;
+                foreach ($validItems as $item) {
+                    $dispatch = InventoryDispatch::create([
+                        'vendor_id' => $request->vendor_id,
+                        'project_id' => $request->project_id,
+                        'store_id' => $request->store_id,
+                        'store_incharge_id' => $request->store_incharge_id,
+                        'item_code' => $item['item_code'],
+                        'item' => $item['item'],
+                        'rate' => $item['rate'],
+                        'make' => $item['make'],
+                        'model' => $item['model'],
+                        'total_quantity' => 1,
+                        'total_value' => $item['rate'],
+                        'serial_number' => $item['serial_number'],
+                        'dispatch_date' => Carbon::now(),
+                        'isDispatched' => true,
+                    ]);
+
+                    // Update inventory quantity
+                    $item['inventory_item']->decrement('quantity', 1);
+
+                    // Update SIM number if provided for luminary
+                    if ($item['item_code'] === 'SL02' && $item['sim_number']) {
+                        $item['inventory_item']->update(['sim_number' => $item['sim_number']]);
+                    }
+
+                    // Log history
+                    $inventoryType = ($project->project_type == 1) ? 'streetlight' : 'rooftop';
+                    $this->historyService->logDispatched($dispatch, $item['inventory_item'], $inventoryType);
+
+                    $dispatchedCount++;
+                }
+
+                DB::commit();
+
+                return response()->json([
+                    'status' => 'success',
+                    'message' => "Successfully dispatched {$dispatchedCount} item(s)",
+                    'dispatched_count' => $dispatchedCount,
+                    'already_dispatched' => $alreadyDispatched,
+                    'invalid_items' => $invalidItems,
+                ]);
+
+            } catch (\Exception $e) {
+                DB::rollBack();
+                throw $e;
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Bulk dispatch error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to process bulk dispatch: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 
     public function viewVendorInventory($vendorId)
     {
@@ -556,8 +794,20 @@ class InventoryController extends Controller
                 Log::warning('Inventory not found for serial_number', ['serial_number' => $serial_number]);
                 return redirect()->back()->with('error', 'Inventory item not found.');
             }
+            $quantityBefore = $inventory->quantity;
             $inventory->quantity = 1;
             $inventory->save();
+
+            // Log history
+            $project = Project::find($inventory->project_id);
+            $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+            $this->historyService->logReturned(
+                $inventory,
+                $inventoryType,
+                $inventory->project_id,
+                $inventory->store_id,
+                1
+            );
 
             if ($dispatch) {
                 $dispatch->delete();
@@ -631,14 +881,30 @@ class InventoryController extends Controller
                 }
             }
 
+            // Get pole if available for history
+            $pole = \App\Models\Pole::find($newDispatch->streetlight_pole_id ?? $oldDispatch->streetlight_pole_id);
+
+            // Log history before deleting old dispatch
+            $project = Project::find($oldDispatch->project_id);
+            $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+            
+            if (isset($oldStreet) && isset($newStreet)) {
+                $this->historyService->logReplaced(
+                    $oldStreet,
+                    $newStreet,
+                    $inventoryType,
+                    $oldDispatch->project_id,
+                    $oldDispatch->store_id,
+                    $pole
+                );
+            }
+
             $oldDispatch->delete();
 
             if (isset($oldStreet)) {
                 $oldStreet->quantity = 1;
                 $oldStreet->save();
             }
-
-            $pole = Pole::find($newDispatch->streetlight_pole_id);
 
             if ($pole) {
                 switch ($newDispatch->item_code) {
@@ -676,6 +942,27 @@ class InventoryController extends Controller
             return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
         } catch (\Throwable $th) {
             return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+        }
+    }
+
+    /**
+     * Download inventory import format template
+     */
+    public function downloadImportFormat($projectId)
+    {
+        try {
+            $project = Project::findOrFail($projectId);
+            $projectType = $project->project_type;
+            
+            $filename = 'inventory_import_format_' . ($projectType == 1 ? 'streetlight' : 'rooftop') . '_' . date('Y-m-d') . '.xlsx';
+            
+            return Excel::download(
+                new InventoryImportFormatExport($projectType),
+                $filename
+            );
+        } catch (\Exception $e) {
+            Log::error('Error downloading inventory import format: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to download import format template.');
         }
     }
 

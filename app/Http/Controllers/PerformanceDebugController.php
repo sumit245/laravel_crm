@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use App\Models\{User, StreetlightTask, Task, Pole, Project};
 use Illuminate\Http\Request;
 
@@ -24,9 +25,9 @@ class PerformanceDebugController extends Controller
         
         $isStreetlight = $project->project_type == 1;
         $roleColumn = match($user->role) {
-            1 => 'engineer_id',
-            2 => 'manager_id',
-            3 => 'vendor_id',
+            UserRole::SITE_ENGINEER->value => 'engineer_id',
+            UserRole::PROJECT_MANAGER->value => 'manager_id',
+            UserRole::VENDOR->value => 'vendor_id',
             default => 'engineer_id'
         };
         
@@ -40,13 +41,7 @@ class PerformanceDebugController extends Controller
                 'id' => $user->id,
                 'name' => $user->firstName . ' ' . $user->lastName,
                 'role' => $user->role,
-                'role_name' => match($user->role) {
-                    0 => 'Admin',
-                    1 => 'Site Engineer',
-                    2 => 'Project Manager',
-                    3 => 'Vendor',
-                    default => 'Unknown'
-                },
+                'role_name' => UserRole::fromValue($user->role)?->label() ?? 'Unknown',
                 'project_id' => $user->project_id,
                 'manager_id' => $user->manager_id,
                 'site_engineer_id' => $user->site_engineer_id,
