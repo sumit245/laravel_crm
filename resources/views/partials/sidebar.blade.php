@@ -22,6 +22,19 @@
     $userRole = (int) auth()->user()->role;
     $restrictedRoles = [1, 4, 11];
     $isRestrictedUser = in_array($userRole, $restrictedRoles, true);
+
+    if (!function_exists('sidebar_active')) {
+        function sidebar_active($patterns)
+        {
+            $patterns = (array) $patterns;
+            foreach ($patterns as $pattern) {
+                if (request()->routeIs($pattern)) {
+                    return 'active';
+                }
+            }
+            return '';
+        }
+    }
 @endphp
 
 <nav class="sidebar sidebar-offcanvas" id="sidebar">
@@ -30,13 +43,15 @@
             <li class="nav-item nav-category">Project</li>
 
             <li class="nav-item">
-                <a class="nav-link" href="{{ url('/dashboard') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['dashboard', 'home']) }}"
+                    href="{{ url('/dashboard') }}">
                     <i class="mdi mdi-grid-large menu-icon"></i>
                     <span class="menu-title">Dashboard</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('projects.index') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['projects.*']) }}"
+                    href="{{ route('projects.index') }}">
                     <i class="menu-icon mdi mdi-chart-pie"></i>
                     <span class="menu-title">Projects Overview</span>
                 </a>
@@ -49,20 +64,23 @@
             </li>
             {{-- @if ($projectType == 1) --}}
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('jicr.index', ['project_id' => $selectedProjectId]) }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['jicr.*']) }}"
+                    href="{{ route('jicr.index', ['project_id' => $selectedProjectId]) }}">
                     <i class="menu-icon mdi mdi-chart-pie"></i>
                     <span class="menu-title">Generate JICR</span>
                 </a>
             </li>
             {{-- @if (auth()->user()->role == 0) --}}
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('device.index', ['project_id' => $selectedProjectId]) }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['device.index']) }}"
+                    href="{{ route('device.index', ['project_id' => $selectedProjectId]) }}">
                     <i class="menu-icon mdi mdi-file-excel"></i>
                     <span class="menu-title">Import Devices</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('rms.index', ['project_id' => $selectedProjectId]) }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['rms.index']) }}"
+                    href="{{ route('rms.index', ['project_id' => $selectedProjectId]) }}">
                     <i class="menu-icon mdi mdi-file-excel"></i>
                     <span class="menu-title">Push to RMS</span>
                 </a>
@@ -87,20 +105,23 @@
             <li class="nav-item nav-category">Users</li>
             @if (auth()->user()->role == 0)
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('staff.index') }}">
+                    <a class="nav-link js-partial-link {{ sidebar_active(['staff.*']) }}"
+                        href="{{ route('staff.index') }}">
                         <i class="menu-icon mdi mdi-account-multiple-outline"></i>
                         <span class="menu-title">Staffs Management</span>
                     </a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('candidates.index') }}">
+                    <a class="nav-link js-partial-link {{ sidebar_active(['candidates.*']) }}"
+                        href="{{ route('candidates.index') }}">
                         <i class="menu-icon mdi mdi-account-plus-outline"></i>
                         <span class="menu-title">New Hirings</span>
                     </a>
                 </li>
             @endif
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('uservendors.index') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['uservendors.*']) }}"
+                    href="{{ route('uservendors.index') }}">
                     <i class="menu-icon mdi mdi-account-multiple-outline"></i>
                     <span class="menu-title">Vendors Management</span>
                 </a>
@@ -109,13 +130,15 @@
             <!-- Billing management -->
             <li class="nav-item nav-category">Billing Management</li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('billing.tada') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['billing.tada']) }}"
+                    href="{{ route('billing.tada') }}">
                     <i class="menu-icon mdi mdi-store"></i>
                     <span class="menu-title">TA & DA</span>
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('billing.convenience') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['billing.convenience']) }}"
+                    href="{{ route('billing.convenience') }}">
                     <i class="menu-icon mdi mdi-store"></i>
                     <span class="menu-title">Conveyance</span>
                 </a>
@@ -127,7 +150,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" href="{{ route('billing.settings') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['billing.settings', 'billing.*']) }}"
+                    href="{{ route('billing.settings') }}">
                     <i class="menu-icon mdi mdi-store"></i>
                     <span class="menu-title">Settings</span>
                 </a>
@@ -136,7 +160,8 @@
 
             <li class="nav-item nav-category">Inventory</li>
             <li class="nav-item">
-                <a class="nav-link disabled" href="{{ route('inventory.index') }}">
+                <a class="nav-link disabled js-partial-link {{ sidebar_active(['inventory.*']) }}"
+                    href="{{ route('inventory.index') }}">
                     <i class="menu-icon mdi mdi-store"></i>
                     <span class="menu-title">Inventory Management</span>
                 </a>
@@ -146,19 +171,22 @@
 
         <li class="nav-item nav-category">My Meetings</li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('meets.dashboard') }}">
+            <a class="nav-link js-partial-link {{ sidebar_active(['meets.dashboard']) }}"
+                href="{{ route('meets.dashboard') }}">
                 <i class="menu-icon bi bi-view-stacked"></i>
                 <span class="menu-title">Meeting Dashboard</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('meets.index') }}">
+            <a class="nav-link js-partial-link {{ sidebar_active(['meets.index', 'meets.*']) }}"
+                href="{{ route('meets.index') }}">
                 <i class="menu-icon mdi mdi-cogs"></i>
                 <span class="menu-title">Meetings</span>
             </a>
         </li>
         <li class="nav-item">
-            <a class="nav-link" href="{{ route('meets.create') }}">
+            <a class="nav-link js-partial-link {{ sidebar_active(['meets.create']) }}"
+                href="{{ route('meets.create') }}">
                 <i class="menu-icon bi bi-plus-circle"></i>
                 <span class="menu-title">Create Meeting</span>
             </a>
@@ -174,7 +202,8 @@
             </li>
             @if (auth()->user()->role == 0)
                 <li class="nav-item">
-                    <a class="nav-link" href="{{ route('backup.index') }}">
+                    <a class="nav-link js-partial-link {{ sidebar_active(['backup.index']) }}"
+                        href="{{ route('backup.index') }}">
                         <i class="menu-icon mdi mdi-backup-restore"></i>
                         <span class="menu-title">Backup</span>
                     </a>

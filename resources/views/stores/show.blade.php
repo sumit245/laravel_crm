@@ -516,12 +516,81 @@
 
             <!-- Dispatch Material Tab -->
             <div class="tab-pane fade" id="dispatch" role="tabpanel">
-                <div class="card">
-                    <div class="card-body">
+                <div class="card mb-3">
+                    <div class="card-body d-flex justify-content-between align-items-center">
+                        <h6 class="mb-0">Dispatch Material</h6>
                         <button type="button" class="btn btn-primary btn-sm"
                             onclick="openDispatchModal({{ $store->id }})">
                             <i class="mdi mdi-truck-delivery"></i> Dispatch Material
                         </button>
+                    </div>
+                </div>
+
+                <!-- Dispatched items summary inside Dispatch tab -->
+                <div class="card">
+                    <div class="card-body">
+                        <h6 class="card-title mb-3">Already Dispatched Items</h6>
+
+                        <x-datatable id="dispatchTabDispatchedTable" title="Dispatched Items" :columns="[
+                            ['title' => 'Item Code', 'width' => '12%'],
+                            ['title' => 'Item', 'width' => '15%'],
+                            ['title' => 'Serial Number', 'width' => '18%'],
+                            ['title' => 'Vendor', 'width' => '15%'],
+                            ['title' => 'Dispatch Date', 'width' => '12%'],
+                            ['title' => 'Value', 'width' => '12%'],
+                        ]" :exportEnabled="true"
+                            :importEnabled="false" :bulkDeleteEnabled="true"
+                            :bulkDeleteRoute="route('inventory.bulkDelete')" 
+                            pageLength="25"
+                            searchPlaceholder="Search dispatched items..." :filters="[
+                                [
+                                    'type' => 'select',
+                                    'name' => 'filter_item_code',
+                                    'label' => 'Item Code',
+                                    'column' => 0,
+                                    'width' => 3,
+                                    'options' => [
+                                        '' => 'All',
+                                        'SL01' => 'SL01 - Panel',
+                                        'SL02' => 'SL02 - Luminary',
+                                        'SL03' => 'SL03 - Battery',
+                                        'SL04' => 'SL04 - Structure',
+                                    ],
+                                ],
+                                [
+                                    'type' => 'date',
+                                    'name' => 'filter_dispatch_date',
+                                    'label' => 'Dispatch Date',
+                                    'column' => 4,
+                                    'width' => 3,
+                                ],
+                            ]">
+                            @forelse($dispatched as $dispatch)
+                                <tr>
+                                    <td>
+                                        <input type="checkbox" class="row-checkbox" value="{{ $dispatch->id ?? '' }}">
+                                    </td>
+                                    <td>{{ $dispatch->item_code ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch->item ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch->serial_number ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch->vendor->name ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch->dispatch_date ? \Carbon\Carbon::parse($dispatch->dispatch_date)->format('d/m/Y') : 'N/A' }}
+                                    </td>
+                                    <td>₹{{ number_format($dispatch->total_value ?? 0, 2) }}</td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-danger delete-item" 
+                                            data-id="{{ $dispatch->id ?? '' }}" 
+                                            data-url="{{ route('inventory.destroy', $dispatch->id ?? 0) }}">
+                                            <i class="mdi mdi-delete"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="8" class="text-center">No dispatched items</td>
+                                </tr>
+                            @endforelse
+                        </x-datatable>
                     </div>
                 </div>
             </div>
@@ -674,75 +743,6 @@
                 }
             }
 
-            // Prevent DataTables from initializing on hidden tables
-            // The datatable component initializes on document.ready, but we need to
-            // ensure tables in hidden tabs don't initialize until visible
-            function initializeDataTablesWhenVisible() {
-                // Check if view tab is active
-                const viewTabPane = document.getElementById('view');
-                const inStockPane = document.getElementById('in-stock');
-                const dispatchedPane = document.getElementById('dispatched-view');
-
-                // Initialize in-stock table if visible
-                if (viewTabPane && viewTabPane.classList.contains('show') &&
-                    inStockPane && inStockPane.classList.contains('show') &&
-                    $.fn.DataTable && !$.fn.DataTable.isDataTable('#inStockTable')) {
-                    // Table will be initialized by component, just adjust after
-                    setTimeout(function() {
-                        if ($.fn.DataTable.isDataTable('#inStockTable')) {
-                            $('#inStockTable').DataTable().columns.adjust().draw();
-                        }
-                    }, 100);
-                }
-
-                // Initialize dispatched table if visible
-                if (viewTabPane && viewTabPane.classList.contains('show') &&
-                    dispatchedPane && dispatchedPane.classList.contains('show') &&
-                    $.fn.DataTable && !$.fn.DataTable.isDataTable('#dispatchedTable')) {
-                    setTimeout(function() {
-                        if ($.fn.DataTable.isDataTable('#dispatchedTable')) {
-                            $('#dispatchedTable').DataTable().columns.adjust().draw();
-                        }
-                    }, 100);
-                }
-            }
-
-            // Adjust datatables when tabs are shown
-            function adjustDataTables() {
-                setTimeout(function() {
-                    if ($.fn.DataTable) {
-                        if ($.fn.DataTable.isDataTable('#inStockTable')) {
-                            $('#inStockTable').DataTable().columns.adjust().draw();
-                        }
-                        if ($.fn.DataTable.isDataTable('#dispatchedTable')) {
-                            $('#dispatchedTable').DataTable().columns.adjust().draw();
-                        }
-                    }
-                }, 300);
-            }
-
-            // Function to ensure actions column is always visible
-            function ensureActionsColumnVisible() {
-                setTimeout(function() {
-                    if ($.fn.DataTable) {
-                        // For inStockTable
-                        if ($.fn.DataTable.isDataTable('#inStockTable')) {
-                            const table = $('#inStockTable').DataTable();
-                            const lastColIndex = table.columns().count() - 1;
-                            table.column(lastColIndex).visible(true, false);
-                            table.columns.adjust().draw(false);
-                        }
-                        // For dispatchedTable
-                        if ($.fn.DataTable.isDataTable('#dispatchedTable')) {
-                            const table = $('#dispatchedTable').DataTable();
-                            const lastColIndex = table.columns().count() - 1;
-                            table.column(lastColIndex).visible(true, false);
-                            table.columns.adjust().draw(false);
-                        }
-                    }
-                }, 500);
-            }
-
             // Handle main view tab - CRITICAL: Force nav-pills to be visible
             const viewTab = document.getElementById('view-tab');
             if (viewTab) {
@@ -786,11 +786,6 @@
                 
                 viewTab.addEventListener('shown.bs.tab', function() {
                     forceShowNavPills();
-                    setTimeout(function() {
-                        initializeDataTablesWhenVisible();
-                        adjustDataTables();
-                        ensureActionsColumnVisible();
-                    }, 200);
                 });
                 
                 // Also check on click (before shown event)
@@ -802,30 +797,6 @@
                 if (viewTab.classList.contains('active') || viewTab.getAttribute('aria-selected') === 'true') {
                     setTimeout(forceShowNavPills, 100);
                 }
-            }
-
-            // Handle nested tab visibility for in-stock and dispatched tabs
-            const inStockTab = document.getElementById('in-stock-tab');
-            const dispatchedTab = document.getElementById('dispatched-tab');
-
-            if (inStockTab) {
-                inStockTab.addEventListener('shown.bs.tab', function() {
-                    setTimeout(function() {
-                        initializeDataTablesWhenVisible();
-                        adjustDataTables();
-                        ensureActionsColumnVisible();
-                    }, 200);
-                });
-            }
-
-            if (dispatchedTab) {
-                dispatchedTab.addEventListener('shown.bs.tab', function() {
-                    setTimeout(function() {
-                        initializeDataTablesWhenVisible();
-                        adjustDataTables();
-                        ensureActionsColumnVisible();
-                    }, 200);
-                });
             }
             
             // Ensure nav-pills are visible on page load if view tab is active
@@ -846,24 +817,8 @@
                     if (viewTabs) {
                         viewTabs.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
                     }
-                    ensureActionsColumnVisible();
                 }
             }, 500);
-
-            // Initialize immediately if view tab is already active on page load
-            setTimeout(function() {
-                const viewTabPane = document.getElementById('view');
-                if (viewTabPane && viewTabPane.classList.contains('show')) {
-                    initializeDataTablesWhenVisible();
-                }
-            }, 500);
-
-            // Also adjust on window resize
-            let resizeTimer;
-            window.addEventListener('resize', function() {
-                clearTimeout(resizeTimer);
-                resizeTimer = setTimeout(adjustDataTables, 250);
-            });
 
             @if ($project->project_type == 1)
                 // Store chart instances to prevent re-rendering
