@@ -52,9 +52,14 @@
     <div class="d-flex justify-content-between mb-3">
       <!-- Search box is added automatically by DataTables -->
       <div></div> <!-- Empty div to align with search box -->
-      <a href="{{ route("tasks.create") }}" class="btn btn-icon btn-primary" data-toggle="tooltip" title="Add New Staff">
-        <i class="mdi mdi-plus-circle"></i>
-      </a>
+      <div>
+        <a href="{{ route("tasks.export", ['project_id' => $project->id]) }}" class="btn btn-icon btn-success me-2" data-toggle="tooltip" title="Export to Excel">
+          <i class="mdi mdi-file-excel"></i>
+        </a>
+        <a href="{{ route("tasks.create", ['project_id' => $project->id]) }}" class="btn btn-icon btn-primary" data-toggle="tooltip" title="Add New Task">
+          <i class="mdi mdi-plus-circle"></i>
+        </a>
+      </div>
     </div>
     <table id="tasksTable" class="table-striped table-bordered table-sm table">
       <thead>
@@ -71,29 +76,49 @@
         @foreach ($tasks as $member)
           <tr>
             <td>{{ $loop->iteration }}</td>
-            <td>{{ $member->activity }}</td>
-            <td>{{ $member->site->site_name }}</td>
-            <td>{{ $member->status }}</td>
-            <td>{{ $member->approved_by }}</td>
+            <td>{{ $member->activity ?? ($member->task_name ?? 'N/A') }}</td>
+            <td>
+              @if($project->project_type == 1)
+                {{ $member->site->panchayat ?? 'N/A' }}
+              @else
+                {{ $member->site->site_name ?? 'N/A' }}
+              @endif
+            </td>
+            <td>
+              @if($member->status)
+                <span class="badge badge-{{ \App\Enums\TaskStatus::tryFrom($member->status)?->color() ?? 'secondary' }}">
+                  {{ $member->status }}
+                </span>
+              @else
+                N/A
+              @endif
+            </td>
+            <td>{{ $member->approved_by ?? 'N/A' }}</td>
             <td>
               <!-- View Button -->
-              <a href="{{ route("staff.show", $member->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
+              <a href="{{ route("tasks.show", ['id' => $member->id, 'project_type' => $project->project_type]) }}" class="btn btn-icon btn-info" data-toggle="tooltip"
                 title="View Details">
                 <i class="mdi mdi-eye"></i>
               </a>
               <!-- Edit Button -->
-              <a href="{{ route("staff.edit", $member->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
-                title="Edit Staff">
-                <i class="mdi mdi-pencil"></i>
-              </a>
+              @if($project->project_type == 1)
+                <a href="{{ route("tasks.edit", ['id' => $member->id, 'project_id' => $project->id]) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
+                  title="Edit Task">
+                  <i class="mdi mdi-pencil"></i>
+                </a>
+              @else
+                <a href="{{ route("tasks.editrooftop", $member->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
+                  title="Edit Task">
+                  <i class="mdi mdi-pencil"></i>
+                </a>
+              @endif
               <!-- Delete Button -->
-              <form action="{{ route("staff.destroy", $member->id) }}" method="POST" style="display:inline;">
-                <button type="submit" class="btn btn-icon btn-danger delete-task" data-toggle="tooltip"
-                  title="Delete Task" data-id="{{ $member->id }}" data-name="{{ $member->name }}"
-                  data-url="{{ route("uservendors.destroy", $member->id) }}">
-                  <i class="mdi mdi-delete"></i>
-                </button>
-              </form>
+              <button type="button" class="btn btn-icon btn-danger delete-task" data-toggle="tooltip"
+                title="Delete Task" data-id="{{ $member->id }}" 
+                data-name="{{ $member->activity ?? ($member->task_name ?? 'this task') }}"
+                data-url="{{ route("tasks.destroy", $member->id) }}">
+                <i class="mdi mdi-delete"></i>
+              </button>
             </td>
           </tr>
         @endforeach
@@ -145,14 +170,14 @@
       // Adjust search box alignment
       $('.dataTables_filter input').addClass('form-control form-control-sm');
 
-      $('.delete-vendor').on('click', function() {
-        let staffId = $(this).data('id');
-        let staffName = $(this).data('name');
+      $('.delete-task').on('click', function() {
+        let taskId = $(this).data('id');
+        let taskName = $(this).data('name');
         let deleteUrl = $(this).data('url');
 
         Swal.fire({
           title: `Are you sure?`,
-          text: `You are about to delete ${staffName}. This action cannot be undone.`,
+          text: `You are about to delete task "${taskName}". This action cannot be undone.`,
           icon: 'warning',
           showCancelButton: true,
           confirmButtonColor: '#d33',
@@ -171,15 +196,17 @@
               success: function(response) {
                 Swal.fire(
                   'Deleted!',
-                  `${staffName} has been deleted.`,
+                  `Task "${taskName}" has been deleted.`,
                   'success'
                 );
-                $(`button[data-id="${staffId}"]`).closest('tr').remove();
+                setTimeout(function() {
+                  window.location.reload();
+                }, 1500);
               },
               error: function(xhr) {
                 Swal.fire(
                   'Error!',
-                  'There was an error deleting the staff member. Please try again.',
+                  'There was an error deleting the task. Please try again.',
                   'error'
                 );
               }

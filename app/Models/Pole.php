@@ -11,6 +11,7 @@ class Pole extends Model
     protected $table = 'streelight_poles';
     protected $fillable = [
         'task_id',
+        'vendor_id',
         'isSurveyDone',
         'isNetworkAvailable',
         'isInstallationDone',
@@ -41,5 +42,10 @@ class Pole extends Model
     public function task()
     {
         return $this->belongsTo(StreetlightTask::class, 'task_id');
+    }
+
+    public function vendor()
+    {
+        return $this->belongsTo(User::class, 'vendor_id');
     }
 }

@@ -2,11 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Helpers\WhatsappHelper;
 use App\Imports\StaffImport;
+use App\Models\DiscussionPoint;
+use App\Models\Meet;
 use App\Models\Pole;
 use App\Models\Project;
+use App\Models\Site;
+use App\Models\Streetlight;
 use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
@@ -155,94 +160,287 @@ class StaffController extends Controller
             $staff = User::with(['projectManager', 'siteEngineers', 'vendors', 'projects', 'usercategory', 'verticalHead'])
                 ->findOrFail($id);
             $userId = $staff->id;
-            $projectId = $staff->project_id;
-            // Project can now be nullable; handle gracefully instead of failing
-            $project = $projectId ? Project::find($projectId) : null;
 
-            $surveyedPolesCount = 0;
-            $installedPolesCount = 0;
-            $surveyedPoles = 0;
-            $installedPoles = 0;
-
-            // If there is no project or project_type, treat as non-streetlight
-            $isStreetlightProject = $project && $project->project_type == 1;
-            if ($isStreetlightProject) {
-                $tasks = StreetlightTask::with(['site', 'poles'])
-                    ->whereDate('created_at', Carbon::today())
-                    ->where(function ($query) use ($staff) {
-                        $query->where('engineer_id', $staff->id)
-                            ->orWhere('manager_id', $staff->id)
-                            ->orWhere('vendor_id', $staff->id);
-                    })
-                    ->get();
-                $surveyedPolesCount = Pole::whereHas('task', function ($query) use ($userId) {
-                    $query->where(function ($q) use ($userId) {
-                        $q->where('manager_id', $userId)
-                            ->orWhere('engineer_id', $userId)
-                            ->orWhere('vendor_id', $userId);
-                    });
-                })->where('isSurveyDone', 1)->count();
-                $installedPolesCount = Pole::whereHas('task', function ($query) use ($projectId, $userId) {
-                    $query->where(function ($q) use ($userId) {
-                        $q->where('manager_id', $userId)
-                            ->orWhere('engineer_id', $userId)
-                            ->orWhere('vendor_id', $userId);
-                    });
-                })->where('isInstallationDone', 1)->count();
-                $surveyedPoles = Pole::where('isSurveyDone', 1)
-                    ->whereDate('created_at', Carbon::today())
-                    ->whereHas('task', function ($query) use ($userId) {
-                        $query->where('manager_id', $userId);
-                    })
-                    ->get();
-                $installedPoles = Pole::where('isInstallationDone', 1)
-                    ->whereDate('created_at', Carbon::today())
-                    ->whereHas('task', function ($query) use ($userId) {
-                        $query->where('manager_id', $userId);
-                    })
-                    ->get();
-            } else {
-                $tasks = Task::with('site')
-                    ->where(function ($query) use ($staff) {
-                        $query->where('engineer_id', $staff->id)
-                            ->orWhere('manager_id', $staff->id)
-                            ->orWhere('vendor_id', $staff->id);
-                    })
-                    ->get();
+            // Get all assigned projects from pivot table
+            $assignedProjects = $staff->getAssignedProjects();
+            
+            // If no projects in pivot, check legacy project_id
+            if ($assignedProjects->isEmpty() && $staff->project_id) {
+                $legacyProject = Project::find($staff->project_id);
+                if ($legacyProject) {
+                    $assignedProjects = collect([$legacyProject]);
+                    // Sync to pivot table for consistency
+                    $staff->assignToProject($legacyProject->id);
+                }
+            }
+            
+            // If still no projects, try to find projects from tasks (streetlight and rooftop)
+            if ($assignedProjects->isEmpty()) {
+                // Get unique project IDs from streetlight tasks
+                $streetlightProjectIds = StreetlightTask::where(function($query) use ($userId) {
+                    $query->where('engineer_id', $userId)
+                        ->orWhere('manager_id', $userId)
+                        ->orWhere('vendor_id', $userId);
+                })->distinct()->pluck('project_id');
+                
+                // Get unique project IDs from rooftop tasks
+                $rooftopProjectIds = Task::where(function($query) use ($userId) {
+                    $query->where('engineer_id', $userId)
+                        ->orWhere('manager_id', $userId)
+                        ->orWhere('vendor_id', $userId);
+                })->distinct()->pluck('project_id');
+                
+                // Merge and get unique projects
+                $allProjectIds = $streetlightProjectIds->merge($rooftopProjectIds)->unique()->filter();
+                if ($allProjectIds->isNotEmpty()) {
+                    $assignedProjects = Project::whereIn('id', $allProjectIds)->get();
+                    // Sync to pivot table for consistency
+                    foreach ($assignedProjects as $project) {
+                        $staff->assignToProject($project->id);
+                    }
+                }
             }
 
-            // Categorize tasks
-            $assignedTasks = $tasks;
-            $assignedTasksCount = $tasks->count();
-            $completedTasks = $tasks->where('status', 'Completed');
-            $completedTasksCount = $completedTasks->count();
-            $pendingTasks = $tasks->whereIn('status', ['Pending', 'In Progress']);
+            // Calculate meeting tasks assigned to staff
+            // Get discussion points where staff is assigned via pivot table or direct assignment
+            $meetingTasks = DiscussionPoint::where(function($query) use ($userId) {
+                $query->where('assignee_id', $userId)
+                    ->orWhere('assigned_to', $userId)
+                    ->orWhereExists(function($subQuery) use ($userId) {
+                        // Check pivot table directly
+                        $subQuery->select(DB::raw(1))
+                            ->from('discussion_point_user')
+                            ->whereColumn('discussion_point_user.discussion_point_id', 'discussion_points.id')
+                            ->where('discussion_point_user.user_id', $userId);
+                    });
+            })
+            ->with(['meet', 'project', 'assignee', 'assignedToUser', 'assignedUsers'])
+            ->get();
+
+            // Meeting tasks summary
+            $meetingTasksSummary = [
+                'total' => $meetingTasks->count(),
+                'completed' => $meetingTasks->where('status', 'Completed')->count(),
+                'in_progress' => $meetingTasks->where('status', 'In Progress')->count(),
+                'pending' => $meetingTasks->where('status', 'Pending')->count(),
+            ];
+
+            // Gather streetlight data per project
+            $streetlightDataByProject = [];
+            foreach ($assignedProjects as $project) {
+                if ($project->project_type == 1) {
+                    // Get tasks where staff is engineer, manager, or vendor
+                    $projectTasks = StreetlightTask::where('project_id', $project->id)
+                        ->where(function($query) use ($userId) {
+                            $query->where('engineer_id', $userId)
+                                ->orWhere('manager_id', $userId)
+                                ->orWhere('vendor_id', $userId);
+                        })
+                        ->with('site')
+                        ->get();
+                    
+                    $projectTaskIds = $projectTasks->pluck('id');
+                    $siteIds = $projectTasks->pluck('site_id')->filter()->unique();
+                    
+                    // Get sites from tasks
+                    $sites = Streetlight::whereIn('id', $siteIds)->get();
+                    
+                    // Calculate totals
+                    $totalPoles = $sites->sum('total_poles');
+                    
+                    $surveyedPoles = Pole::whereIn('task_id', $projectTaskIds)
+                        ->where('isSurveyDone', 1)
+                        ->count();
+                    
+                    $installedPoles = Pole::whereIn('task_id', $projectTaskIds)
+                        ->where('isInstallationDone', 1)
+                        ->count();
+                    
+                    // Get detailed streetlight sites with poles data
+                    $streetlightSites = $sites->map(function($site) use ($projectTasks) {
+                        // Get tasks for this site
+                        $siteTasks = $projectTasks->where('site_id', $site->id);
+                        $siteTaskIds = $siteTasks->pluck('id');
+                        
+                        // Get poles for these tasks
+                        $poles = Pole::whereIn('task_id', $siteTaskIds)->get();
+                        
+                        return [
+                            'id' => $site->id,
+                            'state' => $site->state,
+                            'district' => $site->district,
+                            'block' => $site->block,
+                            'panchayat' => $site->panchayat,
+                            'ward' => $site->ward,
+                            'total_poles' => $site->total_poles ?? 0,
+                            'surveyed_poles_count' => $poles->where('isSurveyDone', 1)->count(),
+                            'installed_poles_count' => $poles->where('isInstallationDone', 1)->count(),
+                            'task' => $siteTasks->first(),
+                        ];
+                    });
+                    
+                    $streetlightDataByProject[$project->id] = [
+                        'project' => $project,
+                        'total_poles' => $totalPoles,
+                        'surveyed_poles' => $surveyedPoles,
+                        'installed_poles' => $installedPoles,
+                        'sites' => $streetlightSites,
+                    ];
+                }
+            }
+
+            // Gather rooftop data per project
+            $rooftopDataByProject = [];
+            foreach ($assignedProjects as $project) {
+                if ($project->project_type == 0) {
+                    // Get tasks where staff is engineer, manager, or vendor
+                    $projectTaskIds = Task::where('project_id', $project->id)
+                        ->where(function($query) use ($userId) {
+                            $query->where('engineer_id', $userId)
+                                ->orWhere('manager_id', $userId)
+                                ->orWhere('vendor_id', $userId);
+                        })
+                        ->pluck('id');
+                    
+                    $rooftopSites = Site::whereIn('id', function($query) use ($projectTaskIds) {
+                        $query->select('site_id')
+                            ->from('tasks')
+                            ->whereIn('id', $projectTaskIds);
+                    })
+                    ->with(['tasks' => function($q) use ($userId, $project) {
+                        $q->where(function($query) use ($userId) {
+                            $query->where('engineer_id', $userId)
+                                ->orWhere('manager_id', $userId)
+                                ->orWhere('vendor_id', $userId);
+                        })
+                        ->where('project_id', $project->id);
+                    }])
+                    ->get()
+                    ->map(function($site) {
+                        return [
+                            'id' => $site->id,
+                            'site_name' => $site->site_name,
+                            'breda_sl_no' => $site->breda_sl_no,
+                            'location' => $site->location,
+                            'district' => optional($site->districtRelation)->name ?? 'N/A',
+                            'state' => optional($site->stateRelation)->name ?? 'N/A',
+                            'installation_status' => $site->installation_status,
+                            'commissioning_date' => $site->commissioning_date,
+                            'task' => $site->tasks->first(),
+                        ];
+                    });
+                    
+                    $rooftopDataByProject[$project->id] = [
+                        'project' => $project,
+                        'sites' => $rooftopSites,
+                        'total_sites' => $rooftopSites->count(),
+                        'completed_sites' => $rooftopSites->filter(function($site) {
+                            return $site['task'] && $site['task']->status == TaskStatus::COMPLETED->value;
+                        })->count(),
+                    ];
+                }
+            }
+
+            // Calculate aggregate totals across all projects
+            $totalTasksCount = 0;
+            $completedTasksCount = 0;
+            $pendingTasksCount = 0;
+            $allTasks = collect();
+
+            foreach ($assignedProjects as $project) {
+                if ($project->project_type == 1) {
+                    // Streetlight: Sum of total_poles
+                    if (isset($streetlightDataByProject[$project->id])) {
+                        $totalTasksCount += $streetlightDataByProject[$project->id]['total_poles'] ?? 0;
+                        $completedTasksCount += $streetlightDataByProject[$project->id]['installed_poles'] ?? 0;
+                    }
+                } else {
+                    // Rooftop: Count of sites/tasks
+                    if (isset($rooftopDataByProject[$project->id])) {
+                        $totalTasksCount += $rooftopDataByProject[$project->id]['total_sites'] ?? 0;
+                        $completedTasksCount += $rooftopDataByProject[$project->id]['completed_sites'] ?? 0;
+                    }
+                }
+            }
+
+            // Calculate pending tasks count from all project tasks
+            foreach ($assignedProjects as $project) {
+                if ($project->project_type == 1) {
+                    $projectTasks = StreetlightTask::where('project_id', $project->id)
+                        ->where(function($query) use ($userId) {
+                            $query->where('engineer_id', $userId)
+                                ->orWhere('manager_id', $userId)
+                                ->orWhere('vendor_id', $userId);
+                        })
+                        ->get();
+                    $allTasks = $allTasks->merge($projectTasks);
+                } else {
+                    $projectTasks = Task::where('project_id', $project->id)
+                        ->where(function($query) use ($userId) {
+                            $query->where('engineer_id', $userId)
+                                ->orWhere('manager_id', $userId)
+                                ->orWhere('vendor_id', $userId);
+                        })
+                        ->get();
+                    $allTasks = $allTasks->merge($projectTasks);
+                }
+            }
+
+            $pendingTasks = $allTasks->whereIn('status', [
+                TaskStatus::PENDING->value,
+                TaskStatus::IN_PROGRESS->value
+            ]);
             $pendingTasksCount = $pendingTasks->count();
-            $rejectedTasks = $tasks->where('status', 'Rejected');
-            $rejectedTasksCount = $rejectedTasks->count();
 
             return view('staff.show', compact(
-                'project',
                 'staff',
-                'assignedTasks',
-                'completedTasks',
-                'pendingTasks',
-                'rejectedTasks',
-                'surveyedPolesCount',
-                'surveyedPoles',
-                'isStreetlightProject',
-                'installedPoles',
-                'installedPolesCount',
-                'assignedTasksCount',
+                'assignedProjects',
+                'meetingTasks',
+                'meetingTasksSummary',
+                'streetlightDataByProject',
+                'rooftopDataByProject',
+                'totalTasksCount',
                 'completedTasksCount',
                 'pendingTasksCount',
-                'rejectedTasksCount',
+                'allTasks'
             ));
         } catch (\Exception $e) {
+            Log::error('Staff show page error: ' . $e->getMessage(), [
+                'staff_id' => $id,
+                'exception' => $e,
+                'trace' => $e->getTraceAsString()
+            ]);
             return back()->with('error', 'An error occurred: ' . $e->getMessage());
         }
     }
 
+
+    /**
+     * Upload staff avatar image.
+     */
+    public function uploadAvatar(Request $request, $id)
+    {
+        $request->validate([
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+        ]);
+
+        $user = User::findOrFail($id);
+
+        // Generate unique filename: username_YYYYMMDD_HHMMSS.jpg
+        $timestamp = Carbon::now()->format('Ymd_His');
+        $filename = "{$user->username}_{$timestamp}.jpg";
+
+        // Upload to S3 (path: users/avatar/{filename})
+        $path = $request->file('image')->storeAs('users/avatar', $filename, 's3');
+
+        // Save image path in the database
+        $user->update(['image' => Storage::disk('s3')->url($path)]);
+
+        return response()->json([
+            'message' => 'Profile picture uploaded successfully',
+            'image_url' => $user->image,
+        ], 200);
+    }
 
     /**
      * Show the form for editing the specified resource.

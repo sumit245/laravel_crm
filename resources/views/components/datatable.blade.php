@@ -41,7 +41,7 @@
                     </div>
                 </form>
                 @if ($importFormatUrl)
-                    <a href="{{ $importFormatUrl }}" class="download-format-link" download>
+                    <a href="{{ $importFormatUrl }}" class="download-format-link" target="_blank">
                         <i class="mdi mdi-download"></i>
                         <span>Download Format</span>
                     </a>
@@ -69,7 +69,8 @@
                     <div class="col-12 col-sm-6 col-md-{{ $filter['width'] ?? 3 }}">
                         <label class="form-label small mb-1 fw-semibold">{{ $filter['label'] ?? '' }}</label>
                         @if ($filter['type'] === 'select')
-                            <select class="form-control form-control-sm filter-select"
+                            <select
+                                class="form-control form-control-sm filter-select {{ isset($filter['select2']) && $filter['select2'] ? 'filter-select2' : '' }}"
                                 data-column="{{ $filter['column'] }}" data-filter="{{ $filter['name'] }}">
                                 <option value="">{{ $filter['label'] ?? 'All' }}</option>
                                 @foreach ($filter['options'] as $value => $label)
@@ -104,13 +105,13 @@
 
     {{-- Bulk Actions Bar --}}
     @if ($bulkDeleteEnabled)
-        <div class="mb-3" id="bulkActions" style="display: none;">
+        <div class="mb-3" id="{{ $id }}_bulkActions" style="display: none;">
             <div
                 class="alert alert-warning mb-0 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between py-2 gap-2">
-                <span><i class="mdi mdi-information"></i> <strong id="selectedCount">0</strong> item(s) selected</span>
+                <span><i class="mdi mdi-information"></i> <strong id="{{ $id }}_selectedCount">0</strong> item(s) selected</span>
                 <button type="button"
                     class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 w-10 w-sm-auto"
-                    id="bulkDeleteBtn">
+                    id="{{ $id }}_bulkDeleteBtn">
                     <i class="mdi mdi-delete"></i>
                     <span>Delete Selected</span>
                 </button>
@@ -423,6 +424,11 @@
             visibility: visible !important;
         }
 
+        /* Consistent button width for Add buttons */
+        .datatable-wrapper .add-new-btn {
+            min-width: 140px;
+        }
+
         .datatable-wrapper .btn-icon i {
             font-size: 1rem !important;
         }
@@ -476,7 +482,7 @@
             height: 18px;
         }
 
-        #bulkActions .alert {
+        [id$="_bulkActions"] .alert {
             margin-bottom: 0;
             padding: 10px 15px;
         }
@@ -956,19 +962,68 @@
         $(document).ready(function() {
             const tableId = '#{{ $id }}';
             let table; // Declare table variable first
-
-            // Define helper functions before table initialization
-            function updateBulkActions() {
+            
+            // Check if table is visible before initializing
+            function isTableVisible() {
+                const $table = $(tableId);
+                if (!$table.length) return false;
+                
+                // Check if table is in a hidden tab
+                const $tabPane = $table.closest('.tab-pane');
+                if ($tabPane.length) {
+                    // Table is in a tab pane, check if it's visible
+                    // Bootstrap 5 uses 'show' class and display: block for visible tabs
+                    const hasShowClass = $tabPane.hasClass('show');
+                    const isDisplayed = $tabPane.css('display') !== 'none';
+                    const isVisible = $tabPane.is(':visible');
+                    
+                    // All conditions must be true for tab to be visible
+                    return hasShowClass && isDisplayed && isVisible;
+                }
+                
+                // Table is not in a tab, check if it's visible
+                return $table.is(':visible');
+            }
+            
+            // Initialize table only if visible, otherwise wait
+            function initializeTable() {
+                // Wait a bit for DOM to settle, then check visibility
+                setTimeout(function() {
+                    if (!isTableVisible()) {
+                        // Table is hidden, wait and check again (max 10 attempts = 2 seconds)
+                        let attempts = 0;
+                        const checkInterval = setInterval(function() {
+                            attempts++;
+                            if (isTableVisible() || attempts >= 10) {
+                                clearInterval(checkInterval);
+                                if (isTableVisible() && !$.fn.DataTable.isDataTable(tableId)) {
+                                    initializeDataTable();
+                                }
+                            }
+                        }, 200);
+                        return;
+                    }
+                    
+                    // Table is visible, proceed with initialization
+                    if (!$.fn.DataTable.isDataTable(tableId)) {
+                        initializeDataTable();
+                    }
+                }, 100);
+            }
+                // Define helper functions before table initialization
+                function updateBulkActions() {
                 if (!table || typeof table.rows === 'undefined') return;
                 try {
                     // Count only checked checkboxes, not DataTables selected rows
                     const checkedCount = $(tableId + ' tbody .row-checkbox:checked').length;
+                    const bulkActionsDiv = $('#{{ $id }}_bulkActions');
+                    const selectedCountSpan = $('#{{ $id }}_selectedCount');
 
                     if (checkedCount > 0) {
-                        $('#bulkActions').slideDown(200);
-                        $('#selectedCount').text(checkedCount);
+                        bulkActionsDiv.slideDown(200);
+                        selectedCountSpan.text(checkedCount);
                     } else {
-                        $('#bulkActions').slideUp(200);
+                        bulkActionsDiv.slideUp(200);
                     }
                 } catch (e) {
                     // Silently fail if table not ready
@@ -1065,8 +1120,10 @@
                     $row.remove();
                 }
             });
-
-            table = $(tableId).DataTable({
+            
+            // Initialize table only if visible, otherwise wait
+            function initializeDataTable() {
+                table = $(tableId).DataTable({
                 dom: "<'row'<'col-sm-12'lf>>" + // Length menu and search box
                     "<'row'<'col-sm-12'tr>>" + // Table
                     "<'row'<'col-sm-5'i><'col-sm-7'p>>", // Info and pagination
@@ -1105,6 +1162,7 @@
                         targets: -1,
                         className: 'text-center no-export',
                         width: '120px',
+                        visible: true,
                         createdCell: function(td, cellData, rowData, row, col) {
                             $(td).css({
                                 'width': '120px',
@@ -1198,7 +1256,7 @@
                         // Remove any spans, icons, or other elements added by DataTables
                         $th.find(
                             'span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none'
-                            ).remove();
+                        ).remove();
                     });
 
                     // Enforce actions column width on every draw to prevent stretching
@@ -1246,7 +1304,7 @@
                         // Remove any spans, icons, or other elements added by DataTables
                         $th.find(
                             'span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none'
-                            ).remove();
+                        ).remove();
                         // Remove any ::before pseudo-element content by adding a class
                         $th.addClass('custom-sort-header');
                     });
@@ -1337,7 +1395,7 @@
                         const defaultPagination = $(tableId + '_wrapper').find(
                             '.dataTables_paginate');
                         if (defaultPagination.length && defaultPagination.parent().attr(
-                            'id') !== '{{ $id }}_pagination_wrapper') {
+                                'id') !== '{{ $id }}_pagination_wrapper') {
                             defaultPagination.appendTo('#' + '{{ $id }}' +
                                 '_pagination_wrapper');
                             const paginationWrapper = $('#' + '{{ $id }}' +
@@ -1654,16 +1712,13 @@
                                         title: 'Deleted!',
                                         text: response.message ||
                                             'Selected items have been deleted.',
-                                        timer: 2000,
+                                        timer: 1500,
                                         showConfirmButton: false
+                                    }).then(() => {
+                                        // Reload the page to refresh the table, preserving hash
+                                        const currentHash = window.location.hash;
+                                        window.location.reload();
                                     });
-                                    // Remove rows with checked checkboxes
-                                    $(tableId + ' tbody .row-checkbox:checked').each(
-                                        function() {
-                                            table.row($(this).closest('tr')).remove();
-                                        });
-                                    table.draw();
-                                    updateBulkActions();
                                 },
                                 error: function(xhr) {
                                     Swal.fire({
@@ -1679,7 +1734,7 @@
                     });
                 }
 
-                $('#bulkDeleteBtn').on('click', function() {
+                $('#{{ $id }}_bulkDeleteBtn').on('click', function() {
                     performBulkDelete();
                 });
 
@@ -1874,6 +1929,21 @@
                         });
                     }
                 });
+            });
+            
+            // Store table reference globally for tab visibility checks
+            window['datatable_{{ $id }}'] = table;
+            window['table_{{ $id }}'] = table;
+            }
+            
+            // Initialize table only if visible, otherwise wait
+            initializeTable();
+            
+            // Also listen for tab visibility changes
+            $(document).on('shown.bs.tab', function() {
+                if (!$.fn.DataTable.isDataTable(tableId) && isTableVisible()) {
+                    initializeDataTable();
+                }
             });
         });
     </script>

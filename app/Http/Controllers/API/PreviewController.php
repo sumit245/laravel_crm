@@ -170,7 +170,11 @@ class PreviewController extends Controller
 
         // If no data in session, redirect back to form
         if (empty($data)) {
-            return redirect()->route('hrm.apply')->with('error', 'No form data found. Please fill the form first.');
+            $id = request()->get('id') ?? session('employee_form_data.id');
+            if (!$id) {
+                return redirect('/')->with('error', 'No form data found. Please fill the form first.');
+            }
+            return redirect()->route('apply-now', ['id' => $id])->with('error', 'No form data found. Please fill the form first.');
         }
 
         return view('hrm.preview', ['data' => $data]);
@@ -186,7 +190,11 @@ class PreviewController extends Controller
 
             // If no data in session, redirect back to form
             if (empty($data)) {
-                return redirect()->route('hrm.apply')->with('error', 'No form data found. Please fill the form first.');
+                $id = request()->get('id') ?? $data['id'] ?? null;
+                if (!$id) {
+                    return redirect('/')->with('error', 'No form data found. Please fill the form first.');
+                }
+                return redirect()->route('apply-now', ['id' => $id])->with('error', 'No form data found. Please fill the form first.');
             }
 
             if ($request->hasFile('photo') && $request->file('photo')->isValid()) {

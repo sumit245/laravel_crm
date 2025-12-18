@@ -5,12 +5,23 @@ namespace App\Http\Controllers;
 use App\Models\Pole;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
+use App\Services\Inventory\InventoryService;
+use App\Services\Inventory\InventoryHistoryService;
 //TODO: Add StreetlightTask and User model also to modify vendor(installer name, billing status etc)
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class PoleController extends Controller
 {
+    protected InventoryService $inventoryService;
+    protected InventoryHistoryService $historyService;
+
+    public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService)
+    {
+        $this->inventoryService = $inventoryService;
+        $this->historyService = $historyService;
+    }
     public function edit($id)
     {
         $pole = Pole::findOrFail($id);
@@ -55,12 +66,36 @@ class PoleController extends Controller
         $validated = $request->validate($rules);
 
         try {
+            DB::beginTransaction();
 
+            // Get pole's district for validation
+            $poleDistrict = null;
+            if ($pole->task && $pole->task->streetlight) {
+                $poleDistrict = $pole->task->streetlight->district;
+            }
 
             // Return inventory if any QR changed
             foreach (['luminary_qr', 'panel_qr', 'battery_qr'] as $field) {
                 if (!empty($validated[$field]) && $validated[$field] !== $pole->$field) {
-                    $this->replaceSerialManually($pole, $field, $validated[$field]);
+                    // Validate new serial exists and district matches
+                    $newDispatch = InventoryDispatch::where('serial_number', $validated[$field])
+                        ->where('isDispatched', true)
+                        ->where('is_consumed', false)
+                        ->first();
+
+                    if ($newDispatch && $poleDistrict) {
+                        // Check district match
+                        $projectDistricts = $this->inventoryService->getProjectDistricts($newDispatch->project_id);
+                        if (!in_array($poleDistrict, $projectDistricts)) {
+                            DB::rollBack();
+                            $project = \App\Models\Project::find($newDispatch->project_id);
+                            return redirect()->back()
+                                ->withErrors([$field => "Inventory from {$project->project_name} cannot be used in district {$poleDistrict}"])
+                                ->withInput();
+                        }
+                    }
+
+                    $this->replaceSerialManually($pole, $field, $validated[$field], $poleDistrict);
                 }
             }
 
@@ -91,22 +126,53 @@ class PoleController extends Controller
             ]);
 
             if (!empty($newSerials)) {
-                InventoryDispatch::whereIn('serial_number', $newSerials)
+                // Validate district for new serials before consuming
+                $poleDistrict = $pole->task && $pole->task->streetlight ? $pole->task->streetlight->district : null;
+                
+                if ($poleDistrict) {
+                    $dispatches = InventoryDispatch::whereIn('serial_number', $newSerials)
+                        ->whereNull('streetlight_pole_id')
+                        ->get();
+
+                    foreach ($dispatches as $dispatch) {
+                        $projectDistricts = $this->inventoryService->getProjectDistricts($dispatch->project_id);
+                        if (!in_array($poleDistrict, $projectDistricts)) {
+                            DB::rollBack();
+                            $project = \App\Models\Project::find($dispatch->project_id);
+                            return redirect()->back()
+                                ->withErrors(['error' => "Inventory from {$project->project_name} cannot be used in district {$poleDistrict}"])
+                                ->withInput();
+                        }
+                    }
+                }
+
+                $dispatches = InventoryDispatch::whereIn('serial_number', $newSerials)
                     ->whereNull('streetlight_pole_id')
-                    ->update([
+                    ->get();
+
+                foreach ($dispatches as $dispatch) {
+                    $dispatch->update([
                         'is_consumed' => true,
                         'streetlight_pole_id' => $pole->id,
                     ]);
+
+                    // Log history
+                    $project = \App\Models\Project::find($dispatch->project_id);
+                    $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+                    $this->historyService->logConsumed($dispatch, $inventoryType, $pole);
+                }
             }
 
+            DB::commit();
             Log::info('Pole Updated:', $pole->toArray());
 
             return redirect()->route('poles.show', $pole->id)
                 ->with('success', 'Pole details updated successfully!');
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Failed to update pole', ['error' => $e->getMessage()]);
             return redirect()->back()
-                ->with('error', 'Failed to update pole details')
+                ->with('error', 'Failed to update pole details: ' . $e->getMessage())
                 ->withInput();
         }
     }
@@ -211,7 +277,7 @@ class PoleController extends Controller
         }
     }
 
-    protected function replaceSerialManually($pole, $field, $newSerial)
+    protected function replaceSerialManually($pole, $field, $newSerial, $poleDistrict = null)
     {
         $oldSerial = $pole->$field;
 
@@ -219,8 +285,25 @@ class PoleController extends Controller
         $oldDispatch = InventoryDispatch::where('serial_number', $oldSerial)->first();
         if (!$oldDispatch) return;
 
-        // Step 2: Check or clone new dispatch
-        $newDispatch = InventoryDispatch::where('serial_number', $newSerial)->first();
+        // Step 2: Validate new serial exists in inventory
+        $newInventoryItem = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
+        if (!$newInventoryItem) {
+            throw new \Exception("Serial number {$newSerial} not found in inventory");
+        }
+
+        // Step 3: Check if new serial is already consumed
+        $existingConsumed = InventoryDispatch::where('serial_number', $newSerial)
+            ->where('is_consumed', true)
+            ->exists();
+        if ($existingConsumed) {
+            throw new \Exception("Serial number {$newSerial} is already consumed");
+        }
+
+        // Step 4: Check or clone new dispatch
+        $newDispatch = InventoryDispatch::where('serial_number', $newSerial)
+            ->where('isDispatched', true)
+            ->where('is_consumed', false)
+            ->first();
 
         if (!$newDispatch) {
             $newDispatch = $oldDispatch->replicate();
@@ -229,6 +312,15 @@ class PoleController extends Controller
             $newDispatch->streetlight_pole_id = null;
             $newDispatch->save();
         } else {
+            // Validate district if pole district is available
+            if ($poleDistrict) {
+                $projectDistricts = $this->inventoryService->getProjectDistricts($newDispatch->project_id);
+                if (!in_array($poleDistrict, $projectDistricts)) {
+                    $project = \App\Models\Project::find($newDispatch->project_id);
+                    throw new \Exception("Inventory from {$project->project_name} cannot be used in district {$poleDistrict}");
+                }
+            }
+
             $newDispatch->fill($oldDispatch->only([
                 'vendor_id',
                 'total_quantity',
@@ -244,30 +336,44 @@ class PoleController extends Controller
             $newDispatch->save();
         }
 
-        // Step 3: Update inventory streetlight model
+        // Step 5: Update inventory streetlight model - consume new, return old
         $newStreet = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
         if ($newStreet) {
-            $newStreet->quantity = 0;
+            $newStreet->quantity = 0; // Consume new item
             $newStreet->save();
         } else {
             $oldStreet = InventroyStreetLightModel::where('serial_number', $oldSerial)->first();
             if ($oldStreet) {
                 $newStreet = $oldStreet->replicate();
                 $newStreet->serial_number = $newSerial;
-                $newStreet->quantity = 0;
+                $newStreet->quantity = 0; // Consume new item
                 $newStreet->save();
             }
         }
 
-        // Step 4: Delete old dispatch
-        $oldDispatch->delete();
-
-        // Step 5: Restore quantity of old item in inventory streetlight
-        if (isset($oldStreet)) {
-            $oldStreet->quantity = 1;
+        // Step 6: Return old item to stock
+        $oldStreet = InventroyStreetLightModel::where('serial_number', $oldSerial)->first();
+        if ($oldStreet) {
+            $oldStreet->quantity = 1; // Return old item to stock
             $oldStreet->save();
         }
 
-        // Step 6: You don't need to update the pole here — your `update()` method will handle it.
+        // Step 7: Log history for replacement
+        $project = \App\Models\Project::find($oldDispatch->project_id);
+        $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+        
+        if (isset($oldStreet) && isset($newStreet)) {
+            $this->historyService->logReplaced(
+                $oldStreet,
+                $newStreet,
+                $inventoryType,
+                $oldDispatch->project_id,
+                $oldDispatch->store_id,
+                $pole
+            );
+        }
+
+        // Step 8: Delete old dispatch
+        $oldDispatch->delete();
     }
 }

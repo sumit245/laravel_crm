@@ -25,6 +25,12 @@ class InventroyStreetLight implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
+        // Validate item code for streetlight projects
+        $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
+        if (!in_array($row['item_code'], $validItemCodes)) {
+            throw new \Exception("Import failed: Invalid item code '{$row['item_code']}' for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).");
+        }
+
         if ((int) $row['quantity'] === 0) {
             throw new \Exception("Import failed: Quantity cannot be zero for item code '{$row['item_code']}'");
         }
@@ -34,7 +40,17 @@ class InventroyStreetLight implements ToModel, WithHeadingRow
             throw new \Exception("Import failed: Duplicate serial number '{$row['serial_number']}' found.");
         }
 
-        return new InventroyStreetLightModel([
+        // ✅ Check if sim_number already exists for luminary items (SL02) only
+        if (isset($row['item_code']) && $row['item_code'] === 'SL02' && !empty($row['sim_number'])) {
+            $existingSim = InventroyStreetLightModel::where('sim_number', $row['sim_number'])
+                ->where('item_code', 'SL02')
+                ->exists();
+            if ($existingSim) {
+                throw new \Exception("Import failed: Duplicate SIM number '{$row['sim_number']}' found for luminary item.");
+            }
+        }
+
+        $inventoryData = [
             'project_id' => $this->projectId,
             'store_id'   => $this->storeId,
             'item_code'  => $row['item_code'], // Ensure the key matches the header
@@ -51,7 +67,14 @@ class InventroyStreetLight implements ToModel, WithHeadingRow
             'description' => $row['description'] ?? "N/A",
             'eway_bill'  => $row['e-way_bill'] ?? "N/A",
             'received_date' => $this->parseDate($row['received_date']), // Adjusted key
-        ]);
+        ];
+
+        // Add sim_number only for luminary items (SL02)
+        if (isset($row['item_code']) && $row['item_code'] === 'SL02' && isset($row['sim_number'])) {
+            $inventoryData['sim_number'] = $row['sim_number'];
+        }
+
+        return new InventroyStreetLightModel($inventoryData);
     }
 
     /**

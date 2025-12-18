@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Contracts\TaskServiceInterface;
+use App\Enums\TaskStatus;
 use App\Helpers\ExcelHelper;
 use App\Http\Requests\Task\StoreTaskRequest;
 use App\Http\Requests\Task\UpdateTaskRequest;
@@ -29,10 +30,11 @@ class TasksController extends Controller
         }
 
         $tasks = $this->taskService->getTasksByProject($projectId);
+        $project = Project::findOrFail($projectId);
         $topEngineers = [];
         $topVendors = [];
 
-        return view('tasks.index', compact('tasks', 'topEngineers', 'topVendors'));
+        return view('tasks.index', compact('tasks', 'topEngineers', 'topVendors', 'project'));
     }
 
     /**
@@ -60,8 +62,26 @@ class TasksController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        $projectId = $request->input('project_id');
+        
+        if (!$projectId) {
+            $user = auth()->user();
+            $projectId = $this->getSelectedProject($request, $user);
+        }
+
+        if (!$projectId) {
+            return redirect()->route('projects.index')
+                ->with('error', 'Please select a project first.');
+        }
+
+        $project = Project::findOrFail($projectId);
+        $engineers = $this->taskService->getAvailableEngineers($projectId);
+        $vendors = $this->taskService->getAvailableVendors($projectId);
+        $sites = $this->taskService->getAvailableSites($projectId);
+
+        return view('tasks.create', compact('project', 'engineers', 'vendors', 'sites'));
     }
 
     /**
@@ -207,9 +227,17 @@ class TasksController extends Controller
                     ]);
 
                     if ($request->has('status')) {
-                        $status = $request->input('status');
-                        if (in_array($status, ['Pending', 'Completed'])) {
-                            $validData['status'] = $status;
+                        $statusValue = $request->input('status');
+                        // Validate status using TaskStatus enum
+                        try {
+                            $status = TaskStatus::from($statusValue);
+                            $validData['status'] = $status->value;
+                        } catch (\ValueError $e) {
+                            // Invalid status value, skip it
+                            \Log::warning('Invalid task status provided', [
+                                'status' => $statusValue,
+                                'task_id' => $id
+                            ]);
                         }
                     }
 
@@ -245,12 +273,58 @@ class TasksController extends Controller
         }
     }
 
-    public function exportToExcel()
+    public function exportToExcel(Request $request)
     {
-        $data = [
-            (object) ['Name' => 'John Doe', 'Email' => 'john@example.com', 'Age' => 30],
-            (object) ['Name' => 'Jane Smith', 'Email' => 'jane@example.com', 'Age' => 28],
-        ];
-        return ExcelHelper::exportToExcel($data, 'tasks.xlsx');
+        $user = auth()->user();
+        $projectId = $this->getSelectedProject($request, $user);
+
+        if (!$projectId) {
+            return redirect()->route('projects.index')
+                ->with('error', 'No project assigned. Please select a project.');
+        }
+
+        $project = Project::findOrFail($projectId);
+        $tasks = $this->taskService->getTasksByProject($projectId);
+
+        if ($project->project_type == 1) {
+            // Streetlight tasks export
+            $exportData = $tasks->map(function ($task) {
+                return [
+                    'ID' => $task->id,
+                    'Panchayat' => $task->site->panchayat ?? 'N/A',
+                    'Block' => $task->site->block ?? 'N/A',
+                    'District' => $task->site->district ?? 'N/A',
+                    'Engineer' => $task->engineer ? ($task->engineer->firstName . ' ' . $task->engineer->lastName) : 'N/A',
+                    'Vendor' => $task->vendor ? $task->vendor->name : 'N/A',
+                    'Manager' => $task->manager ? ($task->manager->firstName . ' ' . $task->manager->lastName) : 'N/A',
+                    'Status' => $task->status ?? 'N/A',
+                    'Start Date' => $task->start_date ? $task->start_date->format('Y-m-d') : 'N/A',
+                    'End Date' => $task->end_date ? $task->end_date->format('Y-m-d') : 'N/A',
+                    'Billed' => $task->billed ? 'Yes' : 'No',
+                    'Description' => $task->description ?? 'N/A',
+                ];
+            })->toArray();
+        } else {
+            // Rooftop tasks export
+            $exportData = $tasks->map(function ($task) {
+                return [
+                    'ID' => $task->id,
+                    'Task Name' => $task->task_name ?? 'N/A',
+                    'Activity' => $task->activity ?? 'N/A',
+                    'Site Name' => $task->site->site_name ?? 'N/A',
+                    'Engineer' => $task->engineer ? ($task->engineer->firstName . ' ' . $task->engineer->lastName) : 'N/A',
+                    'Vendor' => $task->vendor ? $task->vendor->name : 'N/A',
+                    'Manager' => $task->manager ? ($task->manager->firstName . ' ' . $task->manager->lastName) : 'N/A',
+                    'Status' => $task->status ?? 'N/A',
+                    'Start Date' => $task->start_date ? $task->start_date->format('Y-m-d') : 'N/A',
+                    'End Date' => $task->end_date ? $task->end_date->format('Y-m-d') : 'N/A',
+                    'Approved By' => $task->approved_by ?? 'N/A',
+                    'Description' => $task->description ?? 'N/A',
+                ];
+            })->toArray();
+        }
+
+        $filename = 'tasks_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx';
+        return ExcelHelper::exportToExcel($exportData, $filename);
     }
 }

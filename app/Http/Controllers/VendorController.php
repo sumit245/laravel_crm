@@ -497,15 +497,21 @@ class VendorController extends Controller
         }
         
         // Calculate earnings: ₹500 per installed pole (hardcoded for now)
+        // Use pole.vendor_id instead of task.vendor_id for accurate tracking after reassignments
         $totalEarnings = 0;
         $earningsByProject = [];
         foreach ($assignedProjects as $project) {
             // For streetlight: calculate based on installed poles (₹500 per pole)
             if ($project->project_type == 1) {
-                $installedPoles = 0;
-                if (isset($streetlightDataByProject[$project->id])) {
-                    $installedPoles = $streetlightDataByProject[$project->id]['installed_poles'] ?? 0;
-                }
+                // Count installed poles where pole.vendor_id matches vendor (not task.vendor_id)
+                // This ensures accurate earnings even after vendor reassignment
+                $installedPoles = Pole::where('vendor_id', $vendor->id)
+                    ->where('isInstallationDone', 1)
+                    ->whereHas('task', function($query) use ($project) {
+                        $query->where('project_id', $project->id);
+                    })
+                    ->count();
+                
                 $projectEarnings = $installedPoles * 500; // ₹500 per installed pole
                 
                 $earningsByProject[$project->id] = [

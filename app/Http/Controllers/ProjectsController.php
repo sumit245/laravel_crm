@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\Inventory;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\State;
 use App\Models\Streetlight;
@@ -16,6 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Helpers\ExcelHelper;
 
 class ProjectsController extends Controller
 {
@@ -97,6 +99,18 @@ class ProjectsController extends Controller
         $isAdmin = $user->role === UserRole::ADMIN->value;
         $isProjectManager = $user->role === UserRole::PROJECT_MANAGER->value;
 
+        // For Project Managers, ensure they can only see projects they're assigned to
+        if ($isProjectManager) {
+            $isAssigned = DB::table('project_user')
+                ->where('project_id', $project->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$isAssigned) {
+                abort(403, 'You do not have access to this project.');
+            }
+        }
+
         $users = User::whereNotIn('role', [UserRole::ADMIN->value, UserRole::VENDOR->value])->get();
 
         // Fetch inventory items based on project type
@@ -144,11 +158,11 @@ class ProjectsController extends Controller
         // Get assigned staff with role from pivot table (excluding vendors)
         $assignedStaffQuery = User::whereIn('id', $assignedStaffIds)
             ->whereNotIn('role', [UserRole::VENDOR->value])
-            ->when($isProjectManager, function($q) use ($user) {
+            ->when($isProjectManager, function ($q) use ($user) {
                 $q->where('manager_id', $user->id);
             });
 
-        $assignedStaff = $assignedStaffQuery->get()->map(function($staff) use ($project) {
+        $assignedStaff = $assignedStaffQuery->get()->map(function ($staff) use ($project) {
             $pivot = DB::table('project_user')
                 ->where('project_id', $project->id)
                 ->where('user_id', $staff->id)
@@ -159,12 +173,12 @@ class ProjectsController extends Controller
 
         // Group assigned staff by role (excluding vendors - they're in Vendor Management tab)
         $assignedStaffByRole = $assignedStaff->groupBy('pivot_role')
-            ->filter(function($group, $role) {
+            ->filter(function ($group, $role) {
                 // Exclude vendors from staff management
-                return (int)$role !== UserRole::VENDOR->value;
+                return (int) $role !== UserRole::VENDOR->value;
             })
-            ->map(function($group, $role) {
-                return $group->map(function($staff) {
+            ->map(function ($group, $role) {
+                return $group->map(function ($staff) {
                     return [
                         'id' => $staff->id,
                         'name' => trim($staff->firstName . ' ' . $staff->lastName),
@@ -187,11 +201,11 @@ class ProjectsController extends Controller
             UserRole::COORDINATOR->value
         ])
             ->whereNotIn('id', $assignedStaffIds)
-            ->when($isProjectManager, function($q) use ($user) {
+            ->when($isProjectManager, function ($q) use ($user) {
                 $q->where('manager_id', $user->id);
             });
 
-        $availableStaff = $availableStaffQuery->get()->map(function($staff) {
+        $availableStaff = $availableStaffQuery->get()->map(function ($staff) {
             return [
                 'id' => $staff->id,
                 'name' => trim($staff->firstName . ' ' . $staff->lastName),
@@ -206,19 +220,19 @@ class ProjectsController extends Controller
         $availableStaffByRole = $availableStaff->groupBy('role');
 
         // Legacy variables for backward compatibility
-        $assignedEngineers = $assignedStaff->filter(function($staff) {
+        $assignedEngineers = $assignedStaff->filter(function ($staff) {
             $role = $staff->pivot_role ?? $staff->role;
             return in_array($role, [UserRole::SITE_ENGINEER->value, UserRole::PROJECT_MANAGER->value]);
         });
 
-        $availableEngineers = $availableStaff->filter(function($staff) {
+        $availableEngineers = $availableStaff->filter(function ($staff) {
             return in_array($staff['role'], [
                 UserRole::SITE_ENGINEER->value,
                 UserRole::PROJECT_MANAGER->value,
                 UserRole::STORE_INCHARGE->value,
                 UserRole::COORDINATOR->value
             ]);
-        })->map(function($staff) {
+        })->map(function ($staff) {
             $user = new User();
             $user->id = $staff['id'];
             $user->firstName = $staff['firstName'];
@@ -236,7 +250,7 @@ class ProjectsController extends Controller
             ->toArray();
 
         $assignedVendorsQuery = User::whereIn('id', $assignedVendorIds)
-            ->when($isProjectManager, function($q) use ($user) {
+            ->when($isProjectManager, function ($q) use ($user) {
                 $q->where('manager_id', $user->id);
             });
 
@@ -245,7 +259,7 @@ class ProjectsController extends Controller
         // Get available vendors (not already assigned)
         $availableVendors = User::where('role', UserRole::VENDOR->value)
             ->whereNotIn('id', $assignedVendorIds)
-            ->when($isProjectManager, function($q) use ($user) {
+            ->when($isProjectManager, function ($q) use ($user) {
                 $q->where('manager_id', $user->id);
             })
             ->get();
@@ -282,13 +296,40 @@ class ProjectsController extends Controller
             $data['districts'] = Streetlight::where('project_id', $id)->select('district')->distinct()->get();
             $data['targets'] = StreetlightTask::where('project_id', $project->id)
                 ->when($isProjectManager, fn($q) => $q->where('manager_id', $user->id))
-                ->with('site', 'engineer')
+                ->with('site', 'engineer', 'vendor', 'poles')
                 ->orderBy('created_at', 'desc')
                 ->get();
 
             $data['totalPoles'] = Streetlight::where('project_id', $project->id)->sum('total_poles');
             $data['totalSurveyedPoles'] = Streetlight::where('project_id', $project->id)->sum('number_of_surveyed_poles');
             $data['totalInstalledPoles'] = Streetlight::where('project_id', $project->id)->sum('number_of_installed_poles');
+
+            // Prepare filter options
+            $data['filterPanchayats'] = $data['targets']->pluck('site.panchayat')
+                ->filter()
+                ->unique()
+                ->sort()
+                ->mapWithKeys(fn($panchayat) => [$panchayat => $panchayat])
+                ->prepend('All', '')
+                ->toArray();
+
+            $data['filterEngineers'] = $data['targets']->pluck('engineer')
+                ->filter()
+                ->map(fn($engineer) => trim(($engineer->firstName ?? '') . ' ' . ($engineer->lastName ?? '')))
+                ->filter()
+                ->unique()
+                ->sort()
+                ->mapWithKeys(fn($name) => [$name => $name])
+                ->prepend('All', '')
+                ->toArray();
+
+            $data['filterVendors'] = $data['targets']->pluck('vendor.name')
+                ->filter()
+                ->unique()
+                ->sort()
+                ->mapWithKeys(fn($name) => [$name => $name])
+                ->prepend('All', '')
+                ->toArray();
         } else {
             $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
                 ->get();
@@ -410,7 +451,7 @@ class ProjectsController extends Controller
         try {
             $project = Project::findOrFail($id);
             $this->authorize('assignStaff', $project);
-            
+
             $validated = $request->validate([
                 'user_ids' => 'required|array',
                 'user_ids.*' => 'exists:users,id',
@@ -438,14 +479,14 @@ class ProjectsController extends Controller
             }
 
             DB::beginTransaction();
-            
+
             // Sync with pivot role data - format: [user_id => ['role' => role_value]]
             $syncData = [];
             foreach ($usersToAssign as $userToAssign) {
                 $syncData[$userToAssign->id] = ['role' => $userToAssign->role];
             }
             $project->users()->syncWithoutDetaching($syncData);
-            
+
             Log::info('Staff assigned to project', [
                 'project_id' => $id,
                 'user_ids' => $validated['user_ids'],
@@ -485,7 +526,7 @@ class ProjectsController extends Controller
         try {
             $project = Project::findOrFail($id);
             $this->authorize('removeStaff', $project);
-            
+
             $validated = $request->validate([
                 'user_ids' => 'required|array',
                 'user_ids.*' => 'exists:users,id',
@@ -515,7 +556,7 @@ class ProjectsController extends Controller
 
             // Determine who will receive reassigned targets
             $reassignToUserId = $user->id; // Default to current user (PM or Admin)
-            
+
             // For admin removing staff, try to find the Project Manager for the project
             if ($isAdmin) {
                 $projectManager = $project->users()
@@ -543,7 +584,7 @@ class ProjectsController extends Controller
                 $engineerTasks = StreetlightTask::where('project_id', $id)
                     ->where('engineer_id', $removedUserId)
                     ->get();
-                
+
                 foreach ($engineerTasks as $task) {
                     $task->update(['engineer_id' => $reassignToUserId]);
                     $targetsReassigned++;
@@ -553,7 +594,7 @@ class ProjectsController extends Controller
                 $vendorTasks = StreetlightTask::where('project_id', $id)
                     ->where('vendor_id', $removedUserId)
                     ->get();
-                
+
                 foreach ($vendorTasks as $task) {
                     $task->update(['vendor_id' => $reassignToUserId]);
                     $targetsReassigned++;
@@ -611,6 +652,199 @@ class ProjectsController extends Controller
         $task->delete();
 
         return redirect()->back()->with('success', 'Task permanently deleted.');
+    }
+
+    public function bulkDeleteTargets(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:streetlight_tasks,id',
+        ]);
+
+        try {
+            $deleted = StreetlightTask::whereIn('id', $request->ids)->delete();
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "{$deleted} target(s) deleted successfully."
+                ]);
+            }
+
+            return redirect()->back()->with('success', "{$deleted} target(s) deleted successfully.");
+        } catch (\Exception $e) {
+            Log::error('Failed to bulk delete targets', ['error' => $e->getMessage()]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to delete targets: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to delete targets: ' . $e->getMessage());
+        }
+    }
+
+    public function bulkReassignTargets(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:streetlight_tasks,id',
+            'engineer_id' => 'nullable|exists:users,id',
+            'vendor_id' => 'nullable|exists:users,id',
+        ]);
+
+        try {
+            $tasks = StreetlightTask::whereIn('id', $request->ids)->get();
+            $updated = 0;
+            $polesReassigned = 0;
+
+            foreach ($tasks as $task) {
+                if ($request->filled('engineer_id')) {
+                    $task->engineer_id = $request->engineer_id;
+                }
+                if ($request->filled('vendor_id')) {
+                    // Update task vendor_id for future pole assignments
+                    $task->vendor_id = $request->vendor_id;
+
+                    // Implement pole-level reassignment: only reassign pending poles
+                    // Installed poles keep their original vendor_id
+                    $pendingPoles = Pole::where('task_id', $task->id)
+                        ->where('isInstallationDone', 0)
+                        ->get();
+
+                    foreach ($pendingPoles as $pole) {
+                        $pole->vendor_id = $request->vendor_id;
+                        $pole->save();
+                        $polesReassigned++;
+                    }
+                }
+                $task->save();
+                $updated++;
+            }
+
+            $message = "{$updated} target(s) reassigned successfully.";
+            if ($polesReassigned > 0) {
+                $message .= " {$polesReassigned} pending pole(s) reassigned to new vendor.";
+            }
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'poles_reassigned' => $polesReassigned
+                ]);
+            }
+
+            return redirect()->back()->with('success', $message);
+        } catch (\Exception $e) {
+            Log::error('Failed to bulk reassign targets', ['error' => $e->getMessage()]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Failed to reassign targets: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Failed to reassign targets: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadTargetImportFormat()
+    {
+        try {
+            $data = [
+                [
+                    'Panchayat' => 'Example Panchayat Name',
+                    'Engineer Name' => 'John Doe',
+                    'Vendor Name' => 'Vendor ABC',
+                    'Assigned Date' => '2024-01-01',
+                    'End Date' => '2024-12-31',
+                    'Wards' => 'Ward 1, Ward 2, Ward 3',
+                ]
+            ];
+
+            $filename = 'targets_import_format_' . date('Y-m-d') . '.xlsx';
+
+            return ExcelHelper::exportToExcel($data, $filename);
+        } catch (\Exception $e) {
+            Log::error('Failed to download target import format', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to download import format: ' . $e->getMessage());
+        }
+    }
+
+    public function importTargets(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+            'project_id' => 'required|exists:projects,id',
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $data = Excel::toArray([], $file);
+
+            if (empty($data) || empty($data[0])) {
+                return redirect()->back()->with('error', 'The file is empty or invalid.');
+            }
+
+            $rows = $data[0];
+            $header = array_shift($rows); // Remove header row
+
+            $imported = 0;
+            $errors = [];
+
+            foreach ($rows as $index => $row) {
+                try {
+                    $siteId = $row[0] ?? null;
+                    $engineerId = $row[1] ?? null;
+                    $vendorId = $row[2] ?? null;
+                    $startDate = $row[3] ?? now();
+                    $endDate = $row[4] ?? null;
+
+                    if (!$siteId) {
+                        $errors[] = "Row " . ($index + 2) . ": Site ID is required";
+                        continue;
+                    }
+
+                    // Check if task already exists
+                    $existingTask = StreetlightTask::where('site_id', $siteId)
+                        ->where('project_id', $request->project_id)
+                        ->first();
+
+                    if ($existingTask) {
+                        $errors[] = "Row " . ($index + 2) . ": Task already exists for this site";
+                        continue;
+                    }
+
+                    StreetlightTask::create([
+                        'project_id' => $request->project_id,
+                        'site_id' => $siteId,
+                        'engineer_id' => $engineerId,
+                        'vendor_id' => $vendorId,
+                        'start_date' => $startDate,
+                        'end_date' => $endDate,
+                        'status' => 'Pending',
+                    ]);
+
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = "Row " . ($index + 2) . ": " . $e->getMessage();
+                }
+            }
+
+            $message = "{$imported} target(s) imported successfully.";
+            if (!empty($errors)) {
+                $message .= " " . count($errors) . " error(s) occurred.";
+            }
+
+            return redirect()->back()->with('success', $message)->with('import_errors', $errors);
+        } catch (\Exception $e) {
+            Log::error('Failed to import targets', ['error' => $e->getMessage()]);
+            return redirect()->back()->with('error', 'Failed to import targets: ' . $e->getMessage());
+        }
     }
 
     /**

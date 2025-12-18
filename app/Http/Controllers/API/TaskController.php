@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ExcelHelper;
 use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
+use App\Services\Inventory\InventoryService;
 use App\Models\InventoryDispatch;
 use App\Models\Site;
 use App\Models\Streetlight;
@@ -20,6 +21,14 @@ use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
+    protected InventoryService $inventoryService;
+    protected InventoryHistoryService $historyService;
+
+    public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService)
+    {
+        $this->inventoryService = $inventoryService;
+        $this->historyService = $historyService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -373,6 +382,7 @@ class TaskController extends Controller
         if ($request->isInstallationDone && !$pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
+                'vendor_id' => $task->vendor_id, // Set vendor_id from task when pole is installed
                 'luminary_qr' => $validated['luminary_qr'] ?? null,
                 'sim_number' => $validated['sim_number'] ?? null,
                 'panel_qr' => $validated['panel_qr'] ?? null,
@@ -381,17 +391,54 @@ class TaskController extends Controller
 
             $streetlight->increment('number_of_installed_poles');
 
-            // ✅ Step 7: Mark inventory as consumed
-            $serials = [
+            // ✅ Step 7: Mark inventory as consumed with district validation
+            $serials = array_filter([
                 $validated['luminary_qr'] ?? null,
                 $validated['panel_qr'] ?? null,
                 $validated['battery_qr'] ?? null,
-            ];
-
-            $affected = InventoryDispatch::whereIn('serial_number', array_filter($serials))->update([
-                'is_consumed' => true,
-                'streetlight_pole_id' => $pole->id,
             ]);
+
+            if (!empty($serials)) {
+                // Get pole's district
+                $poleDistrict = $streetlight->district;
+
+                // Validate each serial number's dispatch district matches pole's district
+                $dispatches = InventoryDispatch::whereIn('serial_number', $serials)
+                    ->where('isDispatched', true)
+                    ->where('is_consumed', false)
+                    ->get();
+
+                foreach ($dispatches as $dispatch) {
+                    // Get project's districts
+                    $projectDistricts = $this->inventoryService->getProjectDistricts($dispatch->project_id);
+
+                    // Check if pole's district is in project's districts
+                    if (!in_array($poleDistrict, $projectDistricts)) {
+                        $project = \App\Models\Project::find($dispatch->project_id);
+                        return response()->json([
+                            'message' => "Inventory dispatched for {$project->project_name} cannot be used in district {$poleDistrict}",
+                            'error' => 'district_mismatch',
+                            'pole_district' => $poleDistrict,
+                            'project_name' => $project->project_name ?? 'Unknown Project',
+                        ], 400);
+                    }
+                }
+
+                // All validations passed, mark as consumed
+                $dispatches = InventoryDispatch::whereIn('serial_number', $serials)->get();
+                
+                foreach ($dispatches as $dispatch) {
+                    $dispatch->update([
+                        'is_consumed' => true,
+                        'streetlight_pole_id' => $pole->id,
+                    ]);
+
+                    // Log history
+                    $project = \App\Models\Project::find($dispatch->project_id);
+                    $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+                    $this->historyService->logConsumed($dispatch, $inventoryType, $pole);
+                }
+            }
             $site = Streetlight::findOrFail($task->site_id);
             RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
         }
@@ -597,8 +644,8 @@ class TaskController extends Controller
                 $q->where('vendor_id', $request->vendor);
             });
         }
-        $poles = $query->paginate(10);
-        $totalSurveyed = $query->count();
+        $poles = $query->with(['task.site', 'task.engineer', 'task.vendor', 'task.manager'])->get();
+        $totalSurveyed = $poles->count();
         $districts = [];
         $blocks = [];
         $panchayats = [];

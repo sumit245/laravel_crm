@@ -38,6 +38,20 @@
         @endforeach
     </select>
 </div>
+
+    <!-- Status Field -->
+    <div class="mb-3">
+        <label for="status" class="form-label">Status</label>
+        <select name="status" id="status" class="form-control">
+            <option value="">Select Status</option>
+            @foreach(\App\Enums\TaskStatus::cases() as $status)
+                <option value="{{ $status->value }}" {{ ($tasks->status ?? '') == $status->value ? 'selected' : '' }}>
+                    {{ $status->label() }}
+                </option>
+            @endforeach
+        </select>
+    </div>
+
         <!-- Billed Field -->
     <div class="mb-3">
         <label for="billed" class="form-label">Billed</label>

@@ -130,3 +130,39 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    $(document).ready(function() {
+        // Handle hash-based tab navigation
+        function activateTabFromHash() {
+            const hash = window.location.hash;
+            if (hash) {
+                // Remove the # symbol
+                const tabId = hash.substring(1);
+                // Find the tab button that targets this tab
+                const tabButton = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+                if (tabButton) {
+                    // Use Bootstrap's tab API to show the tab
+                    const tab = new bootstrap.Tab(tabButton);
+                    tab.show();
+                }
+            }
+        }
+        
+        // Activate tab on page load
+        activateTabFromHash();
+        
+        // Also handle hash changes (when user clicks browser back/forward)
+        window.addEventListener('hashchange', activateTabFromHash);
+        
+        // Update hash when tabs are clicked
+        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+            const target = $(e.target).data('bs-target');
+            if (target) {
+                window.location.hash = target.substring(1); // Remove the # from target
+            }
+        });
+    });
+</script>
+@endpush
