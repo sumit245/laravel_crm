@@ -37,7 +37,9 @@
         <div class="container-fluid page-body-wrapper">
             @include('partials.sidebar')
             <div class="main-panel">
-                @yield('content')
+                <div class="content-wrapper" id="content-wrapper">
+                    @yield('content')
+                </div>
             </div>
         </div>
         @include('partials.footer')

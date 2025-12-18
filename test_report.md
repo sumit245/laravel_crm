@@ -314,6 +314,41 @@ The system is ready for further testing with actual data and different user role
 
 ---
 
+## UI Layout Consistency & Responsiveness (feature/ui-layout-consistency)
+
+**Status:** NOT DONE (browser verification pending)
+
+**Summary of Changes (Code-Level):**
+
+- Introduced design tokens and standardized control/button heights in `public/css/vertical-layout-light/style.css`.
+- Normalized `.form-control`, `.form-select`, `.input-group`, buttons, table rows, and Select2 heights for visual consistency.
+- Added modern tab styling via `.nav-tabs.nav-tabs-modern` and applied it to `projects/show` tabs with count badges.
+- Adjusted project tabs navbar offsets (`.fixed-navbar-project*`) to remove negative positioning causing distortion.
+- Updated layout flex behavior so `container-scroller` / `main-panel` / `content-wrapper` keep the footer at the bottom.
+- Wrapped authenticated content in a shared `content-wrapper` (`layouts/main.blade.php`) to prepare for partial reloads.
+- Implemented route-based active states in `partials/sidebar.blade.php` using `request()->routeIs(...)` and marked links with `js-partial-link` for future AJAX/pjax.
+
+**URLs to Verify in Browser (Required):**
+
+- http://localhost:8000/meets/dashboard
+- http://localhost:8000/meets/details/17
+- http://localhost:8000/projects
+- http://localhost:8000/projects/11
+
+**Expected Behavior to Confirm:**
+
+- Buttons, inputs, selects, Select2, and table rows have consistent heights across the above pages.
+- Project detail tabs (Sites, Staff Management, Vendor Management, Inventory, Target) use the modern tab style, show count badges, and only the active tab is highlighted.
+- Sidebar correctly highlights the active section based on route (dashboard, projects, vendors, billing, inventory, meets, backup, etc.).
+- Footer stays at the bottom of the viewport on short pages and below content on long pages (no mid-screen footer).
+- No visual distortion of the sidebar or tabs at common breakpoints (desktop, tablet, mobile emulation).
+
+**Testing Note:**
+
+- Browser testing of these layout and responsiveness changes on the local environment (localhost:8000) still needs to be performed manually, following `TESTING_RULES.md`. This section will be updated to DONE after concrete browser results are available.
+
+---
+
 **Report Generated:** December 17, 2025  
 **Total Features Tested:** 13  
 **Passed:** 13  

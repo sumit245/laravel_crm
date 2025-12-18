@@ -1062,6 +1062,30 @@
             const debouncedUpdateBulkActions = debounce(updateBulkActions, 50);
             const debouncedUpdateSelectAllState = debounce(updateSelectAllState, 50);
 
+            // #region agent log
+            function logDataTableInit(eventMessage, extraData) {
+                try {
+                    const payload = {
+                        sessionId: 'debug-session',
+                        runId: 'dispatch-tab-debug',
+                        hypothesisId: 'H-dispatch-tab',
+                        location: 'components/datatable.blade.php',
+                        message: eventMessage,
+                        data: extraData || {},
+                        timestamp: Date.now(),
+                    };
+
+                    fetch('http://127.0.0.1:7242/ingest/7e5b5f92-5e9c-4e87-90bd-addc2ca28e7c', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload),
+                    }).catch(() => {});
+                } catch (e) {
+                    // Ignore logging failures
+                }
+            }
+            // #endregion
+
             // Track if pagination has been moved to prevent repeated DOM manipulation
             let paginationMoved = false;
 
@@ -1123,6 +1147,7 @@
             
             // Initialize table only if visible, otherwise wait
             function initializeDataTable() {
+                logDataTableInit('initializeDataTable-called', { tableId: '{{ $id }}' });
                 table = $(tableId).DataTable({
                 dom: "<'row'<'col-sm-12'lf>>" + // Length menu and search box
                     "<'row'<'col-sm-12'tr>>" + // Table
@@ -1940,10 +1965,28 @@
             initializeTable();
             
             // Also listen for tab visibility changes
-            $(document).on('shown.bs.tab', function() {
-                if (!$.fn.DataTable.isDataTable(tableId) && isTableVisible()) {
-                    initializeDataTable();
-                }
+            $(document).on('shown.bs.tab', function(e) {
+                // Wait a bit for tab transition to complete
+                setTimeout(function() {
+                    if (isTableVisible()) {
+                        if (!$.fn.DataTable.isDataTable(tableId)) {
+                            // Table not initialized yet, initialize it
+                            initializeDataTable();
+                        } else {
+                            // Table already initialized, just adjust columns and redraw
+                            try {
+                                const existingTable = $(tableId).DataTable();
+                                existingTable.columns.adjust().draw(false);
+                            } catch (err) {
+                                // If adjustment fails, try re-initializing
+                                if ($.fn.DataTable.isDataTable(tableId)) {
+                                    $(tableId).DataTable().destroy();
+                                }
+                                initializeDataTable();
+                            }
+                        }
+                    }
+                }, 100);
             });
         });
     </script>

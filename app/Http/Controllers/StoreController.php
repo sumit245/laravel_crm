@@ -153,19 +153,24 @@ class StoreController extends Controller
             }
         }
 
-        // Get item-wise statistics - Optimized: Single query instead of loop
+        // Get item-wise statistics - Fixed to match SQL query logic
         $itemStats = [];
         if ($project->project_type == 1) {
             try {
                 $items = ['SL01' => 'Panel', 'SL02' => 'Luminary', 'SL03' => 'Battery', 'SL04' => 'Structure'];
 
-                // Single query to get all item totals grouped by item_code
-                $inventoryTotals = $inventoryModel::where('project_id', $project->id)
+                // Single query to get all item statistics grouped by item_code
+                // Total Received: COUNT(*) - total number of records
+                // Current Stock: SUM(CASE WHEN quantity = 1 THEN 1 ELSE 0 END) - count where quantity = 1
+                // Total Dispatched: SUM(CASE WHEN quantity = 0 THEN 1 ELSE 0 END) - count where quantity = 0
+                $inventoryStats = $inventoryModel::where('project_id', $project->id)
                     ->where('store_id', $store->id)
                     ->whereIn('item_code', array_keys($items))
                     ->select(
                         'item_code',
-                        \Illuminate\Support\Facades\DB::raw('SUM(quantity) as total_quantity')
+                        \Illuminate\Support\Facades\DB::raw('COUNT(*) as total_received'),
+                        \Illuminate\Support\Facades\DB::raw('SUM(CASE WHEN quantity = 1 THEN 1 ELSE 0 END) as current_stock'),
+                        \Illuminate\Support\Facades\DB::raw('SUM(CASE WHEN quantity = 0 THEN 1 ELSE 0 END) as total_dispatched')
                     )
                     ->groupBy('item_code')
                     ->get()
@@ -173,21 +178,22 @@ class StoreController extends Controller
 
                 foreach ($items as $code => $name) {
                     try {
-                        $total = isset($inventoryTotals[$code]) && is_numeric($inventoryTotals[$code]->total_quantity)
-                            ? (float) $inventoryTotals[$code]->total_quantity
+                        $totalReceived = isset($inventoryStats[$code]) && is_numeric($inventoryStats[$code]->total_received)
+                            ? (int) $inventoryStats[$code]->total_received
                             : 0;
 
-                        // Use pre-aggregated dispatched data instead of filtering collection
-                        $dispatchedCount = isset($dispatchedAggregated[$code]) && is_numeric($dispatchedAggregated[$code]->total_quantity)
-                            ? (float) $dispatchedAggregated[$code]->total_quantity
+                        $inStockCount = isset($inventoryStats[$code]) && is_numeric($inventoryStats[$code]->current_stock)
+                            ? (int) $inventoryStats[$code]->current_stock
                             : 0;
 
-                        $inStockCount = max(0, (float) $total - (float) $dispatchedCount);
+                        $dispatchedCount = isset($inventoryStats[$code]) && is_numeric($inventoryStats[$code]->total_dispatched)
+                            ? (int) $inventoryStats[$code]->total_dispatched
+                            : 0;
 
                         $itemStats[$code] = [
                             'name' => $name,
-                            'total' => (float) $total,
-                            'dispatched' => (float) $dispatchedCount,
+                            'total' => $totalReceived,
+                            'dispatched' => $dispatchedCount,
                             'in_stock' => $inStockCount,
                         ];
                     } catch (\Exception $e) {
