@@ -180,7 +180,7 @@
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-3 gap-3">
                             <h6 class="card-title mb-0">Add Inventory</h6>
                             <div class="import-section d-flex flex-column gap-2 w-100 w-md-auto">
-                                <form
+                                <form id="importInventoryForm"
                                     action="{{ route($project->project_type == 1 ? 'inventory.import-streetlight' : 'inventory.import', ['projectId' => $project->id, 'storeId' => $store->id]) }}"
                                     method="POST" enctype="multipart/form-data"
                                     class="import-form-group d-flex align-items-stretch">
