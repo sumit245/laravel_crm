@@ -15,13 +15,30 @@
             </a>
         </div>
 
-        @if (session('success') || session('error'))
+        @if (session('success') || session('error') || $errors->any())
             <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} alert-dismissible fade show"
                 role="alert">
-                {{ session('success') ?? session('error') }}
+                {{ session('success') ?? session('error') ?? $errors->first() }}
+                @if (session('import_errors_url') && session('import_errors_count') > 0)
+                    <br>
+                    <small>
+                        {{ session('import_errors_count') }} row(s) were skipped during import.
+                        <a href="{{ session('import_errors_url') }}" target="_blank">Download error details</a>
+                    </small>
+                @endif
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
+
+        <!-- Global import overlay for smooth transitions during bulk import -->
+        <div id="importOverlay" class="import-overlay d-none">
+            <div class="import-overlay-content text-center">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <div class="small text-muted">Processing inventory import, please wait...</div>
+            </div>
+        </div>
 
         <!-- Metrics Cards -->
         @if ($project->project_type == 1)
@@ -703,13 +720,84 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
         document.addEventListener("DOMContentLoaded", function() {
+            // Activate correct tab based on URL hash (e.g. #view after successful save)
+            const hash = window.location.hash;
+            if (hash === '#view') {
+                const viewTabTrigger = document.querySelector('#view-tab');
+                if (viewTabTrigger && window.bootstrap && bootstrap.Tab) {
+                    const tab = new bootstrap.Tab(viewTabTrigger);
+                    tab.show();
+                } else if (viewTabTrigger) {
+                    // Fallback: manually switch active classes
+                    document.querySelectorAll('#storeTabs .nav-link').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    document.querySelectorAll('#storeTabContent .tab-pane').forEach(pane => {
+                        pane.classList.remove('show', 'active');
+                    });
+                    viewTabTrigger.classList.add('active');
+                    const viewPane = document.querySelector('#view');
+                    if (viewPane) {
+                        viewPane.classList.add('show', 'active');
+                    }
+                }
+            }
+            // Set default received date to current date
+            const receivedDateField = document.getElementById('receiveddate');
+            if (receivedDateField && !receivedDateField.value) {
+                const today = new Date().toISOString().split('T')[0];
+                receivedDateField.value = today;
+            }
+
+            // Calculate Total Value = Rate * 1
+            const rateField = document.getElementById('rate');
+            const totalValueField = document.getElementById('totalvalue');
+            function calculateTotalValue() {
+                if (rateField && totalValueField) {
+                    const rate = parseFloat(rateField.value) || 0;
+                    totalValueField.value = (rate * 1).toFixed(2);
+                }
+            }
+            
+            if (rateField) {
+                rateField.addEventListener('input', calculateTotalValue);
+                rateField.addEventListener('change', calculateTotalValue);
+                // Set initial value
+                calculateTotalValue();
+            }
+
             // Handle item selection
             const itemCombined = document.getElementById('item_combined');
+            const simNumberWrapper = document.getElementById('sim_number_wrapper');
+            const simNumberField = document.getElementById('sim_number');
+            const serialField = document.getElementById('serialnumber');
+            const importForm = document.getElementById('importInventoryForm');
+            const importOverlay = document.getElementById('importOverlay');
+            
+            function toggleSimNumberField(itemCode) {
+                if (simNumberWrapper && simNumberField) {
+                    if (itemCode === 'SL02') {
+                        // Show and make required for Luminary
+                        simNumberWrapper.style.display = 'block';
+                        simNumberField.setAttribute('required', 'required');
+                    } else {
+                        // Hide and remove required for other items
+                        simNumberWrapper.style.display = 'none';
+                        simNumberField.removeAttribute('required');
+                        simNumberField.value = '';
+                        simNumberField.classList.remove('is-invalid', 'is-valid');
+                    }
+                }
+            }
+
             if (itemCombined) {
                 itemCombined.addEventListener('change', function() {
                     const [code, name] = this.value.split('|');
                     document.getElementById('item_code').value = code || '';
                     document.getElementById('item_name').value = name || '';
+
+                    // Toggle SIM number field visibility
+                    toggleSimNumberField(code);
 
                     // Clear validation state when item changes
                     this.classList.remove('is-invalid', 'is-valid');
@@ -717,6 +805,93 @@
                     if (feedback && !feedback.classList.contains('d-block')) {
                         feedback.classList.add('d-none');
                     }
+                });
+                
+                // Initialize SIM number field visibility on page load
+                if (itemCombined.value) {
+                    const [code] = itemCombined.value.split('|');
+                    toggleSimNumberField(code);
+                }
+            }
+
+            // Show overlay during bulk import to smooth transitions
+            if (importForm && importOverlay) {
+                importForm.addEventListener('submit', function () {
+                    importOverlay.classList.remove('d-none');
+                });
+            }
+
+            // Real-time serial number uniqueness validation (AJAX)
+            if (serialField) {
+                let serialCheckTimeout = null;
+                const serialFeedback = serialField.parentElement.querySelector('.invalid-feedback') || null;
+
+                async function checkSerialUnique() {
+                    const value = serialField.value.trim();
+                    if (!value) {
+                        // Don't check empty value
+                        return;
+                    }
+
+                    try {
+                        const token = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content');
+                        const response = await fetch('{{ route('inventory.checkSerial') }}', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': token || ''
+                            },
+                            body: JSON.stringify({
+                                project_type: {{ $project->project_type }},
+                                project_id: {{ $project->id }},
+                                store_id: {{ $store->id }},
+                                serialnumber: value
+                            })
+                        });
+
+                        if (!response.ok) {
+                            // On error, don't block user, just log to console
+                            console.error('Serial check failed with status', response.status);
+                            return;
+                        }
+
+                        const data = await response.json();
+
+                        if (data.exists) {
+                            serialField.classList.add('is-invalid');
+                            serialField.classList.remove('is-valid');
+                            if (serialFeedback) {
+                                serialFeedback.textContent = data.message || 'This serial number is already in use.';
+                                serialFeedback.classList.remove('d-none');
+                                serialFeedback.classList.add('d-block');
+                            }
+                        } else {
+                            serialField.classList.remove('is-invalid');
+                            serialField.classList.add('is-valid');
+                            if (serialFeedback) {
+                                serialFeedback.classList.remove('d-block');
+                                serialFeedback.classList.add('d-none');
+                            }
+                        }
+                    } catch (error) {
+                        console.error('Error checking serial number:', error);
+                    }
+                }
+
+                // Debounce input to avoid spamming server
+                serialField.addEventListener('input', function () {
+                    serialField.classList.remove('is-valid'); // reset while typing
+                    if (serialCheckTimeout) {
+                        clearTimeout(serialCheckTimeout);
+                    }
+                    serialCheckTimeout = setTimeout(checkSerialUnique, 400);
+                });
+
+                serialField.addEventListener('blur', function () {
+                    if (serialCheckTimeout) {
+                        clearTimeout(serialCheckTimeout);
+                    }
+                    checkSerialUnique();
                 });
             }
 
@@ -740,7 +915,10 @@
                 // Form submission validation
                 addInventoryForm.addEventListener('submit', function(e) {
                     let isValid = true;
-                    inputs.forEach(input => {
+                    
+                    // Get all required fields including dynamically required ones
+                    const allRequiredFields = addInventoryForm.querySelectorAll('input[required], select[required]');
+                    allRequiredFields.forEach(input => {
                         if (!validateField(input)) {
                             isValid = false;
                         }
@@ -755,6 +933,19 @@
                             feedback.classList.add('d-block');
                         }
                         isValid = false;
+                    }
+                    
+                    // Validate SIM number if SL02 is selected
+                    if (itemCombined && itemCombined.value.includes('SL02')) {
+                        if (simNumberField && (!simNumberField.value || !simNumberField.value.trim())) {
+                            simNumberField.classList.add('is-invalid');
+                            const simFeedback = simNumberField.parentElement.querySelector('.invalid-feedback');
+                            if (simFeedback) {
+                                simFeedback.classList.remove('d-none');
+                                simFeedback.classList.add('d-block');
+                            }
+                            isValid = false;
+                        }
                     }
 
                     if (!isValid) {
@@ -1583,6 +1774,23 @@
 
 @push('styles')
     <style>
+        .import-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: 2000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .import-overlay-content {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+        }
+
         /* Metric Cards - Enhanced Visual Distinction */
         .row.mb-4 .metric-card-initial,
         .row.mb-4 .metric-card-instore,
@@ -1933,7 +2141,7 @@
             border-left: none;
         }
 
-        .download-format-link {
+                .download-format-link {
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;

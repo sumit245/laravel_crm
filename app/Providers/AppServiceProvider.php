@@ -22,10 +22,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // In testing environment, never hit the real database for global state lists.
+        // This prevents accidental coupling of tests to production data.
+        if (app()->environment('testing')) {
+            View::share('states', collect());
+            return;
+        }
+
         $states = Cache::remember('states_list', 3600, function () {
             return State::all();
         });
+
         View::share('states', $states);
     }
 }

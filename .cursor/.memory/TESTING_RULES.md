@@ -1,5 +1,46 @@
 # Testing Rules and Guidelines
 
+## Database & Test Environment Safety (CRITICAL)
+
+1. **Test database must NEVER be production**
+   - All automated tests **must** run on an isolated test database.
+   - `phpunit.xml` is configured to use **SQLite in-memory**:
+     - `DB_CONNECTION=sqlite`
+     - `DB_DATABASE=:memory:`
+   - Before running **any** `php artisan test` command, always verify:
+     - `DB_CONNECTION` for the test process is **NOT** pointing to the production MySQL database.
+     - If `DB_CONNECTION=mysql` and `DB_DATABASE` matches production, **do not run tests**.
+
+2. **RefreshDatabase and MigrateFresh**
+   - Traits like `RefreshDatabase` and commands like `migrate:fresh` will:
+     - **Drop all tables** on the current connection.
+     - Re-create tables from migrations.
+   - These are only safe when:
+     - The connection is the **test SQLite** connection, or
+     - A dedicated **test MySQL database** (never production).
+
+3. **Allowed test configurations**
+   - **Preferred (safe)**:
+     - `DB_CONNECTION=sqlite`
+     - `DB_DATABASE=:memory:`
+   - **If using MySQL for tests**:
+     - Use a separate database, e.g. `sugs_test`.
+     - Ensure `.env.testing` or `phpunit.xml` points to `sugs_test`, **never** to the production DB.
+
+4. **Pre-flight checklist before running tests**
+   - Confirm `phpunit.xml` has:
+     - `<env name="DB_CONNECTION" value="sqlite"/>`
+     - `<env name="DB_DATABASE" value=":memory:"/>`
+   - Confirm there is **no override** in the environment that points tests to production.
+   - If unsure, **stop** and do not run tests.
+
+5. **Provider safety**
+   - In `AppServiceProvider`, global data like `states` is **not** loaded from DB when `APP_ENV=testing`:
+     - Tests receive an empty collection for `states`.
+     - This avoids unexpected reads from non-test databases.
+
+---
+
 ## Browser Testing Requirements
 
 ### When Browser Testing is Required

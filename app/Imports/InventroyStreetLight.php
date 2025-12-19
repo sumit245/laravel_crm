@@ -10,6 +10,14 @@ use Carbon\Carbon;
 class InventroyStreetLight implements ToModel, WithHeadingRow
 {
     protected $projectId, $storeId;
+    /**
+     * Track serials and SIM numbers seen during this import run
+     * so duplicates within the same file can be skipped.
+     */
+    protected array $seenSerials = [];
+    protected array $seenSimNumbers = [];
+    protected array $errors = [];
+    protected int $importedCount = 0;
 
     // Constructor to accept project ID
     public function __construct($projectId, $storeId)
@@ -25,56 +33,180 @@ class InventroyStreetLight implements ToModel, WithHeadingRow
      */
     public function model(array $row)
     {
-        // Validate item code for streetlight projects
-        $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
-        if (!in_array($row['item_code'], $validItemCodes)) {
-            throw new \Exception("Import failed: Invalid item code '{$row['item_code']}' for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).");
+        // Trim all scalar values to reduce formatting noise
+        $row = array_map(function ($value) {
+            return is_string($value) ? trim($value) : $value;
+        }, $row);
+
+        // Strip completely empty or obviously incomplete rows
+        $itemCodeRaw = $row['item_code'] ?? null;
+        $serialRaw   = $row['serial_number'] ?? null;
+        $itemName    = $row['item'] ?? null;
+
+        if (
+            (empty($itemCodeRaw) && empty($serialRaw) && empty($itemName)) ||
+            (empty($serialRaw) || empty($itemName))
+        ) {
+            // Skip empty / malformed rows
+            $this->errors[] = [
+                'reason' => 'incomplete_row',
+                'item_code' => $itemCodeRaw,
+                'serial_number' => $serialRaw,
+                'item' => $itemName,
+            ];
+            return null;
         }
 
-        if ((int) $row['quantity'] === 0) {
-            throw new \Exception("Import failed: Quantity cannot be zero for item code '{$row['item_code']}'");
-        }
-         // ✅ Check if serial number already exists in the database
-        $existing = InventroyStreetLightModel::where('serial_number', $row['serial_number'])->exists();
-        if ($existing) {
-            throw new \Exception("Import failed: Duplicate serial number '{$row['serial_number']}' found.");
-        }
-
-        // ✅ Check if sim_number already exists for luminary items (SL02) only
-        if (isset($row['item_code']) && $row['item_code'] === 'SL02' && !empty($row['sim_number'])) {
-            $existingSim = InventroyStreetLightModel::where('sim_number', $row['sim_number'])
-                ->where('item_code', 'SL02')
-                ->exists();
-            if ($existingSim) {
-                throw new \Exception("Import failed: Duplicate SIM number '{$row['sim_number']}' found for luminary item.");
+        // Normalise item code (case-insensitive, tolerate missing zero: SL1 -> SL01)
+        $itemCodeNormalized = null;
+        if (!empty($itemCodeRaw)) {
+            $upper = strtoupper($itemCodeRaw);
+            // Match SL01, sl01, SL1, sl1 etc.
+            if (preg_match('/^SL0?([1-4])$/i', $upper, $m)) {
+                $itemCodeNormalized = 'SL0' . $m[1];
+            } else {
+                $itemCodeNormalized = $upper;
             }
         }
 
+        $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
+        if (!in_array($itemCodeNormalized, $validItemCodes)) {
+            // Invalid item code: skip this row
+            $this->errors[] = [
+                'reason' => 'invalid_item_code',
+                'item_code' => $itemCodeRaw,
+                'serial_number' => $serialRaw,
+                'item' => $itemName,
+            ];
+            return null;
+        }
+
+        // Quantity rules:
+        // - Quantity cannot be zero
+        // - Any value > 1 is automatically converted to 1
+        $quantityRaw = $row['quantity'] ?? 1;
+        $quantity = (int) $quantityRaw;
+        if ($quantity === 0) {
+            // Business rule: zero quantity is not meaningful -> skip this row
+            $this->errors[] = [
+                'reason' => 'zero_quantity',
+                'item_code' => $itemCodeNormalized,
+                'serial_number' => $serialRaw,
+                'item' => $itemName,
+            ];
+            return null;
+        }
+        if ($quantity > 1) {
+            $quantity = 1;
+        }
+
+        $serial = $serialRaw;
+
+        // Skip duplicates within the same file
+        if ($serial && in_array($serial, $this->seenSerials, true)) {
+            $this->errors[] = [
+                'reason' => 'duplicate_serial_in_file',
+                'item_code' => $itemCodeNormalized,
+                'serial_number' => $serial,
+                'item' => $itemName,
+            ];
+            return null;
+        }
+
+        // Skip if serial already exists in database
+        if ($serial && InventroyStreetLightModel::where('serial_number', $serial)->exists()) {
+            $this->errors[] = [
+                'reason' => 'duplicate_serial_in_db',
+                'item_code' => $itemCodeNormalized,
+                'serial_number' => $serial,
+                'item' => $itemName,
+            ];
+            return null;
+        }
+
+        if ($serial) {
+            $this->seenSerials[] = $serial;
+        }
+
+        // Handle SIM number for luminary items (SL02)
+        $sim = $row['sim_number'] ?? null;
+        if ($itemCodeNormalized === 'SL02' && !empty($sim)) {
+            // Skip duplicates within the same file
+            if (in_array($sim, $this->seenSimNumbers, true)) {
+                $this->errors[] = [
+                    'reason' => 'duplicate_sim_in_file',
+                    'item_code' => $itemCodeNormalized,
+                    'serial_number' => $serial,
+                    'item' => $itemName,
+                    'sim_number' => $sim,
+                ];
+                return null;
+            }
+
+            // Skip if SIM already exists for luminary items in DB
+            $existingSim = InventroyStreetLightModel::where('sim_number', $sim)
+                ->where('item_code', 'SL02')
+                ->exists();
+            if ($existingSim) {
+                $this->errors[] = [
+                    'reason' => 'duplicate_sim_in_db',
+                    'item_code' => $itemCodeNormalized,
+                    'serial_number' => $serial,
+                    'item' => $itemName,
+                    'sim_number' => $sim,
+                ];
+                return null;
+            }
+
+            $this->seenSimNumbers[] = $sim;
+        }
+
+        $rate = (float) ($row['unit_rate'] ?? 0);
+        // Total value = rate * quantity (quantity always 1 by rule above)
+        $totalValue = $rate * $quantity;
+
         $inventoryData = [
-            'project_id' => $this->projectId,
-            'store_id'   => $this->storeId,
-            'item_code'  => $row['item_code'], // Ensure the key matches the header
-            'item'       => $row['item'],
-            'manufacturer' => $row['manufacturer'],
-            'make'       => $row['make'],
-            'model'      => $row['model'],
-            'serial_number' => $row['serial_number'],
-            'hsn'        => $row['hsn'],
-            'unit'       => $row['unit'],
-            'rate'       => $row['unit_rate'],
-            'quantity'   => $row['quantity'],
-            'total_value' => $row['total_value'],
-            'description' => $row['description'] ?? "N/A",
-            'eway_bill'  => $row['e-way_bill'] ?? "N/A",
-            'received_date' => $this->parseDate($row['received_date']), // Adjusted key
+            'project_id'    => $this->projectId,
+            'store_id'      => $this->storeId,
+            'item_code'     => $itemCodeNormalized,
+            'item'          => $itemName,
+            'manufacturer'  => $row['manufacturer'] ?? null,
+            'make'          => $row['make'] ?? null,
+            'model'         => $row['model'] ?? null,
+            'serial_number' => $serial,
+            'hsn'           => $row['hsn'] ?? null,
+            'unit'          => $row['unit'] ?? null,
+            'rate'          => $rate,
+            'quantity'      => $quantity,
+            'total_value'   => $totalValue,
+            'description'   => $row['description'] ?? 'N/A',
+            'eway_bill'     => $row['e-way_bill'] ?? 'N/A',
+            'received_date' => $this->parseDate($row['received_date'] ?? null),
         ];
 
         // Add sim_number only for luminary items (SL02)
-        if (isset($row['item_code']) && $row['item_code'] === 'SL02' && isset($row['sim_number'])) {
-            $inventoryData['sim_number'] = $row['sim_number'];
+        if ($itemCodeNormalized === 'SL02' && $sim) {
+            $inventoryData['sim_number'] = $sim;
         }
 
+        $this->importedCount++;
         return new InventroyStreetLightModel($inventoryData);
+    }
+
+    /**
+     * Get collected error rows for reporting.
+     */
+    public function getErrors(): array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * Get count of successfully imported rows.
+     */
+    public function getImportedCount(): int
+    {
+        return $this->importedCount;
     }
 
     /**
