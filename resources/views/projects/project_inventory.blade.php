@@ -158,7 +158,7 @@
         @endif
     </div>
 
-    @include('projects.dispatchInventory')
+    <!-- @include('projects.dispatchInventory') -->
 </div>
 
 @push('styles')

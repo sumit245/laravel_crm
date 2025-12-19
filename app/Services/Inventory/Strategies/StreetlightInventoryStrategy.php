@@ -43,21 +43,21 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
             'dropdown' => 'required|string|max:255', // Form field: item
             'manufacturer' => 'required|string|max:255',
             'model' => 'required|string|max:255',
-            'serialnumber' => 'required|string|max:255', // Form field: serial_number
-            'make' => 'required|string|max:255',
-            'rate' => 'required|numeric|min:0',
-            'number' => 'required|numeric|min:0', // Form field: quantity
+            'serialnumber' => 'required|string|max:255', // Form field: serial_number - uniqueness checked in controller
+            'make' => 'nullable|string|max:255',
+            'rate' => 'nullable|numeric|min:0',
+            'number' => 'required|numeric|min:0', // Form field: quantity (always 1 for single item)
             'totalvalue' => 'nullable|numeric|min:0', // Form field: total_value
-            'hsncode' => 'required|string|max:50', // Form field: hsn
+            'hsncode' => 'nullable|string|max:50', // Form field: hsn
             'description' => 'nullable|string',
-            'unit' => 'required|string|max:50',
-            'receiveddate' => 'required|date', // Form field: received_date
+            'unit' => 'nullable|string|max:50',
+            'receiveddate' => 'nullable|date', // Form field: received_date
         ];
 
         // Add sim_number validation for luminary items (SL02) only
         // Note: Uniqueness will be checked in controller with custom rule to ensure it's only for SL02 items
         if ($itemCode === 'SL02') {
-            $rules['sim_number'] = 'nullable|string|max:200';
+            $rules['sim_number'] = 'required|string|max:200';
         }
 
         return $rules;
@@ -85,14 +85,14 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
             'manufacturer' => $data['manufacturer'] ?? null,
             'model' => $data['model'] ?? null,
             'serial_number' => $data['serial_number'] ?? $data['serialnumber'] ?? null,
-            'sim_number' => $data['sim_number'] ?? null, // Only for luminary items (SL02)
-            'make' => $data['make'] ?? null,
-            'rate' => $data['rate'] ?? null,
+            'sim_number' => ($data['item_code'] ?? $data['code'] ?? '') === 'SL02' ? ($data['sim_number'] ?? null) : null, // Only for luminary items (SL02)
+            'make' => $data['make'] ?? 'Sugs',
+            'rate' => $data['rate'] ?? 100,
             'quantity' => $data['quantity'] ?? $data['number'] ?? 1,
-            'hsn' => $data['hsn'] ?? $data['hsncode'] ?? null,
-            'description' => $data['description'] ?? null,
-            'unit' => $data['unit'] ?? null,
-            'received_date' => $data['received_date'] ?? $data['receiveddate'] ?? null,
+            'hsn' => $data['hsn'] ?? $data['hsncode'] ?? '123456',
+            'description' => $data['description'] ?? '',
+            'unit' => $data['unit'] ?? 'PCS',
+            'received_date' => $data['received_date'] ?? $data['receiveddate'] ?? date('Y-m-d'),
         ];
 
         // Calculate total value if not provided
@@ -103,10 +103,10 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
                 (float) $mappedData['rate']
             );
         } else {
-            $mappedData['total_value'] = $totalValue;
+            $mappedData['total_value'] = $totalValue ?? ($mappedData['rate'] * $mappedData['quantity']);
         }
 
-        // Remove null values to avoid issues
+        // Remove null values to avoid issues, but keep empty strings
         return array_filter($mappedData, function($value) {
             return $value !== null;
         });

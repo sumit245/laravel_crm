@@ -3,6 +3,10 @@
 @php
     $projectId = request()->get('project_id');
     $storeId = request()->get('store_id');
+    
+    // Split data for optimistic loading: first 50 rows rendered, rest in JSON
+    $initialRows = array_slice($unifiedInventory, 0, 50);
+    $remainingRows = array_slice($unifiedInventory, 50);
 @endphp
 
 @section('content')
@@ -14,8 +18,9 @@
                 <h4>Incharge Name: {{ $inchargeName }}</h4>
             </div>
         </div>
+        
+        <!-- Summary Cards -->
         <div class="row">
-            <!-- Inventory Summary -->
             <div class="col-sm-3 mb-2 mt-2">
                 <div class="card bg-success">
                     <div class="card-header">
@@ -39,7 +44,7 @@
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
                             <h3 class="card-title">Luminary</h3>
-                            <i class="mdi mdi mdi-led-on"></i>
+                            <i class="mdi mdi-led-on"></i>
                         </div>
                     </div>
                     <div class="card-body">
@@ -53,7 +58,7 @@
                 </div>
             </div>
             <div class="col-sm-3 mb-2 mt-2">
-                <div class="card"style="background-color: #FF5733; color: black;">
+                <div class="card" style="background-color: #FF5733; color: black;">
                     <div class="card-header">
                         <div class="d-flex justify-content-between">
                             <h3 class="card-title">Structure</h3>
@@ -92,98 +97,188 @@
             </div>
         </div>
 
-        <!-- Inventory Table -->
+        <!-- Filters and Unified Inventory Table -->
         <div class="mt-4">
-            <div class="table-responsive">
-                <table id="inventoryTable" class="table-striped table-bordered mt-4 table">
-                    <thead>
-                        <tr>
-                            <th><input type="checkbox" id="selectAllInventory" /></th> <!-- Master checkbox -->
-                            <th>Item Code</th>
-                            <th>Item Name</th>
-                            <th>Manufacturer</th>
-                            <th>Model</th>
-                            <th>Serial Number</th>
-                            <th>HSN Code</th>
-                            <!-- <th>Unit</th> -->
-                            <th>In</th>
-                            <th>Out</th>
-                            <th class="actions">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($inventory as $item)
-                            <tr data-id="{{ $item->id }}">
-                                <td>
-                                    <input type="checkbox" class="inventoryCheckbox" value="{{ $item->id }}" />
-                                </td>
-                                <td>{{ $item->item_code }}</td>
-                                <td>{{ $item->item }}</td>
-                                <td>{{ $item->manufacturer }}</td>
-                                <td>{{ $item->model }}</td>
-                                <td>{{ $item->serial_number }}</td>
-                                <td>{{ $item->hsn }}</td>
-                                <!-- <td>{{ $item->unit }}</td> -->
-                                <td>{{ $item->created_at }}</td>
-                                <td>{{ $item->dispatch->dispatch_date ?? 'Not Dispatched' }}</td>
-                                <td>
-                                    <a href="#modal{{ $item->id }}" data-bs-toggle="modal"
-                                        class="btn btn-sm btn-info">Details</a>
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Pagination Links -->
-            @if ($inventory->hasPages())
-                <div class="row mt-4 mb-3">
-                    <div class="col-12 d-flex justify-content-center">
-                        {{ $inventory->links() }}
+            <!-- Filters Bar -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label for="filterAvailability" class="form-label mb-1">Availability</label>
+                            <select id="filterAvailability" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                <option value="In Stock">In Stock</option>
+                                <option value="Dispatched">Dispatched</option>
+                                <option value="Consumed">Consumed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterItemCode" class="form-label mb-1">Item Code</label>
+                            <select id="filterItemCode" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                @foreach($itemCodes as $code)
+                                    <option value="{{ $code }}">{{ $code }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label for="filterCustody" class="form-label mb-1">Custody Status</label>
+                            <select id="filterCustody" class="form-select form-select-sm">
+                                <option value="">All</option>
+                                <option value="vendor">In Vendor Custody</option>
+                                <option value="consumed">Consumed</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="button" id="clearFilters" class="btn btn-secondary btn-sm w-100">Clear Filters</button>
+                        </div>
                     </div>
                 </div>
+            </div>
 
-                {{-- <div class="row mb-3">
-          <div class="col-12 text-center text-muted">
-            @if ($inventory->total() > 0)
-              Showing {{ $inventory->firstItem() }} to {{ $inventory->lastItem() }} of {{ $inventory->total() }} items
-            @else
-              No items found
-            @endif
-          </div>
-        </div> --}}
-            @endif
-            @if (Auth::user()->role == 0)
-                <form id="bulkDeleteForm" action="{{ route('inventory.bulkDelete') }}" method="POST">
-                    @csrf
-                    <input type="hidden" name="ids[]" id="bulkDeleteIds">
-                    <div id="bulkDeleteBtnContainer" class="mt-3" style="display: none;">
-                        <button type="button" class="btn btn-danger btn-sm" onclick="submitBulkDelete()">Bulk
-                            Delete</button>
-                    </div>
-                </form>
-            @endif
+            <!-- Unified Datatable -->
+            <x-datatable 
+                id="unifiedInventoryTable"
+                title="Inventory View"
+                :columns="[
+                    ['title' => 'Item Code'],
+                    ['title' => 'Item Name'],
+                    ['title' => 'Serial Number'],
+                    ['title' => 'Availability'],
+                    ['title' => 'Vendor', 'orderable' => false],
+                    ['title' => 'Dispatch Date'],
+                    ['title' => 'In Date'],
+                ]"
+                :exportEnabled="true"
+                :bulkDeleteEnabled="Auth::user()->role === \App\Enums\UserRole::ADMIN->value"
+                :bulkDeleteRoute="route('inventory.bulkDelete')"
+                pageLength="50"
+                searchPlaceholder="Search inventory..."
+            >
+                @foreach($initialRows as $item)
+                    <tr data-id="{{ $item['id'] }}" 
+                        data-availability="{{ $item['availability'] }}"
+                        data-item-code="{{ $item['item_code'] }}"
+                        data-custody="{{ $item['availability'] === 'Dispatched' ? 'vendor' : ($item['availability'] === 'Consumed' ? 'consumed' : '') }}">
+                        @if(Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                            <td>
+                                <input type="checkbox" class="row-checkbox" value="{{ $item['id'] }}">
+                            </td>
+                        @endif
+                        <td>{{ $item['item_code'] }}</td>
+                        <td>{{ $item['item'] }}</td>
+                        <td>{{ $item['serial_number'] }}</td>
+                        <td>
+                            @if($item['availability'] === 'In Stock')
+                                <span class="badge bg-success">In Stock</span>
+                            @elseif($item['availability'] === 'Dispatched')
+                                <span class="badge bg-warning">Dispatched</span>
+                            @else
+                                <span class="badge bg-danger">Consumed</span>
+                            @endif
+                        </td>
+                        <td>{{ $item['vendor_name'] ?? '-' }}</td>
+                        <td>{{ $item['dispatch_date'] ? \Carbon\Carbon::parse($item['dispatch_date'])->format('Y-m-d') : '-' }}</td>
+                        <td>{{ \Carbon\Carbon::parse($item['created_at'])->format('Y-m-d') }}</td>
+                        <td>
+                            @if($item['availability'] === 'In Stock')
+                                <a href="#modal{{ $item['id'] }}" data-bs-toggle="modal" class="btn btn-sm btn-info" title="View">
+                                    <i class="mdi mdi-eye"></i>
+                                </a>
+                                @if(Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                                    <button type="button" class="btn btn-sm btn-danger delete-item" data-id="{{ $item['id'] }}" title="Delete">
+                                        <i class="mdi mdi-delete"></i>
+                                    </button>
+                                @endif
+                            @elseif($item['availability'] === 'Dispatched')
+                                <form action="{{ route('inventory.return') }}" method="POST" class="d-inline" onsubmit="return confirm('Are you sure you want to return this item?');">
+                                    @csrf
+                                    <input type="hidden" name="serial_number" value="{{ $item['serial_number'] }}">
+                                    <button type="submit" class="btn btn-sm btn-warning" title="Return">
+                                        <i class="mdi mdi-undo"></i>
+                                    </button>
+                                </form>
+                            @elseif($item['availability'] === 'Consumed')
+                                <button type="button" class="btn btn-sm btn-primary replace-item" 
+                                        data-dispatch-id="{{ $item['dispatch_id'] }}"
+                                        data-serial-number="{{ $item['serial_number'] }}"
+                                        title="Replace">
+                                    <i class="mdi mdi-swap-horizontal"></i>
+                                </button>
+                            @endif
+                        </td>
+                    </tr>
+                @endforeach
+            </x-datatable>
         </div>
     </div>
 
-    <!-- Inventory Details Modal -->
-    @foreach ($inventory as $item)
-        <div class="modal fade" id="modal{{ $item->id }}" tabindex="-1" role="dialog">
+    <!-- Store remaining rows in JSON for background loading -->
+    <script type="application/json" id="remaining-inventory-data">
+        @json($remainingRows)
+    </script>
+
+    <!-- Replace Item Modal -->
+    <div class="modal fade" id="replaceItemModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Replace Item</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                </div>
+                <form id="replaceItemForm" action="{{ route('inventory.replace') }}" method="POST">
+                    @csrf
+                    <input type="hidden" name="item_id" id="replace_dispatch_id">
+                    <input type="hidden" name="old_serial_number" id="replace_old_serial">
+                    <div class="modal-body">
+                        <div class="form-group mb-3">
+                            <label for="new_serial_number">New Serial Number:</label>
+                            <input type="text" class="form-control" id="new_serial_number" name="new_serial_number" required>
+                        </div>
+                        <div class="form-group mb-3">
+                            <label for="authentication_code">Authentication Code:</label>
+                            <input type="text" class="form-control" id="authentication_code" name="authentication_code" required>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" class="form-check-input" id="agreement_checkbox" name="agreement_checkbox" value="1" required>
+                            <label class="form-check-label" for="agreement_checkbox">
+                                I agree to replace this item
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Replace Item</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Inventory Details Modals -->
+    @foreach($initialRows as $item)
+        <div class="modal fade" id="modal{{ $item['id'] }}" tabindex="-1" role="dialog">
             <div class="modal-dialog" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Item Details: {{ $item->item_name }}</h5>
+                        <h5 class="modal-title">Item Details: {{ $item['item'] }}</h5>
                         <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
                     </div>
                     <div class="modal-body">
-                        <p><strong>Item Code:</strong> {{ $item->item_code }}</p>
-                        <p><strong>Manufacturer:</strong> {{ $item->manufacturer }}</p>
-                        <p><strong>Model:</strong> {{ $item->model }}</p>
-                        <p><strong>Unit:</strong> {{ $item->unit }}</p>
-                        <p><strong>Quantity:</strong> {{ $item->quantity }}</p>
-                        <p><strong>Rate:</strong> {{ $item->rate }}</p>
-                        <p><strong>Total Value:</strong> {{ number_format($item->quantity * $item->rate, 2) }}</p>
+                        <p><strong>Item Code:</strong> {{ $item['item_code'] }}</p>
+                        <p><strong>Serial Number:</strong> {{ $item['serial_number'] }}</p>
+                        <p><strong>Manufacturer:</strong> {{ $item['manufacturer'] }}</p>
+                        <p><strong>Model:</strong> {{ $item['model'] }}</p>
+                        <p><strong>HSN:</strong> {{ $item['hsn'] }}</p>
+                        <p><strong>Quantity:</strong> {{ $item['quantity'] }}</p>
+                        <p><strong>Rate:</strong> ₹{{ number_format($item['rate'], 2) }}</p>
+                        <p><strong>Availability:</strong> {{ $item['availability'] }}</p>
+                        @if($item['vendor_name'])
+                            <p><strong>Vendor:</strong> {{ $item['vendor_name'] }}</p>
+                        @endif
+                        @if($item['dispatch_date'])
+                            <p><strong>Dispatch Date:</strong> {{ \Carbon\Carbon::parse($item['dispatch_date'])->format('Y-m-d H:i') }}</p>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -192,162 +287,215 @@
 @endsection
 
 @push('scripts')
-    <script>
-        $(document).ready(function() {
-            $('#inventoryTable').DataTable({
-                dom: "<'row'<'col-sm-6 d-flex align-items-center'f><'col-sm-6 d-flex justify-content-end'B>>" +
-                    "<'row'<'col-sm-12'tr>>" +
-                    "<'row'<'col-sm-12'i>>",
-                buttons: [{
-                        extend: 'excel',
-                        text: '<i class="mdi mdi-file-excel"></i>',
-                        className: 'btn btn-sm btn-success',
-                        titleAttr: 'Export to Excel', // Tooltip,
-                        exportOptions: {
-                            columns: ':not(.actions)'
-                        }
-                    },
-                    {
-                        extend: 'pdf',
-                        text: '<i class="mdi mdi-file-pdf"></i>',
-                        className: 'btn btn-sm btn-danger',
-                        titleAttr: 'Export to PDF', // Tooltip
-                        exportOptions: {
-                            columns: ':not(.actions)'
-                        }
-                    },
-                    {
-                        extend: 'print',
-                        text: '<i class="mdi mdi-printer"></i>',
-                        className: 'btn btn-sm btn-info',
-                        titleAttr: 'Print Table',
-                        exportOptions: {
-                            columns: ':not(.actions)'
-                        } // Tooltip
-                    }
-                ],
-                paging: false, // Disable DataTables pagination since we're using Laravel pagination
-                searching: true,
-                ordering: true,
-                responsive: true,
-                info: false, // Hide DataTables info since we show custom pagination info
-                language: {
-                    search: '',
-                    searchPlaceholder: 'Search Inventory'
-                }
-            });
-        });
-
-        // Select All checkbox logic
-        $('#selectAllInventory').on('change', function() {
-            $('.inventoryCheckbox').prop('checked', this.checked);
-        });
-
-        // Keep "select all" in sync when any single checkbox changes
-        $(document).on('change', '.inventoryCheckbox', function() {
-            const total = $('.inventoryCheckbox').length;
-            const checked = $('.inventoryCheckbox:checked').length;
-            $('#selectAllInventory').prop('checked', total === checked);
-        });
-
-        function toggleBulkDeleteButton() {
-            const anyChecked = document.querySelectorAll('.inventoryCheckbox:checked').length > 0;
-            document.getElementById('bulkDeleteBtnContainer').style.display = anyChecked ? 'block' : 'none';
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let dataTable;
+    const remainingDataElement = document.getElementById('remaining-inventory-data');
+    const remainingRows = remainingDataElement ? JSON.parse(remainingDataElement.textContent) : [];
+    
+    // Wait for DataTable to initialize
+    setTimeout(function() {
+        dataTable = $('#unifiedInventoryTable').DataTable();
+        
+        // Background batch loading of remaining rows
+        if (remainingRows.length > 0) {
+            loadRemainingRowsInBatches(remainingRows, dataTable);
         }
+    }, 100);
 
-        // Add listener for checkbox change
-        document.addEventListener('DOMContentLoaded', () => {
-            document.querySelectorAll('.inventoryCheckbox').forEach(cb => {
-                cb.addEventListener('change', toggleBulkDeleteButton);
+    // Load remaining rows in small batches to avoid blocking UI
+    function loadRemainingRowsInBatches(rows, table) {
+        const batchSize = 25;
+        let currentIndex = 0;
+        
+        function loadBatch() {
+            const batch = rows.slice(currentIndex, currentIndex + batchSize);
+            
+            batch.forEach(function(item) {
+                const row = createTableRow(item);
+                table.row.add($(row)).draw(false);
             });
-
-            // Optional: also toggle on page load in case checkboxes are pre-checked
-            toggleBulkDeleteButton();
-        });
-
-        function submitBulkDelete() {
-            const selected = [];
-
-            $('.inventoryCheckbox:checked').each(function() {
-                const row = $(this).closest('tr');
-                const id = row.data('id');
-                if (id) selected.push(id);
-            });
-
-            if (selected.length === 0) {
-                Swal.fire('No items selected', 'Please select at least one item to delete.', 'warning');
-                return;
+            
+            currentIndex += batchSize;
+            
+            if (currentIndex < rows.length) {
+                // Use requestAnimationFrame or setTimeout for next batch
+                setTimeout(loadBatch, 50);
+            } else {
+                // Final draw after all rows are added
+                table.draw();
             }
-
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete ${selected.length} item(s). This action cannot be undone.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#6c757d',
-                confirmButtonText: 'Yes, delete them!',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Populate hidden input and submit
-                    const input = document.createElement('input');
-                    input.type = 'hidden';
-                    input.name = 'ids';
-                    input.value = JSON.stringify(selected);
-
-                    const form = document.getElementById('bulkDeleteForm');
-                    form.appendChild(input);
-                    form.submit();
-                }
-            });
         }
-        @if (session('success'))
-            Swal.fire({
-                icon: 'success',
-                title: 'Success',
-                text: '{{ session('success') }}',
-                confirmButtonColor: '#28a745',
-            });
-        @endif
+        
+        loadBatch();
+    }
 
-        @if (session('error'))
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: '{{ session('error') }}',
-                confirmButtonColor: '#dc3545',
-            });
-        @endif
+    function createTableRow(item) {
+        const availabilityBadge = item.availability === 'In Stock' 
+            ? '<span class="badge bg-success">In Stock</span>'
+            : item.availability === 'Dispatched'
+            ? '<span class="badge bg-warning">Dispatched</span>'
+            : '<span class="badge bg-danger">Consumed</span>';
 
-        // Export to CSV function
-        function exportToCSV() {
-            let csvContent = "data:text/csv;charset=utf-8,";
-            let rows = [
-                ['Item Code', 'Item Name', 'Manufacturer', 'Model', 'Unit', 'Quantity', 'Rate', 'Total Value']
-            ];
-
-            @foreach ($inventory as $item)
-                rows.push([
-                    "{{ $item->item_code }}",
-                    "{{ $item->item }}",
-                    "{{ $item->manufacturer }}",
-                    "{{ $item->model }}",
-                    "{{ $item->serial_number }}",
-                    "{{ $item->hsn }}",
-                    "{{ $item->unit }}",
-                ]);
-            @endforeach
-
-            rows.forEach(row => {
-                csvContent += row.join(",") + "\n";
-            });
-
-            const encodedUri = encodeURI(csvContent);
-            const link = document.createElement("a");
-            link.setAttribute("href", encodedUri);
-            link.setAttribute("download", "inventory.csv");
-            document.body.appendChild(link);
-            link.click();
+        let actionButtons = '';
+        const isAdmin = {{ Auth::user()->role === \App\Enums\UserRole::ADMIN->value ? 'true' : 'false' }};
+        const returnRoute = '{{ route('inventory.return') }}';
+        const csrfToken = '{{ csrf_token() }}';
+        
+        if (item.availability === 'In Stock') {
+            actionButtons = '<a href="#modal' + item.id + '" data-bs-toggle="modal" class="btn btn-sm btn-info" title="View"><i class="mdi mdi-eye"></i></a>';
+            if (isAdmin) {
+                actionButtons += '<button type="button" class="btn btn-sm btn-danger delete-item" data-id="' + item.id + '" title="Delete"><i class="mdi mdi-delete"></i></button>';
+            }
+        } else if (item.availability === 'Dispatched') {
+            actionButtons = '<form action="' + returnRoute + '" method="POST" class="d-inline" onsubmit="return confirm(\'Are you sure you want to return this item?\');">' +
+                '<input type="hidden" name="_token" value="' + csrfToken + '">' +
+                '<input type="hidden" name="serial_number" value="' + item.serial_number + '">' +
+                '<button type="submit" class="btn btn-sm btn-warning" title="Return"><i class="mdi mdi-undo"></i></button>' +
+                '</form>';
+        } else if (item.availability === 'Consumed') {
+            actionButtons = '<button type="button" class="btn btn-sm btn-primary replace-item" ' +
+                'data-dispatch-id="' + (item.dispatch_id || '') + '" ' +
+                'data-serial-number="' + item.serial_number + '" ' +
+                'title="Replace"><i class="mdi mdi-swap-horizontal"></i></button>';
         }
-    </script>
+
+        const dispatchDate = item.dispatch_date 
+            ? new Date(item.dispatch_date).toISOString().split('T')[0] 
+            : '-';
+        const createdDate = new Date(item.created_at).toISOString().split('T')[0];
+
+        const custody = item.availability === 'Dispatched' ? 'vendor' : (item.availability === 'Consumed' ? 'consumed' : '');
+        
+        const checkboxTd = isAdmin ? '<td><input type="checkbox" class="row-checkbox" value="' + item.id + '"></td>' : '';
+
+        return '<tr data-id="' + item.id + '" ' +
+            'data-availability="' + item.availability + '" ' +
+            'data-item-code="' + item.item_code + '" ' +
+            'data-custody="' + custody + '">' +
+            checkboxTd +
+            '<td>' + (item.item_code || '') + '</td>' +
+            '<td>' + (item.item || '') + '</td>' +
+            '<td>' + (item.serial_number || '') + '</td>' +
+            '<td>' + availabilityBadge + '</td>' +
+            '<td>' + (item.vendor_name || '-') + '</td>' +
+            '<td>' + dispatchDate + '</td>' +
+            '<td>' + createdDate + '</td>' +
+            '<td>' + actionButtons + '</td>' +
+            '</tr>';
+    }
+
+    // Filter functionality
+    function applyFilters() {
+        const availability = $('#filterAvailability').val();
+        const itemCode = $('#filterItemCode').val();
+        const custody = $('#filterCustody').val();
+        
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                const row = dataTable.row(dataIndex).node();
+                const rowAvailability = $(row).data('availability') || '';
+                const rowItemCode = $(row).data('item-code') || '';
+                const rowCustody = $(row).data('custody') || '';
+                
+                if (availability && rowAvailability !== availability) return false;
+                if (itemCode && rowItemCode !== itemCode) return false;
+                if (custody && rowCustody !== custody) return false;
+                
+                return true;
+            }
+        );
+        
+        dataTable.draw();
+    }
+
+    $('#filterAvailability, #filterItemCode, #filterCustody').on('change', function() {
+        $.fn.dataTable.ext.search.pop();
+        applyFilters();
+    });
+
+    $('#clearFilters').on('click', function() {
+        $('#filterAvailability, #filterItemCode, #filterCustody').val('');
+        $.fn.dataTable.ext.search.pop();
+        dataTable.draw();
+    });
+
+    // Delete item handler
+    $(document).on('click', '.delete-item', function() {
+        const itemId = $(this).data('id');
+        const deleteUrl = '{{ url('inventory') }}/' + itemId;
+        
+        Swal.fire({
+            title: 'Are you sure?',
+            text: 'This will permanently delete this item.',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Yes, delete it!'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: deleteUrl,
+                    method: 'POST',
+                    data: {
+                        _method: 'DELETE',
+                        _token: $('meta[name="csrf-token"]').attr('content')
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            Swal.fire('Deleted!', response.message, 'success').then(() => {
+                                location.reload();
+                            });
+                        } else {
+                            Swal.fire('Error!', response.message || 'Failed to delete item', 'error');
+                        }
+                    },
+                    error: function() {
+                        Swal.fire('Error!', 'Failed to delete item', 'error');
+                    }
+                });
+            }
+        });
+    });
+
+    // Replace item handler
+    $(document).on('click', '.replace-item', function() {
+        const dispatchId = $(this).data('dispatch-id');
+        const serialNumber = $(this).data('serial-number');
+        
+        $('#replace_dispatch_id').val(dispatchId);
+        $('#replace_old_serial').val(serialNumber);
+        $('#replaceItemModal').modal('show');
+    });
+
+    // Session messages
+    @if (session('success'))
+        Swal.fire({
+            icon: 'success',
+            title: 'Success',
+            text: '{{ session('success') }}',
+            confirmButtonColor: '#28a745',
+        });
+    @endif
+
+    @if (session('error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: '{{ session('error') }}',
+            confirmButtonColor: '#dc3545',
+        });
+    @endif
+
+    @if (session('replace_error'))
+        Swal.fire({
+            icon: 'error',
+            title: 'Replace Error',
+            text: '{{ session('replace_error') }}',
+            confirmButtonColor: '#dc3545',
+        });
+    @endif
+});
+</script>
 @endpush

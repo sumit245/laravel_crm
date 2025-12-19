@@ -167,7 +167,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Inventory
     Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
-        Route::prefix('inventory')
+    Route::prefix('inventory')
         ->name('inventory.')
         ->group(function () {
             Route::post('import', [InventoryController::class, 'import'])->name('import');
@@ -175,6 +175,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::get('download-format/{projectId}', [InventoryController::class, 'downloadImportFormat'])->name('download-format');
             Route::post('bulk-dispatch', [InventoryController::class, 'bulkDispatchFromExcel'])->name('bulk-dispatch');
             Route::post('checkQR', [InventoryController::class, 'checkQR'])->name('checkQR');
+            Route::post('check-serial', [InventoryController::class, 'checkSerial'])->name('checkSerial');
             Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
             Route::get('view', [InventoryController::class, 'viewInventory'])->name('view');
             Route::post('replace', [InventoryController::class, 'replaceItem'])->name('replace');

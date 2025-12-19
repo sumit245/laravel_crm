@@ -56,35 +56,50 @@
         <div class="row my-2">
             <div class="col-12">
                 <div class="tab-content mt-1" id="myTabContent">
-                    <ul class="nav nav-tabs fixed-navbar-project" id="myTab" role="tablist">
+                    <ul class="nav nav-tabs nav-tabs-modern fixed-navbar-project" id="myTab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <button class="nav-link active" id="sites-tab" data-bs-toggle="tab" data-bs-target="#sites"
                                 type="button" role="tab" aria-controls="sites" aria-selected="true">
                                 Sites
+                                <span class="badge bg-light text-dark badge-pill-xs">
+                                    {{ $project->project_type == 1 ? $sites->count() : $project->sites->count() }}
+                                </span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="staff-tab" data-bs-toggle="tab" data-bs-target="#staff"
                                 type="button" role="tab" aria-controls="staff">
                                 Staff Management
+                                <span class="badge bg-light text-dark badge-pill-xs">
+                                    {{ $engineers->count() }}
+                                </span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="vendors-tab" data-bs-toggle="tab" data-bs-target="#vendors"
                                 type="button" role="tab" aria-controls="vendors" aria-selected="true">
                                 Vendor Management
+                                <span class="badge bg-light text-dark badge-pill-xs">
+                                    {{ $assignedVendors->count() }}
+                                </span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="inventory-tab" data-bs-toggle="tab" data-bs-target="#inventory"
                                 type="button" role="tab" aria-controls="inventory" aria-selected="false">
                                 Inventory
+                                <span class="badge bg-light text-dark badge-pill-xs">
+                                    {{ $project->stores->count() }}
+                                </span>
                             </button>
                         </li>
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="tasks-tab" data-bs-toggle="tab" data-bs-target="#tasks"
                                 type="button" role="tab" aria-controls="tasks" aria-selected="false">
                                 Target
+                                <span class="badge bg-light text-dark badge-pill-xs">
+                                    {{ $project->tasks->count() }}
+                                </span>
                             </button>
                         </li>
                     </ul>

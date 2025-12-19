@@ -494,8 +494,8 @@ This file tracks all pending and in-progress tasks across the Laravel CRM projec
 
 ### doc-test-report-updates
 
--   **Status**: pending
--   **Description**: Continuously update test_report.md with detailed, Jira-style entries for each module
+-   **Status**: completed
+-   **Description**: Continuously update test_report.md with detailed, Jira-style entries for each module, including new UI/layout consistency work done under `feature/ui-layout-consistency` (tracked in `UI_LAYOUT_TODOS.md`)
 -   **Tasks**:
     -   After each module's work, append clear sections to test_report.md
     -   Include: Status (DONE/NOT DONE), actions taken, issues found, changes made, results after changes
