@@ -383,19 +383,61 @@
                     ['title' => 'Item'],
                     ['title' => 'Serial Number'],
                     ['title' => 'Availability'],
-                    ['title' => 'Vendor', 'orderable' => false],
+                    ['title' => 'Vendor', 'orderable' => true],
                     ['title' => 'Dispatch Date'],
                     ['title' => 'In Date'],
                 ]" :exportEnabled="true"
-                    :bulkDeleteEnabled="Auth::user()->role === \App\Enums\UserRole::ADMIN->value" :bulkDeleteRoute="route('inventory.bulkDelete')" pageLength="50" searchPlaceholder="Search inventory...">
+                    :bulkDeleteEnabled="$isAdmin" :bulkDeleteRoute="route('inventory.bulkDelete')" pageLength="50" searchPlaceholder="Search inventory..."
+                    :filters="[
+                        [
+                            'type' => 'select',
+                            'name' => 'availability',
+                            'label' => 'Availability',
+                            'column' => $isAdmin ? 4 : 3,
+                            'width' => 3,
+                            'useDataAttribute' => 'availability',
+                            'options' => [
+                                'In Stock' => 'In Stock',
+                                'Dispatched' => 'Dispatched',
+                                'Consumed' => 'Consumed',
+                            ],
+                        ],
+                        [
+                            'type' => 'select',
+                            'name' => 'vendor',
+                            'label' => 'Vendor',
+                            'column' => $isAdmin ? 5 : 4,
+                            'width' => 3,
+                            'select2' => true,
+                            'useDataAttribute' => 'vendor-name',
+                            'options' => $assignedVendors->pluck('name', 'name')->toArray(),
+                        ],
+                        [
+                            'type' => 'select',
+                            'name' => 'item',
+                            'label' => 'Item',
+                            'column' => $isAdmin ? 1 : 0,
+                            'width' => 3,
+                            'useDataAttribute' => 'item-code',
+                            'options' => [
+                                'SL01' => 'Panel Module (SL01 Panel)',
+                                'SL02' => 'Luminary (SL02 Luminary)',
+                                'SL03' => 'Battery (SL03 Battery)',
+                                'SL04' => 'Structure (SL04 Structure)',
+                            ],
+                        ],
+                    ]">
                     @foreach ($unifiedInventory as $item)
                         <tr data-id="{{ $item['id'] }}" data-availability="{{ $item['availability'] }}"
                             data-item-code="{{ $item['item_code'] }}"
+                            data-vendor-name="{{ $item['vendor_name'] ?? '-' }}"
                             data-custody="{{ $item['availability'] === 'Dispatched' ? 'vendor' : ($item['availability'] === 'Consumed' ? 'consumed' : '') }}">
-                            @if (Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                            @if ($isAdmin)
                                 <td>
                                     <input type="checkbox" class="row-checkbox" value="{{ $item['id'] }}">
                                 </td>
+                            @else
+                                <td></td>
                             @endif
                             <td>{{ $item['item_code'] }}</td>
                             <td>{{ $item['item'] }}</td>
@@ -415,7 +457,7 @@
                             <td>{{ \Carbon\Carbon::parse($item['created_at'])->format('d/m/Y') }}</td>
                             <td>
                                 @if ($item['availability'] === 'In Stock')
-                                    @if (Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                                    @if ($isAdmin)
                                         <button type="button" class="btn btn-sm btn-danger delete-item"
                                             data-id="{{ $item['id'] }}" title="Delete">
                                             <i class="mdi mdi-delete"></i>
@@ -620,7 +662,7 @@
                                     'type' => 'select',
                                     'name' => 'filter_item_code',
                                     'label' => 'Item Code',
-                                    'column' => 0,
+                                    'column' => 1,
                                     'width' => 3,
                                     'options' => [
                                         '' => 'All',
@@ -634,7 +676,7 @@
                                     'type' => 'date',
                                     'name' => 'filter_dispatch_date',
                                     'label' => 'Dispatch Date',
-                                    'column' => 4,
+                                    'column' => 5,
                                     'width' => 3,
                                 ],
                             ]">
@@ -1017,74 +1059,8 @@
             }
 
 
-            // Unified Inventory Table - Hide top length menu, add functional bottom one
-            let unifiedDataTable;
-
-            // Wait for DataTable to initialize
-            setTimeout(function() {
-                unifiedDataTable = $('#unifiedInventoryTable').DataTable();
-
-                // Hide the top length menu (between search and table) with CSS
-                $('#unifiedInventoryTable_wrapper .dataTables_length').css('display', 'none !important')
-                    .hide();
-
-                // Also hide with a persistent style
-                const style = document.createElement('style');
-                style.textContent =
-                    '#unifiedInventoryTable_wrapper .dataTables_length:not(.dataTables_length_bottom) { display: none !important; }';
-                document.head.appendChild(style);
-
-                // Create functional bottom length menu
-                const paginationParent = $('#unifiedInventoryTable_wrapper .dataTables_info').parent();
-                if (paginationParent.length && !paginationParent.find('.dataTables_length_bottom').length) {
-                    const currentPageLength = unifiedDataTable.page.len();
-                    const settings = unifiedDataTable.settings()[0];
-                    const lengthMenu = settings.aLengthMenu;
-
-                    // Check if lengthMenu is array of arrays [values, labels]
-                    let lengthOptions = [];
-                    let lengthLabels = [];
-
-                    if (Array.isArray(lengthMenu) && lengthMenu.length === 2 && Array.isArray(lengthMenu[
-                        0]) && Array.isArray(lengthMenu[1])) {
-                        lengthOptions = lengthMenu[0];
-                        lengthLabels = lengthMenu[1];
-                    } else {
-                        // Fallback to default
-                        lengthOptions = [10, 25, 50, 100, -1];
-                        lengthLabels = ['10', '25', '50', '100', 'All'];
-                    }
-
-                    let optionsHtml = '';
-                    for (let i = 0; i < lengthOptions.length; i++) {
-                        const val = lengthOptions[i];
-                        const label = lengthLabels[i] || val.toString();
-                        const selected = val == currentPageLength ? 'selected' : '';
-                        optionsHtml += `<option value="${val}" ${selected}>${label}</option>`;
-                    }
-
-                    const bottomLengthHtml = `
-                        <div class="dataTables_length dataTables_length_bottom d-inline-block me-3">
-                            <label class="d-inline-flex align-items-center">
-                                Show: 
-                                <select class="form-select form-select-sm ms-2" style="width: auto;">
-                                    ${optionsHtml}
-                                </select>
-                            </label>
-                        </div>
-                    `;
-
-                    paginationParent.prepend(bottomLengthHtml);
-
-                    // Make the bottom length menu functional - use event delegation
-                    $('#unifiedInventoryTable_wrapper').off('change', '.dataTables_length_bottom select')
-                        .on('change', '.dataTables_length_bottom select', function() {
-                            const selectedValue = $(this).val();
-                            const pageLength = selectedValue == -1 ? -1 : parseInt(selectedValue);
-                            unifiedDataTable.page.len(pageLength).draw();
-                        });
-                }
-            }, 300);
+            // REMOVED: Custom length menu code - the x-datatable component handles this automatically
+            // The datatable component already removes the top length menu and creates a custom bottom one
 
 
             // Delete item handler

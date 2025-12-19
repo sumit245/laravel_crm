@@ -86,6 +86,7 @@ class StoreController extends Controller
         }
 
         $user = auth()->user();
+        $isAdmin = $user->role === \App\Enums\UserRole::ADMIN->value;
 
         // Check authorization for Project Managers
         if ($user->role === \App\Enums\UserRole::PROJECT_MANAGER->value) {
@@ -304,7 +305,7 @@ class StoreController extends Controller
                 ->get();
         }
 
-        return view('stores.show', compact('store', 'project', 'inStock', 'dispatched', 'unifiedInventory', 'itemCodes', 'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue', 'itemStats', 'users', 'inventoryModel', 'assignedVendors', 'inventoryItems'));
+        return view('stores.show', compact('store', 'project', 'inStock', 'dispatched', 'unifiedInventory', 'itemCodes', 'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue', 'itemStats', 'users', 'inventoryModel', 'assignedVendors', 'inventoryItems', 'isAdmin'));
     }
 
     /**
