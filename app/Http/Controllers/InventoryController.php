@@ -19,7 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
-
+use App\Services\Inventory\InventoryHistoryService;
 class InventoryController extends Controller
 {
     public function __construct(
@@ -57,7 +57,7 @@ class InventoryController extends Controller
                 ->where('project_id', $projectId)
                 ->where('user_id', $user->id)
                 ->exists();
-            
+
             if (!$isAssigned) {
                 return redirect()->route('projects.index')->with('error', 'You do not have access to this project.');
             }
@@ -156,7 +156,7 @@ class InventoryController extends Controller
                 $existing = InventroyStreetLightModel::where('sim_number', $request->sim_number)
                     ->where('item_code', 'SL02')
                     ->exists();
-                
+
                 if ($existing) {
                     return redirect()->back()
                         ->withErrors(['sim_number' => 'This SIM number is already in use for a luminary item.'])
@@ -281,7 +281,12 @@ class InventoryController extends Controller
     public function destroy(string $id)
     {
         try {
-            Inventory::findOrFail($id)->delete();
+            // Try to find in both inventory models
+            $item = InventroyStreetLightModel::find($id);
+            if (!$item) {
+                $item = Inventory::findOrFail($id);
+            }
+            $item->delete();
             return response()->json(['success' => true, 'message' => 'Item deleted successfully.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to delete Item'], 500);
@@ -302,12 +307,71 @@ class InventoryController extends Controller
             $projectType = $project->project_type;
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
-            $inventory = $inventoryModel::where('project_id', $projectId)
+            // Get all inventory items (no pagination for unified view)
+            $allInventory = $inventoryModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
-                ->with('dispatch')
                 ->orderBy('created_at', 'desc')
-                ->paginate(100)
-                ->appends($request->query());
+                ->get();
+
+            // Get all dispatched items for this store
+            $allDispatched = InventoryDispatch::where('isDispatched', true)
+                ->where('store_id', $storeId)
+                ->where('project_id', $projectId)
+                ->with('vendor')
+                ->get()
+                ->keyBy('serial_number');
+
+            // Build unified inventory array with availability status
+            $unifiedInventory = [];
+            foreach ($allInventory as $item) {
+                $dispatch = $allDispatched->get($item->serial_number);
+                $quantity = $item->quantity ?? 0;
+
+                // Determine availability status based on quantity and dispatch
+                $availability = 'In Stock';
+                $vendorId = null;
+                $vendorName = null;
+                $dispatchDate = null;
+                $dispatchId = null;
+
+                // If quantity > 0, item is in stock (regardless of dispatch records)
+                // If quantity = 0, check dispatch status
+                if ($quantity > 0) {
+                    $availability = 'In Stock';
+                } elseif ($dispatch) {
+                    $dispatchId = $dispatch->id;
+                    $dispatchDate = $dispatch->dispatch_date;
+                    $vendorId = $dispatch->vendor_id;
+                    $vendorName = $dispatch->vendor ? ($dispatch->vendor->firstName . ' ' . $dispatch->vendor->lastName) : null;
+
+                    if ($dispatch->is_consumed == 1) {
+                        $availability = 'Consumed';
+                    } else {
+                        $availability = 'Dispatched';
+                    }
+                }
+
+                $unifiedInventory[] = [
+                    'id' => $item->id,
+                    'item_code' => $item->item_code,
+                    'item' => $item->item,
+                    'manufacturer' => $item->manufacturer ?? $item->make ?? '',
+                    'model' => $item->model ?? '',
+                    'serial_number' => $item->serial_number,
+                    'hsn' => $item->hsn ?? '',
+                    'created_at' => $item->created_at,
+                    'quantity' => $item->quantity ?? 1,
+                    'rate' => $item->rate ?? 0,
+                    'availability' => $availability,
+                    'vendor_id' => $vendorId,
+                    'vendor_name' => $vendorName,
+                    'dispatch_date' => $dispatchDate,
+                    'dispatch_id' => $dispatchId,
+                ];
+            }
+
+            // For backward compatibility, keep old paginated query (will be ignored in view)
+            $inventory = collect($unifiedInventory);
 
             $dispatch = InventoryDispatch::where('isDispatched', true)
                 ->where('store_id', $storeId)
@@ -361,9 +425,15 @@ class InventoryController extends Controller
 
 
 
+            // Get distinct item codes for filter
+            $itemCodes = $allInventory->pluck('item_code')->unique()->sort()->values();
+
             return view('inventory.view', compact(
                 'inventory',
+                'unifiedInventory',
+                'itemCodes',
                 'projectId',
+                'storeId',
                 'storeName',
                 'inchargeName',
                 'projectType',
@@ -456,11 +526,11 @@ class InventoryController extends Controller
                     "isDispatched" => true
                 ]);
                 $inventoryItem->decrement('quantity', 1);
-                
+
                 // Log history
                 $inventoryType = ($project->project_type == 1) ? 'streetlight' : 'rooftop';
                 $this->historyService->logDispatched($dispatch, $inventoryItem, $inventoryType);
-                
+
                 $dispatchedItems[] = $dispatch;
             }
             if ($request->ajax()) {
@@ -563,7 +633,7 @@ class InventoryController extends Controller
                             ->where('item_code', 'SL02')
                             ->where('id', '!=', $inventoryItem->id)
                             ->exists();
-                        
+
                         if ($existingSim) {
                             $invalidItems[] = [
                                 'row' => $row->toArray(),
@@ -887,7 +957,7 @@ class InventoryController extends Controller
             // Log history before deleting old dispatch
             $project = Project::find($oldDispatch->project_id);
             $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
-            
+
             if (isset($oldStreet) && isset($newStreet)) {
                 $this->historyService->logReplaced(
                     $oldStreet,
@@ -953,9 +1023,9 @@ class InventoryController extends Controller
         try {
             $project = Project::findOrFail($projectId);
             $projectType = $project->project_type;
-            
+
             $filename = 'inventory_import_format_' . ($projectType == 1 ? 'streetlight' : 'rooftop') . '_' . date('Y-m-d') . '.xlsx';
-            
+
             return Excel::download(
                 new InventoryImportFormatExport($projectType),
                 $filename

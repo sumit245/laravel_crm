@@ -102,12 +102,73 @@ class StoreController extends Controller
         // Get inventory data - Optimized: Only select needed columns and limit results
         $inventoryModel = ($project->project_type == 1) ? \App\Models\InventroyStreetLightModel::class : \App\Models\Inventory::class;
 
-        $inStock = $inventoryModel::where('project_id', $project->id)
+        // Get ALL inventory items (for unified view)
+        $allInventory = $inventoryModel::where('project_id', $project->id)
             ->where('store_id', $store->id)
-            ->where('quantity', '>', 0)
-            ->select('id', 'item_code', 'item', 'serial_number', 'quantity', 'rate', 'total_value', 'created_at')
             ->orderBy('created_at', 'desc')
             ->get();
+
+        // Get all dispatched items with vendor info
+        $allDispatched = \App\Models\InventoryDispatch::where('store_id', $store->id)
+            ->where('project_id', $project->id)
+            ->where('isDispatched', true)
+            ->with('vendor:id,firstName,lastName')
+            ->get()
+            ->keyBy('serial_number');
+
+        // Build unified inventory array with availability status
+        $unifiedInventory = [];
+        foreach ($allInventory as $item) {
+            $dispatch = $allDispatched->get($item->serial_number);
+            $quantity = $item->quantity ?? 0;
+
+            // Determine availability status
+            $availability = 'In Stock';
+            $vendorId = null;
+            $vendorName = null;
+            $dispatchDate = null;
+            $dispatchId = null;
+
+            if ($quantity > 0) {
+                $availability = 'In Stock';
+            } elseif ($dispatch) {
+                $dispatchId = $dispatch->id;
+                $dispatchDate = $dispatch->dispatch_date ? ($dispatch->dispatch_date instanceof \DateTimeInterface ? $dispatch->dispatch_date->format('Y-m-d H:i:s') : (string) $dispatch->dispatch_date) : null;
+                $vendorId = $dispatch->vendor_id;
+                $vendorName = $dispatch->vendor ? ($dispatch->vendor->firstName . ' ' . $dispatch->vendor->lastName) : null;
+
+                if ($dispatch->is_consumed == 1) {
+                    $availability = 'Consumed';
+                } else {
+                    $availability = 'Dispatched';
+                }
+            }
+
+            $unifiedInventory[] = [
+                'id' => $item->id,
+                'item_code' => $item->item_code,
+                'item' => $item->item,
+                'manufacturer' => $item->manufacturer ?? $item->make ?? '',
+                'model' => $item->model ?? '',
+                'serial_number' => $item->serial_number,
+                'quantity' => $quantity,
+                'rate' => $item->rate ?? 0,
+                'total_value' => $item->total_value ?? ($quantity * ($item->rate ?? 0)),
+                'created_at' => $item->created_at ? ($item->created_at instanceof \DateTimeInterface ? $item->created_at->format('Y-m-d H:i:s') : (string) $item->created_at) : null,
+                'availability' => $availability,
+                'vendor_id' => $vendorId,
+                'vendor_name' => $vendorName,
+                'dispatch_date' => $dispatchDate,
+                'dispatch_id' => $dispatchId,
+            ];
+        }
+
+        // For backward compatibility, keep old queries
+        $inStock = collect($unifiedInventory)->where('availability', 'In Stock');
+        $dispatched = collect($unifiedInventory)->whereIn('availability', ['Dispatched', 'Consumed']);
+
+        // Get distinct item codes for filter
+        $itemCodes = $allInventory->pluck('item_code')->unique()->sort()->values();
 
         // Optimized: Only get aggregated dispatched data, not all records
         $dispatchedAggregated = \App\Models\InventoryDispatch::where('store_id', $store->id)
@@ -117,15 +178,6 @@ class StoreController extends Controller
             ->groupBy('item_code')
             ->get()
             ->keyBy('item_code');
-
-        // Get dispatched items for display - Eager load vendor to prevent N+1
-        $dispatched = \App\Models\InventoryDispatch::where('store_id', $store->id)
-            ->where('isDispatched', true)
-            ->whereNotNull('item_code')
-            ->with('vendor:id,name') // Eager load vendor to prevent N+1 queries
-            ->select('id', 'item_code', 'item', 'serial_number', 'vendor_id', 'dispatch_date', 'total_value', 'created_at')
-            ->orderBy('dispatch_date', 'desc')
-            ->get();
 
         // Calculate metrics
         $initialStockValue = 0;
@@ -252,7 +304,7 @@ class StoreController extends Controller
                 ->get();
         }
 
-        return view('stores.show', compact('store', 'project', 'inStock', 'dispatched', 'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue', 'itemStats', 'users', 'inventoryModel', 'assignedVendors', 'inventoryItems'));
+        return view('stores.show', compact('store', 'project', 'inStock', 'dispatched', 'unifiedInventory', 'itemCodes', 'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue', 'itemStats', 'users', 'inventoryModel', 'assignedVendors', 'inventoryItems'));
     }
 
     /**

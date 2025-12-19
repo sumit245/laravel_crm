@@ -264,103 +264,88 @@
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
                                         <label for="make" class="form-label">
-                                            Make <span class="text-danger">*</span>
+                                            Make
                                         </label>
-                                        <input type="text" id="make" name="make"
-                                            class="form-control form-control-sm @error('make') is-invalid @enderror"
-                                            required>
+                                        <input type="text" id="make" name="make" value="Sugs"
+                                            class="form-control form-control-sm @error('make') is-invalid @enderror">
                                         @error('make')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please provide a make name.</div>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="rate" class="form-label">
-                                            Rate <span class="text-danger">*</span>
+                                            Rate
                                         </label>
                                         <input type="number" id="rate" name="rate" step="0.01"
-                                            min="0"
-                                            class="form-control form-control-sm @error('rate') is-invalid @enderror"
-                                            required>
+                                            min="0" value="100"
+                                            class="form-control form-control-sm @error('rate') is-invalid @enderror">
                                         @error('rate')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please provide a valid rate (must be a positive
-                                            number).</div>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="receiveddate" class="form-label">
-                                            Received Date <span class="text-danger">*</span>
+                                            Received Date
                                         </label>
                                         <input type="date" id="receiveddate" name="receiveddate"
-                                            class="form-control form-control-sm @error('receiveddate') is-invalid @enderror"
-                                            required>
+                                            class="form-control form-control-sm @error('receiveddate') is-invalid @enderror">
                                         @error('receiveddate')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please select a received date.</div>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="hsncode" class="form-label">
-                                            HSN Code <span class="text-danger">*</span>
+                                            HSN Code
                                         </label>
-                                        <input type="text" id="hsncode" name="hsncode"
-                                            class="form-control form-control-sm @error('hsncode') is-invalid @enderror"
-                                            required>
+                                        <input type="text" id="hsncode" name="hsncode" value="123456"
+                                            class="form-control form-control-sm @error('hsncode') is-invalid @enderror">
                                         @error('hsncode')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please provide an HSN code.</div>
                                     </div>
                                 </div>
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
                                         <label for="totalvalue" class="form-label">
-                                            Total Value <span class="text-danger">*</span>
+                                            Total Value
                                         </label>
                                         <input type="number" id="totalvalue" name="totalvalue" step="0.01"
-                                            min="0"
-                                            class="form-control form-control-sm @error('totalvalue') is-invalid @enderror"
-                                            required>
+                                            min="0" readonly
+                                            class="form-control form-control-sm @error('totalvalue') is-invalid @enderror">
                                         @error('totalvalue')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please provide a valid total value (must be a
-                                            positive number).</div>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="unit" class="form-label">
-                                            Unit <span class="text-danger">*</span>
+                                            Unit
                                         </label>
-                                        <input type="text" id="unit" name="unit"
-                                            class="form-control form-control-sm @error('unit') is-invalid @enderror"
-                                            required>
+                                        <input type="text" id="unit" name="unit" value="PCS"
+                                            class="form-control form-control-sm @error('unit') is-invalid @enderror">
                                         @error('unit')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please provide a unit.</div>
                                     </div>
                                     <div class="col-md-3 mb-3">
                                         <label for="description" class="form-label">
-                                            Description <span class="text-danger">*</span>
+                                            Description
                                         </label>
-                                        <input type="text" id="description" name="description"
-                                            class="form-control form-control-sm @error('description') is-invalid @enderror"
-                                            required>
+                                        <input type="text" id="description" name="description" value=""
+                                            class="form-control form-control-sm @error('description') is-invalid @enderror">
                                         @error('description')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
-                                        <div class="invalid-feedback">Please provide a description.</div>
                                     </div>
-                                    <div class="col-md-3 mb-3">
+                                    <div class="col-md-3 mb-3" id="sim_number_wrapper" style="display: none;">
                                         <label for="sim_number" class="form-label">
-                                            SIM Number <small class="text-muted">(Luminary only)</small>
+                                            SIM Number <span class="text-danger">*</span> <small class="text-muted">(Luminary only)</small>
                                         </label>
                                         <input type="text" id="sim_number" name="sim_number"
                                             class="form-control form-control-sm @error('sim_number') is-invalid @enderror">
                                         @error('sim_number')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
+                                        <div class="invalid-feedback">Please provide a SIM number for luminary items.</div>
                                     </div>
                                 </div>
                                 <input type="hidden" name="number" value="1">
@@ -375,154 +360,227 @@
 
             <!-- View Inventory Tab -->
             <div class="tab-pane fade" id="view" role="tabpanel">
-                <ul class="nav nav-pills mb-3" id="viewTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="in-stock-tab" data-bs-toggle="tab"
-                            data-bs-target="#in-stock" type="button" role="tab" aria-controls="in-stock"
-                            aria-selected="true">
-                            In Stock
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="dispatched-tab" data-bs-toggle="tab"
-                            data-bs-target="#dispatched-view" type="button" role="tab"
-                            aria-controls="dispatched-view" aria-selected="false">
-                            Dispatched
-                        </button>
-                    </li>
-                </ul>
-                <div class="tab-content" id="viewTabContent">
-                    <div class="tab-pane fade show active" id="in-stock" role="tabpanel"
-                        aria-labelledby="in-stock-tab">
-                        <x-datatable id="inStockTable" title="In Stock Items" :columns="[
-                            ['title' => 'Item Code', 'width' => '12%'],
-                            ['title' => 'Item', 'width' => '15%'],
-                            ['title' => 'Serial Number', 'width' => '20%'],
-                            ['title' => 'Quantity', 'width' => '10%'],
-                            ['title' => 'Rate', 'width' => '12%'],
-                            ['title' => 'Total Value', 'width' => '12%'],
-                            ['title' => 'In Date', 'width' => '12%'],
-                        ]" :exportEnabled="true"
-                            :importEnabled="false" :bulkDeleteEnabled="true" 
-                            :bulkDeleteRoute="route('inventory.bulkDelete')" 
-                            pageLength="25" searchPlaceholder="Search items..."
-                            :filters="[
-                                [
-                                    'type' => 'select',
-                                    'name' => 'filter_item_code',
-                                    'label' => 'Item Code',
-                                    'column' => 0,
-                                    'width' => 3,
-                                    'options' => [
-                                        '' => 'All',
-                                        'SL01' => 'SL01 - Panel',
-                                        'SL02' => 'SL02 - Luminary',
-                                        'SL03' => 'SL03 - Battery',
-                                        'SL04' => 'SL04 - Structure',
-                                    ],
-                                ],
-                            ]">
-                            @forelse($inStock as $item)
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" class="row-checkbox" value="{{ $item->id ?? '' }}">
-                                    </td>
-                                    <td>{{ $item->item_code ?? 'N/A' }}</td>
-                                    <td>{{ $item->item ?? 'N/A' }}</td>
-                                    <td>{{ $item->serial_number ?? 'N/A' }}</td>
-                                    <td>{{ $item->quantity ?? 0 }}</td>
-                                    <td>₹{{ number_format($item->rate ?? 0, 2) }}</td>
-                                    <td>₹{{ number_format($item->total_value ?? 0, 2) }}</td>
-                                    <td>{{ $item->created_at ? $item->created_at->format('d/m/Y') : 'N/A' }}</td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger delete-item" 
-                                            data-id="{{ $item->id ?? '' }}" 
-                                            data-url="{{ route('inventory.destroy', $item->id ?? 0) }}">
+                <!-- Unified Datatable -->
+                <x-datatable id="unifiedInventoryTable" title="Inventory View" :columns="[
+                    ['title' => 'Item Code'],
+                    ['title' => 'Item'],
+                    ['title' => 'Serial Number'],
+                    ['title' => 'Availability'],
+                    ['title' => 'Vendor', 'orderable' => false],
+                    ['title' => 'Dispatch Date'],
+                    ['title' => 'In Date'],
+                ]" :exportEnabled="true"
+                    :bulkDeleteEnabled="Auth::user()->role === \App\Enums\UserRole::ADMIN->value" :bulkDeleteRoute="route('inventory.bulkDelete')" pageLength="50" searchPlaceholder="Search inventory...">
+                    @foreach ($unifiedInventory as $item)
+                        <tr data-id="{{ $item['id'] }}" data-availability="{{ $item['availability'] }}"
+                            data-item-code="{{ $item['item_code'] }}"
+                            data-custody="{{ $item['availability'] === 'Dispatched' ? 'vendor' : ($item['availability'] === 'Consumed' ? 'consumed' : '') }}">
+                            @if (Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                                <td>
+                                    <input type="checkbox" class="row-checkbox" value="{{ $item['id'] }}">
+                                </td>
+                            @endif
+                            <td>{{ $item['item_code'] }}</td>
+                            <td>{{ $item['item'] }}</td>
+                            <td>{{ $item['serial_number'] }}</td>
+                            <td>
+                                @if ($item['availability'] === 'In Stock')
+                                    <span class="badge bg-success">In Stock</span>
+                                @elseif($item['availability'] === 'Dispatched')
+                                    <span class="badge bg-warning">Dispatched</span>
+                                @else
+                                    <span class="badge bg-danger">Consumed</span>
+                                @endif
+                            </td>
+                            <td>{{ $item['vendor_name'] ?? '-' }}</td>
+                            <td>{{ $item['dispatch_date'] ? \Carbon\Carbon::parse($item['dispatch_date'])->format('d/m/Y') : '-' }}
+                            </td>
+                            <td>{{ \Carbon\Carbon::parse($item['created_at'])->format('d/m/Y') }}</td>
+                            <td>
+                                @if ($item['availability'] === 'In Stock')
+                                    @if (Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                                        <button type="button" class="btn btn-sm btn-danger delete-item"
+                                            data-id="{{ $item['id'] }}" title="Delete">
                                             <i class="mdi mdi-delete"></i>
                                         </button>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="9" class="text-center">No items in stock</td>
-                                </tr>
-                            @endforelse
-                        </x-datatable>
-                    </div>
-                    <div class="tab-pane fade" id="dispatched-view" role="tabpanel" aria-labelledby="dispatched-tab">
-                        <x-datatable id="dispatchedTable" title="Dispatched Items" :columns="[
-                            ['title' => 'Item Code', 'width' => '12%'],
-                            ['title' => 'Item', 'width' => '15%'],
-                            ['title' => 'Serial Number', 'width' => '18%'],
-                            ['title' => 'Vendor', 'width' => '15%'],
-                            ['title' => 'Dispatch Date', 'width' => '12%'],
-                            ['title' => 'Value', 'width' => '12%'],
-                        ]" :exportEnabled="true"
-                            :importEnabled="false" :bulkDeleteEnabled="true"
-                            :bulkDeleteRoute="route('inventory.bulkDelete')" 
-                            pageLength="25"
-                            searchPlaceholder="Search dispatched items..." :filters="[
-                                [
-                                    'type' => 'select',
-                                    'name' => 'filter_item_code',
-                                    'label' => 'Item Code',
-                                    'column' => 0,
-                                    'width' => 3,
-                                    'options' => [
-                                        '' => 'All',
-                                        'SL01' => 'SL01 - Panel',
-                                        'SL02' => 'SL02 - Luminary',
-                                        'SL03' => 'SL03 - Battery',
-                                        'SL04' => 'SL04 - Structure',
-                                    ],
-                                ],
-                                [
-                                    'type' => 'date',
-                                    'name' => 'filter_dispatch_date',
-                                    'label' => 'Dispatch Date',
-                                    'column' => 4,
-                                    'width' => 3,
-                                ],
-                            ]">
-                            @forelse($dispatched as $dispatch)
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" class="row-checkbox" value="{{ $dispatch->id ?? '' }}">
-                                    </td>
-                                    <td>{{ $dispatch->item_code ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->item ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->serial_number ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->vendor->name ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->dispatch_date ? \Carbon\Carbon::parse($dispatch->dispatch_date)->format('d/m/Y') : 'N/A' }}
-                                    </td>
-                                    <td>₹{{ number_format($dispatch->total_value ?? 0, 2) }}</td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger delete-item" 
-                                            data-id="{{ $dispatch->id ?? '' }}" 
-                                            data-url="{{ route('inventory.destroy', $dispatch->id ?? 0) }}">
-                                            <i class="mdi mdi-delete"></i>
+                                    @endif
+                                @elseif($item['availability'] === 'Dispatched')
+                                    <form action="{{ route('inventory.return') }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Are you sure you want to return this item?');">
+                                        @csrf
+                                        <input type="hidden" name="serial_number" value="{{ $item['serial_number'] }}">
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Return">
+                                            <i class="mdi mdi-undo"></i>
                                         </button>
-                                    </td>
-                                </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center">No dispatched items</td>
-                                </tr>
-                            @endforelse
-                        </x-datatable>
-                    </div>
-                </div>
+                                    </form>
+                                @elseif($item['availability'] === 'Consumed')
+                                    <button type="button" class="btn btn-sm btn-primary replace-item"
+                                        data-dispatch-id="{{ $item['dispatch_id'] }}"
+                                        data-serial-number="{{ $item['serial_number'] }}" title="Replace">
+                                        <i class="mdi mdi-swap-horizontal"></i>
+                                    </button>
+                                @endif
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-datatable>
             </div>
 
             <!-- Dispatch Material Tab -->
             <div class="tab-pane fade" id="dispatch" role="tabpanel">
+                <!-- Dispatch Form Card -->
                 <div class="card mb-3">
-                    <div class="card-body d-flex justify-content-between align-items-center">
-                        <h6 class="mb-0">Dispatch Material</h6>
-                        <button type="button" class="btn btn-primary btn-sm"
-                            onclick="openDispatchModal({{ $store->id }})">
-                            <i class="mdi mdi-truck-delivery"></i> Dispatch Material
-                        </button>
+                    <div class="card-body">
+                        <form id="dispatchForm">
+                            @csrf
+                            <input type="hidden" id="dispatchStoreId" name="store_id" value="{{ $store->id }}">
+                            <input type="hidden" name="project_id" value="{{ $project->id }}">
+                            <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? 'N/A' }}">
+                            
+                            <!-- Vendor Selection and Entry Mode - Inline -->
+                            <div class="d-flex justify-content-between align-items-end mb-3 gap-3">
+                                <div class="flex-grow-1" style="max-width: 300px;">
+                                    <label for="vendorName" class="form-label">Vendor Name:</label>
+                                    <select class="form-select form-select-sm" id="vendorName" name="vendor_id" required>
+                                        <option value="">Select Vendor</option>
+                                        @foreach ($assignedVendors as $user)
+                                            <option value="{{ $user->id }}">{{ $user->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="form-label">Entry Mode:</label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="dispatchModeSwitch" 
+                                            onchange="switchDispatchMode(this.checked ? 'bulk' : 'manual')">
+                                        <label class="form-check-label" for="dispatchModeSwitch">
+                                            <span id="modeLabel">Manual Entry</span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Bulk Upload Section (Initially Hidden) -->
+                            <div id="bulkUploadSection" style="display: none;" class="mb-3">
+                                <div class="d-flex justify-content-between align-items-start gap-4">
+                                    <div class="flex-shrink-0">
+                                        <div class="import-section d-flex flex-column gap-2">
+                                            <div class="import-form-group d-flex align-items-stretch">
+                                                <div class="input-group input-group-sm import-input-wrapper">
+                                                    <input type="file" class="form-control form-control-sm import-file-input" 
+                                                        id="bulkDispatchFile" accept=".xlsx,.xls,.csv">
+                                                    <button type="button" class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1" 
+                                                        id="processBulkUpload">
+                                                        <i class="mdi mdi-upload"></i>
+                                                        <span>Process Upload</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <a href="{{ route('inventory.download-format', $project->id) }}" 
+                                                class="download-format-link" target="_blank">
+                                                <i class="mdi mdi-download"></i>
+                                                <span>Download Format</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="bulk-upload-instructions">
+                                            <p class="mb-1"><strong>Bulk Upload Format:</strong></p>
+                                            <p class="mb-1 small"><strong>Columns:</strong> ITEM_CODE, ITEM NAME (or item), serial_number (or SERIAL_NUMBER)</p>
+                                            <p class="mb-1 small"><strong>For Luminary (SL02):</strong> Include sim_number (or SIM_NUMBER) column</p>
+                                            <p class="mb-0 small"><strong>Note:</strong> Each row should have quantity = 1 for each serial number</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Already Dispatched Items Display -->
+                                <div id="alreadyDispatchedSection" style="display: none;" class="mt-3">
+                                    <div class="alert alert-warning">
+                                        <strong>Already Dispatched Items:</strong>
+                                        <button type="button" class="btn btn-sm btn-danger float-end" id="removeDispatchedBtn">
+                                            <i class="mdi mdi-delete"></i> Remove All
+                                        </button>
+                                        <div id="alreadyDispatchedList" class="mt-2"></div>
+                                    </div>
+                                </div>
+
+                                <!-- Invalid Items Display -->
+                                <div id="invalidItemsSection" style="display: none;" class="mt-3">
+                                    <div class="alert alert-danger">
+                                        <strong>Invalid Items:</strong>
+                                        <div id="invalidItemsList" class="mt-2"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Manual Entry Section -->
+                            <div id="manualEntrySection">
+                                <div class="d-flex justify-content-end align-items-center mb-3">
+                                    <button type="button" class="btn btn-success btn-sm" id="addMoreItems">
+                                        <i class="mdi mdi-plus"></i>
+                                        Add More Items
+                                    </button>
+                                </div>
+                                <!-- Dynamic Items Section -->
+                                <div id="itemsContainer">
+                                    <div class="item-row mb-3">
+                                        <div class="row">
+                                            <div class="col-sm-8 form-group">
+                                                <label for="items">Item:</label>
+                                                <select class="form-select item-select" name="item_code" required>
+                                                    <option value="">Select Item</option>
+                                                    @foreach ($inventoryItems as $item)
+                                                        <option value="{{ $item->item_code }}"
+                                                            data-stock="{{ $item->total_quantity }}"
+                                                            data-item="{{ $item->item }}" data-rate="{{ $item->rate }}"
+                                                            data-make="{{ $item->make }}" data-model="{{ $item->model }}">
+                                                            {{ $item->item_code }} {{ $item->item }}
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                <input type="hidden" name="item" id="item_namesss">
+                                                <input type="hidden" name="rate" id="item_rate">
+                                                <input type="hidden" name="make" id="item_make">
+                                                <input type="hidden" name="model" id="item_model">
+                                            </div>
+                                            <div class="col-sm-4 form-group">
+                                                <label for="quantity">Quantity:</label>
+                                                <input type="number" class="form-control item-quantity"
+                                                    name="total_quantity" min="1" required>
+                                                <input type="hidden" name="total_value" id="total_value">
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-sm-4">
+                                                <!-- QR Code Scanning -->
+                                                <div class="form-group">
+                                                    <label for="qr_scanner" class="form-label">Scan Item QR Code:</label>
+                                                    <input type="text" id="qr_scanner" class="form-control" autofocus />
+                                                    <small class="text-muted">Keep scanning QR codes...</small>
+                                                    <div id="qr_error" class="text-danger mt-2"></div>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-8">
+                                                <!-- Scanned QR Codes List -->
+                                                <ul id="scanned_qrs" class="list-group my-1"></ul>
+                                                <div id="serial_numbers_container"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- End Manual Entry Section -->
+
+                            <!-- Form Actions -->
+                            <div class="d-flex justify-content-end gap-2 mt-3">
+                                <button type="button" class="btn btn-primary printbtn" id="printButton">
+                                    <i class="mdi mdi-printer"></i> Print
+                                </button>
+                                <button type="button" id="issueMaterial" class="btn btn-primary">
+                                    <i class="mdi mdi-truck-delivery"></i> Issue Items
+                                </button>
+                            </div>
+                        </form>
                     </div>
                 </div>
 
@@ -538,10 +596,8 @@
                             ['title' => 'Vendor', 'width' => '15%'],
                             ['title' => 'Dispatch Date', 'width' => '12%'],
                             ['title' => 'Value', 'width' => '12%'],
-                        ]" :exportEnabled="true"
-                            :importEnabled="false" :bulkDeleteEnabled="true"
-                            :bulkDeleteRoute="route('inventory.bulkDelete')" 
-                            pageLength="25"
+                        ]"
+                            :exportEnabled="true" :importEnabled="false" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('inventory.bulkDelete')" pageLength="25"
                             searchPlaceholder="Search dispatched items..." :filters="[
                                 [
                                     'type' => 'select',
@@ -568,19 +624,24 @@
                             @forelse($dispatched as $dispatch)
                                 <tr>
                                     <td>
-                                        <input type="checkbox" class="row-checkbox" value="{{ $dispatch->id ?? '' }}">
+                                        <input type="checkbox" class="row-checkbox" value="{{ $dispatch['id'] ?? '' }}">
                                     </td>
-                                    <td>{{ $dispatch->item_code ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->item ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->serial_number ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->vendor->name ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch->dispatch_date ? \Carbon\Carbon::parse($dispatch->dispatch_date)->format('d/m/Y') : 'N/A' }}
+                                    <td>{{ $dispatch['item_code'] ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch['item'] ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch['serial_number'] ?? 'N/A' }}</td>
+                                    <td>{{ $dispatch['vendor_name'] ?? 'N/A' }}</td>
+                                    <td>
+                                        @if (!empty($dispatch['dispatch_date']))
+                                            {{ \Carbon\Carbon::parse($dispatch['dispatch_date'])->format('d/m/Y') }}
+                                        @else
+                                            N/A
+                                        @endif
                                     </td>
-                                    <td>₹{{ number_format($dispatch->total_value ?? 0, 2) }}</td>
+                                    <td>₹{{ number_format($dispatch['total_value'] ?? 0, 2) }}</td>
                                     <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger delete-item" 
-                                            data-id="{{ $dispatch->id ?? '' }}" 
-                                            data-url="{{ route('inventory.destroy', $dispatch->id ?? 0) }}">
+                                        <button type="button" class="btn btn-sm btn-danger delete-item"
+                                            data-id="{{ $dispatch['id'] ?? '' }}"
+                                            data-url="{{ route('inventory.destroy', $dispatch['id'] ?? 0) }}">
                                             <i class="mdi mdi-delete"></i>
                                         </button>
                                     </td>
@@ -596,12 +657,45 @@
             </div>
         </div>
 
-        <!-- Dispatch Modal - Outside tab-content for proper visibility -->
-        @include('projects.dispatchInventory', [
-            'store' => $store,
-            'project' => $project,
-            'assignedVendors' => $assignedVendors,
-        ])
+        <!-- Replace Item Modal -->
+        <div class="modal fade" id="replaceItemModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Replace Item</h5>
+                        <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                    </div>
+                    <form id="replaceItemForm" action="{{ route('inventory.replace') }}" method="POST">
+                        @csrf
+                        <input type="hidden" name="item_id" id="replace_dispatch_id">
+                        <input type="hidden" name="old_serial_number" id="replace_old_serial">
+                        <div class="modal-body">
+                            <div class="form-group mb-3">
+                                <label for="new_serial_number">New Serial Number:</label>
+                                <input type="text" class="form-control" id="new_serial_number"
+                                    name="new_serial_number" required>
+                            </div>
+                            <div class="form-group mb-3">
+                                <label for="authentication_code">Authentication Code:</label>
+                                <input type="text" class="form-control" id="authentication_code"
+                                    name="authentication_code" required>
+                            </div>
+                            <div class="form-check">
+                                <input type="checkbox" class="form-check-input" id="agreement_checkbox"
+                                    name="agreement_checkbox" value="1" required>
+                                <label class="form-check-label" for="agreement_checkbox">
+                                    I agree to replace this item
+                                </label>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Replace Item</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
 @endsection
 
@@ -731,94 +825,127 @@
                 return true;
             }
 
-            function openDispatchModal(storeId) {
-                const dispatchStoreIdInput = document.getElementById("dispatchStoreId");
-                if (dispatchStoreIdInput) {
-                    dispatchStoreIdInput.value = storeId;
-                }
-                const dispatchModal = document.getElementById('dispatchModal');
-                if (dispatchModal) {
-                    const modal = new bootstrap.Modal(dispatchModal);
-                    modal.show();
-                }
-            }
 
-            // Handle main view tab - CRITICAL: Force nav-pills to be visible
-            const viewTab = document.getElementById('view-tab');
-            if (viewTab) {
-                // Function to force show nav-pills
-                function forceShowNavPills() {
-                    const viewPane = document.getElementById('view');
-                    const viewTabs = document.getElementById('viewTabs');
-                    
-                    if (viewPane) {
-                        // Force show the parent tab-pane
-                        viewPane.classList.add('show');
-                        viewPane.style.setProperty('display', 'block', 'important');
-                        viewPane.style.setProperty('opacity', '1', 'important');
-                        viewPane.style.setProperty('visibility', 'visible', 'important');
-                    }
-                    
-                    if (viewTabs) {
-                        // Force show the nav-pills with maximum specificity
-                        viewTabs.style.setProperty('display', 'flex', 'important');
-                        viewTabs.style.setProperty('visibility', 'visible', 'important');
-                        viewTabs.style.setProperty('opacity', '1', 'important');
-                        viewTabs.style.setProperty('position', 'relative', 'important');
-                        viewTabs.style.setProperty('z-index', '10', 'important');
-                        
-                        // Also force show each nav-item and nav-link
-                        const navItems = viewTabs.querySelectorAll('.nav-item');
-                        navItems.forEach(function(item) {
-                            item.style.setProperty('display', 'list-item', 'important');
-                            item.style.setProperty('visibility', 'visible', 'important');
-                            item.style.setProperty('opacity', '1', 'important');
-                        });
-                        
-                        const navLinks = viewTabs.querySelectorAll('.nav-link');
-                        navLinks.forEach(function(link) {
-                            link.style.setProperty('display', 'block', 'important');
-                            link.style.setProperty('visibility', 'visible', 'important');
-                            link.style.setProperty('opacity', '1', 'important');
-                        });
-                    }
-                }
-                
-                viewTab.addEventListener('shown.bs.tab', function() {
-                    forceShowNavPills();
-                });
-                
-                // Also check on click (before shown event)
-                viewTab.addEventListener('click', function() {
-                    setTimeout(forceShowNavPills, 50);
-                });
-                
-                // Check immediately if tab is already active
-                if (viewTab.classList.contains('active') || viewTab.getAttribute('aria-selected') === 'true') {
-                    setTimeout(forceShowNavPills, 100);
-                }
-            }
-            
-            // Ensure nav-pills are visible on page load if view tab is active
+            // Unified Inventory Table - Hide top length menu, add functional bottom one
+            let unifiedDataTable;
+
+            // Wait for DataTable to initialize
             setTimeout(function() {
-                const viewTabPane = document.getElementById('view');
-                const viewTab = document.getElementById('view-tab');
-                // Check if view tab is active (has active class or aria-selected)
-                const isViewTabActive = viewTab && (
-                    viewTab.classList.contains('active') || 
-                    viewTab.getAttribute('aria-selected') === 'true'
-                );
-                
-                if (viewTabPane && (viewTabPane.classList.contains('show') || isViewTabActive)) {
-                    viewTabPane.classList.add('show');
-                    viewTabPane.style.cssText = 'display: block !important; opacity: 1 !important; visibility: visible !important;';
-                    
-                    const viewTabs = document.getElementById('viewTabs');
-                    if (viewTabs) {
-                        viewTabs.style.cssText = 'display: flex !important; visibility: visible !important; opacity: 1 !important;';
+                unifiedDataTable = $('#unifiedInventoryTable').DataTable();
+
+                // Hide the top length menu (between search and table) with CSS
+                $('#unifiedInventoryTable_wrapper .dataTables_length').css('display', 'none !important')
+                    .hide();
+
+                // Also hide with a persistent style
+                const style = document.createElement('style');
+                style.textContent =
+                    '#unifiedInventoryTable_wrapper .dataTables_length:not(.dataTables_length_bottom) { display: none !important; }';
+                document.head.appendChild(style);
+
+                // Create functional bottom length menu
+                const paginationParent = $('#unifiedInventoryTable_wrapper .dataTables_info').parent();
+                if (paginationParent.length && !paginationParent.find('.dataTables_length_bottom').length) {
+                    const currentPageLength = unifiedDataTable.page.len();
+                    const settings = unifiedDataTable.settings()[0];
+                    const lengthMenu = settings.aLengthMenu;
+
+                    // Check if lengthMenu is array of arrays [values, labels]
+                    let lengthOptions = [];
+                    let lengthLabels = [];
+
+                    if (Array.isArray(lengthMenu) && lengthMenu.length === 2 && Array.isArray(lengthMenu[
+                        0]) && Array.isArray(lengthMenu[1])) {
+                        lengthOptions = lengthMenu[0];
+                        lengthLabels = lengthMenu[1];
+                    } else {
+                        // Fallback to default
+                        lengthOptions = [10, 25, 50, 100, -1];
+                        lengthLabels = ['10', '25', '50', '100', 'All'];
                     }
+
+                    let optionsHtml = '';
+                    for (let i = 0; i < lengthOptions.length; i++) {
+                        const val = lengthOptions[i];
+                        const label = lengthLabels[i] || val.toString();
+                        const selected = val == currentPageLength ? 'selected' : '';
+                        optionsHtml += `<option value="${val}" ${selected}>${label}</option>`;
+                    }
+
+                    const bottomLengthHtml = `
+                        <div class="dataTables_length dataTables_length_bottom d-inline-block me-3">
+                            <label class="d-inline-flex align-items-center">
+                                Show: 
+                                <select class="form-select form-select-sm ms-2" style="width: auto;">
+                                    ${optionsHtml}
+                                </select>
+                            </label>
+                        </div>
+                    `;
+
+                    paginationParent.prepend(bottomLengthHtml);
+
+                    // Make the bottom length menu functional - use event delegation
+                    $('#unifiedInventoryTable_wrapper').off('change', '.dataTables_length_bottom select')
+                        .on('change', '.dataTables_length_bottom select', function() {
+                            const selectedValue = $(this).val();
+                            const pageLength = selectedValue == -1 ? -1 : parseInt(selectedValue);
+                            unifiedDataTable.page.len(pageLength).draw();
+                        });
                 }
-            }, 500);
+            }, 300);
+
+
+            // Delete item handler
+            $(document).on('click', '.delete-item', function() {
+                const itemId = $(this).data('id');
+                const deleteUrl = '{{ url('inventory') }}/' + itemId;
+
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: 'This will permanently delete this item.',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        $.ajax({
+                            url: deleteUrl,
+                            method: 'POST',
+                            data: {
+                                _method: 'DELETE',
+                                _token: $('meta[name="csrf-token"]').attr('content')
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    Swal.fire('Deleted!', response.message, 'success')
+                                        .then(() => {
+                                            location.reload();
+                                        });
+                                } else {
+                                    Swal.fire('Error!', response.message ||
+                                        'Failed to delete item', 'error');
+                                }
+                            },
+                            error: function() {
+                                Swal.fire('Error!', 'Failed to delete item', 'error');
+                            }
+                        });
+                    }
+                });
+            });
+
+            // Replace item handler
+            $(document).on('click', '.replace-item', function() {
+                const dispatchId = $(this).data('dispatch-id');
+                const serialNumber = $(this).data('serial-number');
+
+                $('#replace_dispatch_id').val(dispatchId);
+                $('#replace_old_serial').val(serialNumber);
+                $('#replaceItemModal').modal('show');
+            });
 
             @if ($project->project_type == 1)
                 // Store chart instances to prevent re-rendering
@@ -879,6 +1006,577 @@
                     }
                 }
             @endif
+
+            // ========== Dispatch Form JavaScript ==========
+            const itemsContainer = document.getElementById('itemsContainer');
+            const addMoreItemsButton = document.getElementById('addMoreItems');
+            let availableQuantity = 0;
+            let scannedQRs = [];
+            let loadingIssue = false;
+
+            // Add New Item Row
+            let rowCount = 1;
+            if (addMoreItemsButton) {
+                addMoreItemsButton.addEventListener("click", function() {
+                    const originalRow = document.querySelector(".item-row");
+                    if (!originalRow) return;
+
+                    const newItemRow = originalRow.cloneNode(true);
+                    rowCount++;
+
+                    newItemRow.querySelector(".item-select").value = "";
+                    newItemRow.querySelector(".item-quantity").value = "";
+
+                    const scannedList = newItemRow.querySelector("#scanned_qrs");
+                    if (scannedList) {
+                        scannedList.innerHTML = "";
+                        scannedList.id = `scanned_qrs_${rowCount}`;
+                    }
+
+                    const qrScannerInput = newItemRow.querySelector("#qr_scanner");
+                    if (qrScannerInput) {
+                        qrScannerInput.value = "";
+                        qrScannerInput.setAttribute("data-row", rowCount);
+                    }
+
+                    const serialContainer = newItemRow.querySelector("#serial_numbers_container");
+                    if (serialContainer) {
+                        serialContainer.id = `serial_numbers_container_${rowCount}`;
+                    }
+
+                    let removeButton = newItemRow.querySelector(".remove-item-btn");
+                    if (!removeButton) {
+                        removeButton = document.createElement("button");
+                        removeButton.className = "btn btn-danger btn-sm remove-item-btn m-1";
+                        removeButton.innerHTML = '<i class="mdi mdi-delete"></i> Remove';
+                        newItemRow.appendChild(removeButton);
+                    }
+                    itemsContainer.appendChild(newItemRow);
+                });
+            }
+
+            // Remove Item Row
+            if (itemsContainer) {
+                itemsContainer.addEventListener("click", function(e) {
+                    if (e.target.closest(".remove-item-btn")) {
+                        const rows = itemsContainer.querySelectorAll(".item-row");
+                        if (rows.length > 1) {
+                            e.target.closest(".item-row").remove();
+                        }
+                    }
+                });
+            }
+
+            // Handle QR Scanning
+            const qrScanner = document.getElementById('qr_scanner');
+            if (qrScanner) {
+                qrScanner.addEventListener('keyup', function(event) {
+                    if (event.key === 'Enter' && this.value.trim() !== '') {
+                        let scannedCode = this.value.trim();
+                        this.value = '';
+
+                        if (scannedQRs.includes(scannedCode)) {
+                            showError('QR code already scanned!', 'qr_error');
+                            return;
+                        }
+                        
+                        const currentRow = this.closest('.item-row');
+                        if (!currentRow) {
+                            showError('Cannot determine which item row this scanner belongs to!', 'qr_error');
+                            return;
+                        }
+                        
+                        const selectedItemCode = currentRow.querySelector('.item-select').value;
+                        if (!selectedItemCode) {
+                            showError('Please select an item first before scanning QR codes!', 'qr_error');
+                            return;
+                        }
+                        
+                        if (selectedItemCode === "SL02") {
+                            scannedCode = scannedCode.split(';')[0];
+                        }
+
+                        const storeId = document.getElementById('dispatchStoreId').value;
+                        
+                        fetch('{{ route('inventory.checkQR') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    qr_code: scannedCode,
+                                    store_id: storeId,
+                                    item_code: selectedItemCode
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.exists) {
+                                    scannedQRs.push(scannedCode);
+                                    updateScannedQRs();
+                                    addSerialNumberInput(scannedCode);
+                                    updateQuantityAndTotal();
+                                    clearError();
+                                } else {
+                                    showError('Invalid QR code! Item not found in inventory.', 'qr_error');
+                                }
+                            })
+                            .catch(() => showError('Error checking QR code!', 'qr_error'));
+                    }
+                });
+            }
+
+            function showError(message, context) {
+                const errorElement = document.getElementById(context);
+                if (errorElement) {
+                    errorElement.textContent = message;
+                }
+            }
+
+            function clearError() {
+                const errorElement = document.getElementById('qr_error');
+                if (errorElement) {
+                    errorElement.textContent = '';
+                }
+            }
+
+            // Validate Quantity Against Stock
+            if (itemsContainer) {
+                itemsContainer.addEventListener('input', function(e) {
+                    if (e.target.classList.contains('item-quantity')) {
+                        const select = e.target.closest('.item-row').querySelector('.item-select');
+                        if (select.selectedIndex > 0) {
+                            const stock = select.selectedOptions[0].getAttribute('data-stock');
+                            if (parseInt(e.target.value) > parseInt(stock)) {
+                                alert('Quantity cannot exceed stock.');
+                                e.target.value = stock;
+                            }
+                        }
+                    }
+                });
+            }
+
+            const itemSelect = document.querySelector('.item-select');
+            if (itemSelect) {
+                itemSelect.addEventListener('change', function() {
+                    const selectedOption = this.options[this.selectedIndex];
+                    document.getElementById('item_namesss').value = selectedOption.dataset.item || '';
+                    document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
+                    document.getElementById('item_make').value = selectedOption.dataset.make || '';
+                    document.getElementById('item_model').value = selectedOption.dataset.model || '';
+                    
+                    scannedQRs = [];
+                    updateScannedQRs();
+                    updateQuantityAndTotal();
+                });
+            }
+
+            function updateScannedQRs() {
+                const list = document.getElementById('scanned_qrs');
+                if (!list) return;
+
+                list.innerHTML = '';
+
+                scannedQRs.forEach((qr, index) => {
+                    const li = document.createElement('li');
+                    li.className = 'list-group-item';
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'd-flex justify-content-between align-items-center';
+
+                    const qrText = document.createElement('span');
+                    qrText.textContent = qr;
+
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.type = 'button';
+                    deleteBtn.className = 'btn btn-sm btn-danger';
+                    deleteBtn.innerHTML = '&times;';
+                    deleteBtn.onclick = (e) => {
+                        e.preventDefault();
+                        scannedQRs.splice(index, 1);
+                        updateScannedQRs();
+                        updateQuantityAndTotal();
+                    };
+
+                    wrapper.appendChild(qrText);
+                    wrapper.appendChild(deleteBtn);
+                    li.appendChild(wrapper);
+                    list.appendChild(li);
+                });
+            }
+
+            function addSerialNumberInput(serialNumber) {
+                const container = document.getElementById('serial_numbers_container');
+                if (container) {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'serial_numbers[]';
+                    input.value = serialNumber;
+                    container.appendChild(input);
+                }
+            }
+
+            function updateQuantityAndTotal() {
+                const quantityInput = document.querySelector('.item-quantity');
+                const rate = parseFloat(document.getElementById('item_rate').value) || 0;
+                const quantity = scannedQRs.length;
+                if (quantityInput) {
+                    quantityInput.value = quantity;
+                }
+                const totalValue = rate * quantity;
+                const totalValueInput = document.getElementById('total_value');
+                if (totalValueInput) {
+                    totalValueInput.value = totalValue.toFixed(2);
+                }
+            }
+
+            // Print Functionality
+            const printButton = document.getElementById('printButton');
+            if (printButton) {
+                printButton.addEventListener('click', function(e) {
+                    e.preventDefault();
+
+                    const vendorSelect = document.getElementById('vendorName');
+                    if (vendorSelect.selectedIndex === 0) {
+                        alert('Please select a vendor first.');
+                        return;
+                    }
+                    const vendorName = vendorSelect.options[vendorSelect.selectedIndex].textContent;
+
+                    const itemRows = document.querySelectorAll('#itemsContainer .item-row');
+                    const itemsData = [];
+
+                    itemRows.forEach(row => {
+                        const itemSelect = row.querySelector('.item-select');
+                        if (itemSelect.selectedIndex === 0) return;
+
+                        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+                        const scannedQRsList = row.querySelector('ul.list-group.my-1');
+                        const scannedQRs = Array.from(scannedQRsList.querySelectorAll('li')).map(
+                            li => li.textContent);
+
+                        itemsData.push({
+                            code: selectedOption.value,
+                            name: selectedOption.dataset.item,
+                            rate: selectedOption.dataset.rate,
+                            make: selectedOption.dataset.make,
+                            model: selectedOption.dataset.model,
+                            quantity: row.querySelector('.item-quantity').value,
+                            serials: scannedQRs
+                        });
+                    });
+
+                    if (itemsData.length === 0) {
+                        alert('Please add at least one item to print.');
+                        return;
+                    }
+
+                    const printWindow = window.open('');
+                    printWindow.document.write(`
+                        <html>
+                          <head>
+                            <title>Dispatch Report</title>
+                            <style>
+                              body { font-family: Arial; margin: 20px; }
+                              .header { text-align: center; margin-bottom: 30px; }
+                              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                              th { background-color: #f5f5f5; }
+                              .serial-list { max-width: 300px; word-break: break-all; }
+                            </style>
+                          </head>
+                          <body>
+                            <div class="header">
+                              <h2>Inventory Dispatch Report</h2>
+                              <p><strong>Vendor:</strong> ${vendorName}</p>
+                              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                            </div>
+                            
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Item Code</th>
+                                  <th>Item Name</th>
+                                  <th>Quantity</th>
+                                  <th>Rate</th>
+                                  <th>Make/Model</th>
+                                  <th>Serial Numbers</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                ${itemsData.map(item => `
+                                  <tr>
+                                    <td>${item.code}</td>
+                                    <td>${item.name}</td>
+                                    <td>${item.quantity}</td>
+                                    <td>₹${item.rate}</td>
+                                    <td>${item.make} ${item.model}</td>
+                                    <td class="serial-list">${item.serials.join(', ')}</td>
+                                  </tr>
+                                `).join('')}
+                              </tbody>
+                            </table>
+
+                            <script>
+                              window.onload = function() {
+                                window.print();
+                                setTimeout(() => window.close(), 500);
+                              }
+                            <\/script>
+                          </body>
+                        </html>
+                      `);
+                    printWindow.document.close();
+                });
+            }
+
+            // Issue Material Button
+            const issueMaterialBtn = document.getElementById('issueMaterial');
+            if (issueMaterialBtn) {
+                issueMaterialBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    loadingIssue = true;
+                    const button = this;
+                    const originalText = button.innerHTML;
+                    button.disabled = true;
+                    button.innerHTML = `
+                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                        Processing...
+                    `;
+                    const form = document.getElementById('dispatchForm');
+                    const formData = new FormData(form);
+
+                    fetch("{{ route('inventory.dispatchweb') }}", {
+                            method: "POST",
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            loadingIssue = false;
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                            if (data.status === 'success') {
+                                Swal.fire({
+                                    title: 'Success!',
+                                    text: data.message,
+                                    icon: 'success',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    form.reset();
+                                    location.reload();
+                                });
+                            } else {
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: data.message,
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                }).then(() => {
+                                    loadingIssue = false;
+                                    button.disabled = false;
+                                    button.innerHTML = originalText;
+                                });
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            Swal.fire({
+                                title: 'Error!',
+                                text: 'Something went wrong. Please try again.',
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            }).then(() => {
+                                loadingIssue = false;
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                            });
+                        });
+                });
+            }
+
+            // Dispatch Mode Toggle and Bulk Upload
+            let alreadyDispatchedItems = [];
+            let dispatchMode = 'manual';
+
+            window.switchDispatchMode = function(mode) {
+                dispatchMode = mode;
+                const manualSection = document.getElementById('manualEntrySection');
+                const bulkSection = document.getElementById('bulkUploadSection');
+                const modeSwitch = document.getElementById('dispatchModeSwitch');
+                const modeLabel = document.getElementById('modeLabel');
+                const issueBtn = document.getElementById('issueMaterial');
+
+                if (mode === 'bulk') {
+                    manualSection.style.display = 'none';
+                    bulkSection.style.display = 'block';
+                    if (modeSwitch) modeSwitch.checked = true;
+                    if (modeLabel) modeLabel.textContent = 'Bulk Upload (Excel)';
+                    if (issueBtn) issueBtn.disabled = alreadyDispatchedItems.length > 0;
+                } else {
+                    manualSection.style.display = 'block';
+                    bulkSection.style.display = 'none';
+                    if (modeSwitch) modeSwitch.checked = false;
+                    if (modeLabel) modeLabel.textContent = 'Manual Entry';
+                    if (issueBtn) issueBtn.disabled = false;
+                }
+            };
+
+            const processBulkUploadBtn = document.getElementById('processBulkUpload');
+            if (processBulkUploadBtn) {
+                processBulkUploadBtn.addEventListener('click', function() {
+                    const fileInput = document.getElementById('bulkDispatchFile');
+                    const vendorId = document.getElementById('vendorName').value;
+                    const projectId = document.querySelector('input[name="project_id"]').value;
+                    const storeId = document.getElementById('dispatchStoreId').value;
+                    const storeInchargeId = document.querySelector('input[name="store_incharge_id"]').value;
+
+                    if (!fileInput.files.length) {
+                        Swal.fire('Error', 'Please select an Excel file', 'error');
+                        return;
+                    }
+
+                    if (!vendorId) {
+                        Swal.fire('Error', 'Please select a vendor', 'error');
+                        return;
+                    }
+
+                    const formData = new FormData();
+                    formData.append('file', fileInput.files[0]);
+                    formData.append('vendor_id', vendorId);
+                    formData.append('project_id', projectId);
+                    formData.append('store_id', storeId);
+                    formData.append('store_incharge_id', storeInchargeId);
+                    formData.append('_token', '{{ csrf_token() }}');
+
+                    const btn = this;
+                    const originalText = btn.innerHTML;
+                    btn.disabled = true;
+                    btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Processing...';
+
+                    fetch('{{ route('inventory.bulk-dispatch') }}', {
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            btn.disabled = false;
+                            btn.innerHTML = originalText;
+
+                            if (data.status === 'success') {
+                                Swal.fire('Success', data.message, 'success').then(() => {
+                                    location.reload();
+                                });
+                            } else if (data.status === 'error' && data.already_dispatched) {
+                                alreadyDispatchedItems = data.already_dispatched;
+                                displayAlreadyDispatched(data.already_dispatched);
+                                displayInvalidItems(data.invalid_items || []);
+
+                                const issueMaterialBtn = document.getElementById('issueMaterial');
+                                if (issueMaterialBtn) {
+                                    issueMaterialBtn.disabled = true;
+                                }
+
+                                Swal.fire({
+                                    title: 'Warning',
+                                    text: data.message,
+                                    icon: 'warning',
+                                    confirmButtonText: 'OK'
+                                });
+                            } else {
+                                Swal.fire('Error', data.message || 'Failed to process bulk upload', 'error');
+                            }
+                        })
+                        .catch(error => {
+                            console.error(error);
+                            btn.disabled = false;
+                            btn.innerHTML = originalText;
+                            Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                        });
+                });
+            }
+
+            function displayAlreadyDispatched(items) {
+                const section = document.getElementById('alreadyDispatchedSection');
+                const list = document.getElementById('alreadyDispatchedList');
+
+                if (items.length > 0) {
+                    section.style.display = 'block';
+                    list.innerHTML = '<ul class="list-group">';
+                    items.forEach(item => {
+                        list.innerHTML += `
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                              ${item.item_code} - ${item.item} (SN: ${item.serial_number}${item.sim_number ? ', SIM: ' + item.sim_number : ''})
+                              <button type="button" class="btn btn-sm btn-danger" onclick="removeDispatchedItem('${item.serial_number}')">
+                                <i class="mdi mdi-close"></i>
+                              </button>
+                            </li>
+                          `;
+                    });
+                    list.innerHTML += '</ul>';
+                } else {
+                    section.style.display = 'none';
+                }
+            }
+
+            function displayInvalidItems(items) {
+                const section = document.getElementById('invalidItemsSection');
+                const list = document.getElementById('invalidItemsList');
+
+                if (items.length > 0) {
+                    section.style.display = 'block';
+                    list.innerHTML = '<ul class="list-group">';
+                    items.forEach(item => {
+                        list.innerHTML += `
+                            <li class="list-group-item text-danger">
+                              <strong>Error:</strong> ${item.error}<br>
+                              <small>Row: ${JSON.stringify(item.row)}</small>
+                            </li>
+                          `;
+                    });
+                    list.innerHTML += '</ul>';
+                } else {
+                    section.style.display = 'none';
+                }
+            }
+
+            window.removeDispatchedItem = function(serialNumber) {
+                alreadyDispatchedItems = alreadyDispatchedItems.filter(item => item.serial_number !== serialNumber);
+                displayAlreadyDispatched(alreadyDispatchedItems);
+
+                if (alreadyDispatchedItems.length === 0) {
+                    const issueMaterialBtn = document.getElementById('issueMaterial');
+                    if (issueMaterialBtn) {
+                        issueMaterialBtn.disabled = false;
+                    }
+                    const alreadyDispatchedSection = document.getElementById('alreadyDispatchedSection');
+                    if (alreadyDispatchedSection) {
+                        alreadyDispatchedSection.style.display = 'none';
+                    }
+                }
+            };
+
+            const removeDispatchedBtn = document.getElementById('removeDispatchedBtn');
+            if (removeDispatchedBtn) {
+                removeDispatchedBtn.addEventListener('click', function() {
+                    alreadyDispatchedItems = [];
+                    displayAlreadyDispatched([]);
+                    displayInvalidItems([]);
+                    const issueMaterialBtn = document.getElementById('issueMaterial');
+                    if (issueMaterialBtn) {
+                        issueMaterialBtn.disabled = false;
+                    }
+                    const alreadyDispatchedSection = document.getElementById('alreadyDispatchedSection');
+                    if (alreadyDispatchedSection) {
+                        alreadyDispatchedSection.style.display = 'none';
+                    }
+                });
+            }
+            // ========== End Dispatch Form JavaScript ==========
         });
     </script>
 @endpush
@@ -1076,11 +1774,11 @@
             outline: none;
             box-shadow: 0 0 0 0.2rem rgba(31, 59, 179, 0.25);
         }
-        
+
         /* CRITICAL OVERRIDES for global CSS from style.css */
         /* Global CSS has: .tab-content>.tab-pane { display: none; } at line 14324 */
         /* Global CSS has: .fade:not(.show) { opacity: 0; } at line 13622 */
-        
+
         /* Force show the view tab-pane when it has .show class - override ALL global rules */
         #view.tab-pane.fade.show,
         #storeTabContent .tab-pane#view.fade.show,
@@ -1089,13 +1787,13 @@
             opacity: 1 !important;
             visibility: visible !important;
         }
-        
+
         /* Hide the view tab-pane when it doesn't have .show class */
         #view.tab-pane.fade:not(.show),
         #storeTabContent .tab-pane#view.fade:not(.show) {
             display: none !important;
         }
-        
+
         /* CRITICAL: Force nav-pills to be visible - override ALL possible hiding rules */
         /* These rules must override: .tab-content>.tab-pane { display: none; } */
         #viewTabs.nav-pills,
@@ -1118,7 +1816,7 @@
             position: relative !important;
             z-index: 1 !important;
         }
-        
+
         /* Hide nav-pills ONLY when parent tab is explicitly hidden */
         #view.tab-pane:not(.show) #viewTabs.nav-pills,
         #view.tab-pane:not(.show) ul.nav.nav-pills#viewTabs,
@@ -1126,17 +1824,17 @@
         #view.tab-pane.fade:not(.show) ul.nav.nav-pills#viewTabs {
             display: none !important;
         }
-        
+
         /* Override global .tab-content>.tab-pane { display: none; } rule for nested tabs */
-        #viewTabContent.tab-content > .tab-pane {
+        #viewTabContent.tab-content>.tab-pane {
             display: none !important;
         }
-        
-        #viewTabContent.tab-content > .tab-pane.show,
-        #viewTabContent.tab-content > .tab-pane.fade.show {
+
+        #viewTabContent.tab-content>.tab-pane.show,
+        #viewTabContent.tab-content>.tab-pane.fade.show {
             display: block !important;
         }
-        
+
         /* Ensure actions column is visible */
         #inStockTable th:last-child,
         #inStockTable td:last-child,
@@ -1322,6 +2020,74 @@
         .tab-pane .datatable-wrapper,
         .tab-pane table {
             width: 100% !important;
+        }
+
+        /* Dispatch Form Styles */
+        .printbtn {
+            background: #ffaf00;
+            border: none;
+        }
+
+        .printbtn:hover {
+            background: rgb(223, 152, 1);
+            border: none;
+        }
+
+        #dispatchForm .text-danger {
+            color: #F95F53 !important;
+            font-size: 14px;
+        }
+
+        #dispatchForm .list-group-item {
+            padding: 5px;
+            top: 25px;
+        }
+
+        #dispatchForm .form-group {
+            margin-bottom: 1rem;
+        }
+
+        #dispatchForm .btn-group .btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        /* Form Switch Styling */
+        #dispatchForm .form-check-switch {
+            padding-left: 2.5em;
+        }
+
+        #dispatchForm .form-check-input[type="checkbox"] {
+            width: 2.5em;
+            height: 1.25em;
+            cursor: pointer;
+        }
+
+        #dispatchForm .form-check-label {
+            cursor: pointer;
+            font-weight: 500;
+            margin-left: 0.5rem;
+        }
+
+        /* Bulk Upload Instructions Styling */
+        .bulk-upload-instructions {
+            padding-top: 0.5rem;
+        }
+
+        .bulk-upload-instructions p {
+            color: #212529;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+
+        .bulk-upload-instructions p strong {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .bulk-upload-instructions .small {
+            font-size: 0.8125rem;
         }
     </style>
 @endpush
