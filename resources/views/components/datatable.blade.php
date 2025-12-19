@@ -22,7 +22,7 @@
     'order' => [[0, 'desc']],
 ])
 
-<div class="datatable-wrapper">
+<div class="datatable-wrapper" id="datatable-wrapper-{{ $id }}">
     {{-- Header Section: Import and Add Button on Same Line --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
         @if ($importEnabled && $importRoute)
@@ -90,11 +90,11 @@
                 @endforeach
                 <div class="col-12 col-md-auto">
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-sm btn-primary flex-fill flex-md-auto" id="applyFilters">
+                        <button type="button" class="btn btn-sm btn-primary flex-fill flex-md-auto" id="{{ $id }}_applyFilters">
                             <i class="mdi mdi-filter-check"></i> Apply Filters
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary flex-fill flex-md-auto"
-                            id="clearFilters">
+                            id="{{ $id }}_clearFilters">
                             <i class="mdi mdi-filter-off"></i> Clear
                         </button>
                     </div>
@@ -208,6 +208,18 @@
             padding: 0;
             box-shadow: none;
             border: none;
+        }
+
+        /* Hide default DataTables length menu - we use custom one at bottom */
+        .datatable-wrapper .dataTables_length:not(.dataTables_length_bottom),
+        #{{ $id }}_wrapper .dataTables_length:not(.dataTables_length_bottom),
+        .dataTables_wrapper .dataTables_length:not(.dataTables_length_bottom) {
+            display: none !important;
+            visibility: hidden !important;
+            height: 0 !important;
+            overflow: hidden !important;
+            margin: 0 !important;
+            padding: 0 !important;
         }
 
         .datatable-wrapper .table {
@@ -966,7 +978,9 @@
             // Check if table is visible before initializing
             function isTableVisible() {
                 const $table = $(tableId);
-                if (!$table.length) return false;
+                if (!$table.length) {
+                    return false;
+                }
                 
                 // Check if table is in a hidden tab
                 const $tabPane = $table.closest('.tab-pane');
@@ -976,9 +990,18 @@
                     const hasShowClass = $tabPane.hasClass('show');
                     const isDisplayed = $tabPane.css('display') !== 'none';
                     const isVisible = $tabPane.is(':visible');
+                    let computedDisplay = 'none';
+                    try {
+                        if ($tabPane[0]) {
+                            computedDisplay = window.getComputedStyle($tabPane[0]).display;
+                        }
+                    } catch(e) {
+                        computedDisplay = 'error';
+                    }
                     
-                    // All conditions must be true for tab to be visible
-                    return hasShowClass && isDisplayed && isVisible;
+                    // For Bootstrap 5 tabs: if tab has 'show' class OR is displayed, consider it visible
+                    // This is more lenient to handle timing issues
+                    return hasShowClass || (isDisplayed && computedDisplay !== 'none');
                 }
                 
                 // Table is not in a tab, check if it's visible
@@ -989,14 +1012,16 @@
             function initializeTable() {
                 // Wait a bit for DOM to settle, then check visibility
                 setTimeout(function() {
-                    if (!isTableVisible()) {
+                    const isVisible = isTableVisible();
+                    if (!isVisible) {
                         // Table is hidden, wait and check again (max 10 attempts = 2 seconds)
                         let attempts = 0;
                         const checkInterval = setInterval(function() {
                             attempts++;
-                            if (isTableVisible() || attempts >= 10) {
+                            const nowVisible = isTableVisible();
+                            if (nowVisible || attempts >= 10) {
                                 clearInterval(checkInterval);
-                                if (isTableVisible() && !$.fn.DataTable.isDataTable(tableId)) {
+                                if (nowVisible && !$.fn.DataTable.isDataTable(tableId)) {
                                     initializeDataTable();
                                 }
                             }
@@ -1062,29 +1087,6 @@
             const debouncedUpdateBulkActions = debounce(updateBulkActions, 50);
             const debouncedUpdateSelectAllState = debounce(updateSelectAllState, 50);
 
-            // #region agent log
-            function logDataTableInit(eventMessage, extraData) {
-                try {
-                    const payload = {
-                        sessionId: 'debug-session',
-                        runId: 'dispatch-tab-debug',
-                        hypothesisId: 'H-dispatch-tab',
-                        location: 'components/datatable.blade.php',
-                        message: eventMessage,
-                        data: extraData || {},
-                        timestamp: Date.now(),
-                    };
-
-                    fetch('http://127.0.0.1:7242/ingest/7e5b5f92-5e9c-4e87-90bd-addc2ca28e7c', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload),
-                    }).catch(() => {});
-                } catch (e) {
-                    // Ignore logging failures
-                }
-            }
-            // #endregion
 
             // Track if pagination has been moved to prevent repeated DOM manipulation
             let paginationMoved = false;
@@ -1145,13 +1147,191 @@
                 }
             });
             
+            @if (!empty($filters))
+            // Define filter functions BEFORE initializeDataTable so they're always accessible
+            // Use a scoped container to avoid conflicts with other datatables
+            const filterContainer_{{ $id }} = $('#datatable-wrapper-{{ $id }}');
+            let filterFunctions_{{ $id }} = [];
+            
+            // Store filter functions array reference for this table
+            window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+            
+            window['applyFilters_{{ $id }}'] = function() {
+                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                if (!table || typeof table.draw !== 'function') {
+                    console.warn('Table not initialized yet');
+                    return;
+                }
+                
+                // Remove previous filter functions for this table only
+                const currentSearchFunctions = $.fn.dataTable.ext.search || [];
+                const existingTableFilters = window['filterFunctions_{{ $id }}'] || [];
+                
+                // Remove only this table's filter functions from global search
+                $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
+                    return existingTableFilters.indexOf(fn) === -1;
+                });
+                
+                // Clear this table's filter functions array
+                filterFunctions_{{ $id }} = [];
+                window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                
+                // Clear table search
+                table.search('').columns().search('');
+                
+                @foreach ($filters as $filter)
+                    @if ($filter['type'] === 'select')
+                        @if (isset($filter['select2']) && $filter['select2'])
+                            // Scope selector to this datatable's container
+                            const select2Val = filterContainer_{{ $id }}.find('.filter-select2[data-filter="{{ $filter['name'] }}"]').select2('val');
+                            const filter{{ $loop->index }} = Array.isArray(select2Val) ? select2Val[0] : select2Val;
+                        @else
+                            // Scope selector to this datatable's container
+                            const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-select[data-filter="{{ $filter['name'] }}"]').val();
+                        @endif
+                        if (filter{{ $loop->index }}) {
+                            @if (isset($filter['useDataAttribute']) && $filter['useDataAttribute'])
+                                const filterValue{{ $loop->index }} = filter{{ $loop->index }};
+                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                    if (settings.nTable.id !== '{{ $id }}') return true;
+                                    const $row = $(table.row(dataIndex).node());
+                                    const attrName = '{{ $filter['useDataAttribute'] }}';
+                                    let rowValue = $row.attr('data-' + attrName);
+                                    // Handle empty/null values
+                                    if (rowValue === null || rowValue === undefined) {
+                                        rowValue = '';
+                                    }
+                                    // Also try camelCase version for jQuery .data() compatibility
+                                    if (rowValue === '' || rowValue === null) {
+                                        const camelCaseName = attrName.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
+                                        rowValue = $row.data(camelCaseName) || $row.data(attrName) || '';
+                                    }
+                                    // Normalize empty strings and '-' to empty string for comparison
+                                    const normalizedRowValue = (rowValue === '-' || rowValue === '') ? '' : String(rowValue);
+                                    const normalizedFilterValue = (filterValue{{ $loop->index }} === '-' || filterValue{{ $loop->index }} === '') ? '' : String(filterValue{{ $loop->index }});
+                                    return normalizedRowValue === normalizedFilterValue;
+                                };
+                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                // Add to global search functions array
+                                if (!$.fn.dataTable.ext.search) {
+                                    $.fn.dataTable.ext.search = [];
+                                }
+                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                            @else
+                                table.column({{ $filter['column'] }}).search('^' + filter{{ $loop->index }} + '$', true, false);
+                            @endif
+                        }
+                    @elseif ($filter['type'] === 'date')
+                        // Scope selector to this datatable's container
+                        const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-date[data-filter="{{ $filter['name'] }}"]').val();
+                        if (filter{{ $loop->index }}) {
+                            @if (str_contains($filter['name'], 'from'))
+                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                    if (settings.nTable.id !== '{{ $id }}') return true;
+                                    const filterVal = filter{{ $loop->index }};
+                                    if (!filterVal) return true;
+                                    try {
+                                        const cellDate = new Date(data[{{ $filter['column'] }}]);
+                                        const filterDate = new Date(filterVal);
+                                        return !isNaN(cellDate.getTime()) && cellDate >= filterDate;
+                                    } catch (e) {
+                                        return true;
+                                    }
+                                };
+                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                if (!$.fn.dataTable.ext.search) {
+                                    $.fn.dataTable.ext.search = [];
+                                }
+                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                            @elseif (str_contains($filter['name'], 'to'))
+                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                    if (settings.nTable.id !== '{{ $id }}') return true;
+                                    const filterVal = filter{{ $loop->index }};
+                                    if (!filterVal) return true;
+                                    try {
+                                        const cellDate = new Date(data[{{ $filter['column'] }}]);
+                                        const filterDate = new Date(filterVal);
+                                        return !isNaN(cellDate.getTime()) && cellDate <= filterDate;
+                                    } catch (e) {
+                                        return true;
+                                    }
+                                };
+                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                if (!$.fn.dataTable.ext.search) {
+                                    $.fn.dataTable.ext.search = [];
+                                }
+                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                            @endif
+                        }
+                    @elseif ($filter['type'] === 'text')
+                        // Scope selector to this datatable's container
+                        const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-text[data-filter="{{ $filter['name'] }}"]').val();
+                        if (filter{{ $loop->index }}) {
+                            @if (str_contains($filter['name'], 'min'))
+                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                    if (settings.nTable.id !== '{{ $id }}') return true;
+                                    const filterVal = parseFloat(filter{{ $loop->index }}) || 0;
+                                    if (!filterVal) return true;
+                                    const cellValue = parseFloat(String(data[{{ $filter['column'] }}]).replace(/[^0-9.-]+/g, '')) || 0;
+                                    return cellValue >= filterVal;
+                                };
+                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                if (!$.fn.dataTable.ext.search) {
+                                    $.fn.dataTable.ext.search = [];
+                                }
+                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                            @else
+                                table.column({{ $filter['column'] }}).search(filter{{ $loop->index }});
+                            @endif
+                        }
+                    @endif
+                @endforeach
+                
+                // Update stored reference
+                window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                table.draw();
+            };
+            
+            // Apply Filters button handler - use table-specific ID
+            $(document).off('click', '#{{ $id }}_applyFilters').on('click', '#{{ $id }}_applyFilters', function() {
+                if (typeof window['applyFilters_{{ $id }}'] === 'function') {
+                    window['applyFilters_{{ $id }}']();
+                }
+            });
+            
+            // Clear Filters button handler - use table-specific ID and scope selectors
+            $(document).off('click', '#{{ $id }}_clearFilters').on('click', '#{{ $id }}_clearFilters', function() {
+                // Only clear filters within this datatable's container
+                filterContainer_{{ $id }}.find('.filter-select, .filter-date, .filter-text').val('');
+                filterContainer_{{ $id }}.find('.filter-select2').each(function() {
+                    $(this).val(null).trigger('change');
+                });
+                
+                // Remove only this table's filter functions from global search
+                const currentSearchFunctions = $.fn.dataTable.ext.search || [];
+                const tableFilterFunctions = window['filterFunctions_{{ $id }}'] || [];
+                $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
+                    return tableFilterFunctions.indexOf(fn) === -1;
+                });
+                
+                // Clear this table's filter functions
+                filterFunctions_{{ $id }} = [];
+                window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                
+                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                if (table && typeof table.draw === 'function') {
+                    table.search('').columns().search('').draw();
+                }
+            });
+            @endif
+            
             // Initialize table only if visible, otherwise wait
             function initializeDataTable() {
-                logDataTableInit('initializeDataTable-called', { tableId: '{{ $id }}' });
-                table = $(tableId).DataTable({
-                dom: "<'row'<'col-sm-12'lf>>" + // Length menu and search box
+                try {
+                    table = $(tableId).DataTable({
+                    dom: "<'row'<'col-sm-12'f>>" + // Search box only (length menu is custom at bottom)
                     "<'row'<'col-sm-12'tr>>" + // Table
-                    "<'row'<'col-sm-5'i><'col-sm-7'p>>", // Info and pagination
+                    "<'row'<'col-sm-5'i><'col-sm-7'p>>", // Info and pagination (no length menu)
                 scrollX: false,
                 scrollCollapse: false,
                 autoWidth: false,
@@ -1209,7 +1389,28 @@
                                 columns: ':visible:not(.no-export)',
                                 format: {
                                     body: function(data, row, column, node) {
-                                        return $(data).text() || data;
+                                        // If data is already a string, return it directly
+                                        if (typeof data === 'string') {
+                                            // If it looks like HTML, try to extract text
+                                            if (data.trim().startsWith('<')) {
+                                                try {
+                                                    return $('<div>').html(data).text() || data;
+                                                } catch(e) {
+                                                    return data;
+                                                }
+                                            }
+                                            return data;
+                                        }
+                                        // If data is a DOM node, extract text
+                                        if (node && node.nodeType) {
+                                            return $(node).text() || data;
+                                        }
+                                        // Fallback: try to extract text, but catch errors
+                                        try {
+                                            return $(data).text() || data;
+                                        } catch(e) {
+                                            return String(data || '');
+                                        }
                                     }
                                 }
                             }
@@ -1221,7 +1422,28 @@
                                 columns: ':visible:not(.no-export)',
                                 format: {
                                     body: function(data, row, column, node) {
-                                        return $(data).text() || data;
+                                        // If data is already a string, return it directly
+                                        if (typeof data === 'string') {
+                                            // If it looks like HTML, try to extract text
+                                            if (data.trim().startsWith('<')) {
+                                                try {
+                                                    return $('<div>').html(data).text() || data;
+                                                } catch(e) {
+                                                    return data;
+                                                }
+                                            }
+                                            return data;
+                                        }
+                                        // If data is a DOM node, extract text
+                                        if (node && node.nodeType) {
+                                            return $(node).text() || data;
+                                        }
+                                        // Fallback: try to extract text, but catch errors
+                                        try {
+                                            return $(data).text() || data;
+                                        } catch(e) {
+                                            return String(data || '');
+                                        }
                                     }
                                 }
                             },
@@ -1245,10 +1467,7 @@
                     @endif
                 ],
                 pageLength: {{ $pageLength }},
-                lengthMenu: [
-                    [10, 25, 50, 100, -1],
-                    [10, 25, 50, 100, "All"]
-                ],
+                lengthMenu: [], // Empty array prevents DataTables from creating length menu element - we use custom one at bottom
                 searching: true,
                 ordering: true,
                 order: {!! json_encode($order) !!},
@@ -1442,8 +1661,89 @@
                     }, 200);
 
                     window['datatableInitComplete_{{ $id }}'] = true;
+                    
+                    // Aggressively remove default length menu - multiple attempts to ensure it's gone
+                    function removeLengthMenu() {
+                        const wrapperId = tableId.replace('#', '');
+                        const $wrapper = $(tableId + '_wrapper');
+                        
+                        // Remove from wrapper
+                        $wrapper.find('.dataTables_length:not(.dataTables_length_bottom)').remove();
+                        
+                        // Remove from parent
+                        $wrapper.parent().find('.dataTables_length:not(.dataTables_length_bottom)').remove();
+                        
+                        // Remove any length menu that belongs to this table
+                        $('.dataTables_length:not(.dataTables_length_bottom)').each(function() {
+                            const $this = $(this);
+                            if ($this.closest('#' + wrapperId + '_wrapper').length > 0 || 
+                                $this.closest('.datatable-wrapper').length > 0 ||
+                                $this.closest('[id*="' + wrapperId + '"]').length > 0) {
+                                $this.remove();
+                            }
+                        });
+                        
+                        // Also try direct selector
+                        $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
+                    }
+                    
+                    // Remove immediately and on multiple intervals - more aggressive
+                    removeLengthMenu();
+                    setTimeout(removeLengthMenu, 10);
+                    setTimeout(removeLengthMenu, 50);
+                    setTimeout(removeLengthMenu, 100);
+                    setTimeout(removeLengthMenu, 200);
+                    setTimeout(removeLengthMenu, 500);
+                    setTimeout(removeLengthMenu, 1000);
+                    
+                    // Also remove on draw events - prevent it from reappearing
+                    // Use $(tableId).DataTable() to get the DataTable API instance inside initComplete
+                    try {
+                        const dtInstance = $(tableId).DataTable();
+                        if (dtInstance && typeof dtInstance.on === 'function') {
+                            dtInstance.on('draw', function() {
+                                removeLengthMenu();
+                            });
+                        }
+                    } catch(e) {
+                        // Ignore errors attaching draw event
+                    }
+                    
+                    // Use MutationObserver to catch if it's re-added
+                    if (typeof MutationObserver !== 'undefined') {
+                        const observer = new MutationObserver(function(mutations) {
+                            removeLengthMenu();
+                        });
+                        const wrapperElement = document.getElementById(tableId.replace('#', '') + '_wrapper');
+                        if (wrapperElement) {
+                            observer.observe(wrapperElement, {
+                                childList: true,
+                                subtree: true
+                            });
+                        }
+                    }
+                    
+                    // Final aggressive removal after all initialization is complete
+                    // This ensures the length menu is removed even if DataTables creates it despite our settings
+                    setTimeout(function() {
+                        const wrapperId = tableId.replace('#', '');
+                        // Remove all length menus except the custom bottom one
+                        $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
+                        $('.dataTables_length:not(.dataTables_length_bottom)').filter(function() {
+                            return $(this).closest('#' + wrapperId + '_wrapper').length > 0;
+                        }).remove();
+                    }, 2000);
                 }
             });
+                // Store table reference immediately after initialization
+                if (table) {
+                    window['table_{{ $id }}'] = table;
+                    window['datatable_{{ $id }}'] = table;
+                }
+                } catch (err) {
+                    // Don't re-throw - let it fail silently
+                    console.error('DataTable initialization failed:', err);
+                }
 
             // Initial pagination info update - only text, no DOM manipulation
             setTimeout(function() {
@@ -1459,8 +1759,10 @@
                     }
                 }
             }, 300);
-            // Custom length menu
-            $('#' + '{{ $id }}' + '_length').on('change', function() {
+            // Custom length menu - use event delegation to ensure it works
+            $(document).off('change', '#{{ $id }}_length').on('change', '#{{ $id }}_length', function() {
+                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                if (table && typeof table.page === 'function') {
                 table.page.len($(this).val()).draw();
                 setTimeout(function() {
                     // Only update text, no DOM manipulation
@@ -1474,6 +1776,7 @@
                         }
                     }
                 }, 100);
+                }
             });
 
             // Custom search - using enhanced version below
@@ -1652,22 +1955,8 @@
                 loadColumnVisibility();
             }, 500);
 
-            // Export button handlers
-            @if ($exportEnabled)
-                $('#' + '{{ $id }}' + '_excel').on('click', function() {
-                    table.button('.buttons-excel').trigger();
-                });
-
-                $('#' + '{{ $id }}' + '_pdf').on('click', function() {
-                    table.button('.buttons-pdf').trigger();
-                });
-
-                $('#' + '{{ $id }}' + '_print').on('click', function() {
-                    table.button('.buttons-print').trigger();
-                });
-
-                // Custom column visibility handler is defined above
-            @endif
+            // Export button handlers - moved outside to ensure they're always attached
+            // (Handlers are now attached immediately above, before initializeDataTable)
 
 
             @if ($bulkDeleteEnabled)
@@ -1807,102 +2096,130 @@
                 }, 100);
             }
 
-            @if (!empty($filters))
-                let filterFunctions = [];
-
-                // Advanced filter functionality
-                function applyFilters() {
-                    // Clear previous filters
-                    $.fn.dataTable.ext.search = filterFunctions = [];
-                    table.search('').columns().search('');
-
-                    @foreach ($filters as $filter)
-                        @if ($filter['type'] === 'select')
-                            const filter{{ $loop->index }} = $(
-                                '.filter-select[data-filter="{{ $filter['name'] }}"]').val();
-                            if (filter{{ $loop->index }}) {
-                                table.column({{ $filter['column'] }}).search('^' + filter{{ $loop->index }} +
-                                    '$', true, false);
-                            }
-                        @elseif ($filter['type'] === 'date')
-                            const filter{{ $loop->index }} = $(
-                                '.filter-date[data-filter="{{ $filter['name'] }}"]').val();
-                            if (filter{{ $loop->index }}) {
-                                @if (str_contains($filter['name'], 'from'))
-                                    filterFunctions.push(function(settings, data, dataIndex) {
-                                        if (settings.nTable.id !== '{{ $id }}') return true;
-                                        const filterVal = filter{{ $loop->index }};
-                                        if (!filterVal) return true;
-                                        try {
-                                            const cellDate = new Date(data[{{ $filter['column'] }}]);
-                                            const filterDate = new Date(filterVal);
-                                            return !isNaN(cellDate.getTime()) && cellDate >= filterDate;
-                                        } catch (e) {
-                                            return true;
-                                        }
-                                    });
-                                @elseif (str_contains($filter['name'], 'to'))
-                                    filterFunctions.push(function(settings, data, dataIndex) {
-                                        if (settings.nTable.id !== '{{ $id }}') return true;
-                                        const filterVal = filter{{ $loop->index }};
-                                        if (!filterVal) return true;
-                                        try {
-                                            const cellDate = new Date(data[{{ $filter['column'] }}]);
-                                            const filterDate = new Date(filterVal);
-                                            return !isNaN(cellDate.getTime()) && cellDate <= filterDate;
-                                        } catch (e) {
-                                            return true;
-                                        }
-                                    });
-                                @endif
-                            }
-                        @elseif ($filter['type'] === 'text')
-                            const filter{{ $loop->index }} = $(
-                                '.filter-text[data-filter="{{ $filter['name'] }}"]').val();
-                            if (filter{{ $loop->index }}) {
-                                @if (str_contains($filter['name'], 'min'))
-                                    filterFunctions.push(function(settings, data, dataIndex) {
-                                        if (settings.nTable.id !== '{{ $id }}') return true;
-                                        const filterVal = parseFloat(filter{{ $loop->index }}) || 0;
-                                        if (!filterVal) return true;
-                                        const cellValue = parseFloat(String(data[{{ $filter['column'] }}])
-                                            .replace(/[^0-9.-]+/g, '')) || 0;
-                                        return cellValue >= filterVal;
-                                    });
-                                @else
-                                    table.column({{ $filter['column'] }}).search(filter{{ $loop->index }});
-                                @endif
-                            }
-                        @endif
-                    @endforeach
-
-                    // Apply custom filter functions
-                    $.fn.dataTable.ext.search = filterFunctions;
-                    table.draw();
-                }
-
-                // Apply Filters button
-                $('#applyFilters').on('click', function() {
-                    applyFilters();
-                });
-
-                // Clear Filters button
-                $('#clearFilters').on('click', function() {
-                    $('.filter-select, .filter-date, .filter-text').val('');
-                    $.fn.dataTable.ext.search = filterFunctions = [];
-                    table.search('').columns().search('').draw();
-                });
-
-                // Connect custom search box to DataTables search
-                $('#{{ $id }}_search').on('keyup', function() {
+            // Search handler - attach immediately, works for all tables
+            $(document).off('keyup', '#{{ $id }}_search').on('keyup', '#{{ $id }}_search', function() {
+                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                if (table && typeof table.search === 'function') {
                     table.search($(this).val()).draw();
-                });
+                }
+            });
 
-                // Also trigger search on Enter key
-                $('#{{ $id }}_search').on('keypress', function(e) {
-                    if (e.which === 13) {
+            $(document).off('keypress', '#{{ $id }}_search').on('keypress', '#{{ $id }}_search', function(e) {
+                if (e.which === 13) {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.search === 'function') {
                         table.search($(this).val()).draw();
                     }
+                }
+            });
+
+            // Export and column handlers - attach immediately, works for all tables
+            @if ($exportEnabled)
+                $(document).off('click', '#{{ $id }}_excel').on('click', '#{{ $id }}_excel', function() {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.button === 'function') {
+                        table.button('.buttons-excel').trigger();
+                    }
+                });
+
+                $(document).off('click', '#{{ $id }}_pdf').on('click', '#{{ $id }}_pdf', function() {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.button === 'function') {
+                        table.button('.buttons-pdf').trigger();
+                    }
+                });
+
+                $(document).off('click', '#{{ $id }}_print').on('click', '#{{ $id }}_print', function() {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.button === 'function') {
+                        table.button('.buttons-print').trigger();
+                    }
+                });
+
+                $(document).off('click', '#{{ $id }}_columns').on('click', '#{{ $id }}_columns', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (!table || typeof table.columns === 'undefined') return;
+                    
+                    // Get button position for dropdown placement
+                    var $button = $(this);
+                    var buttonRect = this.getBoundingClientRect();
+                    var buttonWidth = buttonRect.width;
+                    var buttonHeight = buttonRect.height;
+                    var dropdownWidth = 200;
+
+                    // Remove existing custom dropdown if any
+                    $('.custom-colvis-dropdown').remove();
+
+                    // Calculate dropdown position
+                    var dropdownLeft = buttonRect.right - dropdownWidth;
+                    var dropdownTop = buttonRect.bottom + 5;
+                    var estimatedDropdownHeight = 300;
+
+                    if (dropdownLeft < 10) {
+                        dropdownLeft = buttonRect.left;
+                    }
+                    if (dropdownLeft < 10) {
+                        dropdownLeft = 10;
+                    }
+                    if (dropdownLeft + dropdownWidth > window.innerWidth - 10) {
+                        dropdownLeft = window.innerWidth - dropdownWidth - 10;
+                    }
+                    if (dropdownTop + estimatedDropdownHeight > window.innerHeight - 10) {
+                        dropdownTop = buttonRect.top - estimatedDropdownHeight - 5;
+                        if (dropdownTop < 10) {
+                            dropdownTop = 10;
+                        }
+                    }
+                    if (dropdownTop < 10) {
+                        dropdownTop = 10;
+                    }
+
+                    var $dropdown = $('<div class="custom-colvis-dropdown dropdown-menu show position-fixed" style="top: ' + dropdownTop + 'px; left: ' + dropdownLeft + 'px; min-width: ' + dropdownWidth + 'px; max-width: ' + dropdownWidth + 'px; z-index: 1050;"></div>');
+
+                    table.columns().every(function() {
+                        var column = this;
+                        var columnIndex = column.index();
+                        var columnHeader = $(column.header());
+                        var columnTitle = columnHeader.text().trim();
+                        var isVisible = column.visible();
+                        var isNoColvis = columnHeader.hasClass('no-colvis') || columnHeader.closest('th').hasClass('no-colvis');
+                        var isCheckboxColumn = columnHeader.hasClass('select-checkbox') || columnHeader.closest('th').hasClass('select-checkbox');
+
+                        if (isNoColvis || isCheckboxColumn) return;
+
+                        var $item = $('<div class="dropdown-item-text d-flex align-items-center justify-content-between p-2" style="cursor: pointer;"></div>');
+                        var $label = $('<label class="mb-0 flex-fill" style="cursor: pointer;">' + columnTitle + '</label>');
+                        var $checkbox = $('<input type="checkbox" class="form-check-input ms-2" ' + (isVisible ? 'checked' : '') + ' data-column="' + columnIndex + '" style="cursor: pointer; flex-shrink: 0;"></input>');
+
+                        $item.append($label).append($checkbox);
+                        $dropdown.append($item);
+
+                        $checkbox.on('change', function() {
+                            var isChecked = $(this).is(':checked');
+                            column.visible(isChecked, false);
+                            table.columns.adjust().draw(false);
+                            if (typeof saveColumnVisibility === 'function') {
+                                saveColumnVisibility();
+                            }
+                        });
+
+                        $item.on('click', function(e) {
+                            if (e.target.type !== 'checkbox') {
+                                $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
+                            }
+                        });
+                    });
+
+                    $('body').append($dropdown);
+
+                    $(document).on('click.customColvis', function(e) {
+                        if (!$dropdown.is(e.target) && $dropdown.has(e.target).length === 0 && !$button.is(e.target)) {
+                            $dropdown.remove();
+                            $(document).off('click.customColvis');
+                        }
+                    });
                 });
             @endif
 
@@ -1961,17 +2278,42 @@
             window['table_{{ $id }}'] = table;
             }
             
+            // Initialize Select2 for filter-select2 elements
+            function initializeSelect2Filters() {
+                $('.filter-select2').each(function() {
+                    if (!$(this).hasClass('select2-hidden-accessible')) {
+                        $(this).select2({
+                            placeholder: $(this).find('option:first').text(),
+                            allowClear: true,
+                            width: '100%'
+                        });
+                    }
+                });
+            }
+            
             // Initialize table only if visible, otherwise wait
             initializeTable();
+            
+            // Initialize Select2 after table is ready
+            setTimeout(function() {
+                initializeSelect2Filters();
+            }, 500);
             
             // Also listen for tab visibility changes
             $(document).on('shown.bs.tab', function(e) {
                 // Wait a bit for tab transition to complete
                 setTimeout(function() {
-                    if (isTableVisible()) {
+                    try {
+                        // Force initialization when tab is shown, regardless of visibility check
+                        // The visibility check might be too strict during tab transitions
                         if (!$.fn.DataTable.isDataTable(tableId)) {
                             // Table not initialized yet, initialize it
-                            initializeDataTable();
+                            // Use a small delay to ensure tab transition is complete
+                            setTimeout(function() {
+                                if (!$.fn.DataTable.isDataTable(tableId)) {
+                                    initializeDataTable();
+                                }
+                            }, 150);
                         } else {
                             // Table already initialized, just adjust columns and redraw
                             try {
@@ -1985,7 +2327,25 @@
                                 initializeDataTable();
                             }
                         }
+                        // Initialize Select2 when tab is shown
+                        initializeSelect2Filters();
+                    } catch(err) {
+                        // Ignore errors in tab shown handler
                     }
+                        
+                        // CRITICAL FIX: Remove length menu IMMEDIATELY after tab is shown
+                        // DataTables creates it during initialization, so we must remove it here
+                        setTimeout(function() {
+                            const wrapperId = tableId.replace('#', '');
+                            // Remove ALL length menus except the custom bottom one - be very aggressive
+                            $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
+                            $('.dataTables_length:not(.dataTables_length_bottom)').filter(function() {
+                                return $(this).closest('#' + wrapperId + '_wrapper').length > 0;
+                            }).remove();
+                            // Also check parent and all ancestors
+                            $('#' + wrapperId + '_wrapper').parent().find('.dataTables_length:not(.dataTables_length_bottom)').remove();
+                            $('#' + wrapperId + '_wrapper').closest('.tab-pane').find('.dataTables_length:not(.dataTables_length_bottom)').remove();
+                        }, 300);
                 }, 100);
             });
         });
