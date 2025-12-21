@@ -78,16 +78,8 @@ class StoreController extends Controller
      */
     public function show(string $id)
     {
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'StoreController.php:79', 'message' => 'show() entry', 'data' => ['store_id' => $id, 'memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-        
         $store = Stores::with(['project', 'storeIncharge'])->findOrFail($id);
         $project = $store->project;
-
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'F', 'location' => 'StoreController.php:83', 'message' => 'Store and project loaded', 'data' => ['project_id' => $project->id ?? null, 'project_type' => $project->project_type ?? null, 'memory_after' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
 
         if (!$project) {
             abort(404, 'Project not found for this store.');
@@ -110,10 +102,6 @@ class StoreController extends Controller
 
         // Get inventory data - Optimized: Only select needed columns and limit results
         $inventoryModel = ($project->project_type == 1) ? \App\Models\InventroyStreetLightModel::class : \App\Models\Inventory::class;
-
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'post-fix', 'hypothesisId' => 'A', 'location' => 'StoreController.php:111', 'message' => 'Before optimized query', 'data' => ['inventory_model' => $inventoryModel, 'memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
 
         // SERVER-SIDE PAGINATION: Don't load all inventory items here
         // The view will use server-side pagination via AJAX endpoint
@@ -247,10 +235,6 @@ class StoreController extends Controller
 
         $assignedVendors = \App\Models\User::whereIn('id', $assignedVendorIds)->get();
 
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'E', 'location' => 'StoreController.php:287', 'message' => 'Before inventoryItems query', 'data' => ['memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-
         // Get inventory items for dispatch modal (grouped by item_code for streetlight projects)
         $inventoryItems = collect([]);
         if ($project->project_type == 1) {
@@ -272,14 +256,6 @@ class StoreController extends Controller
                 ->where('store_id', $store->id)
                 ->get();
         }
-
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'E', 'location' => 'StoreController.php:306', 'message' => 'After inventoryItems query', 'data' => ['inventory_items_count' => $inventoryItems->count(), 'memory_after' => memory_get_usage(true), 'memory_peak' => memory_get_peak_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'post-fix-v2', 'hypothesisId' => 'VIEW', 'location' => 'StoreController.php:361', 'message' => 'Before return view', 'data' => ['memory_final' => memory_get_usage(true), 'memory_peak' => memory_get_peak_usage(true), 'unified_inventory_size' => count($unifiedInventory)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
 
         return view('stores.show', compact('store', 'project', 'inStock', 'dispatched', 'unifiedInventory', 'itemCodes', 'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue', 'itemStats', 'users', 'inventoryModel', 'assignedVendors', 'inventoryItems', 'isAdmin'));
     }
@@ -305,16 +281,8 @@ class StoreController extends Controller
      */
     public function inventoryData(Request $request, $storeId)
     {
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'API', 'location' => 'StoreController.php:306', 'message' => 'inventoryData entry', 'data' => ['store_id' => $storeId, 'request_params' => $request->all(), 'memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-        
         $store = Stores::with('project')->findOrFail($storeId);
         $project = $store->project;
-
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'API', 'location' => 'StoreController.php:313', 'message' => 'Store and project loaded', 'data' => ['project_id' => $project->id ?? null, 'project_type' => $project->project_type ?? null], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
 
         if (!$project) {
             return response()->json(['error' => 'Project not found'], 404);
@@ -334,10 +302,6 @@ class StoreController extends Controller
         }
 
         $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
-        
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'QUERY', 'location' => 'StoreController.php:395', 'message' => 'Building base query', 'data' => ['inventory_table' => $inventoryTable, 'project_id' => $project->id, 'store_id' => $store->id], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
         
         // Build base query - optimized structure
         $query = \Illuminate\Support\Facades\DB::table($inventoryTable . ' as inv')
@@ -371,10 +335,6 @@ class StoreController extends Controller
             ->count();
         $countTime = microtime(true) - $startTime;
         
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'QUERY', 'location' => 'StoreController.php:365', 'message' => 'Total records count (base table, fast)', 'data' => ['total_records' => $totalRecords, 'count_time_seconds' => round($countTime, 3)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-        
         // Store total count - this will be used for recordsTotal
         // recordsFiltered will be calculated after applying filters
         $baseTotalRecords = $totalRecords;
@@ -388,10 +348,6 @@ class StoreController extends Controller
                   ->orWhere('inv.serial_number', 'like', "%{$search}%")
                   ->orWhere(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
             });
-            
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:382', 'message' => 'Search filter applied', 'data' => ['search_value' => $search], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion agent log
         }
 
         // Apply column filters
@@ -404,26 +360,14 @@ class StoreController extends Controller
             } elseif ($availability === 'Consumed') {
                 $query->where('disp.is_consumed', '=', 1);
             }
-            
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:393', 'message' => 'Availability filter applied', 'data' => ['availability' => $availability], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion agent log
         }
 
         if ($request->filled('item_code')) {
             $query->where('inv.item_code', $request->input('item_code'));
-            
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:404', 'message' => 'Item code filter applied', 'data' => ['item_code' => $request->input('item_code')], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion agent log
         }
 
         if ($request->filled('vendor_name')) {
             $query->where(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
-            
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:408', 'message' => 'Vendor name filter applied', 'data' => ['vendor_name' => $request->input('vendor_name')], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion agent log
         }
 
         // Count filtered records - use fast count if no filters applied
@@ -440,10 +384,6 @@ class StoreController extends Controller
             $filterStartTime = microtime(true);
             $filteredRecords = (clone $query)->count();
             $filterCountTime = microtime(true) - $filterStartTime;
-            
-            // #region agent log
-            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'QUERY', 'location' => 'StoreController.php:412', 'message' => 'Filtered records count', 'data' => ['filtered_records' => $filteredRecords, 'count_time_seconds' => round($filterCountTime, 3), 'has_filters' => true], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-            // #endregion agent log
         }
         
         // recordsFiltered should match the filtered count
@@ -477,10 +417,6 @@ class StoreController extends Controller
         $start = $request->input('start', 0);
         $length = $request->input('length', 50);
         
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'PAGINATION', 'location' => 'StoreController.php:461', 'message' => 'Pagination parameters', 'data' => ['start' => $start, 'length' => $length, 'is_export' => ($length == -1)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-        
         // OPTIMIZATION: Return only requested length (50) - no preloading
         // The query is slow, so we'll optimize it with indexes instead of preloading data
         $actualLength = $length;
@@ -496,14 +432,6 @@ class StoreController extends Controller
         }
         
         $dataQueryTime = microtime(true) - $dataStartTime;
-        
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'DATA_QUERY_TIMING', 'location' => 'StoreController.php:470', 'message' => 'Data query executed - ACTUAL TIMING', 'data' => ['start' => $start, 'requested_length' => $length, 'actual_length' => $actualLength, 'items_returned' => $items->count(), 'query_time_seconds' => round($dataQueryTime, 3), 'query_time_ms' => round($dataQueryTime * 1000, 0)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'DATA', 'location' => 'StoreController.php:450', 'message' => 'Before formatting data', 'data' => ['items_count' => $items->count(), 'filtered_records' => $filteredRecords, 'start' => $start, 'length' => $length], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
 
         // Format data for DataTables
         $data = $items->map(function($item) use ($user) {
@@ -550,20 +478,12 @@ class StoreController extends Controller
             return $row;
         });
 
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'RESPONSE', 'location' => 'StoreController.php:480', 'message' => 'Before returning response', 'data' => ['data_count' => $data->count(), 'draw' => intval($request->input('draw')), 'records_total' => $totalRecords, 'records_filtered' => $filteredRecords, 'memory_after' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
-
         $response = [
             'draw' => intval($request->input('draw', 1)),
             'recordsTotal' => $baseTotalRecords, // Total records (with JOINs, no filters)
             'recordsFiltered' => $filteredRecords, // Filtered records (with JOINs and filters)
             'data' => $data,
         ];
-        
-        // #region agent log
-        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'RESPONSE', 'location' => 'StoreController.php:490', 'message' => 'Returning response', 'data' => ['response_keys' => array_keys($response), 'first_row_sample' => $data->count() > 0 ? $data->first() : null], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
-        // #endregion agent log
 
         return response()->json($response);
     }

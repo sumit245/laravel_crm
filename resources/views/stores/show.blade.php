@@ -513,17 +513,9 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 // Set flag IMMEDIATELY - before document.ready
                 window['skipAutoInit_unifiedInventoryTable'] = true;
                 
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:470',message:'SERVER-SIDE SCRIPT LOADED - flag set',data:{skipFlag:window['skipAutoInit_unifiedInventoryTable']},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'SCRIPT_LOADED'})}).catch(()=>{});
-                // #endregion agent log
-                
                 $(document).ready(function() {
                     console.log('=== SERVER-SIDE SCRIPT LOADED ===');
                     console.log('Skip flag:', window['skipAutoInit_unifiedInventoryTable']);
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:473',message:'document.ready fired',data:{skipFlag:window['skipAutoInit_unifiedInventoryTable']},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'DOC_READY'})}).catch(()=>{});
-                    // #endregion agent log
                     
                     // Mark table immediately
                     var $table = $('#unifiedInventoryTable');
@@ -536,10 +528,6 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                     
                     function initializeServerSideTable() {
                         console.log('=== initializeServerSideTable() CALLED ===');
-                        
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:494',message:'initializeServerSideTable() CALLED',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'INIT_FUNC_CALLED'})}).catch(()=>{});
-                        // #endregion agent log
                         
                         // Check if already initialized
                         if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
@@ -589,24 +577,15 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                 url: '{{ route("store.inventory.data", $store->id) }}',
                                 type: 'GET',
                                 beforeSend: function(xhr, settings) {
-                                    // #region agent log
-                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:544',message:'AJAX REQUEST SENT',data:{url:settings.url,type:settings.type},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_SENT'})}).catch(()=>{});
-                                    // #endregion agent log
                                     console.log('AJAX request sent to:', settings.url);
                                 },
                                 error: function(xhr, error, thrown) {
                                     console.error('DataTables AJAX error:', error, thrown);
                                     console.error('Response:', xhr.responseText);
                                     console.error('Status:', xhr.status);
-                                    // #region agent log
-                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:547',message:'AJAX ERROR',data:{error:error,thrown:thrown,status:xhr.status,response:xhr.responseText.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_ERROR'})}).catch(()=>{});
-                                    // #endregion agent log
                                 },
                                 dataSrc: function(json) {
                                     console.log('DataTables response:', json);
-                                    // #region agent log
-                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:552',message:'AJAX RESPONSE RECEIVED',data:{recordsTotal:json.recordsTotal,recordsFiltered:json.recordsFiltered,dataLength:json.data?json.data.length:0},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_RESPONSE'})}).catch(()=>{});
-                                    // #endregion agent log
                                     return json.data;
                                 },
                                 data: function(d) {
@@ -616,9 +595,6 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     d.item_code = tabPane.find('select[name="item"]').val() || '';
                                     d.vendor_name = $('#vendor_filter').val() || '';
                                     console.log('DataTables request data:', d);
-                                    // #region agent log
-                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:556',message:'AJAX REQUEST DATA',data:{draw:d.draw,start:d.start,length:d.length,availability:d.availability,item_code:d.item_code,vendor_name:d.vendor_name},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_DATA'})}).catch(()=>{});
-                                    // #endregion agent log
                                 }
                             },
                             columns: [
@@ -771,10 +747,6 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                         window['table_unifiedInventoryTable'] = table;
                         console.log('Server-side DataTable initialized successfully');
                         
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:607',message:'Server-side DataTable INITIALIZED SUCCESSFULLY',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'INIT_SUCCESS'})}).catch(()=>{});
-                        // #endregion agent log
-                        
                         // Handle length change
                         $('#unifiedInventoryTable_length').off('change').on('change', function() {
                             table.page.len(parseInt($(this).val())).draw();
@@ -879,9 +851,6 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                     // Initialize when tab is shown - use correct selector for button tabs
                     $('#view-tab, [data-bs-target="#view"]').on('shown.bs.tab', function() {
                         console.log('=== TAB SHOWN EVENT FIRED ===');
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:663',message:'TAB SHOWN EVENT FIRED for View Inventory',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'TAB_SHOWN'})}).catch(()=>{});
-                        // #endregion agent log
                         setTimeout(function() {
                             if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
                                 var existing = $('#unifiedInventoryTable').DataTable();
