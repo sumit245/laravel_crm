@@ -78,8 +78,16 @@ class StoreController extends Controller
      */
     public function show(string $id)
     {
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'StoreController.php:79', 'message' => 'show() entry', 'data' => ['store_id' => $id, 'memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+        
         $store = Stores::with(['project', 'storeIncharge'])->findOrFail($id);
         $project = $store->project;
+
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'F', 'location' => 'StoreController.php:83', 'message' => 'Store and project loaded', 'data' => ['project_id' => $project->id ?? null, 'project_type' => $project->project_type ?? null, 'memory_after' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
 
         if (!$project) {
             abort(404, 'Project not found for this store.');
@@ -103,73 +111,29 @@ class StoreController extends Controller
         // Get inventory data - Optimized: Only select needed columns and limit results
         $inventoryModel = ($project->project_type == 1) ? \App\Models\InventroyStreetLightModel::class : \App\Models\Inventory::class;
 
-        // Get ALL inventory items (for unified view)
-        $allInventory = $inventoryModel::where('project_id', $project->id)
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'post-fix', 'hypothesisId' => 'A', 'location' => 'StoreController.php:111', 'message' => 'Before optimized query', 'data' => ['inventory_model' => $inventoryModel, 'memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        // SERVER-SIDE PAGINATION: Don't load all inventory items here
+        // The view will use server-side pagination via AJAX endpoint
+        // This allows handling millions of rows efficiently
+        $unifiedInventory = []; // Empty array - data loaded via AJAX
+        
+        // Get distinct item codes for filter (query only for filter dropdown)
+        $inventoryModel = ($project->project_type == 1) ? \App\Models\InventroyStreetLightModel::class : \App\Models\Inventory::class;
+        $itemCodes = $inventoryModel::where('project_id', $project->id)
             ->where('store_id', $store->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
+            ->distinct()
+            ->pluck('item_code')
+            ->filter()
+            ->unique()
+            ->sort()
+            ->values();
 
-        // Get all dispatched items with vendor info
-        $allDispatched = \App\Models\InventoryDispatch::where('store_id', $store->id)
-            ->where('project_id', $project->id)
-            ->where('isDispatched', true)
-            ->with('vendor:id,firstName,lastName')
-            ->get()
-            ->keyBy('serial_number');
-
-        // Build unified inventory array with availability status
-        $unifiedInventory = [];
-        foreach ($allInventory as $item) {
-            $dispatch = $allDispatched->get($item->serial_number);
-            $quantity = $item->quantity ?? 0;
-
-            // Determine availability status
-            $availability = 'In Stock';
-            $vendorId = null;
-            $vendorName = null;
-            $dispatchDate = null;
-            $dispatchId = null;
-
-            if ($quantity > 0) {
-                $availability = 'In Stock';
-            } elseif ($dispatch) {
-                $dispatchId = $dispatch->id;
-                $dispatchDate = $dispatch->dispatch_date ? ($dispatch->dispatch_date instanceof \DateTimeInterface ? $dispatch->dispatch_date->format('Y-m-d H:i:s') : (string) $dispatch->dispatch_date) : null;
-                $vendorId = $dispatch->vendor_id;
-                $vendorName = $dispatch->vendor ? ($dispatch->vendor->firstName . ' ' . $dispatch->vendor->lastName) : null;
-
-                if ($dispatch->is_consumed == 1) {
-                    $availability = 'Consumed';
-                } else {
-                    $availability = 'Dispatched';
-                }
-            }
-
-            $unifiedInventory[] = [
-                'id' => $item->id,
-                'item_code' => $item->item_code,
-                'item' => $item->item,
-                'manufacturer' => $item->manufacturer ?? $item->make ?? '',
-                'model' => $item->model ?? '',
-                'serial_number' => $item->serial_number,
-                'quantity' => $quantity,
-                'rate' => $item->rate ?? 0,
-                'total_value' => $item->total_value ?? ($quantity * ($item->rate ?? 0)),
-                'created_at' => $item->created_at ? ($item->created_at instanceof \DateTimeInterface ? $item->created_at->format('Y-m-d H:i:s') : (string) $item->created_at) : null,
-                'availability' => $availability,
-                'vendor_id' => $vendorId,
-                'vendor_name' => $vendorName,
-                'dispatch_date' => $dispatchDate,
-                'dispatch_id' => $dispatchId,
-            ];
-        }
-
-        // For backward compatibility, keep old queries
-        $inStock = collect($unifiedInventory)->where('availability', 'In Stock');
-        $dispatched = collect($unifiedInventory)->whereIn('availability', ['Dispatched', 'Consumed']);
-
-        // Get distinct item codes for filter
-        $itemCodes = $allInventory->pluck('item_code')->unique()->sort()->values();
+        // For backward compatibility - empty collections since we're using server-side pagination
+        $inStock = collect([]);
+        $dispatched = collect([]);
 
         // Optimized: Only get aggregated dispatched data, not all records
         $dispatchedAggregated = \App\Models\InventoryDispatch::where('store_id', $store->id)
@@ -283,6 +247,10 @@ class StoreController extends Controller
 
         $assignedVendors = \App\Models\User::whereIn('id', $assignedVendorIds)->get();
 
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'E', 'location' => 'StoreController.php:287', 'message' => 'Before inventoryItems query', 'data' => ['memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
         // Get inventory items for dispatch modal (grouped by item_code for streetlight projects)
         $inventoryItems = collect([]);
         if ($project->project_type == 1) {
@@ -305,6 +273,14 @@ class StoreController extends Controller
                 ->get();
         }
 
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'E', 'location' => 'StoreController.php:306', 'message' => 'After inventoryItems query', 'data' => ['inventory_items_count' => $inventoryItems->count(), 'memory_after' => memory_get_usage(true), 'memory_peak' => memory_get_peak_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'post-fix-v2', 'hypothesisId' => 'VIEW', 'location' => 'StoreController.php:361', 'message' => 'Before return view', 'data' => ['memory_final' => memory_get_usage(true), 'memory_peak' => memory_get_peak_usage(true), 'unified_inventory_size' => count($unifiedInventory)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
         return view('stores.show', compact('store', 'project', 'inStock', 'dispatched', 'unifiedInventory', 'itemCodes', 'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue', 'itemStats', 'users', 'inventoryModel', 'assignedVendors', 'inventoryItems', 'isAdmin'));
     }
 
@@ -322,6 +298,558 @@ class StoreController extends Controller
     public function update(Request $request, string $id)
     {
         //
+    }
+
+    /**
+     * Server-side pagination endpoint for inventory DataTable
+     */
+    public function inventoryData(Request $request, $storeId)
+    {
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'API', 'location' => 'StoreController.php:306', 'message' => 'inventoryData entry', 'data' => ['store_id' => $storeId, 'request_params' => $request->all(), 'memory_before' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+        
+        $store = Stores::with('project')->findOrFail($storeId);
+        $project = $store->project;
+
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'API', 'location' => 'StoreController.php:313', 'message' => 'Store and project loaded', 'data' => ['project_id' => $project->id ?? null, 'project_type' => $project->project_type ?? null], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        if (!$project) {
+            return response()->json(['error' => 'Project not found'], 404);
+        }
+
+        // Check authorization
+        $user = auth()->user();
+        if ($user->role === \App\Enums\UserRole::PROJECT_MANAGER->value) {
+            $isAssigned = \Illuminate\Support\Facades\DB::table('project_user')
+                ->where('project_id', $project->id)
+                ->where('user_id', $user->id)
+                ->exists();
+
+            if (!$isAssigned) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
+        $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
+        
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'QUERY', 'location' => 'StoreController.php:395', 'message' => 'Building base query', 'data' => ['inventory_table' => $inventoryTable, 'project_id' => $project->id, 'store_id' => $store->id], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+        
+        // Build base query - optimized structure
+        $query = \Illuminate\Support\Facades\DB::table($inventoryTable . ' as inv')
+            ->leftJoin('inventory_dispatch as disp', function($join) {
+                $join->on('inv.serial_number', '=', 'disp.serial_number')
+                     ->where('disp.isDispatched', '=', true);
+            })
+            ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
+            ->where('inv.project_id', $project->id)
+            ->where('inv.store_id', $store->id)
+            ->select(
+                'inv.id',
+                'inv.item_code',
+                'inv.item',
+                'inv.serial_number',
+                \Illuminate\Support\Facades\DB::raw('COALESCE(inv.quantity, 0) as quantity'),
+                'inv.created_at',
+                'disp.id as dispatch_id',
+                'disp.is_consumed',
+                'disp.dispatch_date',
+                \Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name')
+            );
+
+        // OPTIMIZATION: Fast count using base table (no JOINs) for recordsTotal
+        // This is much faster and accurate since LEFT JOINs don't change the row count
+        // Each inventory item = 1 row, regardless of JOINs
+        $startTime = microtime(true);
+        $totalRecords = \Illuminate\Support\Facades\DB::table($inventoryTable)
+            ->where('project_id', $project->id)
+            ->where('store_id', $store->id)
+            ->count();
+        $countTime = microtime(true) - $startTime;
+        
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'QUERY', 'location' => 'StoreController.php:365', 'message' => 'Total records count (base table, fast)', 'data' => ['total_records' => $totalRecords, 'count_time_seconds' => round($countTime, 3)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+        
+        // Store total count - this will be used for recordsTotal
+        // recordsFiltered will be calculated after applying filters
+        $baseTotalRecords = $totalRecords;
+
+        // Apply search filter
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
+            $query->where(function($q) use ($search) {
+                $q->where('inv.item_code', 'like', "%{$search}%")
+                  ->orWhere('inv.item', 'like', "%{$search}%")
+                  ->orWhere('inv.serial_number', 'like', "%{$search}%")
+                  ->orWhere(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
+            });
+            
+            // #region agent log
+            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:382', 'message' => 'Search filter applied', 'data' => ['search_value' => $search], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+            // #endregion agent log
+        }
+
+        // Apply column filters
+        if ($request->filled('availability')) {
+            $availability = $request->input('availability');
+            if ($availability === 'In Stock') {
+                $query->where('inv.quantity', '>', 0);
+            } elseif ($availability === 'Dispatched') {
+                $query->whereNotNull('disp.id')->where('disp.is_consumed', '!=', 1);
+            } elseif ($availability === 'Consumed') {
+                $query->where('disp.is_consumed', '=', 1);
+            }
+            
+            // #region agent log
+            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:393', 'message' => 'Availability filter applied', 'data' => ['availability' => $availability], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+            // #endregion agent log
+        }
+
+        if ($request->filled('item_code')) {
+            $query->where('inv.item_code', $request->input('item_code'));
+            
+            // #region agent log
+            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:404', 'message' => 'Item code filter applied', 'data' => ['item_code' => $request->input('item_code')], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+            // #endregion agent log
+        }
+
+        if ($request->filled('vendor_name')) {
+            $query->where(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
+            
+            // #region agent log
+            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'FILTER', 'location' => 'StoreController.php:408', 'message' => 'Vendor name filter applied', 'data' => ['vendor_name' => $request->input('vendor_name')], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+            // #endregion agent log
+        }
+
+        // Count filtered records - use fast count if no filters applied
+        $hasFilters = $request->filled('search.value') || 
+                     $request->filled('availability') || 
+                     $request->filled('item_code') || 
+                     $request->filled('vendor_name');
+        
+        if (!$hasFilters) {
+            // No filters = same as total (fast path)
+            $filteredRecords = $baseTotalRecords;
+        } else {
+            // Has filters - need to count with JOINs (slower but accurate)
+            $filterStartTime = microtime(true);
+            $filteredRecords = (clone $query)->count();
+            $filterCountTime = microtime(true) - $filterStartTime;
+            
+            // #region agent log
+            file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'QUERY', 'location' => 'StoreController.php:412', 'message' => 'Filtered records count', 'data' => ['filtered_records' => $filteredRecords, 'count_time_seconds' => round($filterCountTime, 3), 'has_filters' => true], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+            // #endregion agent log
+        }
+        
+        // recordsFiltered should match the filtered count
+        // Note: filteredRecords can be different from baseTotalRecords when filters are applied
+        // This is correct behavior - don't cap it
+
+        // Apply ordering
+        $orderColumn = $request->input('order.0.column', 6); // Default to created_at
+        $orderDirection = $request->input('order.0.dir', 'desc');
+        $columns = ['id', 'item_code', 'item', 'serial_number', 'availability', 'vendor_name', 'dispatch_date', 'created_at'];
+        
+        if (isset($columns[$orderColumn])) {
+            $column = $columns[$orderColumn];
+            if ($column === 'vendor_name') {
+                $query->orderBy(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), $orderDirection);
+            } elseif ($column === 'availability') {
+                $query->orderBy(\Illuminate\Support\Facades\DB::raw('CASE 
+                    WHEN COALESCE(inv.quantity, 0) > 0 THEN "In Stock"
+                    WHEN disp.is_consumed = 1 THEN "Consumed"
+                    WHEN disp.id IS NOT NULL THEN "Dispatched"
+                    ELSE "In Stock"
+                END'), $orderDirection);
+            } else {
+                $query->orderBy('inv.' . $column, $orderDirection);
+            }
+        } else {
+            $query->orderBy('inv.created_at', 'desc');
+        }
+
+        // Apply pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 50);
+        
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'PAGINATION', 'location' => 'StoreController.php:461', 'message' => 'Pagination parameters', 'data' => ['start' => $start, 'length' => $length, 'is_export' => ($length == -1)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+        
+        // OPTIMIZATION: Return only requested length (50) - no preloading
+        // The query is slow, so we'll optimize it with indexes instead of preloading data
+        $actualLength = $length;
+        
+        // Time the data query - CRITICAL: This measures actual query performance
+        $dataStartTime = microtime(true);
+
+        // If length is -1, get all records (for export)
+        if ($length == -1) {
+            $items = $query->get();
+        } else {
+            $items = $query->skip($start)->take($actualLength)->get();
+        }
+        
+        $dataQueryTime = microtime(true) - $dataStartTime;
+        
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'DATA_QUERY_TIMING', 'location' => 'StoreController.php:470', 'message' => 'Data query executed - ACTUAL TIMING', 'data' => ['start' => $start, 'requested_length' => $length, 'actual_length' => $actualLength, 'items_returned' => $items->count(), 'query_time_seconds' => round($dataQueryTime, 3), 'query_time_ms' => round($dataQueryTime * 1000, 0)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'DATA', 'location' => 'StoreController.php:450', 'message' => 'Before formatting data', 'data' => ['items_count' => $items->count(), 'filtered_records' => $filteredRecords, 'start' => $start, 'length' => $length], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        // Format data for DataTables
+        $data = $items->map(function($item) use ($user) {
+            $availability = 'In Stock';
+            if ($item->quantity > 0) {
+                $availability = 'In Stock';
+            } elseif ($item->is_consumed == 1) {
+                $availability = 'Consumed';
+            } elseif ($item->dispatch_id) {
+                $availability = 'Dispatched';
+            }
+
+            $vendorName = trim($item->vendor_name ?? '') ?: '-';
+            $dispatchDate = $item->dispatch_date ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y') : '-';
+            $createdAt = $item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y') : '-';
+
+            $row = [];
+            if ($user->role === \App\Enums\UserRole::ADMIN->value) {
+                $row[] = '<input type="checkbox" class="row-checkbox" value="' . $item->id . '" data-id="' . $item->id . '" data-availability="' . $availability . '" data-item-code="' . $item->item_code . '" data-vendor-name="' . htmlspecialchars($vendorName) . '">';
+            }
+            $row[] = $item->item_code;
+            $row[] = $item->item;
+            $row[] = $item->serial_number;
+            $row[] = '<span class="badge bg-' . ($availability === 'In Stock' ? 'success' : ($availability === 'Dispatched' ? 'warning' : 'danger')) . '">' . $availability . '</span>';
+            $row[] = $vendorName;
+            $row[] = $dispatchDate;
+            $row[] = $createdAt;
+            
+            // Actions column
+            $actions = '';
+            if ($availability === 'In Stock' && $user->role === \App\Enums\UserRole::ADMIN->value) {
+                $actions .= '<button type="button" class="btn btn-sm btn-danger delete-item" data-id="' . $item->id . '" title="Delete"><i class="mdi mdi-delete"></i></button>';
+            } elseif ($availability === 'Dispatched') {
+                $actions .= '<form action="' . route('inventory.return') . '" method="POST" class="d-inline" onsubmit="return confirm(\'Are you sure you want to return this item?\');">';
+                $actions .= csrf_field();
+                $actions .= '<input type="hidden" name="serial_number" value="' . $item->serial_number . '">';
+                $actions .= '<button type="submit" class="btn btn-sm btn-warning" title="Return"><i class="mdi mdi-undo"></i></button>';
+                $actions .= '</form>';
+            } elseif ($availability === 'Consumed') {
+                $actions .= '<button type="button" class="btn btn-sm btn-primary replace-item" data-dispatch-id="' . ($item->dispatch_id ?? '') . '" data-serial-number="' . $item->serial_number . '" title="Replace"><i class="mdi mdi-swap-horizontal"></i></button>';
+            }
+            $row[] = $actions;
+
+            return $row;
+        });
+
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'RESPONSE', 'location' => 'StoreController.php:480', 'message' => 'Before returning response', 'data' => ['data_count' => $data->count(), 'draw' => intval($request->input('draw')), 'records_total' => $totalRecords, 'records_filtered' => $filteredRecords, 'memory_after' => memory_get_usage(true)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        $response = [
+            'draw' => intval($request->input('draw', 1)),
+            'recordsTotal' => $baseTotalRecords, // Total records (with JOINs, no filters)
+            'recordsFiltered' => $filteredRecords, // Filtered records (with JOINs and filters)
+            'data' => $data,
+        ];
+        
+        // #region agent log
+        file_put_contents('/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/.cursor/debug.log', json_encode(['sessionId' => 'debug-session', 'runId' => 'ssp-debug', 'hypothesisId' => 'RESPONSE', 'location' => 'StoreController.php:490', 'message' => 'Returning response', 'data' => ['response_keys' => array_keys($response), 'first_row_sample' => $data->count() > 0 ? $data->first() : null], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
+        // #endregion agent log
+
+        return response()->json($response);
+    }
+
+    /**
+     * Export inventory to Excel with all filtered data
+     */
+    public function exportInventory(Request $request, $storeId)
+    {
+        $store = Stores::with('project')->findOrFail($storeId);
+        $project = $store->project;
+
+        if (!$project) {
+            return response()->json(['error' => 'Project not found'], 404);
+        }
+
+        // Determine inventory table based on project type
+        $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
+
+        // Build the same query as inventoryData but get ALL filtered records
+        $query = \Illuminate\Support\Facades\DB::table($inventoryTable . ' as inv')
+            ->leftJoin('inventory_dispatch as disp', function($join) {
+                $join->on('inv.serial_number', '=', 'disp.serial_number')
+                     ->where('disp.isDispatched', '=', true);
+            })
+            ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
+            ->where('inv.project_id', $project->id)
+            ->where('inv.store_id', $store->id)
+            ->select(
+                'inv.id',
+                'inv.item_code',
+                'inv.item',
+                'inv.serial_number',
+                \Illuminate\Support\Facades\DB::raw('COALESCE(inv.quantity, 0) as quantity'),
+                'inv.created_at',
+                'disp.id as dispatch_id',
+                'disp.is_consumed',
+                'disp.dispatch_date',
+                \Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name')
+            );
+
+        // Apply search filter
+        if ($request->filled('search')) {
+            $search = $request->input('search');
+            $query->where(function($q) use ($search) {
+                $q->where('inv.item_code', 'like', "%{$search}%")
+                  ->orWhere('inv.item', 'like', "%{$search}%")
+                  ->orWhere('inv.serial_number', 'like', "%{$search}%")
+                  ->orWhere(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
+            });
+        }
+
+        // Apply column filters
+        if ($request->filled('availability')) {
+            $availability = $request->input('availability');
+            if ($availability === 'In Stock') {
+                $query->where('inv.quantity', '>', 0);
+            } elseif ($availability === 'Dispatched') {
+                $query->whereNotNull('disp.id')->where('disp.is_consumed', '!=', 1);
+            } elseif ($availability === 'Consumed') {
+                $query->where('disp.is_consumed', '=', 1);
+            }
+        }
+
+        if ($request->filled('item_code')) {
+            $query->where('inv.item_code', $request->input('item_code'));
+        }
+
+        if ($request->filled('vendor_name')) {
+            $query->where(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
+        }
+
+        // Get all filtered records (no pagination)
+        $items = $query->orderBy('inv.created_at', 'desc')->get();
+
+        // Format data for Excel export (remove HTML tags)
+        $exportData = $items->map(function($item) {
+            $availability = 'In Stock';
+            if ($item->quantity > 0) {
+                $availability = 'In Stock';
+            } elseif ($item->is_consumed == 1) {
+                $availability = 'Consumed';
+            } elseif ($item->dispatch_id) {
+                $availability = 'Dispatched';
+            }
+
+            $vendorName = trim($item->vendor_name ?? '') ?: '-';
+            $dispatchDate = $item->dispatch_date ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y') : '-';
+            $createdAt = $item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y') : '-';
+
+            return [
+                'Item Code' => $item->item_code,
+                'Item' => $item->item,
+                'Serial Number' => $item->serial_number,
+                'Availability' => $availability,
+                'Vendor' => $vendorName,
+                'Dispatch Date' => $dispatchDate,
+                'In Date' => $createdAt,
+            ];
+        })->toArray();
+
+        // Generate filename based on filters
+        $date = now()->format('dmY'); // ddmmyyyy format
+        $hasFilters = $request->filled('availability') || $request->filled('item_code') || $request->filled('vendor_name');
+        
+        if ($hasFilters) {
+            // Case 2: With filters - Inv_MUZ_DIS_VEN_20122025.xlsx
+            $storeName = strtoupper(substr($store->name ?? 'STORE', 0, 3));
+            $parts = ['Inv', $storeName];
+            
+            // Add availability filter (3 letters)
+            if ($request->filled('availability')) {
+                $avail = $request->input('availability');
+                if ($avail === 'In Stock') {
+                    $parts[] = 'INS';
+                } elseif ($avail === 'Dispatched') {
+                    $parts[] = 'DIS';
+                } elseif ($avail === 'Consumed') {
+                    $parts[] = 'CON';
+                }
+            }
+            
+            // Add vendor filter (3 letters)
+            if ($request->filled('vendor_name')) {
+                $vendor = strtoupper(substr(preg_replace('/[^A-Za-z]/', '', $request->input('vendor_name')), 0, 3));
+                $parts[] = $vendor ?: 'VEN';
+            }
+            
+            // Add item code filter (3 letters)
+            if ($request->filled('item_code')) {
+                $item = strtoupper(substr($request->input('item_code'), 0, 3));
+                $parts[] = $item;
+            }
+            
+            $parts[] = $date;
+            $filename = implode('_', $parts) . '.xlsx';
+        } else {
+            // Case 1: No filters - Inventory_Muzaffarpur_20122025.xlsx (full store name)
+            $storeName = $store->name ?? 'Store';
+            $filename = 'Inventory_' . $storeName . '_' . $date . '.xlsx';
+        }
+
+        // Use ExcelHelper to export
+        return \App\Helpers\ExcelHelper::exportToExcel($exportData, $filename);
+    }
+
+    /**
+     * Server-side pagination endpoint for dispatched items DataTable
+     */
+    public function dispatchedData(Request $request, $storeId)
+    {
+        $store = Stores::with('project')->findOrFail($storeId);
+        $project = $store->project;
+
+        if (!$project) {
+            return response()->json(['error' => 'Project not found'], 404);
+        }
+
+        // Check authorization
+        $user = auth()->user();
+        if (!$user) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        // Build base query for dispatched items
+        $query = \Illuminate\Support\Facades\DB::table('inventory_dispatch as disp')
+            ->join('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
+            ->leftJoin('inventory_streetlight as inv', 'disp.serial_number', '=', 'inv.serial_number')
+            ->where('disp.store_id', $store->id)
+            ->where('disp.project_id', $project->id)
+            ->where('disp.isDispatched', true)
+            ->select(
+                'disp.id',
+                'disp.item_code',
+                'disp.item',
+                'disp.serial_number',
+                'disp.dispatch_date',
+                'disp.total_value',
+                \Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name')
+            );
+
+        // Count total records
+        $startTime = microtime(true);
+        $totalRecords = \Illuminate\Support\Facades\DB::table('inventory_dispatch')
+            ->where('store_id', $store->id)
+            ->where('project_id', $project->id)
+            ->where('isDispatched', true)
+            ->count();
+        $countTime = microtime(true) - $startTime;
+        
+        $baseTotalRecords = $totalRecords;
+
+        // Apply search filter
+        if ($request->filled('search.value')) {
+            $search = $request->input('search.value');
+            $query->where(function($q) use ($search) {
+                $q->where('disp.item_code', 'like', "%{$search}%")
+                  ->orWhere('disp.item', 'like', "%{$search}%")
+                  ->orWhere('disp.serial_number', 'like', "%{$search}%")
+                  ->orWhere(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
+            });
+        }
+
+        // Apply column filters
+        if ($request->filled('item_code')) {
+            $query->where('disp.item_code', $request->input('item_code'));
+        }
+
+        if ($request->filled('vendor_name')) {
+            $query->where(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
+        }
+
+        if ($request->filled('dispatch_date')) {
+            $query->whereDate('disp.dispatch_date', $request->input('dispatch_date'));
+        }
+
+        // Count filtered records
+        $hasFilters = $request->filled('search.value') || 
+                     $request->filled('item_code') || 
+                     $request->filled('vendor_name') ||
+                     $request->filled('dispatch_date');
+        
+        if (!$hasFilters) {
+            $filteredRecords = $baseTotalRecords;
+        } else {
+            $filterStartTime = microtime(true);
+            $filteredRecords = (clone $query)->count();
+            $filterCountTime = microtime(true) - $filterStartTime;
+        }
+
+        // Apply ordering
+        $orderColumn = $request->input('order.0.column', 4); // Default to dispatch_date
+        $orderDirection = $request->input('order.0.dir', 'desc');
+        $columns = ['id', 'item_code', 'item', 'serial_number', 'vendor_name', 'dispatch_date', 'total_value'];
+        
+        if (isset($columns[$orderColumn])) {
+            $column = $columns[$orderColumn];
+            if ($column === 'vendor_name') {
+                $query->orderBy(\Illuminate\Support\Facades\DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), $orderDirection);
+            } else {
+                $query->orderBy('disp.' . $column, $orderDirection);
+            }
+        } else {
+            $query->orderBy('disp.dispatch_date', 'desc');
+        }
+
+        // Apply pagination
+        $start = $request->input('start', 0);
+        $length = $request->input('length', 50);
+        $actualLength = $length;
+
+        // Get data
+        $dataStartTime = microtime(true);
+        if ($length == -1) {
+            $items = $query->get();
+        } else {
+            $items = $query->skip($start)->take($actualLength)->get();
+        }
+        $dataQueryTime = microtime(true) - $dataStartTime;
+
+        // Format data for DataTables
+        $data = $items->map(function($item) {
+            $vendorName = trim($item->vendor_name ?? '') ?: '-';
+            $dispatchDate = $item->dispatch_date ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y') : '-';
+            $totalValue = number_format($item->total_value ?? 0, 2);
+
+            return [
+                '<input type="checkbox" class="row-checkbox" value="' . $item->id . '" data-id="' . $item->id . '">',
+                $item->item_code ?? 'N/A',
+                $item->item ?? 'N/A',
+                $item->serial_number ?? 'N/A',
+                $vendorName,
+                $dispatchDate,
+                '₹' . $totalValue,
+                '<button type="button" class="btn btn-sm btn-danger delete-item" data-id="' . $item->id . '" data-url="' . route('inventory.destroy', $item->id) . '"><i class="mdi mdi-delete"></i></button>',
+            ];
+        });
+
+        $response = [
+            'draw' => intval($request->input('draw', 1)),
+            'recordsTotal' => $baseTotalRecords,
+            'recordsFiltered' => $filteredRecords,
+            'data' => $data,
+        ];
+
+        return response()->json($response);
     }
 
     /**
