@@ -1,5 +1,13 @@
 @extends('layouts.main')
 
+@push('styles')
+<script>
+// Set flag in head section - runs before any body scripts
+if (typeof window === 'undefined') window = {};
+window['skipAutoInit_unifiedInventoryTable'] = true;
+</script>
+@endpush
+
 @section('content')
     <div class="container-fluid p-4">
         <!-- Header -->
@@ -377,112 +385,540 @@
 
             <!-- View Inventory Tab -->
             <div class="tab-pane fade" id="view" role="tabpanel">
-                <!-- Unified Datatable -->
-                <x-datatable id="unifiedInventoryTable" title="Inventory View" :columns="[
-                    ['title' => 'Item Code'],
-                    ['title' => 'Item'],
-                    ['title' => 'Serial Number'],
-                    ['title' => 'Availability'],
-                    ['title' => 'Vendor', 'orderable' => true],
-                    ['title' => 'Dispatch Date'],
-                    ['title' => 'In Date'],
-                ]" :exportEnabled="true"
-                    :bulkDeleteEnabled="$isAdmin" :bulkDeleteRoute="route('inventory.bulkDelete')" pageLength="50" searchPlaceholder="Search inventory..."
-                    :filters="[
-                        [
-                            'type' => 'select',
-                            'name' => 'availability',
-                            'label' => 'Availability',
-                            'column' => $isAdmin ? 4 : 3,
-                            'width' => 3,
-                            'useDataAttribute' => 'availability',
-                            'options' => [
-                                'In Stock' => 'In Stock',
-                                'Dispatched' => 'Dispatched',
-                                'Consumed' => 'Consumed',
-                            ],
-                        ],
-                        [
-                            'type' => 'select',
-                            'name' => 'vendor',
-                            'label' => 'Vendor',
-                            'column' => $isAdmin ? 5 : 4,
-                            'width' => 3,
-                            'select2' => true,
-                            'useDataAttribute' => 'vendor-name',
-                            'options' => $assignedVendors->pluck('name', 'name')->toArray(),
-                        ],
-                        [
-                            'type' => 'select',
-                            'name' => 'item',
-                            'label' => 'Item',
-                            'column' => $isAdmin ? 1 : 0,
-                            'width' => 3,
-                            'useDataAttribute' => 'item-code',
-                            'options' => [
-                                'SL01' => 'Panel Module (SL01 Panel)',
-                                'SL02' => 'Luminary (SL02 Luminary)',
-                                'SL03' => 'Battery (SL03 Battery)',
-                                'SL04' => 'Structure (SL04 Structure)',
-                            ],
-                        ],
-                    ]">
-                    @foreach ($unifiedInventory as $item)
-                        <tr data-id="{{ $item['id'] }}" data-availability="{{ $item['availability'] }}"
-                            data-item-code="{{ $item['item_code'] }}"
-                            data-vendor-name="{{ $item['vendor_name'] ?? '-' }}"
-                            data-custody="{{ $item['availability'] === 'Dispatched' ? 'vendor' : ($item['availability'] === 'Consumed' ? 'consumed' : '') }}">
-                            @if ($isAdmin)
-                                <td>
-                                    <input type="checkbox" class="row-checkbox" value="{{ $item['id'] }}">
-                                </td>
-                            @else
-                                <td></td>
-                            @endif
-                            <td>{{ $item['item_code'] }}</td>
-                            <td>{{ $item['item'] }}</td>
-                            <td>{{ $item['serial_number'] }}</td>
-                            <td>
-                                @if ($item['availability'] === 'In Stock')
-                                    <span class="badge bg-success">In Stock</span>
-                                @elseif($item['availability'] === 'Dispatched')
-                                    <span class="badge bg-warning">Dispatched</span>
-                                @else
-                                    <span class="badge bg-danger">Consumed</span>
-                                @endif
-                            </td>
-                            <td>{{ $item['vendor_name'] ?? '-' }}</td>
-                            <td>{{ $item['dispatch_date'] ? \Carbon\Carbon::parse($item['dispatch_date'])->format('d/m/Y') : '-' }}
-                            </td>
-                            <td>{{ \Carbon\Carbon::parse($item['created_at'])->format('d/m/Y') }}</td>
-                            <td>
-                                @if ($item['availability'] === 'In Stock')
-                                    @if ($isAdmin)
-                                        <button type="button" class="btn btn-sm btn-danger delete-item"
-                                            data-id="{{ $item['id'] }}" title="Delete">
-                                            <i class="mdi mdi-delete"></i>
+                {{-- Prevent component auto-initialization - must run IMMEDIATELY --}}
+                <script>
+                // Set flag immediately - before any other scripts run
+                if (typeof window === 'undefined') window = {};
+                window['skipAutoInit_unifiedInventoryTable'] = true;
+                </script>
+                
+                {{-- Manual table structure for server-side processing --}}
+                {{-- Using datatable-wrapper class for UI consistency, but preventing component initialization --}}
+                <div class="datatable-wrapper" id="datatable-wrapper-unifiedInventoryTable" data-server-side="true">
+                    {{-- Filter Section with Border --}}
+                    <div class="border rounded p-3 mb-3" style="background-color: #f8f9fa;">
+                        <div class="d-flex flex-column flex-md-row align-items-end gap-3">
+                            <div class="flex-fill">
+                                <label class="form-label small mb-1 fw-semibold">Availability</label>
+                                <select name="availability" class="form-control form-control-sm filter-select" style="width: 100%;">
+                                    <option value="">Availability</option>
+                                    <option value="In Stock">In Stock</option>
+                                    <option value="Dispatched">Dispatched</option>
+                                    <option value="Consumed">Consumed</option>
+                                </select>
+                            </div>
+                            <div class="flex-fill">
+                                <label class="form-label small mb-1 fw-semibold">Vendor</label>
+                                <select name="vendor" id="vendor_filter" class="form-control form-control-sm filter-select2" style="width: 100%;">
+                                    <option value="">Vendor</option>
+                                    @foreach($assignedVendors as $vendor)
+                                        <option value="{{ $vendor->name }}">{{ $vendor->name }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div class="flex-fill">
+                                <label class="form-label small mb-1 fw-semibold">Item</label>
+                                <select name="item" class="form-control form-control-sm filter-select" style="width: 100%;">
+                                    <option value="">Item</option>
+                                    <option value="SL01">Panel Module (SL01 Panel)</option>
+                                    <option value="SL02">Luminary (SL02 Luminary)</option>
+                                    <option value="SL03">Battery (SL03 Battery)</option>
+                                    <option value="SL04">Structure (SL04 Structure)</option>
+                                </select>
+                            </div>
+                            <div class="d-flex gap-2 align-items-end">
+                                <button type="button" id="applyFiltersBtn" class="btn btn-primary btn-sm">
+                                    Apply Filters
                                         </button>
-                                    @endif
-                                @elseif($item['availability'] === 'Dispatched')
-                                    <form action="{{ route('inventory.return') }}" method="POST" class="d-inline"
-                                        onsubmit="return confirm('Are you sure you want to return this item?');">
-                                        @csrf
-                                        <input type="hidden" name="serial_number" value="{{ $item['serial_number'] }}">
-                                        <button type="submit" class="btn btn-sm btn-warning" title="Return">
-                                            <i class="mdi mdi-undo"></i>
+                                <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary btn-sm">
+                                    Clear
                                         </button>
-                                    </form>
-                                @elseif($item['availability'] === 'Consumed')
-                                    <button type="button" class="btn btn-sm btn-primary replace-item"
-                                        data-dispatch-id="{{ $item['dispatch_id'] }}"
-                                        data-serial-number="{{ $item['serial_number'] }}" title="Replace">
-                                        <i class="mdi mdi-swap-horizontal"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {{-- Search and Export Section --}}
+                    <div class="row align-items-center p-3 g-3 mb-3">
+                        <div class="col-12 col-md-6">
+                            <div class="input-group input-group-sm">
+                                <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+                                <input type="search" class="form-control" id="unifiedInventoryTable_search" placeholder="Search inventory...">
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 text-start text-md-end">
+                            <div class="btn-group btn-group-sm d-flex flex-wrap" role="group">
+                                <button type="button" class="btn btn-success flex-fill flex-sm-auto" id="unifiedInventoryTable_excel" title="Export to Excel">
+                                    <i class="mdi mdi-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
                                     </button>
+                                <button type="button" class="btn btn-danger flex-fill flex-sm-auto" id="unifiedInventoryTable_pdf" title="Export to PDF">
+                                    <i class="mdi mdi-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
+                                        </button>
+                                <button type="button" class="btn btn-info flex-fill flex-sm-auto" id="unifiedInventoryTable_print" title="Print">
+                                    <i class="mdi mdi-printer"></i> <span class="d-none d-sm-inline">Print</span>
+                                    </button>
+                                <button type="button" class="btn btn-secondary flex-fill flex-sm-auto" id="unifiedInventoryTable_columns" title="Show/Hide Columns">
+                                    <i class="mdi mdi-eye"></i> <span class="d-none d-sm-inline">Columns</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                        <table id="unifiedInventoryTable" class="table table-striped table-bordered table-hover" style="width:100%; min-width: 600px;" data-server-side="true">
+                            <thead>
+                                <tr>
+                            @if ($isAdmin)
+                                    <th width="30px"><input type="checkbox" id="unifiedInventoryTable_selectAll" class="select-all-checkbox"></th>
                                 @endif
-                            </td>
+                                    <th>Item Code</th>
+                                    <th>Item</th>
+                                    <th>Serial Number</th>
+                                    <th>Availability</th>
+                                    <th>Vendor</th>
+                                    <th>Dispatch Date</th>
+                                    <th>In Date</th>
+                                    <th width="120px" class="text-center">Actions</th>
                         </tr>
-                    @endforeach
-                </x-datatable>
+                            </thead>
+                            <tbody>
+                                {{-- Server-side processing: tbody is empty, data loaded via AJAX --}}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="mt-3 d-flex flex-column gap-2">
+                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div class="small text-muted" id="unifiedInventoryTable_info"></div>
+                            <div id="unifiedInventoryTable_paginate"></div>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <label class="mb-0 small fw-semibold">Show:</label>
+                            <select class="form-control form-control-sm" id="unifiedInventoryTable_length" style="width: auto;">
+                                <option value="10">10</option>
+                                <option value="25">25</option>
+                                <option value="50" selected>50</option>
+                                <option value="100">100</option>
+                            </select>
+                            <span class="small">entries</span>
+                        </div>
+                    </div>
+                </div>
+                
+                {{-- Enable server-side processing for the DataTable --}}
+                @push('scripts')
+                <script>
+                // Set flag IMMEDIATELY to prevent component initialization
+                window['skipAutoInit_unifiedInventoryTable'] = true;
+                
+                // Set flag IMMEDIATELY - before document.ready
+                window['skipAutoInit_unifiedInventoryTable'] = true;
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:470',message:'SERVER-SIDE SCRIPT LOADED - flag set',data:{skipFlag:window['skipAutoInit_unifiedInventoryTable']},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'SCRIPT_LOADED'})}).catch(()=>{});
+                // #endregion agent log
+                
+                $(document).ready(function() {
+                    console.log('=== SERVER-SIDE SCRIPT LOADED ===');
+                    console.log('Skip flag:', window['skipAutoInit_unifiedInventoryTable']);
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:473',message:'document.ready fired',data:{skipFlag:window['skipAutoInit_unifiedInventoryTable']},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'DOC_READY'})}).catch(()=>{});
+                    // #endregion agent log
+                    
+                    // Mark table immediately
+                    var $table = $('#unifiedInventoryTable');
+                    if ($table.length) {
+                        $table.attr('data-server-side', 'true');
+                        console.log('Table found and marked:', $table.attr('data-server-side'));
+                    } else {
+                        console.error('Table #unifiedInventoryTable NOT FOUND in DOM');
+                    }
+                    
+                    function initializeServerSideTable() {
+                        console.log('=== initializeServerSideTable() CALLED ===');
+                        
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:494',message:'initializeServerSideTable() CALLED',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'INIT_FUNC_CALLED'})}).catch(()=>{});
+                        // #endregion agent log
+                        
+                        // Check if already initialized
+                        if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
+                            var existing = $('#unifiedInventoryTable').DataTable();
+                            if (existing.settings()[0].serverSide) {
+                                console.log('Server-side table already initialized');
+                                return;
+                            } else {
+                                console.log('Destroying client-side table, recreating as server-side');
+                                existing.destroy();
+                            }
+                        }
+                        
+                        // Make sure table exists and has proper structure
+                        var $table = $('#unifiedInventoryTable');
+                        if ($table.length === 0) {
+                            console.error('Table #unifiedInventoryTable not found');
+                            return;
+                        }
+                        
+                        // Verify thead structure
+                        var $thead = $table.find('thead tr');
+                        if ($thead.length === 0) {
+                            console.error('Table thead not found');
+                            return;
+                        }
+                        
+                        var expectedCols = {{ $isAdmin ? 9 : 8 }};
+                        var actualCols = $thead.find('th').length;
+                        if (actualCols !== expectedCols) {
+                            console.error('Column count mismatch. Expected: ' + expectedCols + ', Actual: ' + actualCols);
+                            console.log('Actual columns:', $thead.find('th').map(function() { return $(this).text().trim(); }).get());
+                            return;
+                        }
+                        
+                        console.log('Initializing server-side DataTable...', {
+                            skipFlag: window['skipAutoInit_unifiedInventoryTable'],
+                            tableAttr: $table.attr('data-server-side'),
+                            wrapperAttr: $('#datatable-wrapper-unifiedInventoryTable').attr('data-server-side')
+                        });
+                        
+                        // Initialize with server-side processing
+                        var table = $('#unifiedInventoryTable').DataTable({
+                            processing: true,
+                            serverSide: true,
+                            ajax: {
+                                url: '{{ route("store.inventory.data", $store->id) }}',
+                                type: 'GET',
+                                beforeSend: function(xhr, settings) {
+                                    // #region agent log
+                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:544',message:'AJAX REQUEST SENT',data:{url:settings.url,type:settings.type},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_SENT'})}).catch(()=>{});
+                                    // #endregion agent log
+                                    console.log('AJAX request sent to:', settings.url);
+                                },
+                                error: function(xhr, error, thrown) {
+                                    console.error('DataTables AJAX error:', error, thrown);
+                                    console.error('Response:', xhr.responseText);
+                                    console.error('Status:', xhr.status);
+                                    // #region agent log
+                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:547',message:'AJAX ERROR',data:{error:error,thrown:thrown,status:xhr.status,response:xhr.responseText.substring(0,500)},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_ERROR'})}).catch(()=>{});
+                                    // #endregion agent log
+                                },
+                                dataSrc: function(json) {
+                                    console.log('DataTables response:', json);
+                                    // #region agent log
+                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:552',message:'AJAX RESPONSE RECEIVED',data:{recordsTotal:json.recordsTotal,recordsFiltered:json.recordsFiltered,dataLength:json.data?json.data.length:0},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_RESPONSE'})}).catch(()=>{});
+                                    // #endregion agent log
+                                    return json.data;
+                                },
+                                data: function(d) {
+                                    // Add filter values
+                                    var tabPane = $('#view');
+                                    d.availability = tabPane.find('select[name="availability"]').val() || '';
+                                    d.item_code = tabPane.find('select[name="item"]').val() || '';
+                                    d.vendor_name = $('#vendor_filter').val() || '';
+                                    console.log('DataTables request data:', d);
+                                    // #region agent log
+                                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:556',message:'AJAX REQUEST DATA',data:{draw:d.draw,start:d.start,length:d.length,availability:d.availability,item_code:d.item_code,vendor_name:d.vendor_name},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'AJAX_DATA'})}).catch(()=>{});
+                                    // #endregion agent log
+                                }
+                            },
+                            columns: [
+                                @if ($isAdmin)
+                                { data: 0, name: 'checkbox', orderable: false, searchable: false },
+                                { data: 1, name: 'item_code' },
+                                { data: 2, name: 'item' },
+                                { data: 3, name: 'serial_number' },
+                                { data: 4, name: 'availability', orderable: true },
+                                { data: 5, name: 'vendor_name', orderable: true },
+                                { data: 6, name: 'dispatch_date' },
+                                { data: 7, name: 'created_at' },
+                                { data: 8, name: 'actions', orderable: false, searchable: false }
+                                @else
+                                { data: 0, name: 'item_code' },
+                                { data: 1, name: 'item' },
+                                { data: 2, name: 'serial_number' },
+                                { data: 3, name: 'availability', orderable: true },
+                                { data: 4, name: 'vendor_name', orderable: true },
+                                { data: 5, name: 'dispatch_date' },
+                                { data: 6, name: 'created_at' },
+                                { data: 7, name: 'actions', orderable: false, searchable: false }
+                                @endif
+                            ],
+                            order: [[{{ $isAdmin ? 7 : 6 }}, 'desc']],
+                            pageLength: 50,
+                            deferLoading: null,
+                            dom: "<'row'<'col-sm-12'tr>>" +
+                                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                            buttons: [
+                                {
+                                    extend: 'excel',
+                                    text: '<i class="mdi mdi-file-excel"></i> Excel',
+                                    className: 'd-none',
+                                    exportOptions: {
+                                        columns: ':visible:not(.no-export)',
+                                        format: {
+                                            body: function(data, row, column, node) {
+                                                // Remove HTML tags for export
+                                                if (typeof data === 'string') {
+                                                    return data.replace(/<[^>]*>/g, '').trim();
+                                                }
+                                                return data;
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    extend: 'pdf',
+                                    text: '<i class="mdi mdi-file-pdf"></i> PDF',
+                                    className: 'd-none',
+                                    orientation: 'landscape',
+                                    pageSize: 'A4',
+                                    exportOptions: {
+                                        columns: ':visible:not(.no-export)',
+                                        format: {
+                                            body: function(data, row, column, node) {
+                                                if (typeof data === 'string') {
+                                                    return data.replace(/<[^>]*>/g, '').trim();
+                                                }
+                                                return data;
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    extend: 'print',
+                                    text: '<i class="mdi mdi-printer"></i> Print',
+                                    className: 'd-none',
+                                    exportOptions: {
+                                        columns: ':visible:not(.no-export)',
+                                        format: {
+                                            body: function(data, row, column, node) {
+                                                if (typeof data === 'string') {
+                                                    return data.replace(/<[^>]*>/g, '').trim();
+                                                }
+                                                return data;
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    extend: 'colvis',
+                                    text: '<i class="mdi mdi-eye"></i> Columns',
+                                    className: 'd-none',
+                                    columns: ':not(.no-colvis)',
+                                    collectionLayout: 'three-column',
+                                    postfixButtons: ['colvisRestore']
+                                }
+                            ],
+                            language: {
+                                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div> Loading data...',
+                                search: '',
+                                searchPlaceholder: 'Search inventory...',
+                                lengthMenu: '',
+                                info: '',
+                                infoEmpty: '',
+                                infoFiltered: ''
+                            },
+                            pagingType: 'simple_numbers',
+                            drawCallback: function() {
+                                // Update info text with filtered and total counts
+                                var info = this.api().page.info();
+                                var totalRecords = info.recordsTotal; // Total records (no filters)
+                                var filteredRecords = info.recordsFiltered; // Filtered records
+                                
+                                var infoText = 'Showing ' + (info.start + 1) + ' to ' + info.end + ' of ' + filteredRecords + ' entries';
+                                if (filteredRecords < totalRecords) {
+                                    infoText += ' (filtered from ' + totalRecords + ' total entries)';
+                                }
+                                $('#unifiedInventoryTable_info').text(infoText);
+                                
+                                // Move pagination to custom wrapper - use appendTo to preserve event handlers
+                                var $dtPagination = $('#unifiedInventoryTable_wrapper .dataTables_paginate');
+                                var $customPagination = $('#unifiedInventoryTable_paginate');
+                                
+                                if ($dtPagination.length > 0 && $dtPagination.parent()[0] !== $customPagination[0]) {
+                                    // Move the entire pagination element (not just HTML) to preserve DataTables event handlers
+                                    $dtPagination.appendTo($customPagination);
+                                }
+                                
+                                // Handle select all checkbox
+                                $('#unifiedInventoryTable_selectAll').off('change').on('change', function() {
+                                    var isChecked = $(this).is(':checked');
+                                    $('#unifiedInventoryTable tbody input[type="checkbox"]').prop('checked', isChecked);
+                                });
+                                
+                                // Reattach delete handlers
+                                $('#unifiedInventoryTable').off('click', '.delete-item').on('click', '.delete-item', function() {
+                                    var id = $(this).data('id');
+                                    if (confirm('Are you sure you want to delete this item?')) {
+                                        console.log('Delete item:', id);
+                                    }
+                                });
+                            },
+                            initComplete: function() {
+                                // Store the total count from first response to prevent recalculation
+                                var settings = this.api().settings()[0];
+                                if (settings.ajax && settings.ajax.json) {
+                                    var json = settings.ajax.json;
+                                    if (json && json.recordsTotal) {
+                                        // Lock the total count so it doesn't change
+                                        settings._iRecordsTotal = json.recordsTotal;
+                                        settings._iRecordsDisplay = json.recordsTotal;
+                                    }
+                                }
+                            }
+                        });
+                        
+                        window['table_unifiedInventoryTable'] = table;
+                        console.log('Server-side DataTable initialized successfully');
+                        
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:607',message:'Server-side DataTable INITIALIZED SUCCESSFULLY',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'INIT_SUCCESS'})}).catch(()=>{});
+                        // #endregion agent log
+                        
+                        // Handle length change
+                        $('#unifiedInventoryTable_length').off('change').on('change', function() {
+                            table.page.len(parseInt($(this).val())).draw();
+                        });
+                        
+                        // Event delegation for pagination clicks (fallback if DataTables handlers don't work)
+                        $('#unifiedInventoryTable_paginate').off('click', 'a').on('click', 'a', function(e) {
+                            // Only handle if it's a pagination button and DataTables hasn't handled it
+                            if ($(this).hasClass('paginate_button') && !$(this).hasClass('disabled') && !$(this).hasClass('current')) {
+                                var href = $(this).attr('href');
+                                if (href === '#' || !href) {
+                                    e.preventDefault();
+                                    var text = $(this).text().trim();
+                                    if (text === 'Previous') {
+                                        table.page('previous').draw('page');
+                                    } else if (text === 'Next') {
+                                        table.page('next').draw('page');
+                                    } else if (!isNaN(text)) {
+                                        table.page(parseInt(text) - 1).draw('page');
+                                    }
+                                }
+                            }
+                        });
+                        
+                        // Initialize Select2 for Vendor dropdown
+                        $('#vendor_filter').select2({
+                            placeholder: 'Vendor',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $('#datatable-wrapper-unifiedInventoryTable'),
+                            minimumResultsForSearch: 0, // Always show search box
+                        });
+                        
+                        // Handle Apply Filters button
+                        $('#applyFiltersBtn').off('click').on('click', function() {
+                            table.ajax.reload();
+                        });
+                        
+                        // Handle Clear Filters button
+                        $('#clearFiltersBtn').off('click').on('click', function() {
+                            $('#view select[name="availability"]').val('').trigger('change');
+                            $('#vendor_filter').val(null).trigger('change');
+                            $('#view select[name="item"]').val('').trigger('change');
+                            table.ajax.reload();
+                        });
+                        
+                        // Handle search input - debounced for better performance
+                        var searchTimeout;
+                        $('#unifiedInventoryTable_search').off('keyup input').on('keyup input', function() {
+                            var searchValue = $(this).val();
+                            clearTimeout(searchTimeout);
+                            searchTimeout = setTimeout(function() {
+                                table.search(searchValue).draw();
+                            }, 300); // 300ms debounce
+                        });
+                        
+                        // Handle Enter key in search
+                        $('#unifiedInventoryTable_search').off('keypress').on('keypress', function(e) {
+                            if (e.which === 13) {
+                                e.preventDefault();
+                                clearTimeout(searchTimeout);
+                                table.search($(this).val()).draw();
+                            }
+                        });
+                        
+                        // Wire up export buttons - custom export to get all filtered data
+                        $('#unifiedInventoryTable_excel').off('click').on('click', function() {
+                            // Get current filter values
+                            var availability = $('#view select[name="availability"]').val() || '';
+                            var itemCode = $('#view select[name="item"]').val() || '';
+                            var vendorName = $('#vendor_filter').val() || '';
+                            var search = $('#unifiedInventoryTable_search').val() || '';
+                            
+                            // Build export URL with filters
+                            var exportUrl = '{{ route("store.inventory.export", $store->id) }}?';
+                            var params = [];
+                            if (availability) params.push('availability=' + encodeURIComponent(availability));
+                            if (itemCode) params.push('item_code=' + encodeURIComponent(itemCode));
+                            if (vendorName) params.push('vendor_name=' + encodeURIComponent(vendorName));
+                            if (search) params.push('search=' + encodeURIComponent(search));
+                            
+                            exportUrl += params.join('&');
+                            
+                            // Open export URL in new window to trigger download
+                            window.location.href = exportUrl;
+                        });
+                        
+                        $('#unifiedInventoryTable_pdf').off('click').on('click', function() {
+                            table.button('.buttons-pdf').trigger();
+                        });
+                        
+                        $('#unifiedInventoryTable_print').off('click').on('click', function() {
+                            table.button('.buttons-print').trigger();
+                        });
+                        
+                        $('#unifiedInventoryTable_columns').off('click').on('click', function(e) {
+                            e.preventDefault();
+                            table.button('.buttons-colvis').trigger();
+                        });
+                    }
+                    
+                    // Initialize when tab is shown - use correct selector for button tabs
+                    $('#view-tab, [data-bs-target="#view"]').on('shown.bs.tab', function() {
+                        console.log('=== TAB SHOWN EVENT FIRED ===');
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'show.blade.php:663',message:'TAB SHOWN EVENT FIRED for View Inventory',data:{},timestamp:Date.now(),sessionId:'debug-session',runId:'server-side-init',hypothesisId:'TAB_SHOWN'})}).catch(()=>{});
+                        // #endregion agent log
+                        setTimeout(function() {
+                            if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
+                                var existing = $('#unifiedInventoryTable').DataTable();
+                                if (!existing.settings()[0].serverSide) {
+                                    console.log('Destroying client-side, recreating server-side');
+                                    existing.destroy();
+                                } else {
+                                    console.log('Server-side table already initialized');
+                                    return;
+                                }
+                            }
+                            initializeServerSideTable();
+                        }, 100);
+                    });
+                    
+                    // Also listen on the tab pane itself for when it becomes visible
+                    $('#view').on('shown.bs.tab', function() {
+                        console.log('=== TAB PANE SHOWN EVENT FIRED ===');
+                        setTimeout(function() {
+                            if (!$.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
+                                initializeServerSideTable();
+                            }
+                        }, 100);
+                    });
+                    
+                    // Initialize immediately if tab is already active
+                    if ($('#view').hasClass('active') && $('#view').hasClass('show')) {
+                        console.log('=== TAB ALREADY ACTIVE, INITIALIZING NOW ===');
+                        setTimeout(function() {
+                            initializeServerSideTable();
+                        }, 500);
+                    } else {
+                        console.log('Tab not active yet, waiting for tab show event');
+                    }
+                });
+                </script>
+                @endpush
             </div>
 
             <!-- Dispatch Material Tab -->
@@ -570,6 +1006,51 @@
                                         <div id="invalidItemsList" class="mt-2"></div>
                                     </div>
                                 </div>
+
+                                <!-- Bulk Dispatch Preview Section -->
+                                <div id="bulkDispatchPreview" style="display: none;" class="mt-4">
+                                    <!-- Items Ready to Dispatch -->
+                                    <div id="readyToDispatchSection" class="preview-section ready-to-dispatch mb-3">
+                                        <h6 class="mb-2"><strong>Items Ready to Dispatch:</strong></h6>
+                                        <div id="readyToDispatchList" class="serial-numbers-grid"></div>
+                                    </div>
+
+                                    <!-- Already Dispatched Items -->
+                                    <div id="alreadyDispatchedPreviewSection" class="preview-section already-dispatched mb-3" style="display: none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
+                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllDispatchedBtn">
+                                                <i class="mdi mdi-delete"></i> Remove All
+                                            </button>
+                                        </div>
+                                        <p class="text-muted small mb-2">Reason: Already Dispatched</p>
+                                        <div id="alreadyDispatchedPreviewList" class="serial-numbers-grid"></div>
+                                    </div>
+
+                                    <!-- Duplicate Serial Numbers -->
+                                    <div id="duplicateSerialsSection" class="preview-section duplicate-serials mb-3" style="display: none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
+                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllDuplicatesBtn">
+                                                <i class="mdi mdi-delete"></i> Remove All
+                                            </button>
+                                        </div>
+                                        <p class="text-muted small mb-2">Reason: Duplicate serial numbers</p>
+                                        <div id="duplicateSerialsList" class="serial-numbers-grid"></div>
+                                    </div>
+
+                                    <!-- Non Existing Items -->
+                                    <div id="nonExistingSection" class="preview-section non-existing mb-3" style="display: none;">
+                                        <div class="d-flex justify-content-between align-items-center mb-2">
+                                            <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
+                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllNonExistingBtn">
+                                                <i class="mdi mdi-delete"></i> Remove All
+                                            </button>
+                                        </div>
+                                        <p class="text-muted small mb-2">Reason: Non existing items</p>
+                                        <div id="nonExistingList" class="serial-numbers-grid"></div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Manual Entry Section -->
@@ -648,71 +1129,373 @@
                     <div class="card-body">
                         <h6 class="card-title mb-3">Already Dispatched Items</h6>
 
-                        <x-datatable id="dispatchTabDispatchedTable" title="Dispatched Items" :columns="[
-                            ['title' => 'Item Code', 'width' => '12%'],
-                            ['title' => 'Item', 'width' => '15%'],
-                            ['title' => 'Serial Number', 'width' => '18%'],
-                            ['title' => 'Vendor', 'width' => '15%'],
-                            ['title' => 'Dispatch Date', 'width' => '12%'],
-                            ['title' => 'Value', 'width' => '12%'],
-                        ]"
-                            :exportEnabled="true" :importEnabled="false" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('inventory.bulkDelete')" pageLength="25"
-                            searchPlaceholder="Search dispatched items..." :filters="[
-                                [
-                                    'type' => 'select',
-                                    'name' => 'filter_item_code',
-                                    'label' => 'Item Code',
-                                    'column' => 1,
-                                    'width' => 3,
-                                    'options' => [
-                                        '' => 'All',
-                                        'SL01' => 'SL01 - Panel',
-                                        'SL02' => 'SL02 - Luminary',
-                                        'SL03' => 'SL03 - Battery',
-                                        'SL04' => 'SL04 - Structure',
-                                    ],
-                                ],
-                                [
-                                    'type' => 'date',
-                                    'name' => 'filter_dispatch_date',
-                                    'label' => 'Dispatch Date',
-                                    'column' => 5,
-                                    'width' => 3,
-                                ],
-                            ]">
-                            @forelse($dispatched as $dispatch)
-                                <tr>
-                                    <td>
-                                        <input type="checkbox" class="row-checkbox" value="{{ $dispatch['id'] ?? '' }}">
-                                    </td>
-                                    <td>{{ $dispatch['item_code'] ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch['item'] ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch['serial_number'] ?? 'N/A' }}</td>
-                                    <td>{{ $dispatch['vendor_name'] ?? 'N/A' }}</td>
-                                    <td>
-                                        @if (!empty($dispatch['dispatch_date']))
-                                            {{ \Carbon\Carbon::parse($dispatch['dispatch_date'])->format('d/m/Y') }}
-                                        @else
-                                            N/A
-                                        @endif
-                                    </td>
-                                    <td>₹{{ number_format($dispatch['total_value'] ?? 0, 2) }}</td>
-                                    <td class="text-center">
-                                        <button type="button" class="btn btn-sm btn-danger delete-item"
-                                            data-id="{{ $dispatch['id'] ?? '' }}"
-                                            data-url="{{ route('inventory.destroy', $dispatch['id'] ?? 0) }}">
-                                            <i class="mdi mdi-delete"></i>
+                        {{-- Filter Section --}}
+                        <div class="card border rounded p-3 mb-3" style="background-color: #f8f9fa;">
+                            <div class="d-flex flex-column flex-md-row align-items-end gap-3">
+                                <div class="flex-fill">
+                                    <label class="form-label small mb-1 fw-semibold">Item Code</label>
+                                    <select name="dispatched_item_code" class="form-control form-control-sm filter-select" style="width: 100%;">
+                                        <option value="">All Items</option>
+                                        <option value="SL01">SL01 - Panel</option>
+                                        <option value="SL02">SL02 - Luminary</option>
+                                        <option value="SL03">SL03 - Battery</option>
+                                        <option value="SL04">SL04 - Structure</option>
+                                    </select>
+                                </div>
+                                <div class="flex-fill">
+                                    <label class="form-label small mb-1 fw-semibold">Vendor</label>
+                                    <select name="dispatched_vendor" id="dispatched_vendor_filter" class="form-control form-control-sm filter-select2" style="width: 100%;">
+                                        <option value="">All Vendors</option>
+                                        @foreach($assignedVendors as $vendor)
+                                            <option value="{{ $vendor->name }}">{{ $vendor->name }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div class="flex-fill">
+                                    <label class="form-label small mb-1 fw-semibold">Dispatch Date</label>
+                                    <input type="date" name="dispatched_date" class="form-control form-control-sm filter-select" style="width: 100%;">
+                                </div>
+                                <div class="d-flex gap-2 align-items-end">
+                                    <button type="button" id="applyDispatchedFiltersBtn" class="btn btn-primary btn-sm">
+                                        Apply Filters
                                         </button>
-                                    </td>
+                                    <button type="button" id="clearDispatchedFiltersBtn" class="btn btn-outline-secondary btn-sm">
+                                        Clear
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {{-- Search and Export Section --}}
+                        <div class="row align-items-center g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
+                                    <input type="search" class="form-control" id="dispatchTabDispatchedTable_search" placeholder="Search dispatched items...">
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 text-start text-md-end">
+                                <div class="btn-group btn-group-sm d-flex flex-wrap" role="group">
+                                    <button type="button" class="btn btn-success flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_excel" title="Export to Excel">
+                                        <i class="mdi mdi-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
+                                    </button>
+                                    <button type="button" class="btn btn-danger flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_pdf" title="Export to PDF">
+                                        <i class="mdi mdi-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
+                                    </button>
+                                    <button type="button" class="btn btn-info flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_print" title="Print">
+                                        <i class="mdi mdi-printer"></i> <span class="d-none d-sm-inline">Print</span>
+                                    </button>
+                                    <button type="button" class="btn btn-secondary flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_columns" title="Show/Hide Columns">
+                                        <i class="mdi mdi-eye"></i> <span class="d-none d-sm-inline">Columns</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                            <table id="dispatchTabDispatchedTable" class="table table-striped table-bordered table-hover" style="width:100%;" data-server-side="true">
+                                <thead>
+                                    <tr>
+                                        <th width="30px"><input type="checkbox" id="dispatchTabDispatchedTable_selectAll" class="select-all-checkbox"></th>
+                                        <th>Item Code</th>
+                                        <th>Item</th>
+                                        <th>Serial Number</th>
+                                        <th>Vendor</th>
+                                        <th>Dispatch Date</th>
+                                        <th>Value</th>
+                                        <th width="120px" class="text-center">Actions</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center">No dispatched items</td>
-                                </tr>
-                            @endforelse
-                        </x-datatable>
+                                </thead>
+                                <tbody>
+                                    {{-- Server-side processing: tbody is empty, data loaded via AJAX --}}
+                                </tbody>
+                            </table>
+                    </div>
+                        
+                        <div class="mt-3 d-flex flex-column gap-2">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+                                <div class="small text-muted" id="dispatchTabDispatchedTable_info"></div>
+                                <div id="dispatchTabDispatchedTable_paginate"></div>
+                </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <label class="mb-0 small fw-semibold">Show:</label>
+                                <select class="form-control form-control-sm" id="dispatchTabDispatchedTable_length" style="width: auto;">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50" selected>50</option>
+                                    <option value="100">100</option>
+                                </select>
+                                <span class="small">entries</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
+                
+                {{-- Server-side DataTable for Dispatched Items --}}
+                @push('scripts')
+                <script>
+                // Set flag to prevent component auto-initialization
+                window['skipAutoInit_dispatchTabDispatchedTable'] = true;
+                
+                $(document).ready(function() {
+                    function initializeDispatchedTable() {
+                        // Check if already initialized
+                        if ($.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
+                            return;
+                        }
+                        
+                        var table = $('#dispatchTabDispatchedTable').DataTable({
+                            processing: true,
+                            serverSide: true,
+                            ajax: {
+                                url: '{{ route("store.dispatched.data", $store->id) }}',
+                                type: 'GET',
+                                data: function(d) {
+                                    d.item_code = $('select[name="dispatched_item_code"]').val() || '';
+                                    d.vendor_name = $('#dispatched_vendor_filter').val() || '';
+                                    d.dispatch_date = $('input[name="dispatched_date"]').val() || '';
+                                }
+                            },
+                            columns: [
+                                { data: 0, name: 'checkbox', orderable: false, searchable: false },
+                                { data: 1, name: 'item_code' },
+                                { data: 2, name: 'item' },
+                                { data: 3, name: 'serial_number' },
+                                { data: 4, name: 'vendor_name' },
+                                { data: 5, name: 'dispatch_date' },
+                                { data: 6, name: 'total_value' },
+                                { data: 7, name: 'actions', orderable: false, searchable: false }
+                            ],
+                            order: [[5, 'desc']],
+                            pageLength: 50,
+                            deferLoading: null,
+                            dom: "<'row'<'col-sm-12'tr>>" +
+                                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
+                            buttons: [
+                                {
+                                    extend: 'excel',
+                                    text: '<i class="mdi mdi-file-excel"></i> Excel',
+                                    className: 'd-none',
+                                    exportOptions: {
+                                        columns: ':visible:not(.no-export)',
+                                        format: {
+                                            body: function(data) {
+                                                if (typeof data === 'string') {
+                                                    return data.replace(/<[^>]*>/g, '').trim();
+                                                }
+                                                return data;
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    extend: 'pdf',
+                                    text: '<i class="mdi mdi-file-pdf"></i> PDF',
+                                    className: 'd-none',
+                                    orientation: 'landscape',
+                                    pageSize: 'A4',
+                                    exportOptions: {
+                                        columns: ':visible:not(.no-export)',
+                                        format: {
+                                            body: function(data) {
+                                                if (typeof data === 'string') {
+                                                    return data.replace(/<[^>]*>/g, '').trim();
+                                                }
+                                                return data;
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    extend: 'print',
+                                    text: '<i class="mdi mdi-printer"></i> Print',
+                                    className: 'd-none',
+                                    exportOptions: {
+                                        columns: ':visible:not(.no-export)',
+                                        format: {
+                                            body: function(data) {
+                                                if (typeof data === 'string') {
+                                                    return data.replace(/<[^>]*>/g, '').trim();
+                                                }
+                                                return data;
+                                            }
+                                        }
+                                    }
+                                },
+                                {
+                                    extend: 'colvis',
+                                    text: '<i class="mdi mdi-eye"></i> Columns',
+                                    className: 'd-none',
+                                    columns: ':not(.no-colvis)',
+                                    collectionLayout: 'three-column',
+                                    postfixButtons: ['colvisRestore']
+                                }
+                            ],
+                            language: {
+                                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div> Loading data...',
+                                search: '',
+                                searchPlaceholder: 'Search dispatched items...',
+                                lengthMenu: '',
+                                info: '',
+                                infoEmpty: '',
+                                infoFiltered: ''
+                            },
+                            pagingType: 'simple_numbers',
+                            drawCallback: function() {
+                                var info = this.api().page.info();
+                                var totalRecords = info.recordsTotal;
+                                var filteredRecords = info.recordsFiltered;
+                                
+                                var infoText = 'Showing ' + (info.start + 1) + ' to ' + info.end + ' of ' + filteredRecords + ' entries';
+                                if (filteredRecords < totalRecords) {
+                                    infoText += ' (filtered from ' + totalRecords + ' total entries)';
+                                }
+                                $('#dispatchTabDispatchedTable_info').text(infoText);
+                                
+                                // Move pagination to custom wrapper
+                                var $dtPagination = $('#dispatchTabDispatchedTable_wrapper .dataTables_paginate');
+                                var $customPagination = $('#dispatchTabDispatchedTable_paginate');
+                                
+                                if ($dtPagination.length > 0 && $dtPagination.parent()[0] !== $customPagination[0]) {
+                                    $dtPagination.appendTo($customPagination);
+                                }
+                                
+                                // Handle select all checkbox
+                                $('#dispatchTabDispatchedTable_selectAll').off('change').on('change', function() {
+                                    var isChecked = $(this).is(':checked');
+                                    $('#dispatchTabDispatchedTable tbody input[type="checkbox"]').prop('checked', isChecked);
+                                });
+                                
+                                // Reattach delete handlers
+                                $('#dispatchTabDispatchedTable').off('click', '.delete-item').on('click', '.delete-item', function() {
+                                    var id = $(this).data('id');
+                                    var url = $(this).data('url');
+                                    if (confirm('Are you sure you want to delete this item?')) {
+                                        $.ajax({
+                                            url: url,
+                                            type: 'DELETE',
+                                            data: {
+                                                _token: '{{ csrf_token() }}'
+                                            },
+                                            success: function() {
+                                                table.ajax.reload();
+                                            }
+                                        });
+                                    }
+                                });
+                            }
+                        });
+                        
+                        window['table_dispatchTabDispatchedTable'] = table;
+                        
+                        // Handle length change
+                        $('#dispatchTabDispatchedTable_length').off('change').on('change', function() {
+                            table.page.len(parseInt($(this).val())).draw();
+                        });
+                        
+                        // Handle filter buttons
+                        $('#applyDispatchedFiltersBtn').off('click').on('click', function() {
+                            table.ajax.reload();
+                        });
+                        
+                        $('#clearDispatchedFiltersBtn').off('click').on('click', function() {
+                            $('select[name="dispatched_item_code"]').val('').trigger('change');
+                            $('#dispatched_vendor_filter').val(null).trigger('change');
+                            $('input[name="dispatched_date"]').val('');
+                            table.ajax.reload();
+                        });
+                        
+                        // Initialize Select2 for Vendor dropdown
+                        $('#dispatched_vendor_filter').select2({
+                            placeholder: 'Vendor',
+                            allowClear: true,
+                            width: '100%',
+                            dropdownParent: $('#dispatch'),
+                            minimumResultsForSearch: 0,
+                        });
+                        
+                        // Handle search input
+                        var searchTimeout;
+                        $('#dispatchTabDispatchedTable_search').off('keyup input').on('keyup input', function() {
+                            var searchValue = $(this).val();
+                            clearTimeout(searchTimeout);
+                            searchTimeout = setTimeout(function() {
+                                table.search(searchValue).draw();
+                            }, 300);
+                        });
+                        
+                        // Handle Enter key in search
+                        $('#dispatchTabDispatchedTable_search').off('keypress').on('keypress', function(e) {
+                            if (e.which === 13) {
+                                e.preventDefault();
+                                clearTimeout(searchTimeout);
+                                table.search($(this).val()).draw();
+                            }
+                        });
+                        
+                        // Wire up export buttons
+                        $('#dispatchTabDispatchedTable_excel').off('click').on('click', function() {
+                            table.button('.buttons-excel').trigger();
+                        });
+                        
+                        $('#dispatchTabDispatchedTable_pdf').off('click').on('click', function() {
+                            table.button('.buttons-pdf').trigger();
+                        });
+                        
+                        $('#dispatchTabDispatchedTable_print').off('click').on('click', function() {
+                            table.button('.buttons-print').trigger();
+                        });
+                        
+                        $('#dispatchTabDispatchedTable_columns').off('click').on('click', function(e) {
+                            e.preventDefault();
+                            table.button('.buttons-colvis').trigger();
+                        });
+                        
+                        // Event delegation for pagination
+                        $('#dispatchTabDispatchedTable_paginate').off('click', 'a').on('click', 'a', function(e) {
+                            if ($(this).hasClass('paginate_button') && !$(this).hasClass('disabled') && !$(this).hasClass('current')) {
+                                var href = $(this).attr('href');
+                                if (href === '#' || !href) {
+                                    e.preventDefault();
+                                    var text = $(this).text().trim();
+                                    if (text === 'Previous') {
+                                        table.page('previous').draw('page');
+                                    } else if (text === 'Next') {
+                                        table.page('next').draw('page');
+                                    } else if (!isNaN(text)) {
+                                        table.page(parseInt(text) - 1).draw('page');
+                                    }
+                                }
+                            }
+                        });
+                    }
+                    
+                    // Initialize when dispatch tab is shown
+                    $('#dispatch-tab, [data-bs-target="#dispatch"]').on('shown.bs.tab', function() {
+                        setTimeout(function() {
+                            if (!$.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
+                                initializeDispatchedTable();
+                            }
+                        }, 100);
+                    });
+                    
+                    $('#dispatch').on('shown.bs.tab', function() {
+                        setTimeout(function() {
+                            if (!$.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
+                                initializeDispatchedTable();
+                            }
+                        }, 100);
+                    });
+                    
+                    // Initialize immediately if tab is already active
+                    if ($('#dispatch').hasClass('active') && $('#dispatch').hasClass('show')) {
+                        setTimeout(function() {
+                            initializeDispatchedTable();
+                        }, 500);
+                    }
+                });
+                </script>
+                @endpush
             </div>
         </div>
 
@@ -1411,8 +2194,71 @@
                     }
                     const vendorName = vendorSelect.options[vendorSelect.selectedIndex].textContent;
 
+                    // Check if in bulk mode
+                    const bulkPreview = document.getElementById('bulkDispatchPreview');
+                    const isBulkMode = bulkPreview && bulkPreview.style.display !== 'none';
+
+                    let itemsData = [];
+                    let nonDispatchableItems = [];
+
+                    if (isBulkMode) {
+                        // Bulk mode: Include all items (dispatchable and non-dispatchable)
+                        
+                        // Group valid items by item_code
+                        const groupedItems = {};
+                        bulkDispatchPreviewData.validItems.forEach(item => {
+                            const key = item.item_code;
+                            if (!groupedItems[key]) {
+                                groupedItems[key] = {
+                                    code: item.item_code,
+                                    name: item.item,
+                                    rate: item.rate,
+                                    make: item.make || '',
+                                    model: item.model || '',
+                                    serials: []
+                                };
+                            }
+                            groupedItems[key].serials.push(item.serial_number);
+                        });
+
+                        itemsData = Object.values(groupedItems).map(item => ({
+                            ...item,
+                            quantity: item.serials.length
+                        }));
+
+                        // Collect non-dispatchable items with error messages
+                        // Already dispatched items
+                        bulkDispatchPreviewData.alreadyDispatched.forEach(item => {
+                            nonDispatchableItems.push({
+                                code: item.item_code || 'N/A',
+                                name: item.item || 'N/A',
+                                serial: item.serial_number || 'N/A',
+                                error: 'Already Dispatched'
+                            });
+                        });
+
+                        // Duplicate serial numbers
+                        bulkDispatchPreviewData.duplicateSerials.forEach(item => {
+                            nonDispatchableItems.push({
+                                code: item.item_code || 'N/A',
+                                name: item.item || 'N/A',
+                                serial: item.serial_number || 'N/A',
+                                error: 'Duplicate serial numbers'
+                            });
+                        });
+
+                        // Non-existing items
+                        bulkDispatchPreviewData.nonExisting.forEach(item => {
+                            nonDispatchableItems.push({
+                                code: item.item_code || 'N/A',
+                                name: item.item || 'N/A',
+                                serial: item.serial_number || 'N/A',
+                                error: item.reason || 'Non existing items'
+                            });
+                        });
+                    } else {
+                        // Manual entry mode (existing behavior)
                     const itemRows = document.querySelectorAll('#itemsContainer .item-row');
-                    const itemsData = [];
 
                     itemRows.forEach(row => {
                         const itemSelect = row.querySelector('.item-select');
@@ -1433,8 +2279,9 @@
                             serials: scannedQRs
                         });
                     });
+                    }
 
-                    if (itemsData.length === 0) {
+                    if (itemsData.length === 0 && nonDispatchableItems.length === 0) {
                         alert('Please add at least one item to print.');
                         return;
                     }
@@ -1451,6 +2298,9 @@
                               th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
                               th { background-color: #f5f5f5; }
                               .serial-list { max-width: 300px; word-break: break-all; }
+                              .section-title { margin-top: 30px; margin-bottom: 15px; font-size: 18px; font-weight: bold; color: #333; }
+                              .error-row { background-color: #fff5f5; }
+                              .error-cell { color: #dc3545; font-weight: bold; }
                             </style>
                           </head>
                           <body>
@@ -1460,6 +2310,8 @@
                               <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
                             </div>
                             
+                            ${itemsData.length > 0 ? `
+                            <div class="section-title">Items Ready to Dispatch</div>
                             <table>
                               <thead>
                                 <tr>
@@ -1484,6 +2336,31 @@
                                 `).join('')}
                               </tbody>
                             </table>
+                            ` : ''}
+
+                            ${nonDispatchableItems.length > 0 ? `
+                            <div class="section-title">Items Could not be Dispatched</div>
+                            <table>
+                              <thead>
+                                <tr>
+                                  <th>Item Code</th>
+                                  <th>Item Name</th>
+                                  <th>Serial Number</th>
+                                  <th>Error/Reason</th>
+                                </tr>
+                              </thead>
+                              <tbody>
+                                ${nonDispatchableItems.map(item => `
+                                  <tr class="error-row">
+                                    <td>${item.code}</td>
+                                    <td>${item.name}</td>
+                                    <td>${item.serial}</td>
+                                    <td class="error-cell">${item.error}</td>
+                                  </tr>
+                                `).join('')}
+                              </tbody>
+                            </table>
+                            ` : ''}
 
                             <script>
                               window.onload = function() {
@@ -1503,6 +2380,95 @@
             if (issueMaterialBtn) {
                 issueMaterialBtn.addEventListener('click', function(e) {
                     e.preventDefault();
+                    
+                    // Check if in bulk mode (preview is visible)
+                    const bulkPreview = document.getElementById('bulkDispatchPreview');
+                    const isBulkMode = bulkPreview && bulkPreview.style.display !== 'none' && 
+                                      bulkDispatchPreviewData.validItems.length > 0;
+
+                    if (isBulkMode) {
+                        // Bulk dispatch mode
+                        const vendorId = document.getElementById('vendorName').value;
+                        const projectId = document.querySelector('input[name="project_id"]').value;
+                        const storeId = document.getElementById('dispatchStoreId').value;
+                        const storeInchargeId = document.querySelector('input[name="store_incharge_id"]').value;
+
+                        if (!vendorId) {
+                            Swal.fire('Error', 'Please select a vendor', 'error');
+                            return;
+                        }
+
+                        const button = this;
+                        const originalText = button.innerHTML;
+                        button.disabled = true;
+                        button.innerHTML = `
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Processing...
+                        `;
+
+                        // Get serial numbers from valid items - ensure they are strings and filter out invalid values
+                        const serialNumbers = bulkDispatchPreviewData.validItems
+                            .map(item => item.serial_number)
+                            .filter(sn => sn != null && sn !== undefined && sn !== '')
+                            .map(sn => String(sn));
+
+                        if (serialNumbers.length === 0) {
+                            Swal.fire('Error', 'No valid items to dispatch', 'error');
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                            return;
+                        }
+
+                        fetch("{{ route('inventory.confirm-bulk-dispatch') }}", {
+                                method: "POST",
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    vendor_id: vendorId,
+                                    project_id: projectId,
+                                    store_id: storeId,
+                                    store_incharge_id: storeInchargeId,
+                                    serial_numbers: serialNumbers
+                                })
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                                if (data.status === 'success') {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: data.message,
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message,
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error(error);
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                                Swal.fire({
+                                    title: 'Error!',
+                                    text: 'Something went wrong. Please try again.',
+                                    icon: 'error',
+                                    confirmButtonText: 'OK'
+                                });
+                            });
+                    } else {
+                        // Manual entry mode (existing behavior)
                     loadingIssue = true;
                     const button = this;
                     const originalText = button.innerHTML;
@@ -1563,6 +2529,7 @@
                                 button.innerHTML = originalText;
                             });
                         });
+                    }
                 });
             }
 
@@ -1591,6 +2558,14 @@
                     if (modeLabel) modeLabel.textContent = 'Manual Entry';
                     if (issueBtn) issueBtn.disabled = false;
                 }
+            };
+
+            // Store bulk dispatch preview data
+            let bulkDispatchPreviewData = {
+                validItems: [],
+                alreadyDispatched: [],
+                duplicateSerials: [],
+                nonExisting: []
             };
 
             const processBulkUploadBtn = document.getElementById('processBulkUpload');
@@ -1634,28 +2609,41 @@
                             btn.disabled = false;
                             btn.innerHTML = originalText;
 
-                            if (data.status === 'success') {
-                                Swal.fire('Success', data.message, 'success').then(() => {
-                                    location.reload();
-                                });
-                            } else if (data.status === 'error' && data.already_dispatched) {
-                                alreadyDispatchedItems = data.already_dispatched;
-                                displayAlreadyDispatched(data.already_dispatched);
-                                displayInvalidItems(data.invalid_items || []);
+                            if (data.status === 'preview') {
+                                // Store preview data
+                                bulkDispatchPreviewData = {
+                                    validItems: data.valid_items || [],
+                                    alreadyDispatched: data.already_dispatched || [],
+                                    duplicateSerials: data.duplicate_serials || [],
+                                    nonExisting: data.non_existing || []
+                                };
 
+                                // Display preview
+                                displayBulkDispatchPreview(bulkDispatchPreviewData);
+
+                                // Enable/disable issue button based on valid items
                                 const issueMaterialBtn = document.getElementById('issueMaterial');
                                 if (issueMaterialBtn) {
-                                    issueMaterialBtn.disabled = true;
+                                    issueMaterialBtn.disabled = bulkDispatchPreviewData.validItems.length === 0;
                                 }
 
+                                // Show success message with summary
+                                const totalItems = bulkDispatchPreviewData.validItems.length + 
+                                                 bulkDispatchPreviewData.alreadyDispatched.length + 
+                                                 bulkDispatchPreviewData.duplicateSerials.length + 
+                                                 bulkDispatchPreviewData.nonExisting.length;
+                                const validCount = bulkDispatchPreviewData.validItems.length;
+
                                 Swal.fire({
-                                    title: 'Warning',
-                                    text: data.message,
-                                    icon: 'warning',
+                                    title: 'Preview Ready',
+                                    html: `Processed ${totalItems} item(s).<br>${validCount} ready to dispatch.`,
+                                    icon: 'info',
                                     confirmButtonText: 'OK'
                                 });
-                            } else {
+                            } else if (data.status === 'error') {
                                 Swal.fire('Error', data.message || 'Failed to process bulk upload', 'error');
+                            } else {
+                                Swal.fire('Error', 'Unexpected response from server', 'error');
                             }
                         })
                         .catch(error => {
@@ -1727,6 +2715,145 @@
                 }
             };
 
+            // Display bulk dispatch preview with multi-column serial number layout
+            function displayBulkDispatchPreview(data) {
+                const previewSection = document.getElementById('bulkDispatchPreview');
+                if (!previewSection) return;
+
+                // Hide old sections if they exist
+                const oldAlreadyDispatchedSection = document.getElementById('alreadyDispatchedSection');
+                const oldInvalidItemsSection = document.getElementById('invalidItemsSection');
+                if (oldAlreadyDispatchedSection) oldAlreadyDispatchedSection.style.display = 'none';
+                if (oldInvalidItemsSection) oldInvalidItemsSection.style.display = 'none';
+
+                // Show preview section
+                previewSection.style.display = 'block';
+
+                // Display valid items ready to dispatch
+                displaySerialNumbersGrid('readyToDispatchList', data.validItems, false);
+
+                // Display already dispatched items
+                if (data.alreadyDispatched.length > 0) {
+                    document.getElementById('alreadyDispatchedPreviewSection').style.display = 'block';
+                    displaySerialNumbersGrid('alreadyDispatchedPreviewList', data.alreadyDispatched, true, 'alreadyDispatched');
+                } else {
+                    document.getElementById('alreadyDispatchedPreviewSection').style.display = 'none';
+                }
+
+                // Display duplicate serials
+                if (data.duplicateSerials.length > 0) {
+                    document.getElementById('duplicateSerialsSection').style.display = 'block';
+                    displaySerialNumbersGrid('duplicateSerialsList', data.duplicateSerials, true, 'duplicateSerials');
+                } else {
+                    document.getElementById('duplicateSerialsSection').style.display = 'none';
+                }
+
+                // Display non-existing items
+                if (data.nonExisting.length > 0) {
+                    document.getElementById('nonExistingSection').style.display = 'block';
+                    displaySerialNumbersGrid('nonExistingList', data.nonExisting, true, 'nonExisting');
+                } else {
+                    document.getElementById('nonExistingSection').style.display = 'none';
+                }
+            }
+
+            // Display serial numbers in multi-column grid layout
+            function displaySerialNumbersGrid(containerId, items, showRemoveButton, category) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+
+                if (items.length === 0) {
+                    container.innerHTML = '<p class="text-muted small">No items</p>';
+                    return;
+                }
+
+                // Create grid with 4 columns (col-md-3 = 4 columns on medium screens)
+                let html = '<div class="row">';
+                items.forEach((item, index) => {
+                    const serialNumber = (item.serial_number || 'N/A').toString();
+                    // Use data attributes instead of inline onclick for better reliability
+                    const removeBtn = showRemoveButton ? 
+                        `<button type="button" class="btn btn-sm btn-danger ms-2 remove-bulk-item-btn" 
+                            data-serial="${serialNumber.replace(/"/g, '&quot;')}" 
+                            data-category="${(category || '').replace(/"/g, '&quot;')}" 
+                            title="Remove">
+                            <i class="mdi mdi-close"></i>
+                        </button>` : '';
+                    
+                    html += `
+                        <div class="col-md-3 col-sm-4 col-6 mb-2">
+                            <div class="d-flex align-items-center">
+                                <span class="serial-number-badge">${serialNumber}</span>
+                                ${removeBtn}
+                            </div>
+                        </div>
+                    `;
+                });
+                html += '</div>';
+                container.innerHTML = html;
+
+                // Attach event listeners to remove buttons using event delegation
+                if (showRemoveButton) {
+                    container.querySelectorAll('.remove-bulk-item-btn').forEach(btn => {
+                        btn.addEventListener('click', function() {
+                            const serialNumber = this.getAttribute('data-serial');
+                            const category = this.getAttribute('data-category');
+                            removeBulkPreviewItem(serialNumber, category);
+                        });
+                    });
+                }
+            }
+
+            // Remove item from bulk preview
+            window.removeBulkPreviewItem = function(serialNumber, category) {
+                if (!serialNumber) return;
+
+                // Convert serialNumber to string for comparison
+                const serialStr = String(serialNumber);
+
+                if (category === 'alreadyDispatched') {
+                    bulkDispatchPreviewData.alreadyDispatched = bulkDispatchPreviewData.alreadyDispatched.filter(
+                        item => String(item.serial_number) !== serialStr
+                    );
+                } else if (category === 'duplicateSerials') {
+                    bulkDispatchPreviewData.duplicateSerials = bulkDispatchPreviewData.duplicateSerials.filter(
+                        item => String(item.serial_number) !== serialStr
+                    );
+                } else if (category === 'nonExisting') {
+                    bulkDispatchPreviewData.nonExisting = bulkDispatchPreviewData.nonExisting.filter(
+                        item => String(item.serial_number) !== serialStr
+                    );
+                }
+
+                // Re-render preview
+                displayBulkDispatchPreview(bulkDispatchPreviewData);
+            };
+
+            // Remove all items from a category
+            const removeAllDispatchedBtn = document.getElementById('removeAllDispatchedBtn');
+            if (removeAllDispatchedBtn) {
+                removeAllDispatchedBtn.addEventListener('click', function() {
+                    bulkDispatchPreviewData.alreadyDispatched = [];
+                    displayBulkDispatchPreview(bulkDispatchPreviewData);
+                });
+            }
+
+            const removeAllDuplicatesBtn = document.getElementById('removeAllDuplicatesBtn');
+            if (removeAllDuplicatesBtn) {
+                removeAllDuplicatesBtn.addEventListener('click', function() {
+                    bulkDispatchPreviewData.duplicateSerials = [];
+                    displayBulkDispatchPreview(bulkDispatchPreviewData);
+                });
+            }
+
+            const removeAllNonExistingBtn = document.getElementById('removeAllNonExistingBtn');
+            if (removeAllNonExistingBtn) {
+                removeAllNonExistingBtn.addEventListener('click', function() {
+                    bulkDispatchPreviewData.nonExisting = [];
+                    displayBulkDispatchPreview(bulkDispatchPreviewData);
+                });
+            }
+
             const removeDispatchedBtn = document.getElementById('removeDispatchedBtn');
             if (removeDispatchedBtn) {
                 removeDispatchedBtn.addEventListener('click', function() {
@@ -1765,6 +2892,64 @@
             border-radius: 8px;
             padding: 1.5rem 2rem;
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.08);
+        }
+
+        /* Bulk Dispatch Preview Styles */
+        .preview-section {
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #fafafa;
+        }
+
+        .preview-section.ready-to-dispatch {
+            border-color: #28a745;
+            background-color: #f0fff4;
+        }
+
+        .preview-section.already-dispatched {
+            border-color: #ffc107;
+            background-color: #fffbf0;
+        }
+
+        .preview-section.duplicate-serials {
+            border-color: #ff9800;
+            background-color: #fff8f0;
+        }
+
+        .preview-section.non-existing {
+            border-color: #dc3545;
+            background-color: #fff5f5;
+        }
+
+        .serial-numbers-grid {
+            margin-top: 10px;
+        }
+
+        .serial-number-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            background-color: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            font-weight: 500;
+            color: #333;
+            min-width: 100px;
+            text-align: center;
+        }
+
+        .preview-section h6 {
+            color: #333;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .preview-section .text-muted {
+            font-size: 12px;
+            margin-bottom: 8px;
         }
 
         /* Metric Cards - Enhanced Visual Distinction */

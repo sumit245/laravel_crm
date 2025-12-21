@@ -705,148 +705,242 @@ class InventoryController extends Controller
 
             $validItems = [];
             $alreadyDispatched = [];
-            $invalidItems = [];
+            $duplicateSerials = [];
+            $nonExisting = [];
+            
+            // Track serial numbers seen in uploaded file for duplicate detection
+            $seenSerials = [];
+
+            // First pass: Detect duplicates within the uploaded file
+            foreach ($data as $row) {
+                $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
+                if ($serialNumber) {
+                    if (isset($seenSerials[$serialNumber])) {
+                        $seenSerials[$serialNumber]++;
+                    } else {
+                        $seenSerials[$serialNumber] = 1;
+                    }
+                }
+            }
+
+            // Second pass: Categorize items
+            foreach ($data as $row) {
+                $itemCode = $row['item_code'] ?? $row['ITEM_CODE'] ?? null;
+                $itemName = $row['item'] ?? $row['ITEM NAME'] ?? $row['item_name'] ?? null;
+                $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
+                $simNumber = ($itemCode === 'SL02') ? ($row['sim_number'] ?? $row['SIM_NUMBER'] ?? null) : null;
+
+                if (!$itemCode || !$itemName || !$serialNumber) {
+                    $nonExisting[] = [
+                        'item_code' => $itemCode ?? 'N/A',
+                        'item' => $itemName ?? 'N/A',
+                        'serial_number' => $serialNumber ?? 'N/A',
+                        'sim_number' => $simNumber,
+                        'reason' => 'Missing required fields: item_code, item, or serial_number'
+                    ];
+                    continue;
+                }
+
+                // Check for duplicates within uploaded file
+                if (isset($seenSerials[$serialNumber]) && $seenSerials[$serialNumber] > 1) {
+                    $duplicateSerials[] = [
+                        'item_code' => $itemCode,
+                        'item' => $itemName,
+                        'serial_number' => $serialNumber,
+                        'sim_number' => $simNumber,
+                    ];
+                    continue;
+                }
+
+                // Check if serial number exists in inventory
+                $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
+                    ->where('project_id', $request->project_id)
+                    ->where('store_id', $request->store_id)
+                    ->where('item_code', $itemCode)
+                    ->first();
+
+                if (!$inventoryItem) {
+                    $nonExisting[] = [
+                        'item_code' => $itemCode,
+                        'item' => $itemName,
+                        'serial_number' => $serialNumber,
+                        'sim_number' => $simNumber,
+                        'reason' => "Serial number {$serialNumber} not found in inventory"
+                    ];
+                    continue;
+                }
+
+                // Check if quantity is 1
+                if ($inventoryItem->quantity != 1) {
+                    $nonExisting[] = [
+                        'item_code' => $itemCode,
+                        'item' => $itemName,
+                        'serial_number' => $serialNumber,
+                        'sim_number' => $simNumber,
+                        'reason' => "Serial number {$serialNumber} has quantity {$inventoryItem->quantity}, expected 1"
+                    ];
+                    continue;
+                }
+
+                // Check if already dispatched
+                $existingDispatch = InventoryDispatch::where('serial_number', $serialNumber)
+                    ->where('isDispatched', true)
+                    ->exists();
+
+                if ($existingDispatch) {
+                    $alreadyDispatched[] = [
+                        'item_code' => $itemCode,
+                        'item' => $itemName,
+                        'serial_number' => $serialNumber,
+                        'sim_number' => $simNumber,
+                    ];
+                    continue;
+                }
+
+                // Validate SIM number for luminary items
+                if ($itemCode === 'SL02' && $simNumber) {
+                    $existingSim = InventroyStreetLightModel::where('sim_number', $simNumber)
+                        ->where('item_code', 'SL02')
+                        ->where('id', '!=', $inventoryItem->id)
+                        ->exists();
+
+                    if ($existingSim) {
+                        $nonExisting[] = [
+                            'item_code' => $itemCode,
+                            'item' => $itemName,
+                            'serial_number' => $serialNumber,
+                            'sim_number' => $simNumber,
+                            'reason' => "SIM number {$simNumber} already exists for another luminary item"
+                        ];
+                        continue;
+                    }
+                }
+
+                // Add to valid items (without inventory_item object, just data)
+                $validItems[] = [
+                    'item_code' => $itemCode,
+                    'item' => $itemName,
+                    'serial_number' => $serialNumber,
+                    'sim_number' => $simNumber,
+                    'rate' => $inventoryItem->rate,
+                    'make' => $inventoryItem->make,
+                    'model' => $inventoryItem->model,
+                    'inventory_id' => $inventoryItem->id,
+                ];
+            }
+
+            // Return preview only - never dispatch automatically
+            return response()->json([
+                'status' => 'preview',
+                'valid_items' => $validItems,
+                'already_dispatched' => $alreadyDispatched,
+                'duplicate_serials' => $duplicateSerials,
+                'non_existing' => $nonExisting,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Bulk dispatch error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to process bulk dispatch: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Confirm and dispatch items from bulk upload preview
+     */
+    public function confirmBulkDispatch(Request $request)
+    {
+        try {
+            $request->validate([
+                'vendor_id' => 'required|exists:users,id',
+                'project_id' => 'required|exists:projects,id',
+                'store_id' => 'required|exists:stores,id',
+                'store_incharge_id' => 'required|exists:users,id',
+                'serial_numbers' => 'required|array',
+                'serial_numbers.*' => 'required|string',
+            ]);
+
+            $project = Project::findOrFail($request->project_id);
+            $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
+
+            $serialNumbers = $request->serial_numbers;
+            $dispatchedItems = [];
+            $failedItems = [];
 
             DB::beginTransaction();
 
             try {
-                foreach ($data as $row) {
-                    $itemCode = $row['item_code'] ?? $row['ITEM_CODE'] ?? null;
-                    $itemName = $row['item'] ?? $row['ITEM NAME'] ?? $row['item_name'] ?? null;
-                    $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
-                    $simNumber = ($itemCode === 'SL02') ? ($row['sim_number'] ?? $row['SIM_NUMBER'] ?? null) : null;
-
-                    if (!$itemCode || !$itemName || !$serialNumber) {
-                        $invalidItems[] = [
-                            'row' => $row->toArray(),
-                            'error' => 'Missing required fields: item_code, item, or serial_number'
-                        ];
-                        continue;
-                    }
-
-                    // Check if serial number exists in inventory
+                foreach ($serialNumbers as $serialNumber) {
+                    // Find the inventory item
                     $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
                         ->where('project_id', $request->project_id)
                         ->where('store_id', $request->store_id)
-                        ->where('item_code', $itemCode)
+                        ->where('quantity', '>', 0)
                         ->first();
 
                     if (!$inventoryItem) {
-                        $invalidItems[] = [
-                            'row' => $row->toArray(),
-                            'error' => "Serial number {$serialNumber} not found in inventory"
+                        $failedItems[] = [
+                            'serial_number' => $serialNumber,
+                            'error' => 'Item not found or out of stock'
                         ];
                         continue;
                     }
 
-                    // Check if quantity is 1
-                    if ($inventoryItem->quantity != 1) {
-                        $invalidItems[] = [
-                            'row' => $row->toArray(),
-                            'error' => "Serial number {$serialNumber} has quantity {$inventoryItem->quantity}, expected 1"
-                        ];
-                        continue;
-                    }
-
-                    // Check if already dispatched
+                    // Double-check if already dispatched (race condition protection)
                     $existingDispatch = InventoryDispatch::where('serial_number', $serialNumber)
                         ->where('isDispatched', true)
                         ->exists();
 
                     if ($existingDispatch) {
-                        $alreadyDispatched[] = [
-                            'item_code' => $itemCode,
-                            'item' => $itemName,
+                        $failedItems[] = [
                             'serial_number' => $serialNumber,
-                            'sim_number' => $simNumber,
+                            'error' => 'Item already dispatched'
                         ];
                         continue;
                     }
 
-                    // Validate SIM number for luminary items
-                    if ($itemCode === 'SL02' && $simNumber) {
-                        $existingSim = InventroyStreetLightModel::where('sim_number', $simNumber)
-                            ->where('item_code', 'SL02')
-                            ->where('id', '!=', $inventoryItem->id)
-                            ->exists();
-
-                        if ($existingSim) {
-                            $invalidItems[] = [
-                                'row' => $row->toArray(),
-                                'error' => "SIM number {$simNumber} already exists for another luminary item"
-                            ];
-                            continue;
-                        }
-                    }
-
-                    // Add to valid items
-                    $validItems[] = [
-                        'inventory_item' => $inventoryItem,
-                        'item_code' => $itemCode,
-                        'item' => $itemName,
-                        'serial_number' => $serialNumber,
-                        'sim_number' => $simNumber,
-                        'rate' => $inventoryItem->rate,
-                        'make' => $inventoryItem->make,
-                        'model' => $inventoryItem->model,
-                    ];
-                }
-
-                // If there are already dispatched items and user hasn't removed them, disable dispatch
-                if (!empty($alreadyDispatched) && $request->input('remove_dispatched') !== 'true') {
-                    DB::rollBack();
-                    return response()->json([
-                        'status' => 'error',
-                        'message' => 'Some items are already dispatched. Please remove them before dispatching.',
-                        'already_dispatched' => $alreadyDispatched,
-                        'valid_items' => $validItems,
-                        'invalid_items' => $invalidItems,
-                    ], 400);
-                }
-
-                // Dispatch valid items
-                $dispatchedCount = 0;
-                foreach ($validItems as $item) {
+                    // Create dispatch record
                     $dispatch = InventoryDispatch::create([
                         'vendor_id' => $request->vendor_id,
                         'project_id' => $request->project_id,
                         'store_id' => $request->store_id,
                         'store_incharge_id' => $request->store_incharge_id,
-                        'item_code' => $item['item_code'],
-                        'item' => $item['item'],
-                        'rate' => $item['rate'],
-                        'make' => $item['make'],
-                        'model' => $item['model'],
+                        'item_code' => $inventoryItem->item_code,
+                        'item' => $inventoryItem->item,
+                        'rate' => $inventoryItem->rate,
+                        'make' => $inventoryItem->make,
+                        'model' => $inventoryItem->model,
                         'total_quantity' => 1,
-                        'total_value' => $item['rate'],
-                        'serial_number' => $item['serial_number'],
+                        'total_value' => $inventoryItem->rate,
+                        'serial_number' => $serialNumber,
                         'dispatch_date' => Carbon::now(),
                         'isDispatched' => true,
                     ]);
 
                     // Update inventory quantity
-                    $item['inventory_item']->decrement('quantity', 1);
-
-                    // Update SIM number if provided for luminary
-                    if ($item['item_code'] === 'SL02' && $item['sim_number']) {
-                        $item['inventory_item']->update(['sim_number' => $item['sim_number']]);
-                    }
+                    $inventoryItem->decrement('quantity', 1);
 
                     // Log history
                     $inventoryType = ($project->project_type == 1) ? 'streetlight' : 'rooftop';
-                    $this->historyService->logDispatched($dispatch, $item['inventory_item'], $inventoryType);
+                    $this->historyService->logDispatched($dispatch, $inventoryItem, $inventoryType);
 
-                    $dispatchedCount++;
+                    $dispatchedItems[] = $dispatch;
                 }
 
                 DB::commit();
 
+                $message = "Successfully dispatched " . count($dispatchedItems) . " item(s)";
+                if (count($failedItems) > 0) {
+                    $message .= ". " . count($failedItems) . " item(s) failed to dispatch.";
+                }
+
                 return response()->json([
                     'status' => 'success',
-                    'message' => "Successfully dispatched {$dispatchedCount} item(s)",
-                    'dispatched_count' => $dispatchedCount,
-                    'already_dispatched' => $alreadyDispatched,
-                    'invalid_items' => $invalidItems,
+                    'message' => $message,
+                    'dispatched_count' => count($dispatchedItems),
+                    'failed_items' => $failedItems,
                 ]);
 
             } catch (\Exception $e) {
@@ -855,10 +949,10 @@ class InventoryController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('Bulk dispatch error: ' . $e->getMessage());
+            Log::error('Confirm bulk dispatch error: ' . $e->getMessage());
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to process bulk dispatch: ' . $e->getMessage()
+                'message' => 'Failed to confirm bulk dispatch: ' . $e->getMessage()
             ], 500);
         }
     }

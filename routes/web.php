@@ -174,6 +174,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::post('import-streetlight', [InventoryController::class, 'importStreetlight'])->name('import-streetlight');
             Route::get('download-format/{projectId}', [InventoryController::class, 'downloadImportFormat'])->name('download-format');
             Route::post('bulk-dispatch', [InventoryController::class, 'bulkDispatchFromExcel'])->name('bulk-dispatch');
+            Route::post('confirm-bulk-dispatch', [InventoryController::class, 'confirmBulkDispatch'])->name('confirm-bulk-dispatch');
             Route::post('checkQR', [InventoryController::class, 'checkQR'])->name('checkQR');
             Route::post('check-serial', [InventoryController::class, 'checkSerial'])->name('checkSerial');
             Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
@@ -187,6 +188,9 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
         });
     Route::get('/store/{store}', [StoreController::class, 'show'])->name('store.show');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');
+    Route::get('/store/{store}/inventory/data', [StoreController::class, 'inventoryData'])->name('store.inventory.data');
+    Route::get('/store/{store}/inventory/export', [StoreController::class, 'exportInventory'])->name('store.inventory.export');
+    Route::get('/store/{store}/dispatched/data', [StoreController::class, 'dispatchedData'])->name('store.dispatched.data');
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
 
     // Tasks

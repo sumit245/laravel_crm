@@ -971,9 +971,43 @@
 
 @push('scripts')
     <script>
+        // Check immediately if this table should be skipped (before document.ready)
+        var skipInit_{{ $id }} = false;
+        if (typeof window !== 'undefined') {
+            skipInit_{{ $id }} = window['skipAutoInit_{{ $id }}'] === true;
+        }
+        
         $(document).ready(function() {
             const tableId = '#{{ $id }}';
             let table; // Declare table variable first
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:980',message:'Component script loaded',data:{tableId:tableId,componentId:'{{ $id }}'},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'COMPONENT_LOAD'})}).catch(()=>{});
+            // #endregion agent log
+            
+            // Re-check skip flag in case it was set after script load
+            if (!skipInit_{{ $id }}) {
+                var $tableCheck = $(tableId);
+                var $wrapperCheck = $('#datatable-wrapper-{{ $id }}');
+                skipInit_{{ $id }} = window['skipAutoInit_{{ $id }}'] === true ||
+                    $tableCheck.attr('data-server-side') === 'true' ||
+                    $tableCheck.closest('[data-server-side="true"]').length > 0 ||
+                    $wrapperCheck.attr('data-server-side') === 'true';
+            }
+            
+            // #region agent log
+            fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:994',message:'Skip flag check result',data:{tableId:tableId,skipInit:skipInit_{{ $id }},skipFlag:window['skipAutoInit_{{ $id }}'],tableAttr:$('#{{ $id }}').attr('data-server-side'),wrapperAttr:$('#datatable-wrapper-{{ $id }}').attr('data-server-side')},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'SKIP_CHECK'})}).catch(()=>{});
+            // #endregion agent log
+            
+            if (skipInit_{{ $id }}) {
+                console.log('Skipping ALL component initialization for ' + tableId + ' (server-side processing)');
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:995',message:'EXITING component initialization',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'SKIP_EXIT'})}).catch(()=>{});
+                // #endregion agent log
+                // DO NOT initialize anything - exit completely
+                // Don't define functions, don't call initializeTable()
+                return; // Exit early, don't initialize anything
+            }
             
             // Check if table is visible before initializing
             function isTableVisible() {
@@ -1010,6 +1044,36 @@
             
             // Initialize table only if visible, otherwise wait
             function initializeTable() {
+                // CRITICAL: Skip if this table should use server-side processing - CHECK FIRST
+                var $table = $(tableId);
+                if (!$table.length) {
+                    return; // Table doesn't exist, exit
+                }
+                
+                var $wrapper = $('#datatable-wrapper-{{ $id }}');
+                var shouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
+                    $table.attr('data-server-side') === 'true' ||
+                    $table.closest('[data-server-side="true"]').length > 0 ||
+                    ($wrapper.length > 0 && $wrapper.attr('data-server-side') === 'true');
+                
+                // Additional check: if tbody is completely empty, likely server-side
+                if (!shouldSkip) {
+                    var $tbody = $table.find('tbody');
+                    if ($tbody.length > 0) {
+                        var tbodyContent = $tbody.html().trim();
+                        // If tbody is empty or only has whitespace/comments, skip
+                        if (tbodyContent === '' || tbodyContent.replace(/<!--.*?-->/g, '').trim() === '') {
+                            shouldSkip = true;
+                            console.log('Skipping ' + tableId + ' - empty tbody indicates server-side processing');
+                        }
+                    }
+                }
+                
+                if (shouldSkip) {
+                    console.log('Skipping auto-initialization for ' + tableId + ' (server-side processing)');
+                    return;
+                }
+                
                 // Wait a bit for DOM to settle, then check visibility
                 setTimeout(function() {
                     const isVisible = isTableVisible();
@@ -1022,7 +1086,16 @@
                             if (nowVisible || attempts >= 10) {
                                 clearInterval(checkInterval);
                                 if (nowVisible && !$.fn.DataTable.isDataTable(tableId)) {
-                                    initializeDataTable();
+                                    // Triple-check skip flag and empty tbody
+                                    var $tableCheck = $(tableId);
+                                    var $tbodyCheck = $tableCheck.find('tbody');
+                                    var isEmpty = $tbodyCheck.length > 0 && $tbodyCheck.html().trim().replace(/<!--.*?-->/g, '').trim() === '';
+                                    if (!window['skipAutoInit_{{ $id }}'] && 
+                                        $tableCheck.attr('data-server-side') !== 'true' &&
+                                        $tableCheck.closest('[data-server-side="true"]').length === 0 &&
+                                        !isEmpty) {
+                                        initializeDataTable();
+                                    }
                                 }
                             }
                         }, 200);
@@ -1031,7 +1104,16 @@
                     
                     // Table is visible, proceed with initialization
                     if (!$.fn.DataTable.isDataTable(tableId)) {
-                        initializeDataTable();
+                        // Triple-check skip flag and empty tbody
+                        var $tableCheck = $(tableId);
+                        var $tbodyCheck = $tableCheck.find('tbody');
+                        var isEmpty = $tbodyCheck.length > 0 && $tbodyCheck.html().trim().replace(/<!--.*?-->/g, '').trim() === '';
+                        if (!window['skipAutoInit_{{ $id }}'] && 
+                            $tableCheck.attr('data-server-side') !== 'true' &&
+                            $tableCheck.closest('[data-server-side="true"]').length === 0 &&
+                            !isEmpty) {
+                            initializeDataTable();
+                        }
                     }
                 }, 100);
             }
@@ -1327,7 +1409,149 @@
             
             // Initialize table only if visible, otherwise wait
             function initializeDataTable() {
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1400',message:'initializeDataTable() CALLED',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'INIT_CALLED'})}).catch(()=>{});
+                // #endregion agent log
+                
+                // ABSOLUTE FIRST CHECK: If table doesn't exist, exit immediately
+                var $table = $(tableId);
+                if (!$table.length) {
+                    console.warn('Table ' + tableId + ' not found, skipping initialization');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1403',message:'Table not found, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TABLE_NOT_FOUND'})}).catch(()=>{});
+                    // #endregion agent log
+                    return;
+                }
+                
+                // CRITICAL FIRST CHECK: If tbody has no <tr> elements, BLOCK initialization immediately
+                // This prevents the "column count" error that happens when DataTables tries to initialize on empty tbody
+                var $tbody = $table.find('tbody');
+                var tbodyRowCount = 0;
+                var tbodyContent = '';
+                
+                if ($tbody.length > 0) {
+                    tbodyRowCount = $tbody.find('tr').length;
+                    tbodyContent = $tbody.html().trim().replace(/<!--.*?-->/g, '').trim();
+                    
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1415',message:'Tbody check',data:{tableId:tableId,tbodyRowCount:tbodyRowCount,tbodyContentLength:tbodyContent.length},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TBODY_CHECK'})}).catch(()=>{});
+                    // #endregion agent log
+                    
+                    // If there are NO <tr> elements at all, this is definitely server-side processing
+                    if (tbodyRowCount === 0) {
+                        console.warn('BLOCKED: Table ' + tableId + ' has no <tr> elements in tbody (count: ' + tbodyRowCount + ') - preventing initialization to avoid column count error');
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1419',message:'BLOCKED: Empty tbody, EXITING',data:{tableId:tableId,tbodyRowCount:tbodyRowCount},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TBODY_EMPTY_BLOCK'})}).catch(()=>{});
+                        // #endregion agent log
+                        return; // EXIT IMMEDIATELY - no rows = server-side processing, don't initialize
+                    }
+                    // Also check if tbody content is empty (after removing comments)
+                    if (tbodyContent === '') {
+                        console.warn('BLOCKED: Table ' + tableId + ' has empty tbody content - preventing initialization to avoid column count error');
+                        // #region agent log
+                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1424',message:'BLOCKED: Empty tbody content, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TBODY_CONTENT_EMPTY_BLOCK'})}).catch(()=>{});
+                        // #endregion agent log
+                        return; // EXIT IMMEDIATELY - empty content = server-side processing, don't initialize
+                    }
+                } else {
+                    // No tbody at all - this shouldn't happen but block it anyway
+                    console.warn('BLOCKED: Table ' + tableId + ' has no tbody element - preventing initialization');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1429',message:'BLOCKED: No tbody element, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'NO_TBODY_BLOCK'})}).catch(()=>{});
+                    // #endregion agent log
+                    return;
+                }
+                
+                // Now check skip flags
+                var $wrapper = $('#datatable-wrapper-{{ $id }}');
+                var shouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
+                    $table.attr('data-server-side') === 'true' ||
+                    $table.closest('[data-server-side="true"]').length > 0 ||
+                    ($wrapper.length > 0 && $wrapper.attr('data-server-side') === 'true');
+                
+                if (shouldSkip) {
+                    console.log('Skipping initializeDataTable for ' + tableId + ' (server-side processing)', {
+                        skipFlag: window['skipAutoInit_{{ $id }}'],
+                        tableAttr: $table.attr('data-server-side'),
+                        wrapperAttr: $wrapper.length > 0 ? $wrapper.attr('data-server-side') : 'no wrapper',
+                        parentAttr: $table.closest('[data-server-side="true"]').length,
+                        tbodyEmpty: $tbody.length > 0 && $tbody.find('tr').length === 0
+                    });
+                    return; // EXIT IMMEDIATELY - don't initialize anything
+                }
+                
+                // ULTIMATE SAFETY: Check tbody one more time right before DataTable() call
+                // This is the last chance to prevent the column count error
+                var $finalTbodyCheck = $table.find('tbody');
+                if ($finalTbodyCheck.length > 0) {
+                    var finalRows = $finalTbodyCheck.find('tr');
+                    if (finalRows.length === 0) {
+                        console.error('BLOCKED: Attempted to initialize ' + tableId + ' with no <tr> elements - this would cause column count error');
+                        return; // BLOCK initialization - no rows = server-side processing
+                    }
+                    var finalContent = $finalTbodyCheck.html().trim().replace(/<!--.*?-->/g, '').trim();
+                    if (finalContent === '') {
+                        console.error('BLOCKED: Attempted to initialize ' + tableId + ' with empty tbody content - this would cause column count error');
+                        return; // BLOCK initialization - empty content = server-side processing
+                    }
+                }
+                
+                // FINAL CHECK: Verify tbody has rows before attempting DataTable initialization
+                // This is the absolute last check before calling DataTable() which will fail on empty tbody
+                var $lastCheck = $table.find('tbody tr');
+                if ($lastCheck.length === 0) {
+                    console.error('FINAL BLOCK: Table ' + tableId + ' has 0 <tr> elements - DataTable() call would fail. Aborting.');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1502',message:'FINAL BLOCK: No rows, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'FINAL_BLOCK'})}).catch(()=>{});
+                    // #endregion agent log
+                    return;
+                }
+                
+                // CRITICAL: Verify column count matches between thead and tbody
+                var $thead = $table.find('thead tr');
+                var theadColCount = $thead.find('th').length;
+                var $firstRow = $lastCheck.first();
+                var tbodyColCount = $firstRow.find('td').length;
+                
+                // Also check all rows to see if they're consistent
+                var allRowColCounts = [];
+                $lastCheck.each(function() {
+                    allRowColCounts.push($(this).find('td').length);
+                });
+                
+                // Check if first row has colspan (which would make it appear as 1 column)
+                var firstRowHtml = $firstRow.html();
+                var hasColspan = firstRowHtml.indexOf('colspan') !== -1;
+                
+                // #region agent log
+                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1509',message:'Column count verification',data:{tableId:tableId,theadColCount:theadColCount,tbodyColCount:tbodyColCount,allRowColCounts:allRowColCounts,hasColspan:hasColspan,firstRowHtml:firstRowHtml.substring(0,200),match:theadColCount===tbodyColCount},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'COLUMN_COUNT_CHECK'})}).catch(()=>{});
+                // #endregion agent log
+                
+                // CRITICAL: DataTables CANNOT initialize on tables with colspan rows
+                // If first row has colspan, it's an empty state row - REMOVE it before initializing
+                var firstTdColspan = parseInt($firstRow.find('td').first().attr('colspan') || '0');
+                if (hasColspan && tbodyColCount === 1 && firstTdColspan === theadColCount) {
+                    console.log('Table ' + tableId + ' has empty state row with colspan=' + firstTdColspan + ' - removing it before DataTables initialization');
+                    // Remove the empty state row - DataTables will show its own empty message
+                    $firstRow.remove();
+                    // Re-check row count after removal
+                    $lastCheck = $table.find('tbody tr');
+                    if ($lastCheck.length === 0) {
+                        console.log('Table ' + tableId + ' has no data rows after removing empty state - DataTables will handle empty state');
+                        // This is OK - DataTables can initialize on empty tbody
+                    }
+                } else if (theadColCount !== tbodyColCount) {
+                    console.error('COLUMN MISMATCH: Table ' + tableId + ' has ' + theadColCount + ' columns in thead but ' + tbodyColCount + ' columns in tbody. Row counts: ' + allRowColCounts.join(', '), 'DataTable() will fail. Aborting.');
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1525',message:'COLUMN MISMATCH BLOCK',data:{tableId:tableId,theadColCount:theadColCount,tbodyColCount:tbodyColCount,allRowColCounts:allRowColCounts,hasColspan:hasColspan},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'COLUMN_MISMATCH_BLOCK'})}).catch(()=>{});
+                    // #endregion agent log
+                    return;
+                }
+                
                 try {
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1522',message:'CALLING DataTable() - ERROR OCCURS HERE',data:{tableId:tableId,rowCount:$lastCheck.length,theadColCount:theadColCount,tbodyColCount:tbodyColCount},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'DATATABLE_CALL'})}).catch(()=>{});
+                    // #endregion agent log
                     table = $(tableId).DataTable({
                     dom: "<'row'<'col-sm-12'f>>" + // Search box only (length menu is custom at bottom)
                     "<'row'<'col-sm-12'tr>>" + // Table
@@ -1743,6 +1967,9 @@
                 } catch (err) {
                     // Don't re-throw - let it fail silently
                     console.error('DataTable initialization failed:', err);
+                    // #region agent log
+                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1920',message:'DataTable() ERROR CAUGHT',data:{tableId:tableId,error:err.toString(),errorMessage:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'DATATABLE_ERROR'})}).catch(()=>{});
+                    // #endregion agent log
                 }
 
             // Initial pagination info update - only text, no DOM manipulation
@@ -2292,15 +2519,47 @@
             }
             
             // Initialize table only if visible, otherwise wait
-            initializeTable();
+            // BUT: Don't initialize if we're skipping (check again in case flag was set)
+            if (!skipInit_{{ $id }}) {
+                // Re-check skip flag one more time before initializing
+                var $finalTableCheck = $(tableId);
+                var $finalWrapperCheck = $('#datatable-wrapper-{{ $id }}');
+                var finalShouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
+                    $finalTableCheck.attr('data-server-side') === 'true' ||
+                    $finalTableCheck.closest('[data-server-side="true"]').length > 0 ||
+                    ($finalWrapperCheck.length > 0 && $finalWrapperCheck.attr('data-server-side') === 'true');
+                
+                if (!finalShouldSkip) {
+                    initializeTable();
+                } else {
+                    console.log('Skipping initializeTable() call for ' + tableId + ' (server-side processing - final check)');
+                }
+            } else {
+                console.log('Skipping initializeTable() call for ' + tableId + ' (server-side processing)');
+            }
             
-            // Initialize Select2 after table is ready
-            setTimeout(function() {
-                initializeSelect2Filters();
-            }, 500);
+            // Initialize Select2 after table is ready (only if not skipping)
+            if (!skipInit_{{ $id }}) {
+                setTimeout(function() {
+                    initializeSelect2Filters();
+                }, 500);
+            }
             
             // Also listen for tab visibility changes
             $(document).on('shown.bs.tab', function(e) {
+                // CRITICAL: Check if this table should be skipped BEFORE doing anything
+                var $tableCheck = $(tableId);
+                var $wrapperCheck = $('#datatable-wrapper-{{ $id }}');
+                var shouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
+                    $tableCheck.attr('data-server-side') === 'true' ||
+                    $tableCheck.closest('[data-server-side="true"]').length > 0 ||
+                    ($wrapperCheck.length > 0 && $wrapperCheck.attr('data-server-side') === 'true');
+                
+                if (shouldSkip) {
+                    console.log('Skipping tab-init for ' + tableId + ' (server-side processing)');
+                    return; // Exit immediately, don't initialize
+                }
+                
                 // Wait a bit for tab transition to complete
                 setTimeout(function() {
                     try {
@@ -2310,7 +2569,15 @@
                             // Table not initialized yet, initialize it
                             // Use a small delay to ensure tab transition is complete
                             setTimeout(function() {
-                                if (!$.fn.DataTable.isDataTable(tableId)) {
+                                // Double-check skip flag before initializing
+                                var $tableCheck2 = $(tableId);
+                                var $wrapperCheck2 = $('#datatable-wrapper-{{ $id }}');
+                                var shouldSkip2 = window['skipAutoInit_{{ $id }}'] === true || 
+                                    $tableCheck2.attr('data-server-side') === 'true' ||
+                                    $tableCheck2.closest('[data-server-side="true"]').length > 0 ||
+                                    ($wrapperCheck2.length > 0 && $wrapperCheck2.attr('data-server-side') === 'true');
+                                
+                                if (!shouldSkip2 && !$.fn.DataTable.isDataTable(tableId)) {
                                     initializeDataTable();
                                 }
                             }, 150);
@@ -2321,10 +2588,19 @@
                                 existingTable.columns.adjust().draw(false);
                             } catch (err) {
                                 // If adjustment fails, try re-initializing
-                                if ($.fn.DataTable.isDataTable(tableId)) {
-                                    $(tableId).DataTable().destroy();
+                                var $tableCheck3 = $(tableId);
+                                var $wrapperCheck3 = $('#datatable-wrapper-{{ $id }}');
+                                var shouldSkip3 = window['skipAutoInit_{{ $id }}'] === true || 
+                                    $tableCheck3.attr('data-server-side') === 'true' ||
+                                    $tableCheck3.closest('[data-server-side="true"]').length > 0 ||
+                                    ($wrapperCheck3.length > 0 && $wrapperCheck3.attr('data-server-side') === 'true');
+                                
+                                if (!shouldSkip3) {
+                                    if ($.fn.DataTable.isDataTable(tableId)) {
+                                        $(tableId).DataTable().destroy();
+                                    }
+                                    initializeDataTable();
                                 }
-                                initializeDataTable();
                             }
                         }
                         // Initialize Select2 when tab is shown
