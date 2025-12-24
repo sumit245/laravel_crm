@@ -5,9 +5,10 @@ namespace App\Imports;
 use App\Models\InventroyStreetLightModel;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
+use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 use Carbon\Carbon;
 
-class InventroyStreetLight implements ToModel, WithHeadingRow
+class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFormulas
 {
     protected $projectId, $storeId;
     /**
@@ -211,17 +212,51 @@ class InventroyStreetLight implements ToModel, WithHeadingRow
 
     /**
      * Parse the date string into a Carbon instance.
+     * Handles Excel date serial numbers and various date formats.
      *
-     * @param string|null $dateString
-     * @return \Carbon\Carbon|null
+     * @param string|null|int|float $dateString
+     * @return string|null Formatted date as Y-m-d or null
      */
     private function parseDate($dateString)
     {
-        if (empty($dateString)) {
-            return null; // Return null if the date string is empty
+        if (empty($dateString) && $dateString !== 0 && $dateString !== '0') {
+            return null;
         }
 
-        // Use Carbon to parse the date string in dd-mm-yyyy format
-        return Carbon::parse($dateString)->format('Y-m-d');
+        try {
+            // Handle Excel date serial numbers (numeric values)
+            // Excel stores dates as numbers where 1 = January 1, 1900
+            if (is_numeric($dateString)) {
+                $serialNumber = (float) $dateString;
+                // Excel epoch starts on January 1, 1900, but Excel incorrectly treats 1900 as a leap year
+                // So we need to adjust: Excel date 1 = 1900-01-01, but we subtract 2 days to account for the bug
+                $excelEpoch = Carbon::create(1899, 12, 30);
+                $parsedDate = $excelEpoch->copy()->addDays($serialNumber);
+                return $parsedDate->format('Y-m-d');
+            }
+
+            // Handle string dates - try multiple formats
+            $dateString = trim((string) $dateString);
+            
+            // Try Carbon's intelligent parsing first
+            try {
+                $parsedDate = Carbon::parse($dateString);
+                return $parsedDate->format('Y-m-d');
+            } catch (\Exception $e) {
+                // Try common date formats
+                $formats = ['d-m-Y', 'd/m/Y', 'Y-m-d', 'Y/m/d', 'm-d-Y', 'm/d/Y'];
+                foreach ($formats as $format) {
+                    try {
+                        $parsedDate = Carbon::createFromFormat($format, $dateString);
+                        return $parsedDate->format('Y-m-d');
+                    } catch (\Exception $formatException) {
+                        continue;
+                    }
+                }
+                return null;
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
     }
 }

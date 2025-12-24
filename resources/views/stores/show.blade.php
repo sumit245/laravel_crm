@@ -1,13 +1,5 @@
 @extends('layouts.main')
 
-@push('styles')
-<script>
-// Set flag in head section - runs before any body scripts
-if (typeof window === 'undefined') window = {};
-window['skipAutoInit_unifiedInventoryTable'] = true;
-</script>
-@endpush
-
 @section('content')
     <div class="container-fluid p-4">
         <!-- Header -->
@@ -26,7 +18,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
         @if (session('success') || session('error') || $errors->any())
             <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} alert-dismissible fade show"
                 role="alert">
-                {{ session('success') ?? session('error') ?? $errors->first() }}
+                {{ session('success') ?? (session('error') ?? $errors->first()) }}
                 @if (session('import_errors_url') && session('import_errors_count') > 0)
                     <br>
                     <small>
@@ -363,7 +355,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     </div>
                                     <div class="col-md-3 mb-3" id="sim_number_wrapper" style="display: none;">
                                         <label for="sim_number" class="form-label">
-                                            SIM Number <span class="text-danger">*</span> <small class="text-muted">(Luminary only)</small>
+                                            SIM Number <span class="text-danger">*</span> <small
+                                                class="text-muted">(Luminary only)</small>
                                         </label>
                                         <input type="text" id="sim_number" name="sim_number"
                                             class="form-control form-control-sm @error('sim_number') is-invalid @enderror">
@@ -385,508 +378,237 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
 
             <!-- View Inventory Tab -->
             <div class="tab-pane fade" id="view" role="tabpanel">
-                {{-- Prevent component auto-initialization - must run IMMEDIATELY --}}
-                <script>
-                // Set flag immediately - before any other scripts run
-                if (typeof window === 'undefined') window = {};
-                window['skipAutoInit_unifiedInventoryTable'] = true;
-                </script>
-                
-                {{-- Manual table structure for server-side processing --}}
-                {{-- Using datatable-wrapper class for UI consistency, but preventing component initialization --}}
-                <div class="datatable-wrapper" id="datatable-wrapper-unifiedInventoryTable" data-server-side="true">
-                    {{-- Filter Section with Border --}}
-                    <div class="border rounded p-3 mb-3" style="background-color: #f8f9fa;">
-                        <div class="d-flex flex-column flex-md-row align-items-end gap-3">
-                            <div class="flex-fill">
-                                <label class="form-label small mb-1 fw-semibold">Availability</label>
-                                <select name="availability" class="form-control form-control-sm filter-select" style="width: 100%;">
-                                    <option value="">Availability</option>
-                                    <option value="In Stock">In Stock</option>
-                                    <option value="Dispatched">Dispatched</option>
-                                    <option value="Consumed">Consumed</option>
-                                </select>
-                            </div>
-                            <div class="flex-fill">
-                                <label class="form-label small mb-1 fw-semibold">Vendor</label>
-                                <select name="vendor" id="vendor_filter" class="form-control form-control-sm filter-select2" style="width: 100%;">
-                                    <option value="">Vendor</option>
-                                    @foreach($assignedVendors as $vendor)
-                                        <option value="{{ $vendor->name }}">{{ $vendor->name }}</option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="flex-fill">
-                                <label class="form-label small mb-1 fw-semibold">Item</label>
-                                <select name="item" class="form-control form-control-sm filter-select" style="width: 100%;">
-                                    <option value="">Item</option>
-                                    <option value="SL01">Panel Module (SL01 Panel)</option>
-                                    <option value="SL02">Luminary (SL02 Luminary)</option>
-                                    <option value="SL03">Battery (SL03 Battery)</option>
-                                    <option value="SL04">Structure (SL04 Structure)</option>
-                                </select>
-                            </div>
-                            <div class="d-flex gap-2 align-items-end">
-                                <button type="button" id="applyFiltersBtn" class="btn btn-primary btn-sm">
-                                    Apply Filters
-                                        </button>
-                                <button type="button" id="clearFiltersBtn" class="btn btn-outline-secondary btn-sm">
-                                    Clear
-                                        </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    {{-- Search and Export Section --}}
-                    <div class="row align-items-center p-3 g-3 mb-3">
-                        <div class="col-12 col-md-6">
-                            <div class="input-group input-group-sm">
-                                <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
-                                <input type="search" class="form-control" id="unifiedInventoryTable_search" placeholder="Search inventory...">
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 text-start text-md-end">
-                            <div class="btn-group btn-group-sm d-flex flex-wrap" role="group">
-                                <button type="button" class="btn btn-success flex-fill flex-sm-auto" id="unifiedInventoryTable_excel" title="Export to Excel">
-                                    <i class="mdi mdi-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
-                                    </button>
-                                <button type="button" class="btn btn-danger flex-fill flex-sm-auto" id="unifiedInventoryTable_pdf" title="Export to PDF">
-                                    <i class="mdi mdi-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
-                                        </button>
-                                <button type="button" class="btn btn-info flex-fill flex-sm-auto" id="unifiedInventoryTable_print" title="Print">
-                                    <i class="mdi mdi-printer"></i> <span class="d-none d-sm-inline">Print</span>
-                                    </button>
-                                <button type="button" class="btn btn-secondary flex-fill flex-sm-auto" id="unifiedInventoryTable_columns" title="Show/Hide Columns">
-                                    <i class="mdi mdi-eye"></i> <span class="d-none d-sm-inline">Columns</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                        <table id="unifiedInventoryTable" class="table table-striped table-bordered table-hover" style="width:100%; min-width: 600px;" data-server-side="true">
-                            <thead>
-                                <tr>
-                            @if ($isAdmin)
-                                    <th width="30px"><input type="checkbox" id="unifiedInventoryTable_selectAll" class="select-all-checkbox"></th>
-                                @endif
-                                    <th>Item Code</th>
-                                    <th>Item</th>
-                                    <th>Serial Number</th>
-                                    <th>Availability</th>
-                                    <th>Vendor</th>
-                                    <th>Dispatch Date</th>
-                                    <th>In Date</th>
-                                    <th width="120px" class="text-center">Actions</th>
-                        </tr>
-                            </thead>
-                            <tbody>
-                                {{-- Server-side processing: tbody is empty, data loaded via AJAX --}}
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="mt-3 d-flex flex-column gap-2">
-                        <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                            <div class="small text-muted" id="unifiedInventoryTable_info"></div>
-                            <div id="unifiedInventoryTable_paginate"></div>
-                        </div>
-                        <div class="d-flex align-items-center gap-2">
-                            <label class="mb-0 small fw-semibold">Show:</label>
-                            <select class="form-control form-control-sm" id="unifiedInventoryTable_length" style="width: auto;">
-                                <option value="10">10</option>
-                                <option value="25">25</option>
-                                <option value="50" selected>50</option>
-                                <option value="100">100</option>
-                            </select>
-                            <span class="small">entries</span>
-                        </div>
-                    </div>
-                </div>
-                
-                {{-- Enable server-side processing for the DataTable --}}
+                {{-- Custom AJAX data callback for server-side filters --}}
                 @push('scripts')
-                <script>
-                // Set flag IMMEDIATELY to prevent component initialization
-                window['skipAutoInit_unifiedInventoryTable'] = true;
-                
-                // Set flag IMMEDIATELY - before document.ready
-                window['skipAutoInit_unifiedInventoryTable'] = true;
-                
-                $(document).ready(function() {
-                    console.log('=== SERVER-SIDE SCRIPT LOADED ===');
-                    console.log('Skip flag:', window['skipAutoInit_unifiedInventoryTable']);
-                    
-                    // Mark table immediately
-                    var $table = $('#unifiedInventoryTable');
-                    if ($table.length) {
-                        $table.attr('data-server-side', 'true');
-                        console.log('Table found and marked:', $table.attr('data-server-side'));
-                    } else {
-                        console.error('Table #unifiedInventoryTable NOT FOUND in DOM');
-                    }
-                    
-                    function initializeServerSideTable() {
-                        console.log('=== initializeServerSideTable() CALLED ===');
-                        
-                        // Check if already initialized
-                        if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
-                            var existing = $('#unifiedInventoryTable').DataTable();
-                            if (existing.settings()[0].serverSide) {
-                                console.log('Server-side table already initialized');
-                                return;
+                    <script>
+                        // Custom AJAX data callback to pass filter values to server
+                        function unifiedInventoryTableAjaxData(d) {
+                            // CRITICAL: Preserve DataTables' search value (it sets this automatically)
+                            // Don't overwrite d.search.value - DataTables manages it
+
+                            // Get filter values from component's filter section
+                            var filterContainer = $('#datatable-wrapper-unifiedInventoryTable');
+                            d.availability = filterContainer.find('.filter-select[data-filter="availability"]').val() || '';
+                            d.item_code = filterContainer.find('.filter-select[data-filter="item"]').val() || '';
+                            // Handle Select2 for vendor filter
+                            var vendorSelect = filterContainer.find('.filter-select2[data-filter="vendor"]');
+                            if (vendorSelect.length && vendorSelect.hasClass('select2-hidden-accessible')) {
+                                d.vendor_name = vendorSelect.select2('val') || '';
                             } else {
-                                console.log('Destroying client-side table, recreating as server-side');
-                                existing.destroy();
+                                d.vendor_name = vendorSelect.val() || '';
                             }
-                        }
-                        
-                        // Make sure table exists and has proper structure
-                        var $table = $('#unifiedInventoryTable');
-                        if ($table.length === 0) {
-                            console.error('Table #unifiedInventoryTable not found');
-                            return;
-                        }
-                        
-                        // Verify thead structure
-                        var $thead = $table.find('thead tr');
-                        if ($thead.length === 0) {
-                            console.error('Table thead not found');
-                            return;
-                        }
-                        
-                        var expectedCols = {{ $isAdmin ? 9 : 8 }};
-                        var actualCols = $thead.find('th').length;
-                        if (actualCols !== expectedCols) {
-                            console.error('Column count mismatch. Expected: ' + expectedCols + ', Actual: ' + actualCols);
-                            console.log('Actual columns:', $thead.find('th').map(function() { return $(this).text().trim(); }).get());
-                            return;
-                        }
-                        
-                        console.log('Initializing server-side DataTable...', {
-                            skipFlag: window['skipAutoInit_unifiedInventoryTable'],
-                            tableAttr: $table.attr('data-server-side'),
-                            wrapperAttr: $('#datatable-wrapper-unifiedInventoryTable').attr('data-server-side')
-                        });
-                        
-                        // Initialize with server-side processing
-                        var table = $('#unifiedInventoryTable').DataTable({
-                            processing: true,
-                            serverSide: true,
-                            ajax: {
-                                url: '{{ route("store.inventory.data", $store->id) }}',
-                                type: 'GET',
-                                beforeSend: function(xhr, settings) {
-                                    console.log('AJAX request sent to:', settings.url);
-                                },
-                                error: function(xhr, error, thrown) {
-                                    console.error('DataTables AJAX error:', error, thrown);
-                                    console.error('Response:', xhr.responseText);
-                                    console.error('Status:', xhr.status);
-                                },
-                                dataSrc: function(json) {
-                                    console.log('DataTables response:', json);
-                                    return json.data;
-                                },
-                                data: function(d) {
-                                    // Add filter values
-                                    var tabPane = $('#view');
-                                    d.availability = tabPane.find('select[name="availability"]').val() || '';
-                                    d.item_code = tabPane.find('select[name="item"]').val() || '';
-                                    d.vendor_name = $('#vendor_filter').val() || '';
-                                    console.log('DataTables request data:', d);
+
+                            // Ensure search value is preserved (DataTables sets this from the search input)
+                            // If for some reason it's missing, get it from the input
+                            if (!d.search || !d.search.value) {
+                                var searchInput = $('#unifiedInventoryTable_search');
+                                if (searchInput.length) {
+                                    if (!d.search) d.search = {};
+                                    d.search.value = searchInput.val() || '';
                                 }
-                            },
-                            columns: [
-                                @if ($isAdmin)
-                                { data: 0, name: 'checkbox', orderable: false, searchable: false },
-                                { data: 1, name: 'item_code' },
-                                { data: 2, name: 'item' },
-                                { data: 3, name: 'serial_number' },
-                                { data: 4, name: 'availability', orderable: true },
-                                { data: 5, name: 'vendor_name', orderable: true },
-                                { data: 6, name: 'dispatch_date' },
-                                { data: 7, name: 'created_at' },
-                                { data: 8, name: 'actions', orderable: false, searchable: false }
-                                @else
-                                { data: 0, name: 'item_code' },
-                                { data: 1, name: 'item' },
-                                { data: 2, name: 'serial_number' },
-                                { data: 3, name: 'availability', orderable: true },
-                                { data: 4, name: 'vendor_name', orderable: true },
-                                { data: 5, name: 'dispatch_date' },
-                                { data: 6, name: 'created_at' },
-                                { data: 7, name: 'actions', orderable: false, searchable: false }
+                            }
+
+                            return d;
+                        }
+
+                        // Custom AJAX data callback for dispatched items table
+                        function dispatchedTableAjaxData(d) {
+                            // Get filter values from component's filter section
+                            var filterContainer = $('#datatable-wrapper-dispatchTabDispatchedTable');
+                            d.item_code = filterContainer.find('.filter-select[data-filter="item_code"]').val() || '';
+                            d.vendor_name = filterContainer.find('.filter-select2[data-filter="vendor"]').val() || '';
+                            d.dispatch_date = filterContainer.find('.filter-select[data-filter="dispatch_date"]').val() || '';
+                            return d;
+                        }
+                    </script>
+                @endpush
+
+                @php
+                    $columns = [
+                        ['title' => 'Item Code'],
+                        ['title' => 'Item'],
+                        ['title' => 'Serial Number'],
+                        ['title' => 'Availability'],
+                        ['title' => 'Vendor'],
+                        ['title' => 'Dispatch Date'],
+                        ['title' => 'In Date'],
+                    ];
+
+                    // Calculate order array for DataTables
+                    $orderColumn = $isAdmin ? 7 : 6;
+                    $orderArray = [[$orderColumn, 'desc']];
+                @endphp
+
+                {{-- Use datatable component with server-side processing --}}
+                <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)"
+                    ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray" :bulkDeleteEnabled="$isAdmin"
+                    :exportEnabled="true" :importEnabled="false" pageLength="50" searchPlaceholder="Search inventory..."
+                    :deferLoading="$inventoryTotal ?? null" :filters="[
+                        [
+                            'type' => 'select',
+                            'name' => 'availability',
+                            'label' => 'Availability',
+                            'column' => 4,
+                            'width' => 3,
+                            'options' => [
+                                'In Stock' => 'In Stock',
+                                'Dispatched' => 'Dispatched',
+                                'Consumed' => 'Consumed',
+                            ],
+                        ],
+                        [
+                            'type' => 'select',
+                            'name' => 'vendor',
+                            'label' => 'Vendor',
+                            'column' => 5,
+                            'width' => 3,
+                            'select2' => true,
+                            'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
+                        ],
+                        [
+                            'type' => 'select',
+                            'name' => 'item',
+                            'label' => 'Item',
+                            'column' => 1,
+                            'width' => 3,
+                            'options' => [
+                                'SL01' => 'Panel Module (SL01 Panel)',
+                                'SL02' => 'Luminary (SL02 Luminary)',
+                                'SL03' => 'Battery (SL03 Battery)',
+                                'SL04' => 'Structure (SL04 Structure)',
+                            ],
+                        ],
+                    ]">
+                    {{-- Render initial rows (fast first paint). DataTables will use the DOM rows
+                         and the 'deferLoading' option to avoid the initial ajax request. --}}
+                    @foreach ($unifiedInventory as $item)
+                        @php
+                            $availability = 'In Stock';
+                            if (($item->quantity ?? 0) > 0) {
+                                $availability = 'In Stock';
+                            } elseif (($item->is_consumed ?? 0) == 1) {
+                                $availability = 'Consumed';
+                            } elseif (!empty($item->dispatch_id)) {
+                                $availability = 'Dispatched';
+                            }
+                            $vendorName = trim($item->vendor_name ?? '') ?: '-';
+                            $dispatchDate = $item->dispatch_date
+                                ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y')
+                                : '-';
+                            $receivedDate = $item->received_date
+                                ? \Carbon\Carbon::parse($item->received_date)->format('d/m/Y')
+                                : ($item->created_at
+                                    ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y')
+                                    : '-');
+                        @endphp
+                        <tr>
+                            <td><input type="checkbox" class="row-checkbox" value="{{ $item->id }}"
+                                    data-id="{{ $item->id }}"></td>
+                            <td>{{ $item->item_code }}</td>
+                            <td>{{ $item->item }}</td>
+                            <td>{{ $item->serial_number }}</td>
+                            <td><span
+                                    class="badge bg-{{ $availability === 'In Stock' ? 'success' : ($availability === 'Dispatched' ? 'warning' : 'danger') }}">{{ $availability }}</span>
+                            </td>
+                            <td>{{ $vendorName }}</td>
+                            <td>{{ $dispatchDate }}</td>
+                            <td>{{ $receivedDate }}</td>
+                            <td>
+                                @if ($availability === 'In Stock' && auth()->user()->role === \App\Enums\UserRole::ADMIN->value)
+                                    <button type="button" class="btn btn-sm btn-danger delete-item"
+                                        data-id="{{ $item->id }}" title="Delete"><i
+                                            class="mdi mdi-delete"></i></button>
+                                @elseif($availability === 'Dispatched')
+                                    <form action="{{ route('inventory.return') }}" method="POST" class="d-inline"
+                                        onsubmit="return confirm('Are you sure you want to return this item?');">
+                                        @csrf
+                                        <input type="hidden" name="serial_number" value="{{ $item->serial_number }}">
+                                        <button type="submit" class="btn btn-sm btn-warning" title="Return"><i
+                                                class="mdi mdi-undo"></i></button>
+                                    </form>
+                                @elseif($availability === 'Consumed')
+                                    <button type="button" class="btn btn-sm btn-primary replace-item"
+                                        data-dispatch-id="{{ $item->dispatch_id ?? '' }}"
+                                        data-serial-number="{{ $item->serial_number }}" title="Replace"><i
+                                            class="mdi mdi-swap-horizontal"></i></button>
                                 @endif
-                            ],
-                            order: [[{{ $isAdmin ? 7 : 6 }}, 'desc']],
-                            pageLength: 50,
-                            deferLoading: null,
-                            dom: "<'row'<'col-sm-12'tr>>" +
-                                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                            buttons: [
-                                {
-                                    extend: 'excel',
-                                    text: '<i class="mdi mdi-file-excel"></i> Excel',
-                                    className: 'd-none',
-                                    exportOptions: {
-                                        columns: ':visible:not(.no-export)',
-                                        format: {
-                                            body: function(data, row, column, node) {
-                                                // Remove HTML tags for export
-                                                if (typeof data === 'string') {
-                                                    return data.replace(/<[^>]*>/g, '').trim();
-                                                }
-                                                return data;
-                                            }
-                                        }
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-datatable>
+
+                {{-- Custom handlers for server-side table --}}
+                @push('scripts')
+                    <script>
+                        $(document).ready(function() {
+                            // Wait for table to be initialized by component
+                            function waitForTable() {
+                                // CRITICAL: Don't call DataTable() without config - it auto-initializes in client-side mode!
+                                // Only access the table if it's already initialized by the component
+                                var table = window['table_unifiedInventoryTable'];
+                                if (!table || typeof table.draw !== 'function') {
+                                    // Check if DataTable exists but wasn't stored in window yet
+                                    if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
+                                        table = $('#unifiedInventoryTable').DataTable();
+                                        window['table_unifiedInventoryTable'] = table;
+                                    } else {
+                                        setTimeout(waitForTable, 100);
+                                        return;
                                     }
-                                },
-                                {
-                                    extend: 'pdf',
-                                    text: '<i class="mdi mdi-file-pdf"></i> PDF',
-                                    className: 'd-none',
-                                    orientation: 'landscape',
-                                    pageSize: 'A4',
-                                    exportOptions: {
-                                        columns: ':visible:not(.no-export)',
-                                        format: {
-                                            body: function(data, row, column, node) {
-                                                if (typeof data === 'string') {
-                                                    return data.replace(/<[^>]*>/g, '').trim();
-                                                }
-                                                return data;
-                                            }
-                                        }
+                                }
+
+                                // Custom Excel export - use server-side export endpoint with filters
+                                $('#unifiedInventoryTable_excel').off('click').on('click', function() {
+                                    var filterContainer = $('#datatable-wrapper-unifiedInventoryTable');
+                                    var availability = filterContainer.find('.filter-select[data-filter="availability"]')
+                                        .val() || '';
+                                    var itemCode = filterContainer.find('.filter-select[data-filter="item"]').val() || '';
+                                    var vendorSelect = filterContainer.find('.filter-select2[data-filter="vendor"]');
+                                    var vendorName = '';
+                                    if (vendorSelect.length && vendorSelect.hasClass('select2-hidden-accessible')) {
+                                        vendorName = vendorSelect.select2('val') || '';
+                                    } else {
+                                        vendorName = vendorSelect.val() || '';
                                     }
-                                },
-                                {
-                                    extend: 'print',
-                                    text: '<i class="mdi mdi-printer"></i> Print',
-                                    className: 'd-none',
-                                    exportOptions: {
-                                        columns: ':visible:not(.no-export)',
-                                        format: {
-                                            body: function(data, row, column, node) {
-                                                if (typeof data === 'string') {
-                                                    return data.replace(/<[^>]*>/g, '').trim();
-                                                }
-                                                return data;
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    extend: 'colvis',
-                                    text: '<i class="mdi mdi-eye"></i> Columns',
-                                    className: 'd-none',
-                                    columns: ':not(.no-colvis)',
-                                    collectionLayout: 'three-column',
-                                    postfixButtons: ['colvisRestore']
-                                }
-                            ],
-                            language: {
-                                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div> Loading data...',
-                                search: '',
-                                searchPlaceholder: 'Search inventory...',
-                                lengthMenu: '',
-                                info: '',
-                                infoEmpty: '',
-                                infoFiltered: ''
-                            },
-                            pagingType: 'simple_numbers',
-                            drawCallback: function() {
-                                // Update info text with filtered and total counts
-                                var info = this.api().page.info();
-                                var totalRecords = info.recordsTotal; // Total records (no filters)
-                                var filteredRecords = info.recordsFiltered; // Filtered records
-                                
-                                var infoText = 'Showing ' + (info.start + 1) + ' to ' + info.end + ' of ' + filteredRecords + ' entries';
-                                if (filteredRecords < totalRecords) {
-                                    infoText += ' (filtered from ' + totalRecords + ' total entries)';
-                                }
-                                $('#unifiedInventoryTable_info').text(infoText);
-                                
-                                // Move pagination to custom wrapper - use appendTo to preserve event handlers
-                                var $dtPagination = $('#unifiedInventoryTable_wrapper .dataTables_paginate');
-                                var $customPagination = $('#unifiedInventoryTable_paginate');
-                                
-                                if ($dtPagination.length > 0 && $dtPagination.parent()[0] !== $customPagination[0]) {
-                                    // Move the entire pagination element (not just HTML) to preserve DataTables event handlers
-                                    $dtPagination.appendTo($customPagination);
-                                }
-                                
-                                // Handle select all checkbox
-                                $('#unifiedInventoryTable_selectAll').off('change').on('change', function() {
-                                    var isChecked = $(this).is(':checked');
-                                    $('#unifiedInventoryTable tbody input[type="checkbox"]').prop('checked', isChecked);
+                                    var search = $('#unifiedInventoryTable_search').val() || '';
+
+                                    var exportUrl = '{{ route('store.inventory.export', $store->id) }}?';
+                                    var params = [];
+                                    if (availability) params.push('availability=' + encodeURIComponent(availability));
+                                    if (itemCode) params.push('item_code=' + encodeURIComponent(itemCode));
+                                    if (vendorName) params.push('vendor_name=' + encodeURIComponent(vendorName));
+                                    if (search) params.push('search=' + encodeURIComponent(search));
+
+                                    exportUrl += params.join('&');
+                                    window.location.href = exportUrl;
                                 });
-                                
-                                // Reattach delete handlers
-                                $('#unifiedInventoryTable').off('click', '.delete-item').on('click', '.delete-item', function() {
+
+                                // Handle delete item buttons
+                                $(document).on('click', '#unifiedInventoryTable .delete-item', function() {
                                     var id = $(this).data('id');
                                     if (confirm('Are you sure you want to delete this item?')) {
-                                        console.log('Delete item:', id);
+                                        $.ajax({
+                                            url: '{{ route('inventory.destroy', ':id') }}'.replace(':id', id),
+                                            type: 'POST',
+                                            data: {
+                                                _token: '{{ csrf_token() }}',
+                                                _method: 'DELETE'
+                                            },
+                                            success: function(response) {
+                                                table.ajax.reload();
+                                            },
+                                            error: function(xhr) {
+                                                alert('Failed to delete item. Please try again.');
+                                            }
+                                        });
                                     }
                                 });
-                            },
-                            initComplete: function() {
-                                // Store the total count from first response to prevent recalculation
-                                var settings = this.api().settings()[0];
-                                if (settings.ajax && settings.ajax.json) {
-                                    var json = settings.ajax.json;
-                                    if (json && json.recordsTotal) {
-                                        // Lock the total count so it doesn't change
-                                        settings._iRecordsTotal = json.recordsTotal;
-                                        settings._iRecordsDisplay = json.recordsTotal;
-                                    }
-                                }
                             }
+
+                            // Start waiting for table
+                            waitForTable();
                         });
-                        
-                        window['table_unifiedInventoryTable'] = table;
-                        console.log('Server-side DataTable initialized successfully');
-                        
-                        // Handle length change
-                        $('#unifiedInventoryTable_length').off('change').on('change', function() {
-                            table.page.len(parseInt($(this).val())).draw();
-                        });
-                        
-                        // Event delegation for pagination clicks (fallback if DataTables handlers don't work)
-                        $('#unifiedInventoryTable_paginate').off('click', 'a').on('click', 'a', function(e) {
-                            // Only handle if it's a pagination button and DataTables hasn't handled it
-                            if ($(this).hasClass('paginate_button') && !$(this).hasClass('disabled') && !$(this).hasClass('current')) {
-                                var href = $(this).attr('href');
-                                if (href === '#' || !href) {
-                                    e.preventDefault();
-                                    var text = $(this).text().trim();
-                                    if (text === 'Previous') {
-                                        table.page('previous').draw('page');
-                                    } else if (text === 'Next') {
-                                        table.page('next').draw('page');
-                                    } else if (!isNaN(text)) {
-                                        table.page(parseInt(text) - 1).draw('page');
-                                    }
-                                }
-                            }
-                        });
-                        
-                        // Initialize Select2 for Vendor dropdown
-                        $('#vendor_filter').select2({
-                            placeholder: 'Vendor',
-                            allowClear: true,
-                            width: '100%',
-                            dropdownParent: $('#datatable-wrapper-unifiedInventoryTable'),
-                            minimumResultsForSearch: 0, // Always show search box
-                        });
-                        
-                        // Handle Apply Filters button
-                        $('#applyFiltersBtn').off('click').on('click', function() {
-                            table.ajax.reload();
-                        });
-                        
-                        // Handle Clear Filters button
-                        $('#clearFiltersBtn').off('click').on('click', function() {
-                            $('#view select[name="availability"]').val('').trigger('change');
-                            $('#vendor_filter').val(null).trigger('change');
-                            $('#view select[name="item"]').val('').trigger('change');
-                            table.ajax.reload();
-                        });
-                        
-                        // Handle search input - debounced for better performance
-                        var searchTimeout;
-                        $('#unifiedInventoryTable_search').off('keyup input').on('keyup input', function() {
-                            var searchValue = $(this).val();
-                            clearTimeout(searchTimeout);
-                            searchTimeout = setTimeout(function() {
-                                table.search(searchValue).draw();
-                            }, 300); // 300ms debounce
-                        });
-                        
-                        // Handle Enter key in search
-                        $('#unifiedInventoryTable_search').off('keypress').on('keypress', function(e) {
-                            if (e.which === 13) {
-                                e.preventDefault();
-                                clearTimeout(searchTimeout);
-                                table.search($(this).val()).draw();
-                            }
-                        });
-                        
-                        // Wire up export buttons - custom export to get all filtered data
-                        $('#unifiedInventoryTable_excel').off('click').on('click', function() {
-                            // Get current filter values
-                            var availability = $('#view select[name="availability"]').val() || '';
-                            var itemCode = $('#view select[name="item"]').val() || '';
-                            var vendorName = $('#vendor_filter').val() || '';
-                            var search = $('#unifiedInventoryTable_search').val() || '';
-                            
-                            // Build export URL with filters
-                            var exportUrl = '{{ route("store.inventory.export", $store->id) }}?';
-                            var params = [];
-                            if (availability) params.push('availability=' + encodeURIComponent(availability));
-                            if (itemCode) params.push('item_code=' + encodeURIComponent(itemCode));
-                            if (vendorName) params.push('vendor_name=' + encodeURIComponent(vendorName));
-                            if (search) params.push('search=' + encodeURIComponent(search));
-                            
-                            exportUrl += params.join('&');
-                            
-                            // Open export URL in new window to trigger download
-                            window.location.href = exportUrl;
-                        });
-                        
-                        $('#unifiedInventoryTable_pdf').off('click').on('click', function() {
-                            table.button('.buttons-pdf').trigger();
-                        });
-                        
-                        $('#unifiedInventoryTable_print').off('click').on('click', function() {
-                            table.button('.buttons-print').trigger();
-                        });
-                        
-                        $('#unifiedInventoryTable_columns').off('click').on('click', function(e) {
-                            e.preventDefault();
-                            table.button('.buttons-colvis').trigger();
-                        });
-                    }
-                    
-                    // Initialize when tab is shown - use correct selector for button tabs
-                    $('#view-tab, [data-bs-target="#view"]').on('shown.bs.tab', function() {
-                        console.log('=== TAB SHOWN EVENT FIRED ===');
-                        setTimeout(function() {
-                            if ($.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
-                                var existing = $('#unifiedInventoryTable').DataTable();
-                                if (!existing.settings()[0].serverSide) {
-                                    console.log('Destroying client-side, recreating server-side');
-                                    existing.destroy();
-                                } else {
-                                    console.log('Server-side table already initialized');
-                                    return;
-                                }
-                            }
-                            initializeServerSideTable();
-                        }, 100);
-                    });
-                    
-                    // Also listen on the tab pane itself for when it becomes visible
-                    $('#view').on('shown.bs.tab', function() {
-                        console.log('=== TAB PANE SHOWN EVENT FIRED ===');
-                        setTimeout(function() {
-                            if (!$.fn.DataTable.isDataTable('#unifiedInventoryTable')) {
-                                initializeServerSideTable();
-                            }
-                        }, 100);
-                    });
-                    
-                    // Initialize immediately if tab is already active
-                    if ($('#view').hasClass('active') && $('#view').hasClass('show')) {
-                        console.log('=== TAB ALREADY ACTIVE, INITIALIZING NOW ===');
-                        setTimeout(function() {
-                            initializeServerSideTable();
-                        }, 500);
-                    } else {
-                        console.log('Tab not active yet, waiting for tab show event');
-                    }
-                });
-                </script>
+                    </script>
                 @endpush
             </div>
 
@@ -899,8 +621,9 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                             @csrf
                             <input type="hidden" id="dispatchStoreId" name="store_id" value="{{ $store->id }}">
                             <input type="hidden" name="project_id" value="{{ $project->id }}">
-                            <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? 'N/A' }}">
-                            
+                            <input type="hidden" name="store_incharge_id"
+                                value="{{ $store->store_incharge_id ?? 'N/A' }}">
+
                             <!-- Vendor Selection and Entry Mode - Inline -->
                             <div class="d-flex justify-content-between align-items-end mb-3 gap-3">
                                 <div class="flex-grow-1" style="max-width: 300px;">
@@ -915,7 +638,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                 <div>
                                     <label class="form-label">Entry Mode:</label>
                                     <div class="form-check form-switch">
-                                        <input class="form-check-input" type="checkbox" id="dispatchModeSwitch" 
+                                        <input class="form-check-input" type="checkbox" id="dispatchModeSwitch"
                                             onchange="switchDispatchMode(this.checked ? 'bulk' : 'manual')">
                                         <label class="form-check-label" for="dispatchModeSwitch">
                                             <span id="modeLabel">Manual Entry</span>
@@ -931,16 +654,18 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                         <div class="import-section d-flex flex-column gap-2">
                                             <div class="import-form-group d-flex align-items-stretch">
                                                 <div class="input-group input-group-sm import-input-wrapper">
-                                                    <input type="file" class="form-control form-control-sm import-file-input" 
+                                                    <input type="file"
+                                                        class="form-control form-control-sm import-file-input"
                                                         id="bulkDispatchFile" accept=".xlsx,.xls,.csv">
-                                                    <button type="button" class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1" 
+                                                    <button type="button"
+                                                        class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1"
                                                         id="processBulkUpload">
                                                         <i class="mdi mdi-upload"></i>
                                                         <span>Process Upload</span>
                                                     </button>
                                                 </div>
                                             </div>
-                                            <a href="{{ route('inventory.download-format', $project->id) }}" 
+                                            <a href="{{ route('inventory.download-format', $project->id) }}"
                                                 class="download-format-link" target="_blank">
                                                 <i class="mdi mdi-download"></i>
                                                 <span>Download Format</span>
@@ -950,9 +675,12 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     <div class="flex-grow-1">
                                         <div class="bulk-upload-instructions">
                                             <p class="mb-1"><strong>Bulk Upload Format:</strong></p>
-                                            <p class="mb-1 small"><strong>Columns:</strong> ITEM_CODE, ITEM NAME (or item), serial_number (or SERIAL_NUMBER)</p>
-                                            <p class="mb-1 small"><strong>For Luminary (SL02):</strong> Include sim_number (or SIM_NUMBER) column</p>
-                                            <p class="mb-0 small"><strong>Note:</strong> Each row should have quantity = 1 for each serial number</p>
+                                            <p class="mb-1 small"><strong>Columns:</strong> ITEM_CODE, ITEM NAME (or item),
+                                                serial_number (or SERIAL_NUMBER)</p>
+                                            <p class="mb-1 small"><strong>For Luminary (SL02):</strong> Include sim_number
+                                                (or SIM_NUMBER) column</p>
+                                            <p class="mb-0 small"><strong>Note:</strong> Each row should have quantity = 1
+                                                for each serial number</p>
                                         </div>
                                     </div>
                                 </div>
@@ -961,7 +689,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                 <div id="alreadyDispatchedSection" style="display: none;" class="mt-3">
                                     <div class="alert alert-warning">
                                         <strong>Already Dispatched Items:</strong>
-                                        <button type="button" class="btn btn-sm btn-danger float-end" id="removeDispatchedBtn">
+                                        <button type="button" class="btn btn-sm btn-danger float-end"
+                                            id="removeDispatchedBtn">
                                             <i class="mdi mdi-delete"></i> Remove All
                                         </button>
                                         <div id="alreadyDispatchedList" class="mt-2"></div>
@@ -985,10 +714,12 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     </div>
 
                                     <!-- Already Dispatched Items -->
-                                    <div id="alreadyDispatchedPreviewSection" class="preview-section already-dispatched mb-3" style="display: none;">
+                                    <div id="alreadyDispatchedPreviewSection"
+                                        class="preview-section already-dispatched mb-3" style="display: none;">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
-                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllDispatchedBtn">
+                                            <button type="button" class="btn btn-sm btn-danger"
+                                                id="removeAllDispatchedBtn">
                                                 <i class="mdi mdi-delete"></i> Remove All
                                             </button>
                                         </div>
@@ -997,10 +728,12 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     </div>
 
                                     <!-- Duplicate Serial Numbers -->
-                                    <div id="duplicateSerialsSection" class="preview-section duplicate-serials mb-3" style="display: none;">
+                                    <div id="duplicateSerialsSection" class="preview-section duplicate-serials mb-3"
+                                        style="display: none;">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
-                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllDuplicatesBtn">
+                                            <button type="button" class="btn btn-sm btn-danger"
+                                                id="removeAllDuplicatesBtn">
                                                 <i class="mdi mdi-delete"></i> Remove All
                                             </button>
                                         </div>
@@ -1009,10 +742,12 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     </div>
 
                                     <!-- Non Existing Items -->
-                                    <div id="nonExistingSection" class="preview-section non-existing mb-3" style="display: none;">
+                                    <div id="nonExistingSection" class="preview-section non-existing mb-3"
+                                        style="display: none;">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
-                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllNonExistingBtn">
+                                            <button type="button" class="btn btn-sm btn-danger"
+                                                id="removeAllNonExistingBtn">
                                                 <i class="mdi mdi-delete"></i> Remove All
                                             </button>
                                         </div>
@@ -1041,8 +776,10 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                                     @foreach ($inventoryItems as $item)
                                                         <option value="{{ $item->item_code }}"
                                                             data-stock="{{ $item->total_quantity }}"
-                                                            data-item="{{ $item->item }}" data-rate="{{ $item->rate }}"
-                                                            data-make="{{ $item->make }}" data-model="{{ $item->model }}">
+                                                            data-item="{{ $item->item }}"
+                                                            data-rate="{{ $item->rate }}"
+                                                            data-make="{{ $item->make }}"
+                                                            data-model="{{ $item->model }}">
                                                             {{ $item->item_code }} {{ $item->item }}
                                                         </option>
                                                     @endforeach
@@ -1064,7 +801,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                                 <!-- QR Code Scanning -->
                                                 <div class="form-group">
                                                     <label for="qr_scanner" class="form-label">Scan Item QR Code:</label>
-                                                    <input type="text" id="qr_scanner" class="form-control" autofocus />
+                                                    <input type="text" id="qr_scanner" class="form-control"
+                                                        autofocus />
                                                     <small class="text-muted">Keep scanning QR codes...</small>
                                                     <div id="qr_error" class="text-danger mt-2"></div>
                                                 </div>
@@ -1098,245 +836,88 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                     <div class="card-body">
                         <h6 class="card-title mb-3">Already Dispatched Items</h6>
 
-                        {{-- Filter Section --}}
-                        <div class="card border rounded p-3 mb-3" style="background-color: #f8f9fa;">
-                            <div class="d-flex flex-column flex-md-row align-items-end gap-3">
-                                <div class="flex-fill">
-                                    <label class="form-label small mb-1 fw-semibold">Item Code</label>
-                                    <select name="dispatched_item_code" class="form-control form-control-sm filter-select" style="width: 100%;">
-                                        <option value="">All Items</option>
-                                        <option value="SL01">SL01 - Panel</option>
-                                        <option value="SL02">SL02 - Luminary</option>
-                                        <option value="SL03">SL03 - Battery</option>
-                                        <option value="SL04">SL04 - Structure</option>
-                                    </select>
-                                </div>
-                                <div class="flex-fill">
-                                    <label class="form-label small mb-1 fw-semibold">Vendor</label>
-                                    <select name="dispatched_vendor" id="dispatched_vendor_filter" class="form-control form-control-sm filter-select2" style="width: 100%;">
-                                        <option value="">All Vendors</option>
-                                        @foreach($assignedVendors as $vendor)
-                                            <option value="{{ $vendor->name }}">{{ $vendor->name }}</option>
-                                        @endforeach
-                                    </select>
-                                </div>
-                                <div class="flex-fill">
-                                    <label class="form-label small mb-1 fw-semibold">Dispatch Date</label>
-                                    <input type="date" name="dispatched_date" class="form-control form-control-sm filter-select" style="width: 100%;">
-                                </div>
-                                <div class="d-flex gap-2 align-items-end">
-                                    <button type="button" id="applyDispatchedFiltersBtn" class="btn btn-primary btn-sm">
-                                        Apply Filters
-                                        </button>
-                                    <button type="button" id="clearDispatchedFiltersBtn" class="btn btn-outline-secondary btn-sm">
-                                        Clear
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                        {{-- Use datatable component with server-side processing for dispatched items --}}
+                        @php
+                            $dispatchedColumns = [
+                                ['title' => 'Item Code'],
+                                ['title' => 'Item'],
+                                ['title' => 'Serial Number'],
+                                ['title' => 'Vendor'],
+                                ['title' => 'Dispatch Date'],
+                                ['title' => 'Value'],
+                                [
+                                    'title' => 'Actions',
+                                    'width' => '120px',
+                                    'orderable' => false,
+                                    'searchable' => false,
+                                ],
+                            ];
 
-                        {{-- Search and Export Section --}}
-                        <div class="row align-items-center g-3 mb-3">
-                            <div class="col-12 col-md-6">
-                                <div class="input-group input-group-sm">
-                                    <span class="input-group-text"><i class="mdi mdi-magnify"></i></span>
-                                    <input type="search" class="form-control" id="dispatchTabDispatchedTable_search" placeholder="Search dispatched items...">
-                                </div>
-                            </div>
-                            <div class="col-12 col-md-6 text-start text-md-end">
-                                <div class="btn-group btn-group-sm d-flex flex-wrap" role="group">
-                                    <button type="button" class="btn btn-success flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_excel" title="Export to Excel">
-                                        <i class="mdi mdi-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
-                                    </button>
-                                    <button type="button" class="btn btn-danger flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_pdf" title="Export to PDF">
-                                        <i class="mdi mdi-file-pdf"></i> <span class="d-none d-sm-inline">PDF</span>
-                                    </button>
-                                    <button type="button" class="btn btn-info flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_print" title="Print">
-                                        <i class="mdi mdi-printer"></i> <span class="d-none d-sm-inline">Print</span>
-                                    </button>
-                                    <button type="button" class="btn btn-secondary flex-fill flex-sm-auto" id="dispatchTabDispatchedTable_columns" title="Show/Hide Columns">
-                                        <i class="mdi mdi-eye"></i> <span class="d-none d-sm-inline">Columns</span>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+                            // Calculate order array for DataTables
+                            $dispatchedOrderColumn = $isAdmin ? 7 : 6;
+                            $dispatchedOrderArray = [[$dispatchedOrderColumn, 'desc']]; // Order by dispatch date descending
+                        @endphp
 
-                        <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
-                            <table id="dispatchTabDispatchedTable" class="table table-striped table-bordered table-hover" style="width:100%;" data-server-side="true">
-                                <thead>
-                                    <tr>
-                                        <th width="30px"><input type="checkbox" id="dispatchTabDispatchedTable_selectAll" class="select-all-checkbox"></th>
-                                        <th>Item Code</th>
-                                        <th>Item</th>
-                                        <th>Serial Number</th>
-                                        <th>Vendor</th>
-                                        <th>Dispatch Date</th>
-                                        <th>Value</th>
-                                        <th width="120px" class="text-center">Actions</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                    {{-- Server-side processing: tbody is empty, data loaded via AJAX --}}
-                                </tbody>
-                            </table>
-                    </div>
-                        
-                        <div class="mt-3 d-flex flex-column gap-2">
-                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
-                                <div class="small text-muted" id="dispatchTabDispatchedTable_info"></div>
-                                <div id="dispatchTabDispatchedTable_paginate"></div>
-                </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <label class="mb-0 small fw-semibold">Show:</label>
-                                <select class="form-control form-control-sm" id="dispatchTabDispatchedTable_length" style="width: auto;">
-                                    <option value="10">10</option>
-                                    <option value="25">25</option>
-                                    <option value="50" selected>50</option>
-                                    <option value="100">100</option>
-                                </select>
-                                <span class="small">entries</span>
-                            </div>
-                        </div>
+                        <x-datatable id="dispatchTabDispatchedTable" :serverSide="true" :ajaxUrl="route('store.dispatched.data', $store->id)"
+                            :ajaxData="'dispatchedTableAjaxData'" :columns="$dispatchedColumns" :order="$dispatchedOrderArray" :bulkDeleteEnabled="$isAdmin" :exportEnabled="true"
+                            :importEnabled="false" pageLength="50" searchPlaceholder="Search dispatched items..."
+                            :filters="[
+                                [
+                                    'type' => 'select',
+                                    'name' => 'item_code',
+                                    'label' => 'Item Code',
+                                    'column' => 0,
+                                    'width' => 3,
+                                    'options' => [
+                                        'SL01' => 'SL01 - Panel',
+                                        'SL02' => 'SL02 - Luminary',
+                                        'SL03' => 'SL03 - Battery',
+                                        'SL04' => 'SL04 - Structure',
+                                    ],
+                                ],
+                                [
+                                    'type' => 'select',
+                                    'name' => 'vendor',
+                                    'label' => 'Vendor',
+                                    'column' => 0,
+                                    'width' => 3,
+                                    'select2' => true,
+                                    'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
+                                ],
+                                [
+                                    'type' => 'date',
+                                    'name' => 'dispatch_date',
+                                    'label' => 'Dispatch Date',
+                                    'column' => 0,
+                                    'width' => 3,
+                                ],
+                            ]">
+                            {{-- Server-side processing: tbody is empty, data loaded via AJAX --}}
+                        </x-datatable>
                     </div>
                 </div>
-                
-                {{-- Server-side DataTable for Dispatched Items --}}
+
+                {{-- Custom handlers for server-side table --}}
                 @push('scripts')
-                <script>
-                // Set flag to prevent component auto-initialization
-                window['skipAutoInit_dispatchTabDispatchedTable'] = true;
-                
-                $(document).ready(function() {
-                    function initializeDispatchedTable() {
-                        // Check if already initialized
-                        if ($.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
-                            return;
-                        }
-                        
-                        var table = $('#dispatchTabDispatchedTable').DataTable({
-                            processing: true,
-                            serverSide: true,
-                            ajax: {
-                                url: '{{ route("store.dispatched.data", $store->id) }}',
-                                type: 'GET',
-                                data: function(d) {
-                                    d.item_code = $('select[name="dispatched_item_code"]').val() || '';
-                                    d.vendor_name = $('#dispatched_vendor_filter').val() || '';
-                                    d.dispatch_date = $('input[name="dispatched_date"]').val() || '';
-                                }
-                            },
-                            columns: [
-                                { data: 0, name: 'checkbox', orderable: false, searchable: false },
-                                { data: 1, name: 'item_code' },
-                                { data: 2, name: 'item' },
-                                { data: 3, name: 'serial_number' },
-                                { data: 4, name: 'vendor_name' },
-                                { data: 5, name: 'dispatch_date' },
-                                { data: 6, name: 'total_value' },
-                                { data: 7, name: 'actions', orderable: false, searchable: false }
-                            ],
-                            order: [[5, 'desc']],
-                            pageLength: 50,
-                            deferLoading: null,
-                            dom: "<'row'<'col-sm-12'tr>>" +
-                                "<'row'<'col-sm-5'i><'col-sm-7'p>>",
-                            buttons: [
-                                {
-                                    extend: 'excel',
-                                    text: '<i class="mdi mdi-file-excel"></i> Excel',
-                                    className: 'd-none',
-                                    exportOptions: {
-                                        columns: ':visible:not(.no-export)',
-                                        format: {
-                                            body: function(data) {
-                                                if (typeof data === 'string') {
-                                                    return data.replace(/<[^>]*>/g, '').trim();
-                                                }
-                                                return data;
-                                            }
-                                        }
+                    <script>
+                        $(document).ready(function() {
+                            // Wait for table to be initialized by component
+                            function waitForTable() {
+                                // CRITICAL: Don't call DataTable() without config - it auto-initializes in client-side mode!
+                                var table = window['table_dispatchTabDispatchedTable'];
+                                if (!table || typeof table.draw !== 'function') {
+                                    // Check if DataTable exists but wasn't stored in window yet
+                                    if ($.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
+                                        table = $('#dispatchTabDispatchedTable').DataTable();
+                                        window['table_dispatchTabDispatchedTable'] = table;
+                                    } else {
+                                        setTimeout(waitForTable, 100);
+                                        return;
                                     }
-                                },
-                                {
-                                    extend: 'pdf',
-                                    text: '<i class="mdi mdi-file-pdf"></i> PDF',
-                                    className: 'd-none',
-                                    orientation: 'landscape',
-                                    pageSize: 'A4',
-                                    exportOptions: {
-                                        columns: ':visible:not(.no-export)',
-                                        format: {
-                                            body: function(data) {
-                                                if (typeof data === 'string') {
-                                                    return data.replace(/<[^>]*>/g, '').trim();
-                                                }
-                                                return data;
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    extend: 'print',
-                                    text: '<i class="mdi mdi-printer"></i> Print',
-                                    className: 'd-none',
-                                    exportOptions: {
-                                        columns: ':visible:not(.no-export)',
-                                        format: {
-                                            body: function(data) {
-                                                if (typeof data === 'string') {
-                                                    return data.replace(/<[^>]*>/g, '').trim();
-                                                }
-                                                return data;
-                                            }
-                                        }
-                                    }
-                                },
-                                {
-                                    extend: 'colvis',
-                                    text: '<i class="mdi mdi-eye"></i> Columns',
-                                    className: 'd-none',
-                                    columns: ':not(.no-colvis)',
-                                    collectionLayout: 'three-column',
-                                    postfixButtons: ['colvisRestore']
                                 }
-                            ],
-                            language: {
-                                processing: '<div class="spinner-border spinner-border-sm" role="status"><span class="visually-hidden">Loading...</span></div> Loading data...',
-                                search: '',
-                                searchPlaceholder: 'Search dispatched items...',
-                                lengthMenu: '',
-                                info: '',
-                                infoEmpty: '',
-                                infoFiltered: ''
-                            },
-                            pagingType: 'simple_numbers',
-                            drawCallback: function() {
-                                var info = this.api().page.info();
-                                var totalRecords = info.recordsTotal;
-                                var filteredRecords = info.recordsFiltered;
-                                
-                                var infoText = 'Showing ' + (info.start + 1) + ' to ' + info.end + ' of ' + filteredRecords + ' entries';
-                                if (filteredRecords < totalRecords) {
-                                    infoText += ' (filtered from ' + totalRecords + ' total entries)';
-                                }
-                                $('#dispatchTabDispatchedTable_info').text(infoText);
-                                
-                                // Move pagination to custom wrapper
-                                var $dtPagination = $('#dispatchTabDispatchedTable_wrapper .dataTables_paginate');
-                                var $customPagination = $('#dispatchTabDispatchedTable_paginate');
-                                
-                                if ($dtPagination.length > 0 && $dtPagination.parent()[0] !== $customPagination[0]) {
-                                    $dtPagination.appendTo($customPagination);
-                                }
-                                
-                                // Handle select all checkbox
-                                $('#dispatchTabDispatchedTable_selectAll').off('change').on('change', function() {
-                                    var isChecked = $(this).is(':checked');
-                                    $('#dispatchTabDispatchedTable tbody input[type="checkbox"]').prop('checked', isChecked);
-                                });
-                                
-                                // Reattach delete handlers
-                                $('#dispatchTabDispatchedTable').off('click', '.delete-item').on('click', '.delete-item', function() {
+
+                                // Handle delete item buttons
+                                $(document).on('click', '#dispatchTabDispatchedTable .delete-item', function() {
                                     var id = $(this).data('id');
                                     var url = $(this).data('url');
                                     if (confirm('Are you sure you want to delete this item?')) {
@@ -1348,122 +929,19 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                             },
                                             success: function() {
                                                 table.ajax.reload();
+                                            },
+                                            error: function(xhr) {
+                                                alert('Failed to delete item. Please try again.');
                                             }
                                         });
                                     }
                                 });
                             }
+
+                            // Start waiting for table
+                            waitForTable();
                         });
-                        
-                        window['table_dispatchTabDispatchedTable'] = table;
-                        
-                        // Handle length change
-                        $('#dispatchTabDispatchedTable_length').off('change').on('change', function() {
-                            table.page.len(parseInt($(this).val())).draw();
-                        });
-                        
-                        // Handle filter buttons
-                        $('#applyDispatchedFiltersBtn').off('click').on('click', function() {
-                            table.ajax.reload();
-                        });
-                        
-                        $('#clearDispatchedFiltersBtn').off('click').on('click', function() {
-                            $('select[name="dispatched_item_code"]').val('').trigger('change');
-                            $('#dispatched_vendor_filter').val(null).trigger('change');
-                            $('input[name="dispatched_date"]').val('');
-                            table.ajax.reload();
-                        });
-                        
-                        // Initialize Select2 for Vendor dropdown
-                        $('#dispatched_vendor_filter').select2({
-                            placeholder: 'Vendor',
-                            allowClear: true,
-                            width: '100%',
-                            dropdownParent: $('#dispatch'),
-                            minimumResultsForSearch: 0,
-                        });
-                        
-                        // Handle search input
-                        var searchTimeout;
-                        $('#dispatchTabDispatchedTable_search').off('keyup input').on('keyup input', function() {
-                            var searchValue = $(this).val();
-                            clearTimeout(searchTimeout);
-                            searchTimeout = setTimeout(function() {
-                                table.search(searchValue).draw();
-                            }, 300);
-                        });
-                        
-                        // Handle Enter key in search
-                        $('#dispatchTabDispatchedTable_search').off('keypress').on('keypress', function(e) {
-                            if (e.which === 13) {
-                                e.preventDefault();
-                                clearTimeout(searchTimeout);
-                                table.search($(this).val()).draw();
-                            }
-                        });
-                        
-                        // Wire up export buttons
-                        $('#dispatchTabDispatchedTable_excel').off('click').on('click', function() {
-                            table.button('.buttons-excel').trigger();
-                        });
-                        
-                        $('#dispatchTabDispatchedTable_pdf').off('click').on('click', function() {
-                            table.button('.buttons-pdf').trigger();
-                        });
-                        
-                        $('#dispatchTabDispatchedTable_print').off('click').on('click', function() {
-                            table.button('.buttons-print').trigger();
-                        });
-                        
-                        $('#dispatchTabDispatchedTable_columns').off('click').on('click', function(e) {
-                            e.preventDefault();
-                            table.button('.buttons-colvis').trigger();
-                        });
-                        
-                        // Event delegation for pagination
-                        $('#dispatchTabDispatchedTable_paginate').off('click', 'a').on('click', 'a', function(e) {
-                            if ($(this).hasClass('paginate_button') && !$(this).hasClass('disabled') && !$(this).hasClass('current')) {
-                                var href = $(this).attr('href');
-                                if (href === '#' || !href) {
-                                    e.preventDefault();
-                                    var text = $(this).text().trim();
-                                    if (text === 'Previous') {
-                                        table.page('previous').draw('page');
-                                    } else if (text === 'Next') {
-                                        table.page('next').draw('page');
-                                    } else if (!isNaN(text)) {
-                                        table.page(parseInt(text) - 1).draw('page');
-                                    }
-                                }
-                            }
-                        });
-                    }
-                    
-                    // Initialize when dispatch tab is shown
-                    $('#dispatch-tab, [data-bs-target="#dispatch"]').on('shown.bs.tab', function() {
-                        setTimeout(function() {
-                            if (!$.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
-                                initializeDispatchedTable();
-                            }
-                        }, 100);
-                    });
-                    
-                    $('#dispatch').on('shown.bs.tab', function() {
-                        setTimeout(function() {
-                            if (!$.fn.DataTable.isDataTable('#dispatchTabDispatchedTable')) {
-                                initializeDispatchedTable();
-                            }
-                        }, 100);
-                    });
-                    
-                    // Initialize immediately if tab is already active
-                    if ($('#dispatch').hasClass('active') && $('#dispatch').hasClass('show')) {
-                        setTimeout(function() {
-                            initializeDispatchedTable();
-                        }, 500);
-                    }
-                });
-                </script>
+                    </script>
                 @endpush
             </div>
         </div>
@@ -1546,13 +1024,14 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
             // Calculate Total Value = Rate * 1
             const rateField = document.getElementById('rate');
             const totalValueField = document.getElementById('totalvalue');
+
             function calculateTotalValue() {
                 if (rateField && totalValueField) {
                     const rate = parseFloat(rateField.value) || 0;
                     totalValueField.value = (rate * 1).toFixed(2);
                 }
             }
-            
+
             if (rateField) {
                 rateField.addEventListener('input', calculateTotalValue);
                 rateField.addEventListener('change', calculateTotalValue);
@@ -1567,7 +1046,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
             const serialField = document.getElementById('serialnumber');
             const importForm = document.getElementById('importInventoryForm');
             const importOverlay = document.getElementById('importOverlay');
-            
+
             function toggleSimNumberField(itemCode) {
                 if (simNumberWrapper && simNumberField) {
                     if (itemCode === 'SL02') {
@@ -1600,7 +1079,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                         feedback.classList.add('d-none');
                     }
                 });
-                
+
                 // Initialize SIM number field visibility on page load
                 if (itemCombined.value) {
                     const [code] = itemCombined.value.split('|');
@@ -1610,7 +1089,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
 
             // Show overlay during bulk import to smooth transitions
             if (importForm && importOverlay) {
-                importForm.addEventListener('submit', function () {
+                importForm.addEventListener('submit', function() {
                     importOverlay.classList.remove('d-none');
                 });
             }
@@ -1628,7 +1107,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                     }
 
                     try {
-                        const token = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute('content');
+                        const token = document.querySelector('meta[name=\"csrf-token\"]')?.getAttribute(
+                            'content');
                         const response = await fetch('{{ route('inventory.checkSerial') }}', {
                             method: 'POST',
                             headers: {
@@ -1655,7 +1135,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                             serialField.classList.add('is-invalid');
                             serialField.classList.remove('is-valid');
                             if (serialFeedback) {
-                                serialFeedback.textContent = data.message || 'This serial number is already in use.';
+                                serialFeedback.textContent = data.message ||
+                                    'This serial number is already in use.';
                                 serialFeedback.classList.remove('d-none');
                                 serialFeedback.classList.add('d-block');
                             }
@@ -1673,7 +1154,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 }
 
                 // Debounce input to avoid spamming server
-                serialField.addEventListener('input', function () {
+                serialField.addEventListener('input', function() {
                     serialField.classList.remove('is-valid'); // reset while typing
                     if (serialCheckTimeout) {
                         clearTimeout(serialCheckTimeout);
@@ -1681,7 +1162,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                     serialCheckTimeout = setTimeout(checkSerialUnique, 400);
                 });
 
-                serialField.addEventListener('blur', function () {
+                serialField.addEventListener('blur', function() {
                     if (serialCheckTimeout) {
                         clearTimeout(serialCheckTimeout);
                     }
@@ -1709,9 +1190,10 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 // Form submission validation
                 addInventoryForm.addEventListener('submit', function(e) {
                     let isValid = true;
-                    
+
                     // Get all required fields including dynamically required ones
-                    const allRequiredFields = addInventoryForm.querySelectorAll('input[required], select[required]');
+                    const allRequiredFields = addInventoryForm.querySelectorAll(
+                        'input[required], select[required]');
                     allRequiredFields.forEach(input => {
                         if (!validateField(input)) {
                             isValid = false;
@@ -1728,12 +1210,13 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                         }
                         isValid = false;
                     }
-                    
+
                     // Validate SIM number if SL02 is selected
                     if (itemCombined && itemCombined.value.includes('SL02')) {
                         if (simNumberField && (!simNumberField.value || !simNumberField.value.trim())) {
                             simNumberField.classList.add('is-invalid');
-                            const simFeedback = simNumberField.parentElement.querySelector('.invalid-feedback');
+                            const simFeedback = simNumberField.parentElement.querySelector(
+                                '.invalid-feedback');
                             if (simFeedback) {
                                 simFeedback.classList.remove('d-none');
                                 simFeedback.classList.add('d-block');
@@ -1998,25 +1481,26 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                             showError('QR code already scanned!', 'qr_error');
                             return;
                         }
-                        
+
                         const currentRow = this.closest('.item-row');
                         if (!currentRow) {
-                            showError('Cannot determine which item row this scanner belongs to!', 'qr_error');
+                            showError('Cannot determine which item row this scanner belongs to!',
+                                'qr_error');
                             return;
                         }
-                        
+
                         const selectedItemCode = currentRow.querySelector('.item-select').value;
                         if (!selectedItemCode) {
                             showError('Please select an item first before scanning QR codes!', 'qr_error');
                             return;
                         }
-                        
+
                         if (selectedItemCode === "SL02") {
                             scannedCode = scannedCode.split(';')[0];
                         }
 
                         const storeId = document.getElementById('dispatchStoreId').value;
-                        
+
                         fetch('{{ route('inventory.checkQR') }}', {
                                 method: 'POST',
                                 headers: {
@@ -2038,7 +1522,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     updateQuantityAndTotal();
                                     clearError();
                                 } else {
-                                    showError('Invalid QR code! Item not found in inventory.', 'qr_error');
+                                    showError('Invalid QR code! Item not found in inventory.',
+                                        'qr_error');
                                 }
                             })
                             .catch(() => showError('Error checking QR code!', 'qr_error'));
@@ -2084,7 +1569,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                     document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
                     document.getElementById('item_make').value = selectedOption.dataset.make || '';
                     document.getElementById('item_model').value = selectedOption.dataset.model || '';
-                    
+
                     scannedQRs = [];
                     updateScannedQRs();
                     updateQuantityAndTotal();
@@ -2172,7 +1657,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
 
                     if (isBulkMode) {
                         // Bulk mode: Include all items (dispatchable and non-dispatchable)
-                        
+
                         // Group valid items by item_code
                         const groupedItems = {};
                         bulkDispatchPreviewData.validItems.forEach(item => {
@@ -2227,27 +1712,28 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                         });
                     } else {
                         // Manual entry mode (existing behavior)
-                    const itemRows = document.querySelectorAll('#itemsContainer .item-row');
+                        const itemRows = document.querySelectorAll('#itemsContainer .item-row');
 
-                    itemRows.forEach(row => {
-                        const itemSelect = row.querySelector('.item-select');
-                        if (itemSelect.selectedIndex === 0) return;
+                        itemRows.forEach(row => {
+                            const itemSelect = row.querySelector('.item-select');
+                            if (itemSelect.selectedIndex === 0) return;
 
-                        const selectedOption = itemSelect.options[itemSelect.selectedIndex];
-                        const scannedQRsList = row.querySelector('ul.list-group.my-1');
-                        const scannedQRs = Array.from(scannedQRsList.querySelectorAll('li')).map(
-                            li => li.textContent);
+                            const selectedOption = itemSelect.options[itemSelect.selectedIndex];
+                            const scannedQRsList = row.querySelector('ul.list-group.my-1');
+                            const scannedQRs = Array.from(scannedQRsList.querySelectorAll('li'))
+                                .map(
+                                    li => li.textContent);
 
-                        itemsData.push({
-                            code: selectedOption.value,
-                            name: selectedOption.dataset.item,
-                            rate: selectedOption.dataset.rate,
-                            make: selectedOption.dataset.make,
-                            model: selectedOption.dataset.model,
-                            quantity: row.querySelector('.item-quantity').value,
-                            serials: scannedQRs
+                            itemsData.push({
+                                code: selectedOption.value,
+                                name: selectedOption.dataset.item,
+                                rate: selectedOption.dataset.rate,
+                                make: selectedOption.dataset.make,
+                                model: selectedOption.dataset.model,
+                                quantity: row.querySelector('.item-quantity').value,
+                                serials: scannedQRs
+                            });
                         });
-                    });
                     }
 
                     if (itemsData.length === 0 && nonDispatchableItems.length === 0) {
@@ -2278,22 +1764,22 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                               <p><strong>Vendor:</strong> ${vendorName}</p>
                               <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
                             </div>
-                            
+
                             ${itemsData.length > 0 ? `
-                            <div class="section-title">Items Ready to Dispatch</div>
-                            <table>
-                              <thead>
-                                <tr>
-                                  <th>Item Code</th>
-                                  <th>Item Name</th>
-                                  <th>Quantity</th>
-                                  <th>Rate</th>
-                                  <th>Make/Model</th>
-                                  <th>Serial Numbers</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                ${itemsData.map(item => `
+                                                                                                                                <div class="section-title">Items Ready to Dispatch</div>
+                                                                                                                                <table>
+                                                                                                                                  <thead>
+                                                                                                                                    <tr>
+                                                                                                                                      <th>Item Code</th>
+                                                                                                                                      <th>Item Name</th>
+                                                                                                                                      <th>Quantity</th>
+                                                                                                                                      <th>Rate</th>
+                                                                                                                                      <th>Make/Model</th>
+                                                                                                                                      <th>Serial Numbers</th>
+                                                                                                                                    </tr>
+                                                                                                                                  </thead>
+                                                                                                                                  <tbody>
+                                                                                                                                    ${itemsData.map(item => `
                                   <tr>
                                     <td>${item.code}</td>
                                     <td>${item.name}</td>
@@ -2303,23 +1789,23 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     <td class="serial-list">${item.serials.join(', ')}</td>
                                   </tr>
                                 `).join('')}
-                              </tbody>
-                            </table>
-                            ` : ''}
+                                                                                                                                  </tbody>
+                                                                                                                                </table>
+                                                                                                                                ` : ''}
 
                             ${nonDispatchableItems.length > 0 ? `
-                            <div class="section-title">Items Could not be Dispatched</div>
-                            <table>
-                              <thead>
-                                <tr>
-                                  <th>Item Code</th>
-                                  <th>Item Name</th>
-                                  <th>Serial Number</th>
-                                  <th>Error/Reason</th>
-                                </tr>
-                              </thead>
-                              <tbody>
-                                ${nonDispatchableItems.map(item => `
+                                                                                                                                <div class="section-title">Items Could not be Dispatched</div>
+                                                                                                                                <table>
+                                                                                                                                  <thead>
+                                                                                                                                    <tr>
+                                                                                                                                      <th>Item Code</th>
+                                                                                                                                      <th>Item Name</th>
+                                                                                                                                      <th>Serial Number</th>
+                                                                                                                                      <th>Error/Reason</th>
+                                                                                                                                    </tr>
+                                                                                                                                  </thead>
+                                                                                                                                  <tbody>
+                                                                                                                                    ${nonDispatchableItems.map(item => `
                                   <tr class="error-row">
                                     <td>${item.code}</td>
                                     <td>${item.name}</td>
@@ -2327,9 +1813,9 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     <td class="error-cell">${item.error}</td>
                                   </tr>
                                 `).join('')}
-                              </tbody>
-                            </table>
-                            ` : ''}
+                                                                                                                                  </tbody>
+                                                                                                                                </table>
+                                                                                                                                ` : ''}
 
                             <script>
                               window.onload = function() {
@@ -2349,18 +1835,19 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
             if (issueMaterialBtn) {
                 issueMaterialBtn.addEventListener('click', function(e) {
                     e.preventDefault();
-                    
+
                     // Check if in bulk mode (preview is visible)
                     const bulkPreview = document.getElementById('bulkDispatchPreview');
-                    const isBulkMode = bulkPreview && bulkPreview.style.display !== 'none' && 
-                                      bulkDispatchPreviewData.validItems.length > 0;
+                    const isBulkMode = bulkPreview && bulkPreview.style.display !== 'none' &&
+                        bulkDispatchPreviewData.validItems.length > 0;
 
                     if (isBulkMode) {
                         // Bulk dispatch mode
                         const vendorId = document.getElementById('vendorName').value;
                         const projectId = document.querySelector('input[name="project_id"]').value;
                         const storeId = document.getElementById('dispatchStoreId').value;
-                        const storeInchargeId = document.querySelector('input[name="store_incharge_id"]').value;
+                        const storeInchargeId = document.querySelector('input[name="store_incharge_id"]')
+                            .value;
 
                         if (!vendorId) {
                             Swal.fire('Error', 'Please select a vendor', 'error');
@@ -2391,7 +1878,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                         fetch("{{ route('inventory.confirm-bulk-dispatch') }}", {
                                 method: "POST",
                                 headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .getAttribute('content'),
                                     'X-Requested-With': 'XMLHttpRequest',
                                     'Content-Type': 'application/json',
                                 },
@@ -2438,44 +1926,59 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                             });
                     } else {
                         // Manual entry mode (existing behavior)
-                    loadingIssue = true;
-                    const button = this;
-                    const originalText = button.innerHTML;
-                    button.disabled = true;
-                    button.innerHTML = `
+                        loadingIssue = true;
+                        const button = this;
+                        const originalText = button.innerHTML;
+                        button.disabled = true;
+                        button.innerHTML = `
                         <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
                         Processing...
                     `;
-                    const form = document.getElementById('dispatchForm');
-                    const formData = new FormData(form);
+                        const form = document.getElementById('dispatchForm');
+                        const formData = new FormData(form);
 
-                    fetch("{{ route('inventory.dispatchweb') }}", {
-                            method: "POST",
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
-                                'X-Requested-With': 'XMLHttpRequest',
-                            },
-                            body: formData
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            loadingIssue = false;
-                            button.disabled = false;
-                            button.innerHTML = originalText;
-                            if (data.status === 'success') {
-                                Swal.fire({
-                                    title: 'Success!',
-                                    text: data.message,
-                                    icon: 'success',
-                                    confirmButtonText: 'OK'
-                                }).then(() => {
-                                    form.reset();
-                                    location.reload();
-                                });
-                            } else {
+                        fetch("{{ route('inventory.dispatchweb') }}", {
+                                method: "POST",
+                                headers: {
+                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                        .getAttribute('content'),
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                },
+                                body: formData
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                loadingIssue = false;
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+                                if (data.status === 'success') {
+                                    Swal.fire({
+                                        title: 'Success!',
+                                        text: data.message,
+                                        icon: 'success',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        form.reset();
+                                        location.reload();
+                                    });
+                                } else {
+                                    Swal.fire({
+                                        title: 'Error!',
+                                        text: data.message,
+                                        icon: 'error',
+                                        confirmButtonText: 'OK'
+                                    }).then(() => {
+                                        loadingIssue = false;
+                                        button.disabled = false;
+                                        button.innerHTML = originalText;
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                console.error(error);
                                 Swal.fire({
                                     title: 'Error!',
-                                    text: data.message,
+                                    text: 'Something went wrong. Please try again.',
                                     icon: 'error',
                                     confirmButtonText: 'OK'
                                 }).then(() => {
@@ -2483,21 +1986,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     button.disabled = false;
                                     button.innerHTML = originalText;
                                 });
-                            }
-                        })
-                        .catch(error => {
-                            console.error(error);
-                            Swal.fire({
-                                title: 'Error!',
-                                text: 'Something went wrong. Please try again.',
-                                icon: 'error',
-                                confirmButtonText: 'OK'
-                            }).then(() => {
-                                loadingIssue = false;
-                                button.disabled = false;
-                                button.innerHTML = originalText;
                             });
-                        });
                     }
                 });
             }
@@ -2593,14 +2082,15 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                 // Enable/disable issue button based on valid items
                                 const issueMaterialBtn = document.getElementById('issueMaterial');
                                 if (issueMaterialBtn) {
-                                    issueMaterialBtn.disabled = bulkDispatchPreviewData.validItems.length === 0;
+                                    issueMaterialBtn.disabled = bulkDispatchPreviewData.validItems
+                                        .length === 0;
                                 }
 
                                 // Show success message with summary
-                                const totalItems = bulkDispatchPreviewData.validItems.length + 
-                                                 bulkDispatchPreviewData.alreadyDispatched.length + 
-                                                 bulkDispatchPreviewData.duplicateSerials.length + 
-                                                 bulkDispatchPreviewData.nonExisting.length;
+                                const totalItems = bulkDispatchPreviewData.validItems.length +
+                                    bulkDispatchPreviewData.alreadyDispatched.length +
+                                    bulkDispatchPreviewData.duplicateSerials.length +
+                                    bulkDispatchPreviewData.nonExisting.length;
                                 const validCount = bulkDispatchPreviewData.validItems.length;
 
                                 Swal.fire({
@@ -2610,7 +2100,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                                     confirmButtonText: 'OK'
                                 });
                             } else if (data.status === 'error') {
-                                Swal.fire('Error', data.message || 'Failed to process bulk upload', 'error');
+                                Swal.fire('Error', data.message || 'Failed to process bulk upload',
+                                    'error');
                             } else {
                                 Swal.fire('Error', 'Unexpected response from server', 'error');
                             }
@@ -2669,7 +2160,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
             }
 
             window.removeDispatchedItem = function(serialNumber) {
-                alreadyDispatchedItems = alreadyDispatchedItems.filter(item => item.serial_number !== serialNumber);
+                alreadyDispatchedItems = alreadyDispatchedItems.filter(item => item.serial_number !==
+                    serialNumber);
                 displayAlreadyDispatched(alreadyDispatchedItems);
 
                 if (alreadyDispatchedItems.length === 0) {
@@ -2704,7 +2196,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 // Display already dispatched items
                 if (data.alreadyDispatched.length > 0) {
                     document.getElementById('alreadyDispatchedPreviewSection').style.display = 'block';
-                    displaySerialNumbersGrid('alreadyDispatchedPreviewList', data.alreadyDispatched, true, 'alreadyDispatched');
+                    displaySerialNumbersGrid('alreadyDispatchedPreviewList', data.alreadyDispatched, true,
+                        'alreadyDispatched');
                 } else {
                     document.getElementById('alreadyDispatchedPreviewSection').style.display = 'none';
                 }
@@ -2712,7 +2205,8 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 // Display duplicate serials
                 if (data.duplicateSerials.length > 0) {
                     document.getElementById('duplicateSerialsSection').style.display = 'block';
-                    displaySerialNumbersGrid('duplicateSerialsList', data.duplicateSerials, true, 'duplicateSerials');
+                    displaySerialNumbersGrid('duplicateSerialsList', data.duplicateSerials, true,
+                        'duplicateSerials');
                 } else {
                     document.getElementById('duplicateSerialsSection').style.display = 'none';
                 }
@@ -2741,14 +2235,14 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 items.forEach((item, index) => {
                     const serialNumber = (item.serial_number || 'N/A').toString();
                     // Use data attributes instead of inline onclick for better reliability
-                    const removeBtn = showRemoveButton ? 
-                        `<button type="button" class="btn btn-sm btn-danger ms-2 remove-bulk-item-btn" 
-                            data-serial="${serialNumber.replace(/"/g, '&quot;')}" 
-                            data-category="${(category || '').replace(/"/g, '&quot;')}" 
+                    const removeBtn = showRemoveButton ?
+                        `<button type="button" class="btn btn-sm btn-danger ms-2 remove-bulk-item-btn"
+                            data-serial="${serialNumber.replace(/"/g, '&quot;')}"
+                            data-category="${(category || '').replace(/"/g, '&quot;')}"
                             title="Remove">
                             <i class="mdi mdi-close"></i>
                         </button>` : '';
-                    
+
                     html += `
                         <div class="col-md-3 col-sm-4 col-6 mb-2">
                             <div class="d-flex align-items-center">
@@ -2781,9 +2275,10 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
                 const serialStr = String(serialNumber);
 
                 if (category === 'alreadyDispatched') {
-                    bulkDispatchPreviewData.alreadyDispatched = bulkDispatchPreviewData.alreadyDispatched.filter(
-                        item => String(item.serial_number) !== serialStr
-                    );
+                    bulkDispatchPreviewData.alreadyDispatched = bulkDispatchPreviewData.alreadyDispatched
+                        .filter(
+                            item => String(item.serial_number) !== serialStr
+                        );
                 } else if (category === 'duplicateSerials') {
                     bulkDispatchPreviewData.duplicateSerials = bulkDispatchPreviewData.duplicateSerials.filter(
                         item => String(item.serial_number) !== serialStr
@@ -3271,7 +2766,7 @@ window['skipAutoInit_unifiedInventoryTable'] = true;
             border-left: none;
         }
 
-                .download-format-link {
+        .download-format-link {
             display: inline-flex;
             align-items: center;
             gap: 0.25rem;

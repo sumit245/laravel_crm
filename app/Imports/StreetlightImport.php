@@ -3,15 +3,20 @@
 namespace App\Imports;
 
 use App\Models\Streetlight;
-use Maatwebsite\Excel\Concerns\ToModel;
+use Illuminate\Support\Collection;
+use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
-use Maatwebsite\Excel\Concerns\WithValidation;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
-class StreetlightImport implements ToModel, WithHeadingRow, WithValidation
+class StreetlightImport implements ToCollection, WithHeadingRow
 {
     protected $projectId;
     protected $districtCounters = [];
+    protected array $errors = [];
+    protected int $importedCount = 0;
+    protected int $updatedCount = 0;
+    protected int $skippedCount = 0;
 
     // Constructor to accept project ID
     public function __construct($projectId)
@@ -19,60 +24,163 @@ class StreetlightImport implements ToModel, WithHeadingRow, WithValidation
         $this->projectId = $projectId;
     }
 
-    public function model(array $row)
+    public function collection(Collection $rows)
     {
-        $district = strtoupper(substr($row['district'], 0, 3)); // Extract first 3 letters of district
+        foreach ($rows as $index => $row) {
+            try {
+                // Skip empty rows
+                if (empty($row['district']) && empty($row['block']) && empty($row['panchayat'])) {
+                    continue;
+                }
 
-        // If the district is not already counted, find the last task_id for it
-        if (!isset($this->districtCounters[$district])) {
-            $lastTask = Streetlight::where('task_id', 'LIKE', "{$district}%")
-                ->orderBy('task_id', 'desc')
-                ->first();
+                $state = trim($row['state'] ?? '');
+                $district = trim($row['district'] ?? '');
+                $block = trim($row['block'] ?? '');
+                $panchayat = trim($row['panchayat'] ?? '');
+                $ward = trim($row['ward'] ?? '');
+                $totalPoles = isset($row['total_poles']) ? (int) $row['total_poles'] : null;
+                $mukhiyaContact = trim($row['mukhiya_contact'] ?? '');
 
-            if ($lastTask) {
-                // Extract numeric part and increment
-                preg_match('/(\d+)$/', $lastTask->task_id, $matches);
-                $this->districtCounters[$district] = isset($matches[1]) ? (int) $matches[1] + 1 : 1;
-            } else {
-                $this->districtCounters[$district] = 1;
+                // Validate required fields
+                if (empty($state) || empty($district) || empty($block) || empty($panchayat)) {
+                    $this->skippedCount++;
+                    $this->errors[] = [
+                        'row' => $index + 2,
+                        'district' => $district,
+                        'block' => $block,
+                        'panchayat' => $panchayat,
+                        'reason' => 'Missing required fields (State, District, Block, or Panchayat)'
+                    ];
+                    continue;
+                }
+
+                // Check for existing site with same District->Block->Panchayat
+                $existingSite = Streetlight::where('project_id', $this->projectId)
+                    ->where('district', $district)
+                    ->where('block', $block)
+                    ->where('panchayat', $panchayat)
+                    ->first();
+
+                if ($existingSite) {
+                    // Parse wards
+                    $existingWards = !empty($existingSite->ward) 
+                        ? array_map('intval', explode(',', $existingSite->ward))
+                        : [];
+                    $newWards = !empty($ward) 
+                        ? array_map('intval', explode(',', $ward))
+                        : [];
+
+                    // Check if wards are the same
+                    sort($existingWards);
+                    sort($newWards);
+                    $sameWards = $existingWards === $newWards;
+
+                    if ($sameWards) {
+                        // Same District->Block->Panchayat->Wards -> Skip with error
+                        $this->skippedCount++;
+                        $this->errors[] = [
+                            'row' => $index + 2,
+                            'district' => $district,
+                            'block' => $block,
+                            'panchayat' => $panchayat,
+                            'ward' => $ward,
+                            'reason' => 'Site already exists'
+                        ];
+                        continue;
+                    } else {
+                        // Different wards -> Update existing site by merging wards
+                        $mergedWards = array_unique(array_merge($existingWards, $newWards));
+                        sort($mergedWards);
+                        $mergedWardsString = implode(',', $mergedWards);
+
+                        // Calculate new total_poles (assuming 10 poles per ward)
+                        $newTotalPoles = count($mergedWards) * 10;
+
+                        $existingSite->update([
+                            'ward' => $mergedWardsString,
+                            'total_poles' => $newTotalPoles,
+                            'mukhiya_contact' => !empty($mukhiyaContact) ? $mukhiyaContact : $existingSite->mukhiya_contact,
+                        ]);
+
+                        $this->updatedCount++;
+                        continue;
+                    }
+                }
+
+                // No duplicate found -> Create new site
+                $districtPrefix = strtoupper(substr($district, 0, 3));
+
+                // Get or initialize district counter
+                if (!isset($this->districtCounters[$districtPrefix])) {
+                    $lastTask = Streetlight::where('task_id', 'LIKE', "{$districtPrefix}%")
+                        ->orderBy('task_id', 'desc')
+                        ->first();
+
+                    if ($lastTask) {
+                        preg_match('/(\d+)$/', $lastTask->task_id, $matches);
+                        $this->districtCounters[$districtPrefix] = isset($matches[1]) ? (int) $matches[1] + 1 : 1;
+                    } else {
+                        $this->districtCounters[$districtPrefix] = 1;
+                    }
+                }
+
+                $taskId = sprintf('%s%03d', $districtPrefix, $this->districtCounters[$districtPrefix]);
+                $this->districtCounters[$districtPrefix]++;
+
+                // Calculate total_poles if not provided (10 per ward)
+                if ($totalPoles === null && !empty($ward)) {
+                    $wardCount = count(array_map('intval', explode(',', $ward)));
+                    $totalPoles = $wardCount * 10;
+                }
+
+                Streetlight::create([
+                    'task_id' => $taskId,
+                    'state' => $state,
+                    'district' => $district,
+                    'block' => $block,
+                    'panchayat' => $panchayat,
+                    'ward' => !empty($ward) ? $ward : null,
+                    'total_poles' => $totalPoles,
+                    'mukhiya_contact' => !empty($mukhiyaContact) ? $mukhiyaContact : null,
+                    'project_id' => $this->projectId,
+                    'district_code' => isset($row['district_code']) ? trim($row['district_code']) : null,
+                    'block_code' => isset($row['block_code']) ? trim($row['block_code']) : null,
+                    'panchayat_code' => isset($row['panchayat_code']) ? trim($row['panchayat_code']) : null,
+                    'ward_type' => isset($row['ward_type']) ? trim($row['ward_type']) : null,
+                ]);
+
+                $this->importedCount++;
+            } catch (\Exception $e) {
+                $this->skippedCount++;
+                $this->errors[] = [
+                    'row' => $index + 2,
+                    'district' => $row['district'] ?? '',
+                    'block' => $row['block'] ?? '',
+                    'panchayat' => $row['panchayat'] ?? '',
+                    'reason' => 'Error: ' . $e->getMessage()
+                ];
+                Log::error("StreetlightImport row " . ($index + 2) . " error: " . $e->getMessage(), ['row' => $row ?? []]);
             }
         }
-
-        // Generate task_id
-        $taskId = sprintf('%s%03d', $district, $this->districtCounters[$district]);
-        $this->districtCounters[$district]++; // Increment counter for next row
-        // Convert the ward field to an array if it's not already
-        // Convert 'ward' to an array of integers if it's not empty
-        $ward = isset($row['ward']) && !empty($row['ward']) ? array_map('intval', explode(',', $row['ward'])) : [];
-
-        return new Streetlight([
-            'task_id' => $taskId,
-            'state' => $row['state'],
-            'district' => $row['district'],
-            'block' => $row['block'],
-            'panchayat' => $row['panchayat'],
-            'ward' => isset($row['ward']) ? $row['ward'] : null,
-            // 'total_poles' => isset($row['total_scope']) ? $row['total_poles'] : (isset($row['pole']) ? $row['pole'] : null),
-            'mukhiya_contact' => isset($row['mukhiya_contact']) ? $row['mukhiya_contact'] : null,
-            'project_id' => $this->projectId,
-            'district_code' => isset($row['district_code']) ? $row['district_code'] : null,
-            'block_code' => isset($row['block_code']) ? $row['block_code'] : null,
-            'panchayat_code' => isset($row['panchayat_code']) ? $row['panchayat_code'] : null,
-            'ward_type' => isset($row['ward_type']) ? $row['ward_type'] : null,
-            // Note: The following columns were dropped in migration 2025_08_06_204122:
-            // complete_pole_number, uname, SID, district_id, block_id, panchayat_id, ward_id,
-            // luminary_qr, battery_qr, panel_qr, file, lat, lng, remark
-            // These are now handled in the poles table or other related tables
-        ]);
     }
-    public function rules(): array
+
+    public function getErrors(): array
     {
-        return [
-            'state' => 'required',
-            'district' => 'required',
-            'block' => 'required',
-            'panchayat' => 'required',
-            'ward' => 'nullable',   // ward is nullable and should be an array
-        ];
+        return $this->errors;
+    }
+
+    public function getImportedCount(): int
+    {
+        return $this->importedCount;
+    }
+
+    public function getUpdatedCount(): int
+    {
+        return $this->updatedCount;
+    }
+
+    public function getSkippedCount(): int
+    {
+        return $this->skippedCount;
     }
 }

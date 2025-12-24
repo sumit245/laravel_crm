@@ -1,0 +1,4 @@
+
+(1) edit project icon is invisible
+(2) edit site icon is invisible
+(3) Delete icon (next to specific target) is invisible

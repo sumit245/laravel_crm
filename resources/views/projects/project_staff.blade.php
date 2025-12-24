@@ -255,7 +255,7 @@
 </style>
 
 <div class="staff-management-container">
-    <div class="row">
+    <div class="row my-2">
         <!-- Assigned Staff Section -->
         <div class="col-lg-5">
             <div class="staff-section-card position-relative">

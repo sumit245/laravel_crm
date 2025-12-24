@@ -3,7 +3,7 @@
 @section("content")
   <div class="min-h-screen bg-gray-50 p-4">
     <!-- Header -->
-    <div class="border-dark mb-4 border-2 bg-white p-4">
+    <div class="border-dark mb-4 border-2 bg-white p-4 rounded">
       <div class="d-flex justify-content-between align-items-center">
         <h1 class="h2 font-weight-bold mb-0">
           @if (isset($projectType) && $projectType == 1)
@@ -29,35 +29,37 @@
 
     <div class="d-flex" style="gap: 1.5rem;">
       <!-- Left Sidebar - Ward Buttons -->
-      <div style="width: 250px;">
-        @if (isset($projectType) && $projectType == 1)
+      @if (isset($projectType) && $projectType == 1)
+        <div style="width: 250px;">
           @php
             $wards = collect(explode(",", $site->ward))
                 ->map(fn($w) => "Ward " . trim($w))
                 ->toArray();
           @endphp
+          <div class="card border-dark ward-button active mb-3 cursor-pointer border-2 rounded" 
+               data-ward=""
+               onclick="loadWardData(event, '')">
+            <div class="card-body p-3 text-center">
+              <div class="h5 font-weight-bold">All Wards</div>
+            </div>
+          </div>
           @foreach ($wards as $ward)
-            <div class="card border-dark ward-button mb-3 cursor-pointer border-2" data-ward="{{ $ward }}"
-              onclick="loadWardData(event, '{{ $ward }}')">
+            <div class="card border-dark ward-button mb-3 cursor-pointer border-2 rounded" 
+                 data-ward="{{ $ward }}"
+                 onclick="loadWardData(event, '{{ $ward }}')">
               <div class="card-body p-4 text-center">
                 <div class="h4 font-weight-bold">{{ $ward }}</div>
               </div>
             </div>
           @endforeach
-        @else
-          <div class="card border-dark mb-3 border-2">
-            <div class="card-body p-4 text-center">
-              <div class="h4 font-weight-bold">Site Details</div>
-            </div>
-          </div>
-        @endif
-      </div>
+        </div>
+      @endif
 
       <!-- Main Content -->
-      <div class="flex-fill border-dark border-2 bg-white">
-        <div class="p-1">
+      <div class="flex-fill border-dark border-2 bg-white rounded">
+        <div class="p-4">
           <!-- Engineer and Vendor Info -->
-          <div class="d-flex justify-content-between align-items-start flex-wrap">
+          <div class="d-flex justify-content-between align-items-start flex-wrap mb-4">
             <div>
               @if (isset($projectType) && $projectType == 1)
                 <p class="h5 font-weight-medium mb-1">
@@ -95,51 +97,120 @@
             </div>
           </div>
 
-          <!-- Tabs -->
-          <ul class="nav nav-tabs fixed-navbar-project mt-5" id="myTab" role="tablist">
-            <li class="nav-item" role="presentation">
-              <button class="nav-link active" id="surveyed-tab" data-bs-toggle="tab" data-status="surveyed" type="button"
-                role="tab" aria-selected="true">
-                Surveyed Poles
-              </button>
-            </li>
-            <li class="nav-item" role="presentation">
-              <button class="nav-link" id="installed-tab" data-bs-toggle="tab" data-status="installed" type="button"
-                role="tab" aria-selected="false">
-                Installed Lights
-              </button>
-            </li>
-          </ul>
+          @if (isset($projectType) && $projectType == 1)
+            @php
+              // Prepare columns for datatable
+              $columns = [
+                  ['title' => 'Pole Number'],
+                  ['title' => 'Beneficiary'],
+                  ['title' => 'Beneficiary Contact'],
+                  ['title' => 'Ward'],
+              ];
 
-          <!-- Single DataTable -->
-          <x-data-table id="polesDataTable" class="table-striped table-bordered table-sm mt-3 table">
-            <x-slot:thead>
-              <tr>
-                <th>Pole Number</th>
-                <th>Beneficiary</th>
-                <th>Beneficiary Contact</th>
-                <th>Ward</th>
-                <th>Actions</th>
-              </tr>
-            </x-slot:thead>
-            <x-slot:tbody>
-          @foreach ($poles ?? [] as $pole)
-                <tr data-ward="{{ $pole->ward_name }}" data-surveyed="{{ $pole->isSurveyDone }}"
-                  data-installed="{{ $pole->isInstallationDone }}">
-                  <td>{{ $pole->complete_pole_number }}</td>
-                  <td>{{ $pole->beneficiary ?? "N/A" }}</td>
-                  <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
-                  <td>{{ $pole->ward_name ?? "N/A" }}</td>
-                  <td>
-                    <a href="#" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-                      <i class="mdi mdi-eye"></i>
-                    </a>
-                  </td>
-                </tr>
-              @endforeach
-            </x-slot:tbody>
-          </x-data-table>
+              // Prepare filters
+              $filters = [];
+              
+              // Ward filter (select) - use data attribute for filtering
+              if (isset($wardOptions) && !empty($wardOptions)) {
+                  $filters[] = [
+                      'name' => 'ward',
+                      'label' => 'Ward',
+                      'type' => 'select',
+                      'column' => 3, // Ward column index
+                      'options' => array_merge(['' => 'All Wards'], $wardOptions),
+                      'width' => 3,
+                      'useDataAttribute' => 'ward', // Filter by data-ward attribute
+                  ];
+              }
 
+              // Beneficiary filter (text)
+              $filters[] = [
+                  'name' => 'beneficiary',
+                  'label' => 'Beneficiary',
+                  'type' => 'text',
+                  'column' => 1, // Beneficiary column index
+                  'width' => 3,
+              ];
+
+              // Pole Number filter (text)
+              $filters[] = [
+                  'name' => 'pole_number',
+                  'label' => 'Pole Number',
+                  'type' => 'text',
+                  'column' => 0, // Pole Number column index
+                  'width' => 3,
+              ];
+
+              // Prepare import/export URLs
+              $importRoute = route('sites.poles.import', ['siteId' => $site->id]);
+              $importFormatUrl = route('sites.poles.exportFormat', ['siteId' => $site->id]);
+              $bulkDeleteRoute = route('sites.poles.bulkDelete');
+            @endphp
+
+            <!-- Tabs -->
+            <ul class="nav nav-tabs mb-3" id="polesTab" role="tablist">
+              <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="surveyed-tab" data-bs-toggle="tab" data-bs-target="#poles-tab-content" 
+                        type="button" role="tab" aria-controls="poles-tab-content" aria-selected="true"
+                        data-status="surveyed">
+                  Surveyed Poles
+                </button>
+              </li>
+              <li class="nav-item" role="presentation">
+                <button class="nav-link" id="installed-tab" data-bs-toggle="tab" data-bs-target="#poles-tab-content" 
+                        type="button" role="tab" aria-controls="poles-tab-content" aria-selected="false"
+                        data-status="installed">
+                  Installed Lights
+                </button>
+              </li>
+            </ul>
+
+            <!-- Single DataTable with all poles -->
+            <div class="tab-content" id="polesTabContent">
+              <div class="tab-pane fade show active" id="poles-tab-content" role="tabpanel">
+                <x-datatable 
+                  id="polesDataTable" 
+                  :columns="$columns" 
+                  :exportEnabled="true"
+                  :importEnabled="true" 
+                  :importRoute="$importRoute" 
+                  :importFormatUrl="$importFormatUrl" 
+                  :bulkDeleteEnabled="true" 
+                  :bulkDeleteRoute="$bulkDeleteRoute"
+                  pageLength="50"
+                  searchPlaceholder="Search poles..." 
+                  :filters="$filters">
+                  @foreach ($poles ?? [] as $pole)
+                    <tr data-ward="{{ $pole->ward_name }}" 
+                        data-surveyed="{{ $pole->isSurveyDone ? 1 : 0 }}"
+                        data-installed="{{ $pole->isInstallationDone ? 1 : 0 }}"
+                        data-pole-id="{{ $pole->id }}">
+                      <td>
+                        <input type="checkbox" class="row-checkbox" value="{{ $pole->id }}">
+                      </td>
+                      <td>{{ $pole->complete_pole_number }}</td>
+                      <td>{{ $pole->beneficiary ?? "N/A" }}</td>
+                      <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
+                      <td>{{ $pole->ward_name ?? "N/A" }}</td>
+                      <td class="text-center">
+                        <a href="{{ route('poles.show', $pole->id) }}" 
+                           class="btn btn-icon btn-info" 
+                           data-toggle="tooltip" 
+                           title="View Details">
+                          <i class="mdi mdi-eye"></i>
+                        </a>
+                      </td>
+                    </tr>
+                  @endforeach
+                </x-datatable>
+              </div>
+            </div>
+          @else
+            <!-- Non-streetlight project content can go here -->
+            <div class="text-center p-4">
+              <p class="text-muted">Site details for non-streetlight projects</p>
+            </div>
+          @endif
         </div>
       </div>
     </div>
@@ -147,65 +218,188 @@
 
  @push('styles')
   <style>
-    .nav-tabs {
-    border-top: 1px solid #ebedf2;
-    border-bottom: none;
+    .site-view-container {
+      background: transparent;
     }
-    .mt-5 {
-    margin-top: 4rem !important;
+
+    .ward-button {
+      transition: all 0.2s ease;
+      cursor: pointer;
     }
-    .fixed-navbar-project {
-    position: relative;
-    margin-left: 2px;
-    max-width: 100%;
-    background-color: transparent;
-    z-index: 1000;
-    padding: 30px 0 0;
-   }
+
+    .ward-button:hover {
+      background-color: var(--color-primary-soft, rgba(31, 59, 179, 0.08));
+    }
+
+    .ward-button.active {
+      background-color: var(--color-primary, #1F3BB3);
+      color: white;
+      border-color: var(--color-primary-dark, #172d88);
+    }
+
+    .ward-button.active .h4,
+    .ward-button.active .h5 {
+      color: white;
+    }
+
+    /* Override global .nav styles for nav-tabs to ensure horizontal layout */
+    #polesTab.nav.nav-tabs {
+      position: static !important;
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: nowrap !important;
+      max-width: none !important;
+      width: 100% !important;
+      border-bottom: 2px solid #dee2e6;
+      margin-bottom: 1.5rem;
+    }
+
+    #polesTab.nav.nav-tabs .nav-item {
+      margin-bottom: -2px;
+      flex-shrink: 0;
+    }
+
+    #polesTab.nav.nav-tabs .nav-link {
+      border: none;
+      border-bottom: 2px solid transparent;
+      color: #6c757d;
+      padding: 0.75rem 1.25rem;
+      transition: all 0.3s ease;
+      background-color: transparent;
+      font-weight: 500;
+      white-space: nowrap;
+    }
+
+    #polesTab.nav.nav-tabs .nav-link:hover {
+      border-bottom-color: var(--color-primary, #1F3BB3);
+      color: var(--color-primary, #1F3BB3);
+      background-color: transparent;
+    }
+
+    #polesTab.nav.nav-tabs .nav-link.active {
+      border-bottom-color: var(--color-primary, #1F3BB3);
+      color: var(--color-primary, #1F3BB3);
+      font-weight: 600;
+      background-color: transparent;
+    }
+
+    .rounded {
+      border-radius: 0.25rem;
+    }
   </style>
-  @endpush
+ @endpush
 
   <!-- Scripts -->
   @push("scripts")
     <script>
+      // Store filter function reference
+      let polesTableFilterFn = null;
       let currentWard = null;
       let currentTab = 'surveyed';
 
-      function filterTable() {
-        document.querySelectorAll('#polesDataTable tbody tr').forEach(row => {
-          const ward = row.getAttribute('data-ward');
-          const surveyed = row.getAttribute('data-surveyed');
-          const installed = row.getAttribute('data-installed');
-
-          let show = true;
-
-          if (currentWard && ward !== currentWard) show = false;
-          if (currentTab === 'surveyed' && surveyed !== '1') show = false;
-          if (currentTab === 'installed' && installed !== '1') show = false;
-
-          row.style.display = show ? '' : 'none';
-        });
-      }
-
       function loadWardData(event, ward) {
         event.preventDefault();
-        currentWard = ward;
+        currentWard = ward || null;
+        
+        // Update active state
         document.querySelectorAll('.ward-button').forEach(btn => btn.classList.remove('active'));
-        event.currentTarget.classList.add('active');
-        filterTable();
+        if (event.currentTarget) {
+          event.currentTarget.classList.add('active');
+        }
+
+        // Update ward filter in datatable
+        const tableId = '#polesDataTable';
+        const table = window['table_polesDataTable'] || $(tableId).DataTable();
+        
+        if (table && typeof table.draw === 'function') {
+          // Set ward filter value
+          const wardFilterSelect = $('#datatable-wrapper-polesDataTable').find('.filter-select[data-filter="ward"]');
+          if (wardFilterSelect.length) {
+            wardFilterSelect.val(ward || '').trigger('change');
+          }
+          
+          // Also apply tab filter
+          applyPolesTableFilters();
+        } else {
+          // If table not ready, just apply tab filter
+          applyPolesTableFilters();
+        }
+      }
+
+      function applyPolesTableFilters() {
+        const tableId = '#polesDataTable';
+        const table = window['table_polesDataTable'] || $(tableId).DataTable();
+        
+        if (!table || typeof table.draw !== 'function') {
+          return;
+        }
+
+        // Remove existing filter function if it exists
+        if (polesTableFilterFn && $.fn.dataTable.ext.search) {
+          const index = $.fn.dataTable.ext.search.indexOf(polesTableFilterFn);
+          if (index !== -1) {
+            $.fn.dataTable.ext.search.splice(index, 1);
+          }
+        }
+
+        // Create new filter function
+        polesTableFilterFn = function(settings, data, dataIndex) {
+          if (settings.nTable.id !== 'polesDataTable') return true;
+          
+          try {
+            const $row = $(table.row(dataIndex).node());
+            const rowSurveyed = $row.attr('data-surveyed');
+            const rowInstalled = $row.attr('data-installed');
+            const rowWard = $row.attr('data-ward');
+            
+            // Apply tab filter
+            if (currentTab === 'surveyed' && rowSurveyed !== '1') {
+              return false;
+            }
+            if (currentTab === 'installed' && rowInstalled !== '1') {
+              return false;
+            }
+            
+            // Apply ward filter
+            if (currentWard && rowWard !== currentWard) {
+              return false;
+            }
+            
+            return true;
+          } catch (e) {
+            return true;
+          }
+        };
+
+        // Add filter function
+        if (!$.fn.dataTable.ext.search) {
+          $.fn.dataTable.ext.search = [];
+        }
+        $.fn.dataTable.ext.search.push(polesTableFilterFn);
+        
+        // Redraw table
+        table.draw();
       }
 
       document.addEventListener('DOMContentLoaded', function() {
-        // Tab switch filter
-        document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
-          tab.addEventListener('click', function() {
-            currentTab = this.getAttribute('data-status');
-            filterTable();
-          });
-        });
+        // Wait for datatable to initialize
+        setTimeout(function() {
+          // Apply initial filter for surveyed tab
+          applyPolesTableFilters();
 
-        filterTable(); // initial filter
+          // Handle tab switching
+          $('#polesTab button[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+            const target = $(e.target).data('status');
+            if (target) {
+              currentTab = target;
+              applyPolesTableFilters();
+            }
+          });
+        }, 800);
       });
+
+      // Make functions globally available for ward buttons
+      window.loadWardData = loadWardData;
     </script>
   @endpush
 

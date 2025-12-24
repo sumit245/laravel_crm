@@ -3,7 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Imports\SiteImport;
+use App\Imports\SitePoleImport;
 use App\Imports\StreetlightImport;
+use App\Helpers\ExcelHelper;
 use App\Models\City;
 use App\Models\Pole;
 use App\Models\Project;
@@ -14,6 +16,8 @@ use App\Models\StreetlightTask;
 use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
 class SiteController extends Controller
@@ -31,8 +35,74 @@ class SiteController extends Controller
 
         try {
             if ($project->project_type == 1) {
-                Excel::import(new StreetlightImport($projectId), $request->file('file'));
-                return back()->with('success', 'Streetlight data imported successfully.');
+                $import = new StreetlightImport($projectId);
+                Excel::import($import, $request->file('file'));
+
+                $errors = $import->getErrors();
+                $importedCount = $import->getImportedCount();
+                $updatedCount = $import->getUpdatedCount();
+                $skippedCount = $import->getSkippedCount();
+                $errorFileUrl = null;
+
+                if (!empty($errors)) {
+                    // Build a downloadable errors.txt file
+                    $lines = [];
+                    $lines[] = 'Streetlight Site Import Errors - ' . now()->toDateTimeString();
+                    $lines[] = 'Project ID: ' . $projectId;
+                    $lines[] = str_repeat('=', 80);
+
+                    foreach ($errors as $err) {
+                        $lines[] = "Row: " . ($err['row'] ?? 'Unknown');
+                        $lines[] = "  District: " . ($err['district'] ?? '');
+                        $lines[] = "  Block: " . ($err['block'] ?? '');
+                        $lines[] = "  Panchayat: " . ($err['panchayat'] ?? '');
+                        if (isset($err['ward'])) {
+                            $lines[] = "  Ward: " . $err['ward'];
+                        }
+                        $lines[] = "  Reason: " . ($err['reason'] ?? 'Unknown error');
+                        $lines[] = str_repeat('-', 40);
+                    }
+
+                    $content = implode(PHP_EOL, $lines) . PHP_EOL;
+
+                    // Use the public disk so URL generation is reliable
+                    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+                    if (!$disk->exists('import_errors')) {
+                        $disk->makeDirectory('import_errors');
+                    }
+
+                    $fileName = 'sites_errors_project_' . $projectId . '_' . time() . '.txt';
+                    $relativePath = 'import_errors/' . $fileName;
+                    $disk->put($relativePath, $content);
+
+                    // Public URL (requires `php artisan storage:link` once)
+                    $errorFileUrl = $disk->url($relativePath);
+                }
+
+                $redirect = redirect()->route('projects.show', $projectId)
+                    ->with('import_errors_url', $errorFileUrl)
+                    ->with('import_errors_count', count($errors))
+                    ->with('import_updated_count', $updatedCount);
+
+                if ($importedCount > 0 || $updatedCount > 0) {
+                    $message = "Streetlight data imported successfully!";
+                    if ($importedCount > 0) {
+                        $message .= " Imported: {$importedCount} site(s)";
+                    }
+                    if ($updatedCount > 0) {
+                        $message .= ", Updated: {$updatedCount} site(s)";
+                    }
+                    if (!empty($errors)) {
+                        $message .= ", Skipped rows: " . count($errors);
+                    }
+                    $redirect->with('success', $message);
+                } else {
+                    // No new rows imported - treat as warning/error
+                    $message = 'No new sites imported. Skipped rows: ' . count($errors);
+                    $redirect->withErrors(['error' => $message]);
+                }
+
+                return $redirect;
             } else {
                 Excel::import(new SiteImport($projectId), $request->file('file'));
                 return back()->with('success', 'Sites imported successfully!');
@@ -127,7 +197,63 @@ class SiteController extends Controller
                     'mukhiya_contact' => 'nullable|string|max:255',
                 ]);
 
+                // Check for existing site with same District->Block->Panchayat
+                $existingSite = Streetlight::where('project_id', $projectId)
+                    ->where('district', $validatedData['district'])
+                    ->where('block', $validatedData['block'])
+                    ->where('panchayat', $validatedData['panchayat'])
+                    ->first();
+
+                if ($existingSite) {
+                    // Parse wards
+                    $existingWards = !empty($existingSite->ward) 
+                        ? array_map('intval', explode(',', $existingSite->ward))
+                        : [];
+                    $newWards = !empty($validatedData['ward']) 
+                        ? array_map('intval', explode(',', $validatedData['ward']))
+                        : [];
+
+                    // Check if wards are the same
+                    sort($existingWards);
+                    sort($newWards);
+                    $sameWards = $existingWards === $newWards;
+
+                    if ($sameWards) {
+                        // Same District->Block->Panchayat->Wards -> Reject
+                        return redirect()->back()
+                            ->withErrors(['error' => 'Site already exists'])
+                            ->withInput();
+                    } else {
+                        // Different wards -> Update existing site by merging wards
+                        $mergedWards = array_unique(array_merge($existingWards, $newWards));
+                        sort($mergedWards);
+                        $mergedWardsString = implode(',', $mergedWards);
+
+                        // Calculate new total_poles (assuming 10 poles per ward)
+                        $newTotalPoles = count($mergedWards) * 10;
+
+                        $existingSite->update([
+                            'ward' => $mergedWardsString,
+                            'total_poles' => $newTotalPoles,
+                            'mukhiya_contact' => !empty($validatedData['mukhiya_contact']) 
+                                ? $validatedData['mukhiya_contact'] 
+                                : $existingSite->mukhiya_contact,
+                        ]);
+
+                        return redirect()->route('projects.show', $projectId)
+                            ->with('success', 'Streetlight site updated successfully with merged wards.');
+                    }
+                }
+
+                // No duplicate found -> Create new site
                 $validatedData['task_id'] = $this->generateTaskId($validatedData['district']);
+                
+                // Calculate total_poles if not provided (10 per ward)
+                if (empty($validatedData['total_poles']) && !empty($validatedData['ward'])) {
+                    $wardCount = count(array_map('intval', explode(',', $validatedData['ward'])));
+                    $validatedData['total_poles'] = $wardCount * 10;
+                }
+                
                 $streetlight = Streetlight::create($validatedData);
 
                 return redirect()->route('projects.show', $projectId)
@@ -195,6 +321,15 @@ class SiteController extends Controller
             $stateName = $site->state;
             $districtName = $site->district;
 
+            // Prepare ward options for filter
+            $wardOptions = [];
+            if ($site->ward) {
+                $wards = collect(explode(",", $site->ward))
+                    ->map(fn($w) => "Ward " . trim($w))
+                    ->toArray();
+                $wardOptions = array_combine($wards, $wards);
+            }
+
             return view('sites.show', compact(
                 'site',
                 'streetlightTask',
@@ -204,7 +339,8 @@ class SiteController extends Controller
                 'managerName',
                 'stateName',
                 'districtName',
-                'projectType'
+                'projectType',
+                'wardOptions'
             ));
         }
 
@@ -217,6 +353,126 @@ class SiteController extends Controller
         $users = User::all();
 
         return view('sites.show', compact('site', 'states', 'districts', 'projects', 'users', 'projectType'));
+    }
+
+    /**
+     * Import poles for a specific site
+     */
+    public function importPoles(Request $request, string $siteId)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            $site = Streetlight::findOrFail($siteId);
+            $streetlightTask = StreetlightTask::where('site_id', $site->id)->first();
+
+            if (!$streetlightTask) {
+                return redirect()->back()->withErrors(['error' => 'No task found for this site.']);
+            }
+
+            $import = new SitePoleImport($siteId, $streetlightTask->id);
+            Excel::import($import, $request->file('file'));
+
+            $errors = $import->getErrors();
+            $importedCount = $import->getImportedCount();
+
+            if (!empty($errors)) {
+                $lines = [];
+                $lines[] = 'Pole Import Errors - ' . now()->toDateTimeString();
+                $lines[] = 'Site ID: ' . $siteId;
+                $lines[] = str_repeat('=', 80);
+
+                foreach ($errors as $err) {
+                    $lines[] = "Row: " . ($err['row'] ?? 'Unknown');
+                    $lines[] = "  Pole Number: " . ($err['pole_number'] ?? '');
+                    $lines[] = "  Reason: " . ($err['reason'] ?? 'Unknown error');
+                    $lines[] = str_repeat('-', 40);
+                }
+
+                $content = implode(PHP_EOL, $lines) . PHP_EOL;
+                $disk = Storage::disk('public');
+                if (!$disk->exists('import_errors')) {
+                    $disk->makeDirectory('import_errors');
+                }
+
+                $fileName = 'poles_errors_site_' . $siteId . '_' . time() . '.txt';
+                $relativePath = 'import_errors/' . $fileName;
+                $disk->put($relativePath, $content);
+                $errorFileUrl = $disk->url($relativePath);
+
+                $message = "Imported {$importedCount} pole(s) with " . count($errors) . " error(s).";
+                return redirect()->back()
+                    ->with('success', $message)
+                    ->with('import_errors_url', $errorFileUrl)
+                    ->with('import_errors_count', count($errors));
+            }
+
+            return redirect()->back()->with('success', "Successfully imported {$importedCount} pole(s).");
+        } catch (\Exception $e) {
+            Log::error('Pole import failed: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Import failed: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Bulk delete poles
+     */
+    public function bulkDeletePoles(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer',
+            ]);
+
+            $deletedCount = Pole::whereIn('id', $request->ids)->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$deletedCount} pole(s) deleted successfully."
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Bulk delete poles failed: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete poles: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Download pole import format template
+     */
+    public function downloadPoleImportFormat(string $siteId)
+    {
+        try {
+            $site = Streetlight::findOrFail($siteId);
+            
+            $data = [
+                [
+                    'complete_pole_number' => 'LAK/SWRAMOHA/WARD 10/1',
+                    'beneficiary' => 'John Doe',
+                    'beneficiary_contact' => '9876543210',
+                    'ward_name' => 'Ward 10',
+                    'luminary_qr' => 'LUM123456',
+                    'battery_qr' => 'BAT123456',
+                    'panel_qr' => 'PAN123456',
+                    'sim_number' => '9876543210',
+                    'lat' => '25.123456',
+                    'long' => '85.123456',
+                    'date_of_installation' => date('Y-m-d'),
+                ]
+            ];
+
+            $filename = 'poles_import_format_site_' . $siteId . '_' . date('Y-m-d') . '.xlsx';
+
+            return ExcelHelper::exportToExcel($data, $filename);
+        } catch (\Exception $e) {
+            Log::error('Failed to download pole import format: ' . $e->getMessage());
+            return redirect()->back()->withErrors(['error' => 'Failed to download import format: ' . $e->getMessage()]);
+        }
     }
 
 
@@ -306,6 +562,43 @@ class SiteController extends Controller
             return redirect()->back()
                 ->withErrors(['error' => $errorMessage])
                 ->withInput();
+        }
+    }
+
+    public function bulkDelete(Request $request)
+    {
+        try {
+            $request->validate([
+                'ids' => 'required|array',
+                'ids.*' => 'required|integer',
+            ]);
+
+            $projectId = $request->query('project_id') ?? $request->input('project_id');
+            $deletedCount = 0;
+
+            if ($projectId) {
+                $project = Project::find($projectId);
+                if ($project && $project->project_type == 1) {
+                    // Streetlight sites
+                    $deletedCount = Streetlight::whereIn('id', $request->ids)->delete();
+                } else {
+                    // Regular sites
+                    $deletedCount = Site::whereIn('id', $request->ids)->delete();
+                }
+            } else {
+                // Default to regular sites if no project context
+                $deletedCount = Site::whereIn('id', $request->ids)->delete();
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "{$deletedCount} site(s) deleted successfully."
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete sites: ' . $e->getMessage()
+            ], 500);
         }
     }
 
