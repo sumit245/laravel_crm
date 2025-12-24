@@ -4,68 +4,139 @@
   <div class="content-wrapper p-2">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">Update Site</h4>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Update Site</h4>
+          <a href="{{ route('sites.index') }}" class="btn btn-light">
+            <i class="mdi mdi-arrow-left me-2"></i>Back to Sites
+          </a>
+        </div>
 
         <!-- Display validation errors -->
         @if ($errors->any())
-          <div class="alert alert-danger">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
+          <script>
+            const validationErrors = {!! json_encode($errors->all()) !!};
+            Swal.fire({
+              title: 'Validation errors',
+              icon: 'error',
+              html: validationErrors.join('<br>'),
+              confirmButtonText: 'OK',
+              width: '600px'
+            });
+          </script>
+        @endif
+
+        @if (session('success'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: {!! json_encode(session('success')) !!},
+              showConfirmButton: false,
+              timer: 4000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
+        @if (session('error'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: {!! json_encode(session('error')) !!},
+              showConfirmButton: false,
+              timer: 5000,
+              timerProgressBar: true
+            });
+          </script>
         @endif
         @if($projectId==11) 
         
-        <form action="{{route('sites.update', $streetlight->id)}}" method="POST">
-    @csrf
-    @method('PUT') {{-- For update requests --}}
-     <!-- Hidden input for project_id -->
-     <input type="hidden" name="project_id" value="{{ $projectId }}">
+        <form action="{{route('sites.update', $streetlight->id)}}" method="POST" id="streetlightSiteForm">
+            @csrf
+            @method('PUT')
+            <input type="hidden" name="project_id" value="{{ $projectId }}">
+            <input type="hidden" name="ward" id="ward_hidden" value="{{ old('ward', $streetlight->ward ?? '') }}">
 
-    <div class="form-group">
-        <label for="task_id">Task ID</label>
-        <input type="text" class="form-control" id="task_id" name="task_id" value="{{ $streetlight->task_id ?? '' }}">
-    </div>
+            <h6 class="card-subtitle text-bold text-info">Streetlight Site Details</h6>
+            <div class="form-group row mt-5">
+                <div class="col-md-6">
+                    <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control @error('state') is-invalid @enderror" id="state" name="state"
+                        placeholder="Enter state" value="{{ old('state', $streetlight->state ?? '') }}" required>
+                    @error('state')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-6">
+                    <label for="district" class="form-label">District: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control @error('district') is-invalid @enderror" id="district" name="district"
+                        placeholder="Enter district" value="{{ old('district', $streetlight->district ?? '') }}" required>
+                    @error('district')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-6">
+                    <label for="block" class="form-label">Block: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control @error('block') is-invalid @enderror" id="block" name="block"
+                        placeholder="Enter block" value="{{ old('block', $streetlight->block ?? '') }}" required>
+                    @error('block')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+                <div class="col-md-6">
+                    <label for="panchayat" class="form-label">Panchayat: <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control @error('panchayat') is-invalid @enderror" id="panchayat" name="panchayat"
+                        placeholder="Enter panchayat" value="{{ old('panchayat', $streetlight->panchayat ?? '') }}" required>
+                    @error('panchayat')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-6">
+                    <label for="ward_input" class="form-label">Ward:</label>
+                    <div class="ward-input-container">
+                        <div class="ward-chips-container mb-2" id="ward_chips_container">
+                            <!-- Chips will be added here dynamically -->
+                        </div>
+                        <input type="text" class="form-control" id="ward_input" 
+                            placeholder="Enter ward number and press Space/Tab/Enter" 
+                            autocomplete="off">
+                        <small class="form-text text-muted">Enter ward numbers one at a time. Press Space, Tab, or Enter to add.</small>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="total_poles" class="form-label">Total Poles:</label>
+                    <input type="number" class="form-control" id="total_poles" name="total_poles"
+                        placeholder="Auto-calculated (10 per ward)" value="{{ old('total_poles', $streetlight->total_poles ?? '') }}" 
+                        min="0">
+                    <small class="form-text text-muted">Automatically calculated as 10 poles per ward. You can edit if the actual count differs.</small>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-md-6">
+                    <label for="mukhiya_contact" class="form-label">Mukhiya Contact:</label>
+                    <input type="text" class="form-control @error('mukhiya_contact') is-invalid @enderror" id="mukhiya_contact" name="mukhiya_contact"
+                        placeholder="Enter mukhiya contact (optional)" value="{{ old('mukhiya_contact', $streetlight->mukhiya_contact ?? '') }}">
+                    @error('mukhiya_contact')
+                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                    @enderror
+                </div>
+            </div>
 
-    <div class="form-group">
-        <label for="state">State</label>
-        <input type="text" class="form-control" id="state" name="state" value="{{ $streetlight->state ?? '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="district">District</label>
-        <input type="text" class="form-control" id="district" name="district" value="{{ $streetlight->district ?? '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="block">Block</label>
-        <input type="text" class="form-control" id="block" name="block" value="{{ $streetlight->block ?? '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="panchayat">Panchayat</label>
-        <input type="text" class="form-control" id="panchayat" name="panchayat" value="{{ $streetlight->panchayat ?? '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="ward">Ward</label>
-        <input type="text" class="form-control" id="ward" name="ward" value="{{ $streetlight->ward ?? '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="mukhiya_contact">Mukhiya Contact</label>
-        <input type="text" class="form-control" id="mukhiya_contact" name="mukhiya_contact" value="{{ $streetlight->mukhiya_contact ?? '' }}">
-    </div>
-
-    <div class="form-group">
-        <label for="total_poles">Total Poles</label>
-        <input type="text" class="form-control" id="total_poles" name="total_poles" value="{{ $streetlight->total_poles ?? '' }}">
-    </div>
-
-    <button type="submit" class="btn btn-primary">Update</button>
-</form>
+            <div class="mt-4 d-flex justify-content-end">
+                <a href="{{ route('sites.index') }}" class="btn btn-light me-2">Cancel</a>
+                <button type="submit" class="btn btn-primary" id="submitBtn">
+                    <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="submitSpinner"></span>
+                    <span id="submitText">Update Streetlight Site</span>
+                </button>
+            </div>
+        </form>
 
         @else
         <form action="{{ route("sites.update", $site->id) }}" method="POST">
@@ -203,10 +274,16 @@
 
           <div class="form-group">
             <label for="remarks">Remarks:</label>
-            <textarea class="form-control" id="remarks" name="remarks" rows="4">{{ old("remarks", $site->remarks) }}</textarea>
+            <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="4">{{ old("remarks", $site->remarks) }}</textarea>
+            @error('remarks')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
-          <button type="submit" class="btn btn-primary">Update Site</button>
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ route('sites.index') }}" class="btn btn-light me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary">Update Site</button>
+          </div>
         </form>
         @endif
 
@@ -214,3 +291,437 @@
     </div>
   </div>
 @endsection
+
+@push('styles')
+  <style>
+    /* Consistent card styling to match theme */
+    .content-wrapper .card {
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e3e3e3;
+    }
+    
+    /* Ward Chip Styles */
+    .ward-input-container {
+        position: relative;
+    }
+
+    .ward-chips-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        min-height: 2rem;
+        padding: 0.5rem;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        background-color: #f8f9fa;
+    }
+
+    .ward-chip {
+        display: inline-flex;
+        align-items: center;
+        padding: 0.25rem 0.5rem;
+        background-color: #007bff;
+        color: white;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        gap: 0.5rem;
+    }
+
+    .ward-chip.editing {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .ward-chip-value {
+        font-weight: 500;
+    }
+
+    .ward-chip-actions {
+        display: inline-flex;
+        gap: 0.25rem;
+    }
+
+    .ward-chip-btn {
+        background: none;
+        border: none;
+        color: inherit;
+        cursor: pointer;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        transition: background-color 0.2s;
+    }
+
+    .ward-chip-btn:hover {
+        background-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .ward-chip-btn.edit-btn {
+        font-size: 0.75rem;
+    }
+
+    .ward-chip-btn.delete-btn {
+        font-size: 0.875rem;
+    }
+
+    .ward-chip-input {
+        width: 3rem;
+        padding: 0.125rem 0.25rem;
+        border: 1px solid #007bff;
+        border-radius: 0.25rem;
+        font-size: 0.875rem;
+        text-align: center;
+    }
+
+    .ward-chip.success {
+        background-color: #28a745;
+        animation: chipSuccess 0.3s ease-in-out;
+    }
+
+    .ward-chip.error {
+        background-color: #dc3545;
+        animation: chipError 0.3s ease-in-out;
+    }
+
+    @keyframes chipSuccess {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+
+    @keyframes chipError {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .ward-input-container .form-control.is-invalid {
+        border-color: #dc3545;
+    }
+
+    .ward-input-container .form-control.is-valid {
+        border-color: #28a745;
+    }
+
+    .form-control:focus {
+        border-color: #007bff;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
+    .form-control.is-invalid:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+    }
+
+    .form-control.is-valid:focus {
+        border-color: #28a745;
+        box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+    }
+  </style>
+@endpush
+
+@push('scripts')
+  <script>
+    $(document).ready(function() {
+      // Streetlight form ward chip functionality
+      @if($projectId==11)
+      let wardChips = [];
+      const wardInput = document.getElementById('ward_input');
+      const wardChipsContainer = document.getElementById('ward_chips_container');
+      const wardHiddenInput = document.getElementById('ward_hidden');
+      const totalPolesInput = document.getElementById('total_poles');
+
+      // Initialize from existing streetlight ward value
+      @if(isset($streetlight) && $streetlight->ward)
+          const existingWards = '{{ $streetlight->ward }}'.split(',').map(w => w.trim()).filter(w => w);
+          existingWards.forEach(ward => {
+              if (ward && !isNaN(ward)) {
+                  wardChips.push(parseInt(ward));
+              }
+          });
+      @endif
+
+      // Initialize from old input if exists (after validation errors)
+      @if (old('ward'))
+          const oldWards = '{{ old('ward') }}'.split(',').map(w => w.trim()).filter(w => w);
+          wardChips = [];
+          oldWards.forEach(ward => {
+              if (ward && !isNaN(ward)) {
+                  wardChips.push(parseInt(ward));
+              }
+          });
+      @endif
+
+      // Update hidden input and total poles
+      function updateWardData() {
+          const wardString = wardChips.sort((a, b) => a - b).join(',');
+          wardHiddenInput.value = wardString;
+          totalPolesInput.value = wardChips.length * 10;
+      }
+
+      // Show toast notification
+      function showToast(icon, message) {
+          Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: icon,
+              title: message,
+              showConfirmButton: false,
+              timer: 3000,
+              timerProgressBar: true,
+              didOpen: (toast) => {
+                  toast.addEventListener('mouseenter', Swal.stopTimer);
+                  toast.addEventListener('mouseleave', Swal.resumeTimer);
+              }
+          });
+      }
+
+      // Add ward chip
+      function addWardChip(wardNumber) {
+          if (isNaN(wardNumber) || wardNumber <= 0) {
+              showToast('error', 'Please enter a valid ward number');
+              wardInput.classList.add('is-invalid');
+              setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
+              return false;
+          }
+          if (wardChips.includes(wardNumber)) {
+              showToast('warning', `Ward ${wardNumber} already exists`);
+              wardInput.classList.add('is-invalid');
+              setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
+              return false;
+          }
+          wardChips.push(wardNumber);
+          renderChips();
+          updateWardData();
+          
+          const chipElement = wardChipsContainer.querySelector(`[data-ward="${wardNumber}"]`);
+          if (chipElement) {
+              chipElement.classList.add('success');
+              setTimeout(() => chipElement.classList.remove('success'), 1000);
+          }
+          
+          showToast('success', `Ward ${wardNumber} added successfully`);
+          wardInput.classList.add('is-valid');
+          setTimeout(() => wardInput.classList.remove('is-valid'), 2000);
+          return true;
+      }
+
+      // Remove ward chip
+      function removeWardChip(wardNumber) {
+          wardChips = wardChips.filter(w => w !== wardNumber);
+          renderChips();
+          updateWardData();
+          showToast('info', `Ward ${wardNumber} removed`);
+      }
+
+      // Edit ward chip
+      function editWardChip(oldValue, chipElement) {
+          const chipValue = chipElement.querySelector('.ward-chip-value');
+          const chipActions = chipElement.querySelector('.ward-chip-actions');
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.className = 'ward-chip-input';
+          input.value = oldValue;
+          input.maxLength = 10;
+          
+          input.addEventListener('input', function(e) {
+              e.target.value = e.target.value.replace(/[^0-9]/g, '');
+          });
+          
+          chipElement.classList.add('editing');
+          chipValue.style.display = 'none';
+          chipActions.style.display = 'none';
+          chipElement.appendChild(input);
+          input.focus();
+          input.select();
+
+          const saveEdit = () => {
+              const newValue = parseInt(input.value);
+              if (!isNaN(newValue) && newValue > 0) {
+                  if (newValue === oldValue) {
+                      renderChips();
+                  } else if (!wardChips.includes(newValue)) {
+                      wardChips = wardChips.map(w => w === oldValue ? newValue : w);
+                      renderChips();
+                      updateWardData();
+                      
+                      const chipElement = wardChipsContainer.querySelector(`[data-ward="${newValue}"]`);
+                      if (chipElement) {
+                          chipElement.classList.add('success');
+                          setTimeout(() => chipElement.classList.remove('success'), 1000);
+                      }
+                      
+                      showToast('success', `Ward updated from ${oldValue} to ${newValue}`);
+                  } else {
+                      showToast('warning', `Ward ${newValue} already exists. Removing duplicate.`);
+                      removeWardChip(oldValue);
+                  }
+              } else {
+                  showToast('error', 'Invalid ward number. Edit cancelled.');
+                  renderChips();
+              }
+          };
+
+          input.addEventListener('blur', saveEdit);
+          input.addEventListener('keydown', function(e) {
+              if (e.key === 'Enter') {
+                  e.preventDefault();
+                  saveEdit();
+              } else if (e.key === 'Escape') {
+                  e.preventDefault();
+                  renderChips();
+              }
+          });
+      }
+
+      // Render all chips
+      function renderChips() {
+          wardChipsContainer.innerHTML = '';
+          wardChips.sort((a, b) => a - b).forEach(ward => {
+              const chip = document.createElement('div');
+              chip.className = 'ward-chip';
+              chip.dataset.ward = ward;
+              chip.innerHTML = `
+                  <span class="ward-chip-value">${ward}</span>
+                  <div class="ward-chip-actions">
+                      <button type="button" class="ward-chip-btn edit-btn" 
+                          data-action="edit" 
+                          title="Edit">✎</button>
+                      <button type="button" class="ward-chip-btn delete-btn" 
+                          data-action="delete" 
+                          title="Delete">×</button>
+                  </div>
+              `;
+              wardChipsContainer.appendChild(chip);
+          });
+      }
+
+      // Event delegation for chip actions
+      wardChipsContainer.addEventListener('click', function(e) {
+          const button = e.target.closest('.ward-chip-btn');
+          if (!button) return;
+          
+          const chip = button.closest('.ward-chip');
+          const wardNumber = parseInt(chip.dataset.ward);
+          const action = button.dataset.action;
+
+          if (action === 'edit') {
+              editWardChip(wardNumber, chip);
+          } else if (action === 'delete') {
+              removeWardChip(wardNumber);
+          }
+      });
+
+      // Handle input events
+      wardInput.addEventListener('keydown', function(e) {
+          if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ') {
+              e.preventDefault();
+              const value = wardInput.value.trim();
+              if (value && !isNaN(value) && parseInt(value) > 0) {
+                  if (addWardChip(parseInt(value))) {
+                      wardInput.value = '';
+                      wardInput.classList.remove('is-invalid');
+                  }
+              } else if (value) {
+                  wardInput.classList.add('is-invalid');
+                  showToast('error', 'Please enter a valid ward number');
+              }
+          }
+      });
+
+      // Real-time validation for all required fields
+      const requiredFields = ['state', 'district', 'block', 'panchayat'];
+      requiredFields.forEach(fieldId => {
+          const field = document.getElementById(fieldId);
+          if (field) {
+              field.addEventListener('blur', function() {
+                  if (this.value.trim()) {
+                      this.classList.remove('is-invalid');
+                      this.classList.add('is-valid');
+                  } else {
+                      this.classList.remove('is-valid');
+                      this.classList.add('is-invalid');
+                  }
+              });
+              
+              field.addEventListener('input', function() {
+                  if (this.value.trim()) {
+                      this.classList.remove('is-invalid');
+                  }
+              });
+          }
+      });
+
+      // Form validation on submit
+      const streetlightForm = document.getElementById('streetlightSiteForm');
+      if (streetlightForm) {
+          streetlightForm.addEventListener('submit', function(e) {
+              const submitBtn = document.getElementById('submitBtn');
+              const submitSpinner = document.getElementById('submitSpinner');
+              const submitText = document.getElementById('submitText');
+              
+              let isValid = true;
+              const requiredFields = ['state', 'district', 'block', 'panchayat'];
+              
+              requiredFields.forEach(fieldId => {
+                  const field = document.getElementById(fieldId);
+                  if (!field.value.trim()) {
+                      field.classList.add('is-invalid');
+                      isValid = false;
+                  } else {
+                      field.classList.remove('is-invalid');
+                      field.classList.add('is-valid');
+                  }
+              });
+
+              if (!isValid) {
+                  e.preventDefault();
+                  showToast('error', 'Please fill in all required fields');
+                  return false;
+              }
+
+              submitBtn.disabled = true;
+              submitSpinner.classList.remove('d-none');
+              submitText.textContent = 'Updating Site...';
+          });
+      }
+
+      // Only allow numbers and filter non-numeric characters
+      wardInput.addEventListener('input', function(e) {
+          e.target.value = e.target.value.replace(/[^0-9]/g, '');
+          
+          const value = e.target.value.trim();
+          if (value && !isNaN(value) && parseInt(value) > 0) {
+              e.target.classList.remove('is-invalid');
+              e.target.classList.add('is-valid');
+          } else if (value) {
+              e.target.classList.remove('is-valid');
+              e.target.classList.add('is-invalid');
+          } else {
+              e.target.classList.remove('is-valid', 'is-invalid');
+          }
+      });
+
+      // Prevent paste of non-numeric content
+      wardInput.addEventListener('paste', function(e) {
+          e.preventDefault();
+          const paste = (e.clipboardData || window.clipboardData).getData('text');
+          const numbers = paste.replace(/[^0-9]/g, '');
+          if (numbers) {
+              e.target.value = numbers;
+              e.target.dispatchEvent(new Event('input'));
+          }
+      });
+
+      // Initial render and update
+      renderChips();
+      updateWardData();
+      @endif
+    });
+  </script>
+@endpush

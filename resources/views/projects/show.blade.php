@@ -112,7 +112,7 @@
                                 type="button" role="tab" aria-controls="tasks" aria-selected="false">
                                 Target
                                 <span class="badge bg-light text-dark badge-pill-xs">
-                                    {{ $project->tasks->count() }}
+                                    {{ $project->project_type == 1 ? $targets->count() : $project->tasks->count() }}
                                 </span>
                             </button>
                         </li>

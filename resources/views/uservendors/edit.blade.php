@@ -4,16 +4,54 @@
   <div class="content-wrapper p-2">
     <div class="card">
       <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Edit Vendor</h4>
+          <a href="{{ route('uservendors.index') }}" class="btn btn-light">
+            <i class="mdi mdi-arrow-left me-2"></i>Back to Vendors
+          </a>
+        </div>
+
+        <!-- Display validation errors -->
         @if ($errors->any())
-          <div class="alert alert-danger">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
+          <script>
+            const validationErrors = {!! json_encode($errors->all()) !!};
+            Swal.fire({
+              title: 'Validation errors',
+              icon: 'error',
+              html: validationErrors.join('<br>'),
+              confirmButtonText: 'OK',
+              width: '600px'
+            });
+          </script>
         @endif
-        <h4 class="card-title">Edit Vendor</h4>
+
+        @if (session('success'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: {!! json_encode(session('success')) !!},
+              showConfirmButton: false,
+              timer: 4000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
+        @if (session('error'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: {!! json_encode(session('error')) !!},
+              showConfirmButton: false,
+              timer: 5000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
         <!-- Project Selection Dropdown -->
       
         
@@ -57,31 +95,31 @@
           <h6 class="card-subtitle text-bold text-info">Personal details</h6>
           <div class="form-group">
             <label for="name" class="form-label">Vendor Name</label>
-            <input type="text" name="name" class="form-control" id="name" placeholder="Enter Vendor Name"
+            <input type="text" name="name" class="form-control @error('name') is-invalid @enderror" id="name" placeholder="Enter Vendor Name"
               value="{{ old("name", $vendor->name) }}">
             @error("name")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
             @enderror
           </div>
 
           <div class="row">
             <div class="col-sm-6 col-md-6">
               <div class="form-group">
-                <label for="firstName" class="form-label">First Name</label>
-                <input type="text" name="firstName" class="form-control" id="firstName" placeholder="Ravi"
+                <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+                <input type="text" name="firstName" class="form-control @error('firstName') is-invalid @enderror" id="firstName" placeholder="Ravi"
                   value="{{ old("firstName", $vendor->firstName) }}" required>
                 @error("firstName")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
             <div class="col-sm-6 col-md-6">
               <div class="form-group">
-                <label for="lastName" class="form-label">Last Name</label>
-                <input type="text" name="lastName" class="form-control" id="lastName" placeholder="Sharma"
+                <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+                <input type="text" name="lastName" class="form-control @error('lastName') is-invalid @enderror" id="lastName" placeholder="Sharma"
                   value="{{ old("lastName", $vendor->lastName) }}" required>
                 @error("lastName")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
@@ -90,21 +128,21 @@
           <div class="row">
             <div class="col-sm-6 col-md-6">
               <div class="form-group">
-                <label for="contactNo" class="form-label">Contact Number</label>
-                <input type="phone" name="contactNo" class="form-control" id="contactNo" placeholder="9649240944"
+                <label for="contactNo" class="form-label">Contact Number <span class="text-danger">*</span></label>
+                <input type="phone" name="contactNo" class="form-control @error('contactNo') is-invalid @enderror" id="contactNo" placeholder="9649240944"
                   value="{{ old("contactNo", $vendor->contactNo) }}" required>
                 @error("contactNo")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
             <div class="col-sm-6 col-md-6">
               <div class="form-group">
-                <label for="address" class="form-label">Address</label>
-                <input type="text" name="address" class="form-control" id="address"
+                <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+                <input type="text" name="address" class="form-control @error('address') is-invalid @enderror" id="address"
                   placeholder="Enter vendor address" value="{{ old("address", $vendor->address) }}" required>
                 @error("address")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
                 <small>
               </div>
@@ -119,29 +157,29 @@
               <div class="form-group">
                 <label for="aadharNumber">Aadhar Number</label>
                 <input type="text" id="aadharNumber" name="aadharNumber"
-                  class="form-control"value="{{ old("aadharNumber", $vendor->aadharNumber) }}">
+                  class="form-control @error('aadharNumber') is-invalid @enderror" value="{{ old("aadharNumber", $vendor->aadharNumber) }}">
                 @error("aadharNumber")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
                 <label for="gstNumber">GST Number</label>
-                <input type="text" id="gstNumber" name="gstNumber" class="form-control"
+                <input type="text" id="gstNumber" name="gstNumber" class="form-control @error('gstNumber') is-invalid @enderror"
                   value="{{ old("gstNumber", $vendor->gstNumber) }}">
                 @error("gstNumber")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
             <div class="col-sm-4 col-md-4 col-lg-4">
               <div class="form-group">
                 <label for="pan">PAN</label>
-                <input type="text" id="pan" name="pan" class="form-control"
+                <input type="text" id="pan" name="pan" class="form-control @error('pan') is-invalid @enderror"
                   value="{{ old("pan", $vendor->pan) }}">
                 @error("pan")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
@@ -152,20 +190,20 @@
             <div class="col-lg-6 col-md-6 col-sm-6">
               <div class="form-group">
                 <label for="accountName">Account Name</label>
-                <input type="text" id="accountName" name="accountName" class="form-control"
+                <input type="text" id="accountName" name="accountName" class="form-control @error('accountName') is-invalid @enderror"
                   value="{{ old("accountName", $vendor->accountName) }}">
                 @error("accountName")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
             <div class="col-lg-6 col-md-6 col-sm-6">
               <div class="form-group">
                 <label for="accountNumber">Account Number</label>
-                <input type="text" id="accountNumber" name="accountNumber" class="form-control"
+                <input type="text" id="accountNumber" name="accountNumber" class="form-control @error('accountNumber') is-invalid @enderror"
                   value="{{ old("accountNumber", $vendor->accountNumber) }}">
                 @error("accountNumber")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
@@ -175,20 +213,20 @@
             <div class="col-lg-4 col-sm-4 col-md-4">
               <div class="form-group">
                 <label for="ifsc">IFSC</label>
-                <input type="text" id="ifsc" name="ifsc" class="form-control"
+                <input type="text" id="ifsc" name="ifsc" class="form-control @error('ifsc') is-invalid @enderror"
                   value="{{ old("ifsc", $vendor->ifsc) }}">
                 @error("ifsc")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
             <div class="col-lg-4 col-sm-4 col-md-4">
               <div class="form-group">
                 <label for="bankName">Bank Name</label>
-                <input type="text" id="bankName" name="bankName" class="form-control"
+                <input type="text" id="bankName" name="bankName" class="form-control @error('bankName') is-invalid @enderror"
                   value="{{ old("bankName", $vendor->bankName) }}">
                 @error("bankName")
-                  <small class="text-danger">{{ $message }}</small>
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
                 @enderror
               </div>
             </div>
@@ -197,27 +235,25 @@
           <hr class="my-4" />
           <h6 class="card-subtitle text-bold text-info">Login details</h6>
           <div class="form-group">
-            <label for="email" class="form-label">Email</label>
-            <input type="email" name="email" class="form-control" id="email"
+            <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+            <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" id="email"
               placeholder="info@dashandots.tech" value="{{ old("email", $vendor->email) }}" required>
             @error("email")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
             @enderror
+          </div>
 
-            <div class="d-flex justify-content-between">
-              {{-- <div class="col-md-7"></div> --}}
-              <div></div>
-              {{-- <div classs="col-md-5"> --}}
-              <div class="d-flex">
-                <button type="submit" class="btn btn-primary mx-2 mb-3">Update Vendor</button>
-                <!-- Editting password for the vendor made a common method for all to change the password -->
-                <a href="{{ route("staff.change-password", $vendor->id) }}" class="btn btn-secondary mx-2 mb-3">
-                  Change Password
-                </a>
-                {{-- </div> --}}
-                <div>
-                </div>
-              </div>
+          <div class="form-group mt-3">
+            <label class="form-label d-block">Password</label>
+            <a href="{{ route("staff.change-password", $vendor->id) }}" class="btn btn-outline-secondary btn-sm">
+              Change Password
+            </a>
+          </div>
+
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ route('uservendors.index') }}" class="btn btn-light me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary">Update Vendor</button>
+          </div>
         </form>
       </div>
       </div>
@@ -262,4 +298,15 @@
     //   }
     // }
   </script>
+@endpush
+
+@push('styles')
+  <style>
+    /* Consistent card styling to match theme */
+    .content-wrapper .card {
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e3e3e3;
+    }
+  </style>
 @endpush

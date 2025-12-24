@@ -109,8 +109,8 @@
                                 <label for="total_poles" class="form-label">Total Poles:</label>
                                 <input type="number" class="form-control" id="total_poles" name="total_poles"
                                     placeholder="Auto-calculated (10 per ward)" value="{{ old('total_poles') }}" 
-                                    min="0" readonly>
-                                <small class="form-text text-muted">Automatically calculated as 10 poles per ward.</small>
+                                    min="0">
+                                <small class="form-text text-muted">Automatically calculated as 10 poles per ward. You can edit if the actual count differs.</small>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -316,6 +316,13 @@
 
     @push('styles')
         <style>
+            /* Consistent card styling to match theme */
+            .content-wrapper .card {
+                border-radius: 4px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+                border: 1px solid #e3e3e3;
+            }
+            
             /* Ward Chip Styles */
             .ward-input-container {
                 position: relative;

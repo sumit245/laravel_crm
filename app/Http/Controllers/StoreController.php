@@ -101,15 +101,18 @@ class StoreController extends Controller
         // OPTIMIZATION 1: Get Total Count separately (Fast, No Joins)
         // This is passed to 'deferLoading' so DataTables knows there are 1M+ rows
         // without us actually loading them all.
+        // Note: Exclude SL04 from count as it's not shown in table
         $inventoryTotal = DB::table($inventoryTableName)
             ->where('project_id', $project->id)
             ->where('store_id', $store->id)
+            ->where('item_code', '!=', 'SL04') // Exclude SL04 from table count
             ->count();
         Log::info('Inventory Total: ' . $inventoryTotal);
 
         // OPTIMIZATION 2: Initial Data Load (Fast) - Only load exactly paginated rows
         // This matches your pageLength=paginated. The page loads instantly because we don't
         // process 1M rows, just the first paginated.
+        // Note: SL04 (Structure) items are excluded from the table as they are mapped to SL03 (Battery)
         $unifiedInventory = DB::table($inventoryTableName . ' as inv')
             ->leftJoin('inventory_dispatch as disp', function ($join) {
                 $join->on('inv.serial_number', '=', 'disp.serial_number')
@@ -118,6 +121,7 @@ class StoreController extends Controller
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
+            ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from table display
             ->select(
                 'inv.id',
                 'inv.item_code',
@@ -140,6 +144,8 @@ class StoreController extends Controller
         $initialStockValue = 0;
         $inStoreStockValue = 0;
         $dispatchedStockValue = 0;
+        $inStoreStockQuantity = 0;
+        $dispatchedStockQuantity = 0;
         $itemStats = [];
 
         if ($project->project_type == 1) {
@@ -156,12 +162,14 @@ class StoreController extends Controller
             $inStoreStockValue = max(0, (float) $initialStockValue - (float) $dispatchedStockValue);
 
             // Item Stats (Single optimized query)
+            // Note: SL04 (Structure) stats are mapped to SL03 (Battery) - they should match
             $items = ['SL01' => 'Panel', 'SL02' => 'Luminary', 'SL03' => 'Battery', 'SL04' => 'Structure'];
 
+            // Get stats for SL01, SL02, SL03 (exclude SL04 from query as it's mapped to SL03)
             $statsData = DB::table($inventoryTableName)
                 ->where('project_id', $project->id)
                 ->where('store_id', $store->id)
-                ->whereIn('item_code', array_keys($items))
+                ->whereIn('item_code', ['SL01', 'SL02', 'SL03'])
                 ->select(
                     'item_code',
                     DB::raw('COUNT(*) as total_received'),
@@ -172,18 +180,32 @@ class StoreController extends Controller
                 ->get()
                 ->keyBy('item_code');
 
-            foreach ($items as $code => $name) {
+            // Calculate stats for SL01, SL02, SL03
+            foreach (['SL01', 'SL02', 'SL03'] as $code) {
                 $stat = $statsData->get($code);
                 $total = $stat ? $stat->total_received : 0;
                 $stock = $stat ? $stat->current_stock : 0;
 
                 $itemStats[$code] = [
-                    'name' => $name,
+                    'name' => $items[$code],
                     'total' => $total,
                     'in_stock' => $stock,
                     'dispatched' => $total - $stock
                 ];
             }
+
+            // Map SL04 (Structure) stats to match SL03 (Battery) stats
+            $sl03Stats = $itemStats['SL03'] ?? ['total' => 0, 'in_stock' => 0, 'dispatched' => 0];
+            $itemStats['SL04'] = [
+                'name' => $items['SL04'],
+                'total' => $sl03Stats['total'],
+                'in_stock' => $sl03Stats['in_stock'],
+                'dispatched' => $sl03Stats['dispatched']
+            ];
+
+            // Calculate total quantities for pie chart (sum across all items including SL04)
+            $inStoreStockQuantity = array_sum(array_column($itemStats, 'in_stock'));
+            $dispatchedStockQuantity = array_sum(array_column($itemStats, 'dispatched'));
         }
 
         // Dropdowns (Lightweight)
@@ -201,19 +223,21 @@ class StoreController extends Controller
 
         $assignedVendors = User::whereIn('id', $assignedVendorIds)->get();
 
-        // Distinct Item Codes for Filters
+        // Distinct Item Codes for Filters (exclude SL04 as it's not in table)
         $itemCodes = DB::table($inventoryTableName)
             ->where('project_id', $project->id)
             ->where('store_id', $store->id)
+            ->where('item_code', '!=', 'SL04') // Exclude SL04 from filter options
             ->distinct()
             ->pluck('item_code');
 
-        // Inventory Items for Dispatch Form
+        // Inventory Items for Dispatch Form (exclude SL04 as it's not manually dispatched)
         $inventoryItems = collect([]);
         if ($project->project_type == 1) {
             $inventoryItems = DB::table($inventoryTableName)
                 ->where('project_id', $project->id)
                 ->where('store_id', $store->id)
+                ->where('item_code', '!=', 'SL04') // Exclude SL04 from dispatch form (imported from GRN only)
                 ->select(
                     'item_code',
                     'item',
@@ -239,6 +263,7 @@ class StoreController extends Controller
         return view('stores.show', compact(
             'store', 'project', 'unifiedInventory', 'inventoryTotal',
             'initialStockValue', 'inStoreStockValue', 'dispatchedStockValue',
+            'inStoreStockQuantity', 'dispatchedStockQuantity',
             'itemStats', 'users', 'assignedVendors', 'inventoryItems',
             'isAdmin', 'itemCodes', 'inStock', 'dispatched', 'inventoryModel'
         ));
@@ -285,6 +310,7 @@ class StoreController extends Controller
         $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
 
         // 1. Base Query Structure
+        // Note: SL04 (Structure) items are excluded from the table as they are mapped to SL03 (Battery)
         $query = DB::table($inventoryTable . ' as inv')
             ->leftJoin('inventory_dispatch as disp', function ($join) {
                 $join->on('inv.serial_number', '=', 'disp.serial_number')
@@ -293,6 +319,7 @@ class StoreController extends Controller
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
+            ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from table display
             ->select(
                 'inv.id',
                 'inv.item_code',
@@ -308,9 +335,11 @@ class StoreController extends Controller
             );
 
         // 2. Count Total (Fastest way - No Joins for total count)
+        // Note: Exclude SL04 from count as it's not shown in table
         $recordsTotal = DB::table($inventoryTable)
             ->where('project_id', $project->id)
             ->where('store_id', $store->id)
+            ->where('item_code', '!=', 'SL04') // Exclude SL04 from table count
             ->count();
 
         // 3. Filtering
@@ -412,7 +441,7 @@ class StoreController extends Controller
             $row = [];
 
             if ($isAdmin) {
-                $row[] = '<input type="checkbox" class="row-checkbox" value="' . $item->id . '" data-id="' . $item->id . '" data-availability="' . $availability . '" data-item-code="' . $item->item_code . '" data-vendor-name="' . htmlspecialchars($vendorName) . '">';
+                $row[] = '<input type="checkbox" class="row-checkbox" value="' . $item->id . '" data-id="' . $item->id . '" data-serial-number="' . htmlspecialchars($item->serial_number) . '" data-availability="' . $availability . '" data-item-code="' . $item->item_code . '" data-vendor-name="' . htmlspecialchars($vendorName) . '">';
             }
 
             $row[] = $item->item_code;
@@ -458,6 +487,7 @@ class StoreController extends Controller
 
         $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
 
+        // Note: SL04 (Structure) items are excluded from export as they are mapped to SL03 (Battery)
         $query = DB::table($inventoryTable . ' as inv')
             ->leftJoin('inventory_dispatch as disp', function ($join) {
                 $join->on('inv.serial_number', '=', 'disp.serial_number')
@@ -466,6 +496,7 @@ class StoreController extends Controller
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
+            ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from export
             ->select(
                 'inv.item_code',
                 'inv.item',
@@ -628,17 +659,21 @@ class StoreController extends Controller
         $recordsFiltered = $isFiltered ? $query->count() : $recordsTotal;
 
         // Ordering
-        $orderColumnIndex = $request->input('order.0.column');
+        $orderColumnIndex = $request->input('order.0.column', $isAdmin ? 5 : 4); // Default 'dispatch_date' index
         $orderDir = $request->input('order.0.dir', 'desc');
 
-        // Column Mapping
+        // Map dataTable column index to DB columns
         // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:vendor, 5:date, 6:val, 7:act]
         // User:  [0:code, 1:item, 2:serial, 3:vendor, 4:date, 5:val, 6:act]
 
-        $colMap = $isAdmin
-            ? [1=>'item_code', 2=>'item', 3=>'serial_number', 4=>'vendor_name', 5=>'dispatch_date', 6=>'total_value']
-            : [0=>'item_code', 1=>'item', 2=>'serial_number', 3=>'vendor_name', 4=>'dispatch_date', 5=>'total_value'];
+        $columnsAdmin = [
+            1 => 'item_code', 2 => 'item', 3 => 'serial_number', 4 => 'vendor_name', 5 => 'dispatch_date', 6 => 'total_value'
+        ];
+        $columnsUser = [
+            0 => 'item_code', 1 => 'item', 2 => 'serial_number', 3 => 'vendor_name', 4 => 'dispatch_date', 5 => 'total_value'
+        ];
 
+        $colMap = $isAdmin ? $columnsAdmin : $columnsUser;
         $sortCol = $colMap[$orderColumnIndex] ?? 'dispatch_date';
 
         if ($sortCol === 'vendor_name') {

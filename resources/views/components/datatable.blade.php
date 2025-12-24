@@ -10,6 +10,8 @@
     'importFormatUrl' => null,
     'bulkDeleteEnabled' => true,
     'bulkDeleteRoute' => null,
+    'bulkReturnEnabled' => false,
+    'bulkReturnRoute' => null,
     'editRoute' => null,
     'deleteRoute' => null,
     'viewRoute' => null,
@@ -110,18 +112,30 @@
     @endif
 
     {{-- Bulk Actions Bar --}}
-    @if ($bulkDeleteEnabled)
+    @if ($bulkDeleteEnabled || $bulkReturnEnabled)
         <div class="mb-3" id="{{ $id }}_bulkActions" style="display: none;">
             <div
                 class="alert alert-warning mb-0 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between py-2 gap-2">
                 <span><i class="mdi mdi-information"></i> <strong id="{{ $id }}_selectedCount">0</strong>
                     item(s) selected</span>
-                <button type="button"
-                    class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 w-10 w-sm-auto"
-                    id="{{ $id }}_bulkDeleteBtn">
-                    <i class="mdi mdi-delete"></i>
-                    <span>Delete Selected</span>
-                </button>
+                <div class="d-flex flex-column gap-2">
+                    @if ($bulkDeleteEnabled)
+                        <button type="button"
+                            class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center gap-1"
+                            id="{{ $id }}_bulkDeleteBtn">
+                            <i class="mdi mdi-delete"></i>
+                            <span>Delete Selected</span>
+                        </button>
+                    @endif
+                    @if ($bulkReturnEnabled)
+                        <button type="button"
+                            class="btn btn-sm btn-warning d-inline-flex align-items-center justify-content-center gap-1"
+                            id="{{ $id }}_bulkReturnBtn" style="display: none;">
+                            <i class="mdi mdi-undo"></i>
+                            <span>Return Selected</span>
+                        </button>
+                    @endif
+                </div>
             </div>
         </div>
     @endif
@@ -823,12 +837,45 @@
                     const checkedCount = $(tableId + ' tbody .row-checkbox:checked').length;
                     const bulkActionsDiv = $('#{{ $id }}_bulkActions');
                     const selectedCountSpan = $('#{{ $id }}_selectedCount');
+                    const bulkReturnBtn = $('#{{ $id }}_bulkReturnBtn');
 
                     if (checkedCount > 0) {
                         bulkActionsDiv.slideDown(200);
                         selectedCountSpan.text(checkedCount);
+                        
+                        @if ($bulkReturnEnabled)
+                            // Check if all selected items are dispatched and from same vendor
+                            let allDispatched = true;
+                            let vendorNames = new Set();
+                            let hasInStockOrConsumed = false;
+                            
+                            $(tableId + ' tbody .row-checkbox:checked').each(function() {
+                                const $checkbox = $(this);
+                                const availability = $checkbox.data('availability') || $checkbox.closest('tr').find('td').eq({{ $bulkDeleteEnabled ? 4 : 3 }}).text().trim();
+                                const vendorName = $checkbox.data('vendor-name') || $checkbox.closest('tr').find('td').eq({{ $bulkDeleteEnabled ? 5 : 4 }}).text().trim();
+                                
+                                if (availability === 'In Stock' || availability === 'Consumed') {
+                                    allDispatched = false;
+                                    hasInStockOrConsumed = true;
+                                } else if (availability === 'Dispatched') {
+                                    if (vendorName && vendorName !== '-') {
+                                        vendorNames.add(vendorName);
+                                    }
+                                }
+                            });
+                            
+                            // Show return button only if all items are dispatched and from same vendor
+                            if (allDispatched && !hasInStockOrConsumed && vendorNames.size === 1) {
+                                bulkReturnBtn.show();
+                            } else {
+                                bulkReturnBtn.hide();
+                            }
+                        @endif
                     } else {
                         bulkActionsDiv.slideUp(200);
+                        @if ($bulkReturnEnabled)
+                            bulkReturnBtn.hide();
+                        @endif
                     }
                 } catch (e) {}
             }
@@ -1430,6 +1477,109 @@
                         $(table.rows({ page: 'current' }).nodes()).find('.row-checkbox').prop('checked', isChecked);
                         debouncedUpdateBulkActions();
                         debouncedUpdateSelectAllState();
+                    });
+                @endif
+
+                @if ($bulkReturnEnabled)
+                    $('#{{ $id }}_bulkReturnBtn').on('click', function() {
+                        const serialNumbers = [];
+                        const vendorNames = new Set();
+                        let allDispatched = true;
+                        
+                        $(tableId + ' tbody .row-checkbox:checked').each(function() {
+                            const $checkbox = $(this);
+                            const $row = $checkbox.closest('tr');
+                            const availability = $checkbox.data('availability') || $row.find('td').eq({{ $bulkDeleteEnabled ? 4 : 3 }}).text().trim();
+                            const vendorName = $checkbox.data('vendor-name') || $row.find('td').eq({{ $bulkDeleteEnabled ? 5 : 4 }}).text().trim();
+                            const serialNumber = $checkbox.data('serial-number') || $row.find('td').eq({{ $bulkDeleteEnabled ? 3 : 2 }}).text().trim();
+                            
+                            if (availability !== 'Dispatched') {
+                                allDispatched = false;
+                            } else {
+                                if (serialNumber) {
+                                    serialNumbers.push(serialNumber);
+                                    if (vendorName && vendorName !== '-') {
+                                        vendorNames.add(vendorName);
+                                    }
+                                }
+                            }
+                        });
+
+                        if (serialNumbers.length === 0) {
+                            Swal.fire({ 
+                                icon: 'warning', 
+                                title: 'Invalid Selection', 
+                                text: 'Please select only dispatched items that are in vendor custody.', 
+                                confirmButtonText: 'OK' 
+                            });
+                            return;
+                        }
+
+                        if (!allDispatched) {
+                            Swal.fire({ 
+                                icon: 'error', 
+                                title: 'Invalid Selection', 
+                                text: 'You can only return items that are dispatched (in vendor custody). Items that are in stock or consumed cannot be returned.', 
+                                confirmButtonText: 'OK' 
+                            });
+                            return;
+                        }
+
+                        if (vendorNames.size > 1) {
+                            Swal.fire({ 
+                                icon: 'error', 
+                                title: 'Multiple Vendors', 
+                                text: 'You can only return items from one vendor at a time. Please select items from a single vendor.', 
+                                confirmButtonText: 'OK' 
+                            });
+                            return;
+                        }
+
+                        const vendorName = Array.from(vendorNames)[0] || 'Unknown Vendor';
+                        
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: `Return ${serialNumbers.length} item(s) from ${vendorName}?`,
+                            icon: 'question',
+                            showCancelButton: true,
+                            confirmButtonColor: '#ffc107',
+                            confirmButtonText: 'Yes, return!',
+                            cancelButtonText: 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: '{{ $bulkReturnRoute ?? '#' }}',
+                                    type: 'POST',
+                                    data: { 
+                                        _token: '{{ csrf_token() }}', 
+                                        serial_numbers: serialNumbers 
+                                    },
+                                    success: function(response) {
+                                        Swal.fire({ 
+                                            icon: 'success', 
+                                            title: 'Returned!', 
+                                            text: response.message || `${serialNumbers.length} item(s) returned successfully`, 
+                                            timer: 1500, 
+                                            showConfirmButton: false 
+                                        }).then(() => {
+                                            if (table && typeof table.draw === 'function') {
+                                                table.draw(false);
+                                            } else {
+                                                window.location.reload();
+                                            }
+                                        });
+                                    },
+                                    error: function(xhr) {
+                                        Swal.fire({ 
+                                            icon: 'error', 
+                                            title: 'Error!', 
+                                            text: xhr.responseJSON?.message || 'Failed to return items.', 
+                                            confirmButtonText: 'OK' 
+                                        });
+                                    }
+                                });
+                            }
+                        });
                     });
                 @endif
 

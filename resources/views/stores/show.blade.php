@@ -176,10 +176,10 @@
             <!-- Add Inventory Tab -->
             <div class="tab-pane fade show active" id="inventory" role="tabpanel">
                 <div class="card">
-                    <div class="card-body">
+                    <div class="card-body" style="padding: 1rem 1.5rem;">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-3 gap-3">
                             <h6 class="card-title mb-0">Add Inventory</h6>
-                            <div class="import-section d-flex flex-column gap-2 w-100 w-md-auto">
+                            <div class="import-section d-flex flex-column gap-2">
                                 <form id="importInventoryForm"
                                     action="{{ route($project->project_type == 1 ? 'inventory.import-streetlight' : 'inventory.import', ['projectId' => $project->id, 'storeId' => $store->id]) }}"
                                     method="POST" enctype="multipart/form-data"
@@ -442,6 +442,7 @@
                 {{-- Use datatable component with server-side processing --}}
                 <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)"
                     ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray" :bulkDeleteEnabled="$isAdmin"
+                    :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')"
                     :exportEnabled="true" :importEnabled="false" pageLength="50" searchPlaceholder="Search inventory..."
                     :deferLoading="$inventoryTotal ?? null" :filters="[
                         [
@@ -475,7 +476,7 @@
                                 'SL01' => 'Panel Module (SL01 Panel)',
                                 'SL02' => 'Luminary (SL02 Luminary)',
                                 'SL03' => 'Battery (SL03 Battery)',
-                                'SL04' => 'Structure (SL04 Structure)',
+                                // Note: SL04 (Structure) is excluded from filter as it's mapped to SL03 and not shown in table
                             ],
                         ],
                     ]">
@@ -854,7 +855,8 @@
                             ];
 
                             // Calculate order array for DataTables
-                            $dispatchedOrderColumn = $isAdmin ? 7 : 6;
+                            // Order by dispatch_date column (index 5 for admin, index 4 for user)
+                            $dispatchedOrderColumn = $isAdmin ? 5 : 4;
                             $dispatchedOrderArray = [[$dispatchedOrderColumn, 'desc']]; // Order by dispatch date descending
                         @endphp
 
@@ -1362,7 +1364,7 @@
                         data: {
                             labels: ['In Store', 'Dispatched'],
                             datasets: [{
-                                data: [{{ $inStoreStockValue }}, {{ $dispatchedStockValue }}],
+                                data: [{{ $inStoreStockQuantity ?? 0 }}, {{ $dispatchedStockQuantity ?? 0 }}],
                                 backgroundColor: ['#28a745', '#ffc107'],
                             }]
                         },

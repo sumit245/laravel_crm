@@ -4,17 +4,53 @@
   <div class="content-wrapper p-2">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title mb-4">Edit Staff</h4>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Edit Staff</h4>
+          <a href="{{ route('staff.index') }}" class="btn btn-light">
+            <i class="mdi mdi-arrow-left me-2"></i>Back to Staff
+          </a>
+        </div>
 
         {{-- Validation errors --}}
         @if ($errors->any())
-          <div class="alert alert-danger">
-            <ul class="mb-0">
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
+          <script>
+            const validationErrors = {!! json_encode($errors->all()) !!};
+            Swal.fire({
+              title: 'Validation errors',
+              icon: 'error',
+              html: validationErrors.join('<br>'),
+              confirmButtonText: 'OK',
+              width: '600px'
+            });
+          </script>
+        @endif
+
+        @if (session('success'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: {!! json_encode(session('success')) !!},
+              showConfirmButton: false,
+              timer: 4000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
+        @if (session('error'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: {!! json_encode(session('error')) !!},
+              showConfirmButton: false,
+              timer: 5000,
+              timerProgressBar: true
+            });
+          </script>
         @endif
 
         <form action="{{ route('staff.update', $staff->id) }}" method="POST" class="forms-sample">
@@ -56,25 +92,31 @@
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="firstName" class="form-label">First Name</label>
+                <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
                 <input type="text"
                        id="firstName"
                        name="firstName"
-                       class="form-control"
+                       class="form-control @error('firstName') is-invalid @enderror"
                        value="{{ old('firstName', $staff->firstName) }}"
                        required>
+                @error('firstName')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
               </div>
             </div>
 
             <div class="col-md-6">
               <div class="form-group">
-                <label for="lastName" class="form-label">Last Name</label>
+                <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
                 <input type="text"
                        id="lastName"
                        name="lastName"
-                       class="form-control"
+                       class="form-control @error('lastName') is-invalid @enderror"
                        value="{{ old('lastName', $staff->lastName) }}"
                        required>
+                @error('lastName')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
               </div>
             </div>
           </div>
@@ -94,13 +136,16 @@
 
             <div class="col-md-6">
               <div class="form-group">
-                <label for="email" class="form-label">Email</label>
+                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                 <input type="email"
                        id="email"
                        name="email"
-                       class="form-control"
+                       class="form-control @error('email') is-invalid @enderror"
                        value="{{ old('email', $staff->email) }}"
                        required>
+                @error('email')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
               </div>
             </div>
           </div>
@@ -108,13 +153,16 @@
           <div class="row">
             <div class="col-md-6">
               <div class="form-group">
-                <label for="contactNo" class="form-label">Phone</label>
+                <label for="contactNo" class="form-label">Phone <span class="text-danger">*</span></label>
                 <input type="text"
                        id="contactNo"
                        name="contactNo"
-                       class="form-control"
+                       class="form-control @error('contactNo') is-invalid @enderror"
                        value="{{ old('contactNo', $staff->contactNo) }}"
                        required>
+                @error('contactNo')
+                  <div class="invalid-feedback d-block">{{ $message }}</div>
+                @enderror
               </div>
             </div>
 
@@ -162,12 +210,15 @@
           </div>
 
           <div class="form-group">
-            <label for="address" class="form-label">Address</label>
+            <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
             <textarea id="address"
                       name="address"
-                      class="form-control"
+                      class="form-control @error('address') is-invalid @enderror"
                       rows="2"
                       required>{{ old('address', $staff->address) }}</textarea>
+            @error('address')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <div class="form-group mt-3">
@@ -271,3 +322,14 @@
     </div>
   </div>
 @endsection
+
+@push('styles')
+  <style>
+    /* Consistent card styling to match theme */
+    .content-wrapper .card {
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e3e3e3;
+    }
+  </style>
+@endpush

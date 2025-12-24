@@ -265,6 +265,26 @@ class ProjectsController extends Controller
             ->get();
 
         $assignedEngineersMessage = $assignedEngineers->isEmpty() ? "No engineers assigned." : null;
+        
+        // Get engineers for reassignment: All engineers for Admin, filtered by manager_id for Project Managers
+        $reassignEngineersQuery = User::whereIn('role', [
+            UserRole::SITE_ENGINEER->value,
+            UserRole::PROJECT_MANAGER->value,
+            UserRole::STORE_INCHARGE->value,
+            UserRole::COORDINATOR->value
+        ])
+            ->when($isProjectManager, function ($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            });
+        $reassignEngineers = $reassignEngineersQuery->get();
+
+        // Get vendors for reassignment: All vendors for Admin, filtered by manager_id for Project Managers
+        $reassignVendorsQuery = User::where('role', UserRole::VENDOR->value)
+            ->when($isProjectManager, function ($q) use ($user) {
+                $q->where('manager_id', $user->id);
+            });
+        $reassignVendors = $reassignVendorsQuery->get();
+
         $streetlightDistricts = Streetlight::where('project_id', $id)
             ->select('district')
             ->distinct()
@@ -282,6 +302,8 @@ class ProjectsController extends Controller
             'assignedEngineersMessage' => $assignedEngineersMessage,
             'assignedVendors' => $assignedVendors,
             'availableVendors' => $availableVendors,
+            'reassignEngineers' => $reassignEngineers,
+            'reassignVendors' => $reassignVendors,
             'assignedStaffByRole' => $assignedStaffByRole,
             'availableStaffByRole' => $availableStaffByRole,
             'isAdmin' => $isAdmin,
