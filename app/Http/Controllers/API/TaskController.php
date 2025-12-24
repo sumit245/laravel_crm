@@ -6,6 +6,7 @@ use App\Helpers\ExcelHelper;
 use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
 use App\Services\Inventory\InventoryService;
+use App\Services\Inventory\InventoryHistoryService;
 use App\Models\InventoryDispatch;
 use App\Models\Site;
 use App\Models\Streetlight;

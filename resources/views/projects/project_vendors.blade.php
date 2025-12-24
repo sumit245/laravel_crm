@@ -188,7 +188,7 @@
 </style>
 
 <div class="vendor-management-container">
-    <div class="row">
+    <div class="row my-2">
         <!-- Assigned Vendors Section -->
         <div class="col-lg-5">
             <div class="vendor-section-card position-relative">

@@ -2,6 +2,20 @@
 
 @section('content')
     <div class="container p-2">
+        @if (session('success') || session('error') || $errors->any())
+            <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} alert-dismissible fade show"
+                role="alert">
+                {{ session('success') ?? session('error') ?? $errors->first() }}
+                @if (session('import_errors_url') && session('import_errors_count') > 0)
+                    <br>
+                    <small>
+                        {{ session('import_errors_count') }} row(s) were skipped during import.
+                        <a href="{{ session('import_errors_url') }}" target="_blank">Download error details</a>
+                    </small>
+                @endif
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
         <div class="row my-2">
             <div class="col-3 col-sm">
                 <label class="font-10 text-uppercase mg-b-10 fw-bold">State</label>
@@ -51,7 +65,7 @@
                 <p class="mg-b-0">{{ $project->description }}</p>
             </div>
         </div>
-        <!-- Project Details end -->
+        
         <!-- Tabs list begin -->
         <div class="row my-2">
             <div class="col-12">
@@ -104,7 +118,7 @@
                         </li>
                     </ul>
                     <!-- Sites Tab -->
-                    <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
+                    <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab" >
                         @include('projects.project_site', [
                             'sites' => $project->project_type == 1 ? $sites : $project->sites,
                         ])

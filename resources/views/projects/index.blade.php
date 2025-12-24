@@ -3,12 +3,12 @@
 @section('content')
     <div class="container p-2">
         <x-datatable id="projectsTable" title="Projects" :columns="[
-            ['title' => '#'],
-            ['title' => 'Project Name'],
-            ['title' => 'Work Order Number'],
-            ['title' => 'Start Date'],
-            ['title' => 'Order Value'],
-            ['title' => 'Project Type'],
+            ['title' => '#', 'width' => '6%'],
+            ['title' => 'Project Name', 'width' => '26%'],
+            ['title' => 'Work Order Number', 'width' => '18%'],
+            ['title' => 'Start Date', 'width' => '14%'],
+            ['title' => 'Order Value', 'width' => '14%'],
+            ['title' => 'Project Type', 'width' => '12%'],
         ]" :addRoute="route('projects.create')" addButtonText="Add New Project"
             :exportEnabled="true" :importEnabled="true" :importRoute="route('projects.import')" :importFormatUrl="route('projects.importFormat')" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('projects.bulkDelete')"
             :deleteRoute="route('projects.destroy', ':id')" :editRoute="route('projects.edit', ':id')" :viewRoute="route('projects.show', ':id')" pageLength="50" searchPlaceholder="Search Projects..."
@@ -49,15 +49,15 @@
                     <td>{{ $project->rate }}</td>
                     <td>{{ $project->project_type == 0 ? 'Rooftop' : 'Streetlight' }}</td>
                     <td class="text-center">
-                        <a href="{{ route('projects.show', $project->id) }}" class="btn btn-icon btn-info"
+                        <a href="{{ route('projects.show', $project->id) }}" class="btn btn-sm-icon btn-info"
                             data-toggle="tooltip" title="View Details">
                             <i class="mdi mdi-eye"></i>
                         </a>
-                        <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-icon btn-warning"
+                        <a href="{{ route('projects.edit', $project->id) }}" class="btn btn-sm-icon btn-warning"
                             data-toggle="tooltip" title="Edit Project">
                             <i class="mdi mdi-pencil"></i>
                         </a>
-                        <button type="button" class="btn btn-icon btn-danger delete-row" data-toggle="tooltip"
+                        <button type="button" class="btn btn-sm-icon btn-danger delete-row" data-toggle="tooltip"
                             title="Delete Project" data-id="{{ $project->id }}" data-name="{{ $project->project_name }}"
                             data-url="{{ route('projects.destroy', $project->id) }}">
                             <i class="mdi mdi-delete"></i>

@@ -51,28 +51,28 @@
                 'type' => 'text',
                 'name' => 'state',
                 'label' => 'State',
-                'column' => 1,
+                'column' => 2,
                 'width' => 3,
             ],
             [
                 'type' => 'text',
                 'name' => 'district',
                 'label' => 'District',
-                'column' => 2,
+                'column' => 3,
                 'width' => 3,
             ],
             [
                 'type' => 'text',
                 'name' => 'block',
                 'label' => 'Block',
-                'column' => 3,
+                'column' => 4,
                 'width' => 3,
             ],
             [
                 'type' => 'text',
                 'name' => 'panchayat',
                 'label' => 'Panchayat',
-                'column' => 4,
+                'column' => 5,
                 'width' => 3,
             ],
         ];
@@ -80,11 +80,14 @@
     }
 @endphp
 
+<div class="row my-2 mx-1">
 <x-datatable id="sitesTable" title="Sites" :columns="$columns" :addRoute="route('sites.create', ['project_id' => $project->id])" addButtonText="Add Site" :exportEnabled="true"
-    :importEnabled="true" :importRoute="route('sites.import', $project->id)" :importFormatUrl="$importFormatUrl" :bulkDeleteEnabled="true" :bulkDeleteRoute="null" :deleteRoute="route('sites.destroy', ':id') . '?project_id=' . $project->id" 
+    :importEnabled="true" :importRoute="route('sites.import', $project->id)" :importFormatUrl="$importFormatUrl" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('sites.bulkDelete') . '?project_id=' . $project->id" :deleteRoute="route('sites.destroy', ':id') . '?project_id=' . $project->id" 
     :editRoute="route('sites.edit', ':id') . '?project_id=' . $project->id" 
-    :viewRoute="route('sites.show', ':id') . '?project_type=' . $project->project_type" pageLength="50"
-    searchPlaceholder="Search Sites..." :filters="$filters">
+    :viewRoute="route('sites.show', ':id') . '?project_type=' . $project->project_type" 
+    pageLength="50"
+    searchPlaceholder="Search Sites..." 
+    :filters="$filters">
     @foreach ($sites as $site)
         <tr>
             <td>
@@ -113,14 +116,14 @@
             @endif
             <td class="text-center">
                 <a href="{{ route('sites.show', $site->id) }}?project_type={{ $project->project_type }}"
-                    class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                    class="btn btn-sm-icon btn-info" data-toggle="tooltip" title="View Details">
                     <i class="mdi mdi-eye"></i>
                 </a>
                 <a href="{{ route('sites.edit', $site->id) }}?project_id={{ $project->id }}"
-                    class="btn btn-icon btn-warning" data-toggle="tooltip" title="Edit Site">
+                    class="btn btn-sm-icon btn-warning" data-toggle="tooltip" title="Edit Site">
                     <i class="mdi mdi-pencil"></i>
                 </a>
-                <button type="button" class="btn btn-icon btn-danger delete-row" data-toggle="tooltip"
+                <button type="button" class="btn btn-sm-icon btn-danger delete-row" data-toggle="tooltip"
                     title="Delete Site" data-id="{{ $site->id }}"
                     data-name="{{ $site->site_name ?? $site->task_id }}"
                     data-url="{{ route('sites.destroy', $site->id) }}?project_id={{ $project->id }}">
@@ -130,3 +133,4 @@
         </tr>
     @endforeach
 </x-datatable>
+</div>

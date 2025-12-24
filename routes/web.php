@@ -90,7 +90,43 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::delete('/meets/{meet}/attendees/{user}', [MeetController::class, 'removeAttendee'])->name('meets.attendees.remove');
     Route::delete('/follow-ups/{followUp}', [MeetController::class, 'deleteFollowUp'])->name('follow-ups.delete');
     Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
+// Dev-only pages for E2E testing (only in local environment)
+if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST')) {
+    Route::get('/__dev/unified-inventory-test', function () {
+        return view('dev.unified_inventory_test');
+    })->name('__dev.unified_inventory_test');
 
+    Route::get('/__dev/inventory-data', function (\Illuminate\Http\Request $request) {
+        // Simulate server-side DataTables response. Expect parameters: start, length, draw
+        $start = intval($request->query('start', 0));
+        $length = intval($request->query('length', 10));
+        $total = 100; // pretend there are 100 records on server
+
+        $data = [];
+        $page = intval($start / max(1, $length));
+        for ($i = 0; $i < $length; $i++) {
+            $index = $start + $i + 1;
+            if ($index > $total) break;
+            $data[] = [
+                'IT' . $index,
+                'Item ' . $index,
+                'SERI' . $index,
+                '<span class="badge bg-success">In Stock</span>',
+                'Vendor ' . $index,
+                date('d/m/Y'),
+                date('d/m/Y'),
+                ''
+            ];
+        }
+
+        return response()->json([
+            'draw' => intval($request->query('draw', 1)),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $data,
+        ]);
+    })->name('__dev.inventory_data');
+}
 
     // optional
     Route::get('/meets/{meet}/export/excel', [MeetController::class, 'exportExcel'])->name('meets.exportExcel');
@@ -125,6 +161,10 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
         Route::get('search', [SiteController::class, 'search'])->name('sites.search');
         Route::post('import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
         Route::post('ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
+        Route::post('bulk-delete', [SiteController::class, 'bulkDelete'])->name('sites.bulkDelete');
+        Route::post('{siteId}/poles/import', [SiteController::class, 'importPoles'])->name('sites.poles.import');
+        Route::post('poles/bulk-delete', [SiteController::class, 'bulkDeletePoles'])->name('sites.poles.bulkDelete');
+        Route::get('{siteId}/poles/export-format', [SiteController::class, 'downloadPoleImportFormat'])->name('sites.poles.exportFormat');
     });
     Route::resource('sites', SiteController::class);
 

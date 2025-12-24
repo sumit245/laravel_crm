@@ -2,7 +2,7 @@
     'id' => 'dataTable',
     'columns' => [],
     'data' => [],
-    'pageLength' => 25,
+    'pageLength' => 50,
     'searchPlaceholder' => 'Search...',
     'exportEnabled' => true,
     'importEnabled' => false,
@@ -20,6 +20,11 @@
     'customActions' => [],
     'responsive' => true,
     'order' => [[0, 'desc']],
+    'serverSide' => false,
+    'deferLoading' => null,
+    'ajaxUrl' => null,
+    'ajaxData' => null,
+    'processing' => true,
 ])
 
 <div class="datatable-wrapper" id="datatable-wrapper-{{ $id }}">
@@ -90,7 +95,8 @@
                 @endforeach
                 <div class="col-12 col-md-auto">
                     <div class="d-flex gap-2">
-                        <button type="button" class="btn btn-sm btn-primary flex-fill flex-md-auto" id="{{ $id }}_applyFilters">
+                        <button type="button" class="btn btn-sm btn-primary flex-fill flex-md-auto"
+                            id="{{ $id }}_applyFilters">
                             <i class="mdi mdi-filter-check"></i> Apply Filters
                         </button>
                         <button type="button" class="btn btn-sm btn-outline-secondary flex-fill flex-md-auto"
@@ -108,7 +114,8 @@
         <div class="mb-3" id="{{ $id }}_bulkActions" style="display: none;">
             <div
                 class="alert alert-warning mb-0 d-flex flex-column flex-sm-row align-items-start align-items-sm-center justify-content-between py-2 gap-2">
-                <span><i class="mdi mdi-information"></i> <strong id="{{ $id }}_selectedCount">0</strong> item(s) selected</span>
+                <span><i class="mdi mdi-information"></i> <strong id="{{ $id }}_selectedCount">0</strong>
+                    item(s) selected</span>
                 <button type="button"
                     class="btn btn-sm btn-danger d-inline-flex align-items-center gap-1 w-10 w-sm-auto"
                     id="{{ $id }}_bulkDeleteBtn">
@@ -151,6 +158,7 @@
             @endif
         </div>
     </div>
+
     {{-- Data Table --}}
     <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table id="{{ $id }}" class="table table-striped table-bordered table-hover"
@@ -178,21 +186,19 @@
         </table>
     </div>
 
-    {{-- Pagination Info Bar: Two Lines --}}
+    {{-- Pagination Info Bar --}}
     <div class="mt-3 d-flex flex-column gap-2">
-        {{-- Line 1: Showing info and Pagination buttons --}}
         <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div class="small text-muted" id="{{ $id }}_info"></div>
             <div class="dataTables_paginate paging_simple_numbers" id="{{ $id }}_pagination_wrapper"></div>
         </div>
-        {{-- Line 2: Show entries control --}}
         <div class="d-flex align-items-center gap-2">
             <label class="mb-0 small fw-semibold">Show:</label>
             <select class="form-control form-control-sm" id="{{ $id }}_length" style="width: auto;">
-                <option value="10">10</option>
-                <option value="25">25</option>
-                <option value="50" selected>50</option>
+                <option value="50">50</option>
                 <option value="100">100</option>
+                <option value="200" selected>200</option>
+                <option value="500">500</option>
                 <option value="-1">All</option>
             </select>
             <span class="small">entries</span>
@@ -209,8 +215,6 @@
             box-shadow: none;
             border: none;
         }
-
-        /* Hide default DataTables length menu - we use custom one at bottom */
         .datatable-wrapper .dataTables_length:not(.dataTables_length_bottom),
         #{{ $id }}_wrapper .dataTables_length:not(.dataTables_length_bottom),
         .dataTables_wrapper .dataTables_length:not(.dataTables_length_bottom) {
@@ -221,12 +225,9 @@
             margin: 0 !important;
             padding: 0 !important;
         }
-
         .datatable-wrapper .table {
             margin-bottom: 0;
         }
-
-        /* Modern sorting indicators - clean triangles */
         .datatable-wrapper .table thead th {
             position: relative;
             background-color: #f8f9fa;
@@ -245,8 +246,6 @@
             box-sizing: border-box !important;
             cursor: pointer;
         }
-
-        /* Hide ALL DataTables default icons/spans added to headers - MAXIMUM SPECIFICITY */
         .datatable-wrapper .table thead th>span,
         .datatable-wrapper .table thead th>i,
         .datatable-wrapper .table thead th>.dtr-details,
@@ -263,8 +262,6 @@
             content: none !important;
             visibility: hidden !important;
         }
-
-        /* Hide DataTables default column visibility icons and any right-hand icons - ALL VARIANTS */
         .datatable-wrapper .table thead th::before,
         .datatable-wrapper .table thead th.sorting::before,
         .datatable-wrapper .table thead th.sorting_asc::before,
@@ -281,8 +278,6 @@
             content: none !important;
             visibility: hidden !important;
         }
-
-        /* Remove any icons/spans added by DataTables on the right side - ALL SELECTORS */
         .datatable-wrapper .table thead th .dtr-details,
         .datatable-wrapper .table thead th>span:not(.sorting-indicator),
         .datatable-wrapper .table thead th>i:last-child,
@@ -298,8 +293,6 @@
             display: none !important;
             visibility: hidden !important;
         }
-
-        /* Hide DataTables default sorting icons that appear on the right - ALL VARIANTS */
         .datatable-wrapper .table thead th.sorting:before,
         .datatable-wrapper .table thead th.sorting_asc:before,
         .datatable-wrapper .table thead th.sorting_desc:before,
@@ -313,16 +306,12 @@
             content: none !important;
             visibility: hidden !important;
         }
-
-        /* Sorting icons container - padding on left for arrow */
         .datatable-wrapper .table thead th.sorting,
         .datatable-wrapper .table thead th.sorting_asc,
         .datatable-wrapper .table thead th.sorting_desc {
             padding-left: 1.5rem !important;
             padding-right: 0.5rem !important;
         }
-
-        /* Sorting arrows container - positioned on LEFT side */
         .datatable-wrapper .table thead th.sorting::after,
         .datatable-wrapper .table thead th.sorting_asc::after,
         .datatable-wrapper .table thead th.sorting_desc::after {
@@ -336,62 +325,34 @@
             font-family: 'Material Design Icons';
             font-weight: normal;
         }
-
-        /* Unsorted state - show chevron-down (neutral indicator) */
-        .datatable-wrapper .table thead th.sorting::after {
-            content: "\F0045";
-            /* mdi-chevron-down */
-        }
-
-        /* Ascending sort icon (upward chevron) */
-        .datatable-wrapper .table thead th.sorting_asc::after {
-            content: "\F005D";
-            /* mdi-chevron-up */
-            opacity: 1;
-        }
-
-        /* Descending sort icon (downward chevron) */
-        .datatable-wrapper .table thead th.sorting_desc::after {
-            content: "\F0045";
-            /* mdi-chevron-down */
-            opacity: 1;
-        }
-
-        /* No sort indicator for checkbox column */
+        .datatable-wrapper .table thead th.sorting::after { content: "\F0045"; }
+        .datatable-wrapper .table thead th.sorting_asc::after { content: "\F005D"; opacity: 1; }
+        .datatable-wrapper .table thead th.sorting_desc::after { content: "\F0045"; opacity: 1; }
         .datatable-wrapper .table thead th.select-checkbox::after,
         .datatable-wrapper .table thead th.no-sort::after {
             display: none !important;
         }
-
         .datatable-wrapper .table tbody tr {
             transition: background-color 0.15s ease;
             height: 32px !important;
             min-height: 32px !important;
             max-height: 32px !important;
-            line-height: 1.2 !important;
+            line-height: 1.15 !important;
             box-sizing: border-box !important;
             will-change: background-color;
         }
-
         .datatable-wrapper .table tbody tr:hover {
             background-color: #f8f9fa;
         }
-
         .datatable-wrapper .table tbody td {
-            padding: 0.25rem 0.5rem !important;
-            padding-top: 0.25rem !important;
-            padding-bottom: 0.25rem !important;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
+            padding: 0.125rem 0.25rem !important;
             vertical-align: middle !important;
             height: 32px !important;
             min-height: 32px !important;
             max-height: 32px !important;
-            line-height: 1.2 !important;
+            line-height: 1.15 !important;
             box-sizing: border-box !important;
         }
-
-        /* CRITICAL: Override ALL conflicting table styles for this datatable */
         #{{ $id }} thead th,
         #{{ $id }} tbody td,
         #{{ $id }} tbody tr,
@@ -401,15 +362,14 @@
             height: 32px !important;
             min-height: 32px !important;
             max-height: 32px !important;
-            padding-top: 0.25rem !important;
-            padding-bottom: 0.25rem !important;
-            padding-left: 0.5rem !important;
-            padding-right: 0.5rem !important;
-            line-height: 1.2 !important;
+            padding-top: 0.125rem !important;
+            padding-bottom: 0.125rem !important;
+            padding-left: 0.25rem !important;
+            padding-right: 0.25rem !important;
+            line-height: 1.15 !important;
             box-sizing: border-box !important;
             margin: 0 !important;
         }
-
         .datatable-wrapper .btn {
             border-radius: 4px;
             font-weight: 500;
@@ -419,12 +379,9 @@
             gap: 4px;
             will-change: box-shadow;
         }
-
         .datatable-wrapper .btn:hover {
-            /* Only animate box-shadow to prevent layout shifts and flickering */
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
         }
-
         .datatable-wrapper .btn-icon {
             padding: 6px 10px;
             margin: 0 2px;
@@ -435,76 +392,62 @@
             opacity: 1 !important;
             visibility: visible !important;
         }
-
-        /* Consistent button width for Add buttons */
-        .datatable-wrapper .add-new-btn {
-            min-width: 140px;
-        }
-
-        .datatable-wrapper .btn-icon i {
-            font-size: 1rem !important;
-        }
-
-        /* Ensure delete buttons specifically are visible */
+        .datatable-wrapper .add-new-btn { min-width: 140px; }
+        .datatable-wrapper .btn-icon i { font-size: 1rem !important; }
         .datatable-wrapper .btn-danger {
             background-color: #dc3545 !important;
             border-color: #dc3545 !important;
             color: white !important;
         }
-
         .datatable-wrapper .btn-danger:hover {
             background-color: #c82333 !important;
             border-color: #bd2130 !important;
         }
-
-        /* Ensure action column is always visible */
         .datatable-wrapper .table td:last-child,
         .datatable-wrapper .table th:last-child {
             display: table-cell !important;
             visibility: visible !important;
             opacity: 1 !important;
-        }
-
-        /* Ensure action buttons have proper spacing and don't stretch column - GENERAL RULE */
-        .datatable-wrapper .table td:last-child,
-        .datatable-wrapper .table th:last-child {
-            width: 120px !important;
-            min-width: 120px !important;
-            max-width: 120px !important;
+            width: 140px !important;
+            min-width: 140px !important;
+            max-width: 140px !important;
             white-space: nowrap !important;
             overflow: visible !important;
             text-align: center !important;
             box-sizing: border-box !important;
         }
-
+        .datatable-wrapper .table tbody td.dt-truncate {
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            max-width: 120px !important;
+        }
+        .datatable-wrapper .table tbody tr.dt-row-active {
+            background-color: #eef5ff !important;
+        }
+        .datatable-wrapper .table tbody tr.dt-row-active td:last-child .btn-icon {
+            box-shadow: 0 0 0 1px rgba(0, 123, 255, 0.35);
+        }
         .datatable-wrapper .table td:last-child .btn-icon {
-            margin: 0 2px !important;
-            padding: 6px 10px !important;
+            margin: 0 1px !important;
+            padding: 4px 6px !important;
             display: inline-flex !important;
             flex-shrink: 0 !important;
             width: auto !important;
             min-width: auto !important;
             max-width: none !important;
         }
-
         .datatable-wrapper .select-all-checkbox,
         .datatable-wrapper .row-checkbox {
             cursor: pointer;
             width: 18px;
             height: 18px;
         }
-
         [id$="_bulkActions"] .alert {
             margin-bottom: 0;
             padding: 10px 15px;
         }
-
-        /* Pagination Bar Styling - Two Lines */
-        .datatable-wrapper .mt-3.d-flex.flex-column {
-            padding-top: 0.75rem;
-        }
-
-        /* Pagination styling - Target both default location and custom wrapper */
+        .datatable-wrapper .mt-3.d-flex.flex-column { padding-top: 0.75rem; }
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate,
         #{{ $id }}_pagination_wrapper.dataTables_paginate,
         #{{ $id }}_pagination_wrapper .dataTables_paginate,
@@ -515,14 +458,10 @@
             flex-wrap: wrap !important;
             margin: 0 !important;
         }
-
-        /* Pagination button styling - Multiple selectors for maximum coverage */
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate .paginate_button,
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate a.paginate_button,
         #{{ $id }}_pagination_wrapper .paginate_button,
         #{{ $id }}_pagination_wrapper a.paginate_button,
-        #{{ $id }}_pagination_wrapper.dataTables_paginate .paginate_button,
-        #{{ $id }}_pagination_wrapper.dataTables_paginate a.paginate_button,
         .dataTables_paginate .paginate_button,
         .dataTables_paginate a.paginate_button {
             border-radius: 4px !important;
@@ -541,15 +480,12 @@
             box-sizing: border-box !important;
             font-size: 0.875rem !important;
         }
-
-        /* Remove underline from pagination links */
         #{{ $id }}_pagination_wrapper a,
         #{{ $id }}_pagination_wrapper .paginate_button a,
         .dataTables_paginate a.paginate_button {
             text-decoration: none !important;
             color: inherit !important;
         }
-
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate .paginate_button:hover:not(.disabled):not(.current),
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate a.paginate_button:hover:not(.disabled):not(.current),
         #{{ $id }}_pagination_wrapper .paginate_button:hover:not(.disabled):not(.current),
@@ -559,7 +495,6 @@
             color: #495057 !important;
             text-decoration: none !important;
         }
-
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.current,
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate a.paginate_button.current,
         #{{ $id }}_pagination_wrapper .paginate_button.current,
@@ -570,7 +505,6 @@
             font-weight: 600 !important;
             text-decoration: none !important;
         }
-
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
         .datatable-wrapper .dataTables_wrapper .dataTables_paginate a.paginate_button.disabled,
         #{{ $id }}_pagination_wrapper .paginate_button.disabled,
@@ -579,8 +513,6 @@
             cursor: not-allowed !important;
             pointer-events: none !important;
         }
-
-        /* Ellipsis styling */
         #{{ $id }}_pagination_wrapper .ellipsis,
         .dataTables_paginate .ellipsis {
             padding: 6px 8px !important;
@@ -588,115 +520,42 @@
             cursor: default !important;
             margin: 0 2px !important;
         }
-
-        /* Remove default link styling */
         .dataTables_paginate .paginate_button a,
         #{{ $id }}_pagination_wrapper .paginate_button a {
             text-decoration: none !important;
             color: inherit !important;
             display: block !important;
         }
-
-        /* Consistent Color Scheme */
-        .btn-primary {
-            background-color: #007bff;
-            border-color: #007bff;
-        }
-
-        .btn-success {
-            background-color: #28a745;
-            border-color: #28a745;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-        }
-
-        .btn-warning {
-            background-color: #ffc107;
-            border-color: #ffc107;
-            color: #212529;
-        }
-
-        .btn-info {
-            background-color: #17a2b8;
-            border-color: #17a2b8;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-            border-color: #6c757d;
-        }
-
-        /* Mobile Responsive Styles */
+        .btn-primary { background-color: #007bff; border-color: #007bff; }
+        .btn-success { background-color: #28a745; border-color: #28a745; }
+        .btn-danger { background-color: #dc3545; border-color: #dc3545; }
+        .btn-warning { background-color: #ffc107; border-color: #ffc107; color: #212529; }
+        .btn-info { background-color: #17a2b8; border-color: #17a2b8; }
+        .btn-secondary { background-color: #6c757d; border-color: #6c757d; }
         @media (max-width: 767.98px) {
-            .datatable-wrapper {
-                padding: 1rem;
-            }
-
-            .datatable-wrapper .table {
-                font-size: 0.875rem;
-            }
-
-            .datatable-wrapper .table thead th {
-                font-size: 0.7rem;
-                padding: 8px 4px;
-            }
-
-            .datatable-wrapper .table tbody td {
-                padding: 8px 4px;
-            }
-
-            .datatable-wrapper .btn {
-                font-size: 0.875rem;
-                padding: 0.375rem 0.5rem;
-            }
-
-            .datatable-wrapper .btn-group {
-                width: 100%;
-            }
-
-            .datatable-wrapper .btn-group .btn {
-                flex: 1 1 auto;
-                min-width: 0;
-            }
-
-            /* Ensure DataTables responsive child rows are visible */
-            .dtr-details {
-                display: block !important;
-            }
-
-            .dtr-details li {
-                padding: 0.5rem 0;
-                border-bottom: 1px solid #dee2e6;
-            }
-
-            .dtr-details li:last-child {
-                border-bottom: none;
-            }
-
-            .dtr-title {
-                font-weight: 600;
-                margin-right: 0.5rem;
-            }
+            .datatable-wrapper { padding: 1rem; }
+            .datatable-wrapper .table { font-size: 0.875rem; }
+            .datatable-wrapper .table thead th { font-size: 0.7rem; padding: 8px 4px; }
+            .datatable-wrapper .table tbody td { padding: 8px 4px; }
+            .datatable-wrapper .btn { font-size: 0.875rem; padding: 0.375rem 0.5rem; }
+            .datatable-wrapper .btn-group { width: 100%; }
+            .datatable-wrapper .btn-group .btn { flex: 1 1 auto; min-width: 0; }
+            .dtr-details { display: block !important; }
+            .dtr-details li { padding: 0.5rem 0; border-bottom: 1px solid #dee2e6; }
+            .dtr-details li:last-child { border-bottom: none; }
+            .dtr-title { font-weight: 600; margin-right: 0.5rem; }
         }
-
-        /* Ensure responsive table wrapper doesn't break layout */
         .table-responsive {
             display: block;
             width: 100%;
             overflow-x: auto;
             -webkit-overflow-scrolling: touch;
         }
-
-        /* DataTables responsive styling */
         table.dataTable.dtr-inline.collapsed>tbody>tr>td.child,
         table.dataTable.dtr-inline.collapsed>tbody>tr>th.child,
         table.dataTable.dtr-inline.collapsed>tbody>tr>td.dataTables_empty {
             cursor: default !important;
         }
-
         table.dataTable.dtr-inline.collapsed>tbody>tr>td:first-child:before,
         table.dataTable.dtr-inline.collapsed>tbody>tr>th:first-child:before {
             background-color: #007bff;
@@ -711,417 +570,256 @@
             text-align: center;
             width: 1.2em;
         }
-
         table.dataTable.dtr-inline.collapsed>tbody>tr.parent>td:first-child:before,
         table.dataTable.dtr-inline.collapsed>tbody>tr.parent>th:first-child:before {
             content: "-";
             background-color: #dc3545;
         }
-
-        /* Hide default DataTables search box */
-        .dataTables_filter {
-            display: none !important;
-        }
-
-        /* Style custom search box */
-        .datatable-wrapper .input-group {
-            width: 100%;
-            max-width: 100%;
-        }
-
+        .dataTables_filter { display: none !important; }
+        .datatable-wrapper .input-group { width: 100%; max-width: 100%; }
         @media (min-width: 768px) {
-            .datatable-wrapper .input-group {
-                max-width: 400px;
-            }
+            .datatable-wrapper .input-group { max-width: 400px; }
         }
-
         .datatable-wrapper .form-control {
             border: 1px solid #ced4da;
             border-radius: 0.25rem;
             padding: 0.375rem 0.75rem;
             font-size: 0.875rem;
         }
-
         .datatable-wrapper .input-group-text {
             background-color: #e9ecef;
             border: 1px solid #ced4da;
             border-radius: 0.25rem 0 0 0.25rem;
             padding: 0.375rem 0.75rem;
         }
-
-        /* Fix pagination flickering */
-        .dataTables_paginate {
-            transition: none !important;
-            -webkit-transition: none !important;
-        }
-
-        .dataTables_paginate .paginate_button {
-            transition: none !important;
-            -webkit-transition: none !important;
-            cursor: pointer !important;
-        }
-
-        .dataTables_paginate .paginate_button:hover {
-            transition: none !important;
-            -webkit-transition: none !important;
-        }
-
+        .dataTables_paginate { transition: none !important; -webkit-transition: none !important; }
+        .dataTables_paginate .paginate_button { transition: none !important; -webkit-transition: none !important; cursor: pointer !important; }
+        .dataTables_paginate .paginate_button:hover { transition: none !important; -webkit-transition: none !important; }
         .dataTables_wrapper .dataTables_paginate .paginate_button.current,
         .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
-            background: #007bff !important;
-            color: white !important;
-            border: 1px solid #007bff !important;
-            transition: none !important;
-            -webkit-transition: none !important;
+            background: #007bff !important; color: white !important; border: 1px solid #007bff !important; transition: none !important; -webkit-transition: none !important;
         }
-
         .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-            background: #e9ecef !important;
-            color: #0056b3 !important;
-            border: 1px solid #dee2e6 !important;
-            transition: none !important;
-            -webkit-transition: none !important;
+            background: #e9ecef !important; color: #0056b3 !important; border: 1px solid #dee2e6 !important; transition: none !important; -webkit-transition: none !important;
         }
-
         .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
         .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover,
         .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:active {
-            cursor: default !important;
-            color: #6c757d !important;
-            border: 1px solid transparent !important;
-            background: transparent !important;
-            transition: none !important;
-            -webkit-transition: none !important;
+            cursor: default !important; color: #6c757d !important; border: 1px solid transparent !important; background: transparent !important; transition: none !important; -webkit-transition: none !important;
         }
-    </style>
-
-    <!-- CRITICAL: Inline style to force 32px height - Highest priority -->
-    <!-- This MUST load after DataTables CDN CSS -->
-    <style>
+        
         /* Force 32px height with MAXIMUM specificity - Override DataTables CDN CSS */
-        #{{ $id }} thead th,
-        #{{ $id }} tbody td,
-        #{{ $id }} tbody tr,
-        table#{{ $id }} thead th,
-        table#{{ $id }} tbody td,
-        table#{{ $id }} tbody tr,
-        .dataTables_wrapper #{{ $id }} thead th,
-        .dataTables_wrapper #{{ $id }} tbody td,
-        .dataTables_wrapper #{{ $id }} tbody tr,
-        table.dataTable#{{ $id }} thead th,
-        table.dataTable#{{ $id }} tbody td,
-        table.dataTable#{{ $id }} tbody tr,
-        .dataTables_wrapper table.dataTable#{{ $id }} thead th,
-        .dataTables_wrapper table.dataTable#{{ $id }} tbody td,
-        .dataTables_wrapper table.dataTable#{{ $id }} tbody tr {
-            height: 32px !important;
-            min-height: 32px !important;
-            max-height: 32px !important;
-            padding-top: 4px !important;
-            padding-bottom: 4px !important;
-            padding-left: 8px !important;
-            padding-right: 8px !important;
-            padding: 4px 8px !important;
-            line-height: 1.2 !important;
-            box-sizing: border-box !important;
-            margin: 0 !important;
-            vertical-align: middle !important;
+        #{{ $id }} thead th, #{{ $id }} tbody td, #{{ $id }} tbody tr,
+        table#{{ $id }} thead th, table#{{ $id }} tbody td, table#{{ $id }} tbody tr,
+        .dataTables_wrapper #{{ $id }} thead th, .dataTables_wrapper #{{ $id }} tbody td, .dataTables_wrapper #{{ $id }} tbody tr,
+        table.dataTable#{{ $id }} thead th, table.dataTable#{{ $id }} tbody td, table.dataTable#{{ $id }} tbody tr {
+            height: 32px !important; min-height: 32px !important; max-height: 32px !important;
+            padding: 4px 8px !important; line-height: 1.2 !important; box-sizing: border-box !important; margin: 0 !important; vertical-align: middle !important;
         }
-
-        /* Override DataTables CDN default styles - MAXIMUM SPECIFICITY */
         .dataTables_wrapper table.dataTable#{{ $id }} thead th,
         .dataTables_wrapper table.dataTable#{{ $id }} tbody td,
         .dataTables_wrapper table.dataTable#{{ $id }} tbody tr {
             padding: 4px 8px !important;
         }
-
-        /* Override any inline styles that DataTables might add */
-        #{{ $id }} thead th[style],
-        #{{ $id }} tbody td[style],
-        #{{ $id }} tbody tr[style] {
-            height: 32px !important;
-            min-height: 32px !important;
-            max-height: 32px !important;
-            padding-top: 4px !important;
-            padding-bottom: 4px !important;
-            padding: 4px 8px !important;
+        #{{ $id }} thead th[style], #{{ $id }} tbody td[style], #{{ $id }} tbody tr[style] {
+            height: 32px !important; min-height: 32px !important; max-height: 32px !important; padding: 4px 8px !important;
         }
-
-        /* Custom column visibility dropdown styling */
         .custom-colvis-dropdown {
-            background: white;
-            border: 1px solid #dee2e6;
-            border-radius: 0.375rem;
-            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
-            padding: 0.5rem 0;
-            max-height: 400px;
-            overflow-y: auto;
+            background: white; border: 1px solid #dee2e6; border-radius: 0.375rem; box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15); padding: 0.5rem 0; max-height: 400px; overflow-y: auto;
         }
-
-        .custom-colvis-dropdown .dropdown-item-text {
-            transition: background-color 0.15s ease-in-out;
-        }
-
-        .custom-colvis-dropdown .dropdown-item-text:hover {
-            background-color: #f8f9fa;
-        }
-
-        .custom-colvis-dropdown .form-check-input {
-            margin-top: 0;
-            cursor: pointer;
-        }
-
-        .custom-colvis-dropdown label {
-            user-select: none;
-        }
-
-        /* Disable sorting indicator on checkbox column - but allow checkbox clicks */
-        #{{ $id }} thead th.select-checkbox,
-        #{{ $id }} thead th.no-sort {
-            cursor: default !important;
-        }
-
-        /* Ensure checkbox is always clickable */
+        .custom-colvis-dropdown .dropdown-item-text { transition: background-color 0.15s ease-in-out; }
+        .custom-colvis-dropdown .dropdown-item-text:hover { background-color: #f8f9fa; }
+        .custom-colvis-dropdown .form-check-input { margin-top: 0; cursor: pointer; }
+        .custom-colvis-dropdown label { user-select: none; }
+        #{{ $id }} thead th.select-checkbox, #{{ $id }} thead th.no-sort { cursor: default !important; }
         #{{ $id }} thead th.select-checkbox input[type="checkbox"],
         #{{ $id }} thead th.select-checkbox label,
-        #{{ $id }} thead th.select-checkbox {
-            cursor: pointer !important;
-            pointer-events: auto !important;
-        }
-
-        /* Prevent sorting on checkbox column header click (except checkbox) */
-        #{{ $id }} thead th.select-checkbox {
-            position: relative;
-        }
-
-        #{{ $id }} thead th.select-checkbox:before,
-        #{{ $id }} thead th.select-checkbox:after,
-        #{{ $id }} thead th.no-sort:before,
-        #{{ $id }} thead th.no-sort:after {
+        #{{ $id }} thead th.select-checkbox { cursor: pointer !important; pointer-events: auto !important; }
+        #{{ $id }} thead th.select-checkbox { position: relative; }
+        #{{ $id }} thead th.select-checkbox:before, #{{ $id }} thead th.select-checkbox:after,
+        #{{ $id }} thead th.no-sort:before, #{{ $id }} thead th.no-sort:after { display: none !important; }
+        #{{ $id }} thead th.select-checkbox.sorting:before, #{{ $id }} thead th.select-checkbox.sorting:after,
+        #{{ $id }} thead th.select-checkbox.sorting_asc:before, #{{ $id }} thead th.select-checkbox.sorting_asc:after,
+        #{{ $id }} thead th.select-checkbox.sorting_desc:before, #{{ $id }} thead th.select-checkbox.sorting_desc:after {
             display: none !important;
         }
-
-        /* Prevent sorting arrows on checkbox column */
-        #{{ $id }} thead th.select-checkbox.sorting:before,
-        #{{ $id }} thead th.select-checkbox.sorting:after,
-        #{{ $id }} thead th.select-checkbox.sorting_asc:before,
-        #{{ $id }} thead th.select-checkbox.sorting_asc:after,
-        #{{ $id }} thead th.select-checkbox.sorting_desc:before,
-        #{{ $id }} thead th.select-checkbox.sorting_desc:after {
-            display: none !important;
+        #{{ $id }} { table-layout: auto !important; width: 100% !important; }
+        #{{ $id }} thead th, #{{ $id }} tbody td { overflow: hidden !important; text-overflow: ellipsis !important; }
+        #{{ $id }} thead th.select-checkbox, #{{ $id }} tbody td:first-child { width: 30px !important; min-width: 30px !important; max-width: 30px !important; }
+        #{{ $id }} thead th:last-child, #{{ $id }} tbody td:last-child,
+        table#{{ $id }} thead th:last-child, table#{{ $id }} tbody td:last-child,
+        .datatable-wrapper #{{ $id }} thead th:last-child, .datatable-wrapper #{{ $id }} tbody td:last-child {
+            width: 140px !important; min-width: 140px !important; max-width: 140px !important; white-space: nowrap !important; text-align: center !important; padding: 4px 8px !important; box-sizing: border-box !important;
         }
-
-        /* Fix column width distortion - use auto layout for better flexibility */
-        #{{ $id }} {
-            table-layout: auto !important;
-            width: 100% !important;
-        }
-
-        /* Set default column widths and text truncation */
-        #{{ $id }} thead th,
-        #{{ $id }} tbody td {
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
-            white-space: nowrap !important;
-        }
-
-        /* Ensure checkbox column has fixed width */
-        #{{ $id }} thead th.select-checkbox,
-        #{{ $id }} tbody td:first-child {
-            width: 30px !important;
-            min-width: 30px !important;
-            max-width: 30px !important;
-        }
-
-        /* Ensure actions column has fixed width and doesn't stretch - MAXIMUM SPECIFICITY */
-        #{{ $id }} thead th:last-child,
-        #{{ $id }} tbody td:last-child,
-        table#{{ $id }} thead th:last-child,
-        table#{{ $id }} tbody td:last-child,
-        .datatable-wrapper #{{ $id }} thead th:last-child,
-        .datatable-wrapper #{{ $id }} tbody td:last-child {
-            width: 120px !important;
-            min-width: 120px !important;
-            max-width: 120px !important;
-            white-space: nowrap !important;
-            text-align: center !important;
-            padding: 4px 8px !important;
-            box-sizing: border-box !important;
-        }
-
-        /* Ensure action buttons don't stretch the column */
         #{{ $id }} tbody td:last-child .btn-icon,
         table#{{ $id }} tbody td:last-child .btn-icon,
         .datatable-wrapper #{{ $id }} tbody td:last-child .btn-icon {
-            display: inline-flex !important;
-            flex-shrink: 0 !important;
-            margin: 0 2px !important;
-            padding: 6px 10px !important;
-            min-width: auto !important;
-            max-width: none !important;
-            width: auto !important;
-        }
-
-        /* Address column should wrap and truncate (if it's not the actions column) */
-        #{{ $id }} tbody td:not(:last-child):not(:first-child) {
-            max-width: none !important;
+            display: inline-flex !important; flex-shrink: 0 !important; margin: 0 2px !important; padding: 6px 10px !important; min-width: auto !important; max-width: none !important; width: auto !important;
         }
     </style>
 @endpush
 
 @push('scripts')
     <script>
-        // Check immediately if this table should be skipped (before document.ready)
         var skipInit_{{ $id }} = false;
         if (typeof window !== 'undefined') {
             skipInit_{{ $id }} = window['skipAutoInit_{{ $id }}'] === true;
         }
-        
+
         $(document).ready(function() {
+            // Check if DataTables is loaded
+            const dataTablesAvailable = typeof $.fn !== 'undefined' && typeof $.fn.DataTable !== 'undefined';
+            
+            if (!dataTablesAvailable) {
+                let waitAttempts = 0;
+                const waitForDataTables = setInterval(function() {
+                    waitAttempts++;
+                    if (typeof $.fn !== 'undefined' && typeof $.fn.DataTable !== 'undefined') {
+                        clearInterval(waitForDataTables);
+                        initializeTableAfterReady_{{ $id }}();
+                    } else if (waitAttempts >= 50) { 
+                        clearInterval(waitForDataTables);
+                        console.error('DataTables failed to load after 5 seconds');
+                    }
+                }, 100);
+                return;
+            }
+
+            initializeTableAfterReady_{{ $id }}();
+        });
+
+        // Unique function name to prevent conflicts if multiple tables exist
+        function initializeTableAfterReady_{{ $id }}() {
+            // MOVED UP: Define table variables in the main scope so inner functions can access them
             const tableId = '#{{ $id }}';
-            let table; // Declare table variable first
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:980',message:'Component script loaded',data:{tableId:tableId,componentId:'{{ $id }}'},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'COMPONENT_LOAD'})}).catch(()=>{});
-            // #endregion agent log
-            
-            // Re-check skip flag in case it was set after script load
+            let table;
+            let initializationAttempted = false; // Track if we've tried to initialize
+
+            // Check if server-side processing is enabled
+            const isServerSide = {{ $serverSide || $ajaxUrl ? 'true' : 'false' }};
+            console.log("Table is processing server side: ", isServerSide);
+
+            // Legacy skip flag check
             if (!skipInit_{{ $id }}) {
                 var $tableCheck = $(tableId);
                 var $wrapperCheck = $('#datatable-wrapper-{{ $id }}');
-                skipInit_{{ $id }} = window['skipAutoInit_{{ $id }}'] === true ||
+                skipInit_{{ $id }} = (window['skipAutoInit_{{ $id }}'] === true ||
                     $tableCheck.attr('data-server-side') === 'true' ||
                     $tableCheck.closest('[data-server-side="true"]').length > 0 ||
-                    $wrapperCheck.attr('data-server-side') === 'true';
+                    $wrapperCheck.attr('data-server-side') === 'true') && !isServerSide;
             }
-            
-            // #region agent log
-            fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:994',message:'Skip flag check result',data:{tableId:tableId,skipInit:skipInit_{{ $id }},skipFlag:window['skipAutoInit_{{ $id }}'],tableAttr:$('#{{ $id }}').attr('data-server-side'),wrapperAttr:$('#datatable-wrapper-{{ $id }}').attr('data-server-side')},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'SKIP_CHECK'})}).catch(()=>{});
-            // #endregion agent log
-            
-            if (skipInit_{{ $id }}) {
-                console.log('Skipping ALL component initialization for ' + tableId + ' (server-side processing)');
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:995',message:'EXITING component initialization',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'SKIP_EXIT'})}).catch(()=>{});
-                // #endregion agent log
-                // DO NOT initialize anything - exit completely
-                // Don't define functions, don't call initializeTable()
-                return; // Exit early, don't initialize anything
+
+            if (skipInit_{{ $id }} && !isServerSide) {
+                return;
             }
-            
-            // Check if table is visible before initializing
+
             function isTableVisible() {
+                console.log("isTableVisible function called");
                 const $table = $(tableId);
-                if (!$table.length) {
-                    return false;
-                }
+                if (!$table.length) return false;
                 
-                // Check if table is in a hidden tab
                 const $tabPane = $table.closest('.tab-pane');
                 if ($tabPane.length) {
-                    // Table is in a tab pane, check if it's visible
-                    // Bootstrap 5 uses 'show' class and display: block for visible tabs
+                    // Check multiple conditions for Bootstrap 5 tab visibility
                     const hasShowClass = $tabPane.hasClass('show');
                     const isDisplayed = $tabPane.css('display') !== 'none';
-                    const isVisible = $tabPane.is(':visible');
-                    let computedDisplay = 'none';
-                    try {
-                        if ($tabPane[0]) {
-                            computedDisplay = window.getComputedStyle($tabPane[0]).display;
-                        }
-                    } catch(e) {
-                        computedDisplay = 'error';
+                    
+                    // Check if tab button is active (Bootstrap 5 uses aria-selected)
+                    const tabId = $tabPane.attr('id');
+                    if (tabId) {
+                        const $tabButton = $('[data-bs-target="#' + tabId + '"], [href="#' + tabId + '"]');
+                        const isTabActive = $tabButton.length > 0 && (
+                            $tabButton.attr('aria-selected') === 'true' ||
+                            $tabButton.hasClass('active')
+                        );
+                        
+                        if (isTabActive) return true;
                     }
                     
-                    // For Bootstrap 5 tabs: if tab has 'show' class OR is displayed, consider it visible
-                    // This is more lenient to handle timing issues
-                    return hasShowClass || (isDisplayed && computedDisplay !== 'none');
+                    // Check if element is actually in the render tree and has dimensions
+                    const rect = $tabPane[0].getBoundingClientRect();
+                    const hasDimensions = rect.width > 0 && rect.height > 0;
+                    
+                    // Return true if any of these conditions are met
+                    return hasShowClass || (isDisplayed && hasDimensions);
                 }
                 
-                // Table is not in a tab, check if it's visible
+                // Fallback: check if table itself is visible
                 return $table.is(':visible');
             }
-            
-            // Initialize table only if visible, otherwise wait
+
             function initializeTable() {
-                // CRITICAL: Skip if this table should use server-side processing - CHECK FIRST
                 var $table = $(tableId);
-                if (!$table.length) {
-                    return; // Table doesn't exist, exit
-                }
-                
-                var $wrapper = $('#datatable-wrapper-{{ $id }}');
-                var shouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
-                    $table.attr('data-server-side') === 'true' ||
-                    $table.closest('[data-server-side="true"]').length > 0 ||
-                    ($wrapper.length > 0 && $wrapper.attr('data-server-side') === 'true');
-                
-                // Additional check: if tbody is completely empty, likely server-side
-                if (!shouldSkip) {
-                    var $tbody = $table.find('tbody');
-                    if ($tbody.length > 0) {
-                        var tbodyContent = $tbody.html().trim();
-                        // If tbody is empty or only has whitespace/comments, skip
-                        if (tbodyContent === '' || tbodyContent.replace(/<!--.*?-->/g, '').trim() === '') {
-                            shouldSkip = true;
-                            console.log('Skipping ' + tableId + ' - empty tbody indicates server-side processing');
+                if (!$table.length) return;
+
+                // Use the isServerSide variable from outer scope
+                console.log("Table is processing server side initializeTable: ", isServerSide);
+
+                if (!isServerSide) {
+                    var $wrapper = $('#datatable-wrapper-{{ $id }}');
+                    var shouldSkip = window['skipAutoInit_{{ $id }}'] === true ||
+                        $table.attr('data-server-side') === 'true' ||
+                        $table.closest('[data-server-side="true"]').length > 0 ||
+                        ($wrapper.length > 0 && $wrapper.attr('data-server-side') === 'true');
+
+                    if (!shouldSkip) {
+                        var $tbody = $table.find('tbody');
+                        if ($tbody.length > 0) {
+                            var tbodyContent = $tbody.html().trim();
+                            if (tbodyContent === '' || tbodyContent.replace(/<!--.*?-->/g, '').trim() === '') {
+                                shouldSkip = true;
+                            }
                         }
                     }
+
+                    if (shouldSkip) return;
                 }
-                
-                if (shouldSkip) {
-                    console.log('Skipping auto-initialization for ' + tableId + ' (server-side processing)');
-                    return;
-                }
-                
-                // Wait a bit for DOM to settle, then check visibility
+
                 setTimeout(function() {
                     const isVisible = isTableVisible();
-                    if (!isVisible) {
-                        // Table is hidden, wait and check again (max 10 attempts = 2 seconds)
+                    // Use the isServerSide variable from outer scope
+                    const $tabPane = $(tableId).closest('.tab-pane');
+                    const inTabPane = $tabPane.length > 0;
+                    const tabPaneIsShown = inTabPane && $tabPane.hasClass('show');
+                    
+                    // For server-side tables in tab panes, ONLY initialize if tab is shown
+                    if (isServerSide && inTabPane && !tabPaneIsShown) {
+                        console.log('Server-side table in hidden tab pane - deferring initialization until tab is shown');
+                        return; // Don't initialize yet, wait for tab event
+                    }
+                    
+                    if (!isVisible && !isServerSide && !inTabPane) {
+                        // Only do polling for client-side tables not in tabs
                         let attempts = 0;
                         const checkInterval = setInterval(function() {
                             attempts++;
                             const nowVisible = isTableVisible();
                             if (nowVisible || attempts >= 10) {
+                                console.log(`Table visiblity:${nowVisible} after ${attempts} attempts`);
                                 clearInterval(checkInterval);
                                 if (nowVisible && !$.fn.DataTable.isDataTable(tableId)) {
-                                    // Triple-check skip flag and empty tbody
-                                    var $tableCheck = $(tableId);
-                                    var $tbodyCheck = $tableCheck.find('tbody');
-                                    var isEmpty = $tbodyCheck.length > 0 && $tbodyCheck.html().trim().replace(/<!--.*?-->/g, '').trim() === '';
-                                    if (!window['skipAutoInit_{{ $id }}'] && 
-                                        $tableCheck.attr('data-server-side') !== 'true' &&
-                                        $tableCheck.closest('[data-server-side="true"]').length === 0 &&
-                                        !isEmpty) {
-                                        initializeDataTable();
-                                    }
+                                    initializeDataTable();
                                 }
                             }
                         }, 200);
                         return;
                     }
-                    
-                    // Table is visible, proceed with initialization
+
+                    // For server-side tables (when tab is shown) or visible tables, initialize directly
                     if (!$.fn.DataTable.isDataTable(tableId)) {
-                        // Triple-check skip flag and empty tbody
-                        var $tableCheck = $(tableId);
-                        var $tbodyCheck = $tableCheck.find('tbody');
-                        var isEmpty = $tbodyCheck.length > 0 && $tbodyCheck.html().trim().replace(/<!--.*?-->/g, '').trim() === '';
-                        if (!window['skipAutoInit_{{ $id }}'] && 
-                            $tableCheck.attr('data-server-side') !== 'true' &&
-                            $tableCheck.closest('[data-server-side="true"]').length === 0 &&
-                            !isEmpty) {
+                        if (isServerSide || isVisible || (inTabPane && tabPaneIsShown)) {
+                            console.log('Initializing DataTable - isServerSide:', isServerSide, 'isVisible:', isVisible, 'tabPaneIsShown:', tabPaneIsShown);
                             initializeDataTable();
+                        } else {
+                            console.log('Skipping initialization - table not visible and not in shown tab');
                         }
                     }
                 }, 100);
             }
-                // Define helper functions before table initialization
-                function updateBulkActions() {
+
+            function updateBulkActions() {
                 if (!table || typeof table.rows === 'undefined') return;
                 try {
-                    // Count only checked checkboxes, not DataTables selected rows
                     const checkedCount = $(tableId + ' tbody .row-checkbox:checked').length;
                     const bulkActionsDiv = $('#{{ $id }}_bulkActions');
                     const selectedCountSpan = $('#{{ $id }}_selectedCount');
@@ -1132,27 +830,19 @@
                     } else {
                         bulkActionsDiv.slideUp(200);
                     }
-                } catch (e) {
-                    // Silently fail if table not ready
-                }
+                } catch (e) {}
             }
 
             function updateSelectAllState() {
                 if (!table || typeof table.rows === 'undefined') return;
                 try {
-                    const currentPageRows = table.rows({
-                        page: 'current'
-                    }).nodes().to$();
+                    const currentPageRows = table.rows({ page: 'current' }).nodes().to$();
                     const totalOnPage = currentPageRows.length;
                     const checkedOnPage = currentPageRows.find('.row-checkbox:checked').length;
-                    $('#{{ $id }}_selectAll').prop('checked', totalOnPage > 0 && totalOnPage ===
-                        checkedOnPage);
-                } catch (e) {
-                    // Silently fail if table not ready
-                }
+                    $('#{{ $id }}_selectAll').prop('checked', totalOnPage > 0 && totalOnPage === checkedOnPage);
+                } catch (e) {}
             }
 
-            // Debounce function to prevent rapid firing of events
             function debounce(func, wait) {
                 let timeout;
                 return function executedFunction(...args) {
@@ -1165,1465 +855,839 @@
                 };
             }
 
-            // Debounced versions of update functions
             const debouncedUpdateBulkActions = debounce(updateBulkActions, 50);
             const debouncedUpdateSelectAllState = debounce(updateSelectAllState, 50);
-
-
-            // Track if pagination has been moved to prevent repeated DOM manipulation
             let paginationMoved = false;
 
+            // FIXME: This function is not being called either when dom loads or when the page length is changed.
             function updatePaginationInfo() {
                 if (!table || typeof table.page === 'undefined') return;
                 try {
                     const info = table.page.info();
+                    console.log("info", info);
                     const text = `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
                     const infoElement = $('#' + '{{ $id }}' + '_info');
                     if (infoElement.length) {
                         infoElement.text(text).show();
                     }
 
-                    // Move pagination to custom container ONLY ONCE to prevent flickering
                     if (!paginationMoved) {
                         setTimeout(function() {
                             const defaultPagination = $(tableId + '_wrapper').find('.dataTables_paginate');
-                            if (defaultPagination.length && defaultPagination.parent().attr('id') !==
-                                '{{ $id }}_pagination_wrapper') {
-                                defaultPagination.appendTo('#' + '{{ $id }}' +
-                                    '_pagination_wrapper');
-                                const paginationWrapper = $('#' + '{{ $id }}' +
-                                    '_pagination_wrapper');
+                            if (defaultPagination.length && defaultPagination.parent().attr('id') !== '{{ $id }}_pagination_wrapper') {
+                                defaultPagination.appendTo('#' + '{{ $id }}' + '_pagination_wrapper');
+                                const paginationWrapper = $('#' + '{{ $id }}' + '_pagination_wrapper');
                                 paginationWrapper.show();
                                 paginationMoved = true;
                             }
                         }, 100);
                     }
-                } catch (e) {
-                    // Silently fail if table not ready
-                }
+                } catch (e) {}
             }
 
-            // Remove any completely empty rows BEFORE DataTables initializes (prevents ghost/blank rows)
-            // This must run synchronously before DataTables initialization
+            // Remove empty rows synchronously
             $(tableId + ' tbody tr').each(function() {
                 const $row = $(this);
                 const $cells = $row.find('td');
                 let isEmpty = true;
-
-                // Check each cell for content
                 $cells.each(function() {
                     const cellText = $(this).text().trim();
                     const hasCheckbox = $(this).find('.row-checkbox').length > 0;
                     const hasInput = $(this).find('input, select, textarea').length > 0;
-                    const hasContent = cellText !== '' || hasCheckbox || hasInput;
-
-                    if (hasContent) {
+                    if (cellText !== '' || hasCheckbox || hasInput) {
                         isEmpty = false;
-                        return false; // break loop
+                        return false;
                     }
                 });
-
-                // Remove completely empty rows
                 if (isEmpty && $cells.length > 0) {
                     $row.remove();
                 }
             });
-            
+
             @if (!empty($filters))
-            // Define filter functions BEFORE initializeDataTable so they're always accessible
-            // Use a scoped container to avoid conflicts with other datatables
-            const filterContainer_{{ $id }} = $('#datatable-wrapper-{{ $id }}');
-            let filterFunctions_{{ $id }} = [];
-            
-            // Store filter functions array reference for this table
-            window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
-            
-            window['applyFilters_{{ $id }}'] = function() {
-                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                if (!table || typeof table.draw !== 'function') {
-                    console.warn('Table not initialized yet');
-                    return;
-                }
-                
-                // Remove previous filter functions for this table only
-                const currentSearchFunctions = $.fn.dataTable.ext.search || [];
-                const existingTableFilters = window['filterFunctions_{{ $id }}'] || [];
-                
-                // Remove only this table's filter functions from global search
-                $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
-                    return existingTableFilters.indexOf(fn) === -1;
-                });
-                
-                // Clear this table's filter functions array
-                filterFunctions_{{ $id }} = [];
+                const filterContainer_{{ $id }} = $('#datatable-wrapper-{{ $id }}');
+                let filterFunctions_{{ $id }} = [];
                 window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
-                
-                // Clear table search
-                table.search('').columns().search('');
-                
-                @foreach ($filters as $filter)
-                    @if ($filter['type'] === 'select')
-                        @if (isset($filter['select2']) && $filter['select2'])
-                            // Scope selector to this datatable's container
-                            const select2Val = filterContainer_{{ $id }}.find('.filter-select2[data-filter="{{ $filter['name'] }}"]').select2('val');
-                            const filter{{ $loop->index }} = Array.isArray(select2Val) ? select2Val[0] : select2Val;
-                        @else
-                            // Scope selector to this datatable's container
-                            const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-select[data-filter="{{ $filter['name'] }}"]').val();
-                        @endif
-                        if (filter{{ $loop->index }}) {
-                            @if (isset($filter['useDataAttribute']) && $filter['useDataAttribute'])
-                                const filterValue{{ $loop->index }} = filter{{ $loop->index }};
-                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
-                                    if (settings.nTable.id !== '{{ $id }}') return true;
-                                    const $row = $(table.row(dataIndex).node());
-                                    const attrName = '{{ $filter['useDataAttribute'] }}';
-                                    let rowValue = $row.attr('data-' + attrName);
-                                    // Handle empty/null values
-                                    if (rowValue === null || rowValue === undefined) {
-                                        rowValue = '';
-                                    }
-                                    // Also try camelCase version for jQuery .data() compatibility
-                                    if (rowValue === '' || rowValue === null) {
-                                        const camelCaseName = attrName.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
-                                        rowValue = $row.data(camelCaseName) || $row.data(attrName) || '';
-                                    }
-                                    // Normalize empty strings and '-' to empty string for comparison
-                                    const normalizedRowValue = (rowValue === '-' || rowValue === '') ? '' : String(rowValue);
-                                    const normalizedFilterValue = (filterValue{{ $loop->index }} === '-' || filterValue{{ $loop->index }} === '') ? '' : String(filterValue{{ $loop->index }});
-                                    return normalizedRowValue === normalizedFilterValue;
-                                };
-                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
-                                // Add to global search functions array
-                                if (!$.fn.dataTable.ext.search) {
-                                    $.fn.dataTable.ext.search = [];
-                                }
-                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+
+                window['applyFilters_{{ $id }}'] = function() {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (!table || typeof table.draw !== 'function') return;
+
+                    // Use the isServerSide variable from outer scope
+                    if (isServerSide) {
+                        table.draw();
+                        return;
+                    }
+
+                    const currentSearchFunctions = $.fn.dataTable.ext.search || [];
+                    const existingTableFilters = window['filterFunctions_{{ $id }}'] || [];
+                    $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
+                        return existingTableFilters.indexOf(fn) === -1;
+                    });
+
+                    filterFunctions_{{ $id }} = [];
+                    window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                    table.search('').columns().search('');
+
+                    @foreach ($filters as $filter)
+                        @if ($filter['type'] === 'select')
+                            @if (isset($filter['select2']) && $filter['select2'])
+                                const select2Val_{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-select2[data-filter="{{ $filter['name'] }}"]').select2('val');
+                                const filter{{ $loop->index }} = Array.isArray(select2Val_{{ $loop->index }}) ? select2Val_{{ $loop->index }}[0] : select2Val_{{ $loop->index }};
                             @else
-                                table.column({{ $filter['column'] }}).search('^' + filter{{ $loop->index }} + '$', true, false);
+                                const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-select[data-filter="{{ $filter['name'] }}"]').val();
                             @endif
-                        }
-                    @elseif ($filter['type'] === 'date')
-                        // Scope selector to this datatable's container
-                        const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-date[data-filter="{{ $filter['name'] }}"]').val();
-                        if (filter{{ $loop->index }}) {
-                            @if (str_contains($filter['name'], 'from'))
-                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
-                                    if (settings.nTable.id !== '{{ $id }}') return true;
-                                    const filterVal = filter{{ $loop->index }};
-                                    if (!filterVal) return true;
-                                    try {
-                                        const cellDate = new Date(data[{{ $filter['column'] }}]);
-                                        const filterDate = new Date(filterVal);
-                                        return !isNaN(cellDate.getTime()) && cellDate >= filterDate;
-                                    } catch (e) {
-                                        return true;
-                                    }
-                                };
-                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
-                                if (!$.fn.dataTable.ext.search) {
-                                    $.fn.dataTable.ext.search = [];
-                                }
-                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
-                            @elseif (str_contains($filter['name'], 'to'))
-                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
-                                    if (settings.nTable.id !== '{{ $id }}') return true;
-                                    const filterVal = filter{{ $loop->index }};
-                                    if (!filterVal) return true;
-                                    try {
-                                        const cellDate = new Date(data[{{ $filter['column'] }}]);
-                                        const filterDate = new Date(filterVal);
-                                        return !isNaN(cellDate.getTime()) && cellDate <= filterDate;
-                                    } catch (e) {
-                                        return true;
-                                    }
-                                };
-                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
-                                if (!$.fn.dataTable.ext.search) {
-                                    $.fn.dataTable.ext.search = [];
-                                }
-                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
-                            @endif
-                        }
-                    @elseif ($filter['type'] === 'text')
-                        // Scope selector to this datatable's container
-                        const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-text[data-filter="{{ $filter['name'] }}"]').val();
-                        if (filter{{ $loop->index }}) {
-                            @if (str_contains($filter['name'], 'min'))
-                                const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
-                                    if (settings.nTable.id !== '{{ $id }}') return true;
-                                    const filterVal = parseFloat(filter{{ $loop->index }}) || 0;
-                                    if (!filterVal) return true;
-                                    const cellValue = parseFloat(String(data[{{ $filter['column'] }}]).replace(/[^0-9.-]+/g, '')) || 0;
-                                    return cellValue >= filterVal;
-                                };
-                                filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
-                                if (!$.fn.dataTable.ext.search) {
-                                    $.fn.dataTable.ext.search = [];
-                                }
-                                $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
-                            @else
-                                table.column({{ $filter['column'] }}).search(filter{{ $loop->index }});
-                            @endif
-                        }
-                    @endif
-                @endforeach
-                
-                // Update stored reference
-                window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
-                table.draw();
-            };
-            
-            // Apply Filters button handler - use table-specific ID
-            $(document).off('click', '#{{ $id }}_applyFilters').on('click', '#{{ $id }}_applyFilters', function() {
-                if (typeof window['applyFilters_{{ $id }}'] === 'function') {
-                    window['applyFilters_{{ $id }}']();
-                }
-            });
-            
-            // Clear Filters button handler - use table-specific ID and scope selectors
-            $(document).off('click', '#{{ $id }}_clearFilters').on('click', '#{{ $id }}_clearFilters', function() {
-                // Only clear filters within this datatable's container
-                filterContainer_{{ $id }}.find('.filter-select, .filter-date, .filter-text').val('');
-                filterContainer_{{ $id }}.find('.filter-select2').each(function() {
-                    $(this).val(null).trigger('change');
-                });
-                
-                // Remove only this table's filter functions from global search
-                const currentSearchFunctions = $.fn.dataTable.ext.search || [];
-                const tableFilterFunctions = window['filterFunctions_{{ $id }}'] || [];
-                $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
-                    return tableFilterFunctions.indexOf(fn) === -1;
-                });
-                
-                // Clear this table's filter functions
-                filterFunctions_{{ $id }} = [];
-                window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
-                
-                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                if (table && typeof table.draw === 'function') {
-                    table.search('').columns().search('').draw();
-                }
-            });
-            @endif
-            
-            // Initialize table only if visible, otherwise wait
-            function initializeDataTable() {
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1400',message:'initializeDataTable() CALLED',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'INIT_CALLED'})}).catch(()=>{});
-                // #endregion agent log
-                
-                // ABSOLUTE FIRST CHECK: If table doesn't exist, exit immediately
-                var $table = $(tableId);
-                if (!$table.length) {
-                    console.warn('Table ' + tableId + ' not found, skipping initialization');
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1403',message:'Table not found, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TABLE_NOT_FOUND'})}).catch(()=>{});
-                    // #endregion agent log
-                    return;
-                }
-                
-                // CRITICAL FIRST CHECK: If tbody has no <tr> elements, BLOCK initialization immediately
-                // This prevents the "column count" error that happens when DataTables tries to initialize on empty tbody
-                var $tbody = $table.find('tbody');
-                var tbodyRowCount = 0;
-                var tbodyContent = '';
-                
-                if ($tbody.length > 0) {
-                    tbodyRowCount = $tbody.find('tr').length;
-                    tbodyContent = $tbody.html().trim().replace(/<!--.*?-->/g, '').trim();
-                    
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1415',message:'Tbody check',data:{tableId:tableId,tbodyRowCount:tbodyRowCount,tbodyContentLength:tbodyContent.length},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TBODY_CHECK'})}).catch(()=>{});
-                    // #endregion agent log
-                    
-                    // If there are NO <tr> elements at all, this is definitely server-side processing
-                    if (tbodyRowCount === 0) {
-                        console.warn('BLOCKED: Table ' + tableId + ' has no <tr> elements in tbody (count: ' + tbodyRowCount + ') - preventing initialization to avoid column count error');
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1419',message:'BLOCKED: Empty tbody, EXITING',data:{tableId:tableId,tbodyRowCount:tbodyRowCount},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TBODY_EMPTY_BLOCK'})}).catch(()=>{});
-                        // #endregion agent log
-                        return; // EXIT IMMEDIATELY - no rows = server-side processing, don't initialize
-                    }
-                    // Also check if tbody content is empty (after removing comments)
-                    if (tbodyContent === '') {
-                        console.warn('BLOCKED: Table ' + tableId + ' has empty tbody content - preventing initialization to avoid column count error');
-                        // #region agent log
-                        fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1424',message:'BLOCKED: Empty tbody content, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'TBODY_CONTENT_EMPTY_BLOCK'})}).catch(()=>{});
-                        // #endregion agent log
-                        return; // EXIT IMMEDIATELY - empty content = server-side processing, don't initialize
-                    }
-                } else {
-                    // No tbody at all - this shouldn't happen but block it anyway
-                    console.warn('BLOCKED: Table ' + tableId + ' has no tbody element - preventing initialization');
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1429',message:'BLOCKED: No tbody element, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'NO_TBODY_BLOCK'})}).catch(()=>{});
-                    // #endregion agent log
-                    return;
-                }
-                
-                // Now check skip flags
-                var $wrapper = $('#datatable-wrapper-{{ $id }}');
-                var shouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
-                    $table.attr('data-server-side') === 'true' ||
-                    $table.closest('[data-server-side="true"]').length > 0 ||
-                    ($wrapper.length > 0 && $wrapper.attr('data-server-side') === 'true');
-                
-                if (shouldSkip) {
-                    console.log('Skipping initializeDataTable for ' + tableId + ' (server-side processing)', {
-                        skipFlag: window['skipAutoInit_{{ $id }}'],
-                        tableAttr: $table.attr('data-server-side'),
-                        wrapperAttr: $wrapper.length > 0 ? $wrapper.attr('data-server-side') : 'no wrapper',
-                        parentAttr: $table.closest('[data-server-side="true"]').length,
-                        tbodyEmpty: $tbody.length > 0 && $tbody.find('tr').length === 0
-                    });
-                    return; // EXIT IMMEDIATELY - don't initialize anything
-                }
-                
-                // ULTIMATE SAFETY: Check tbody one more time right before DataTable() call
-                // This is the last chance to prevent the column count error
-                var $finalTbodyCheck = $table.find('tbody');
-                if ($finalTbodyCheck.length > 0) {
-                    var finalRows = $finalTbodyCheck.find('tr');
-                    if (finalRows.length === 0) {
-                        console.error('BLOCKED: Attempted to initialize ' + tableId + ' with no <tr> elements - this would cause column count error');
-                        return; // BLOCK initialization - no rows = server-side processing
-                    }
-                    var finalContent = $finalTbodyCheck.html().trim().replace(/<!--.*?-->/g, '').trim();
-                    if (finalContent === '') {
-                        console.error('BLOCKED: Attempted to initialize ' + tableId + ' with empty tbody content - this would cause column count error');
-                        return; // BLOCK initialization - empty content = server-side processing
-                    }
-                }
-                
-                // FINAL CHECK: Verify tbody has rows before attempting DataTable initialization
-                // This is the absolute last check before calling DataTable() which will fail on empty tbody
-                var $lastCheck = $table.find('tbody tr');
-                if ($lastCheck.length === 0) {
-                    console.error('FINAL BLOCK: Table ' + tableId + ' has 0 <tr> elements - DataTable() call would fail. Aborting.');
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1502',message:'FINAL BLOCK: No rows, EXITING',data:{tableId:tableId},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'FINAL_BLOCK'})}).catch(()=>{});
-                    // #endregion agent log
-                    return;
-                }
-                
-                // CRITICAL: Verify column count matches between thead and tbody
-                var $thead = $table.find('thead tr');
-                var theadColCount = $thead.find('th').length;
-                var $firstRow = $lastCheck.first();
-                var tbodyColCount = $firstRow.find('td').length;
-                
-                // Also check all rows to see if they're consistent
-                var allRowColCounts = [];
-                $lastCheck.each(function() {
-                    allRowColCounts.push($(this).find('td').length);
-                });
-                
-                // Check if first row has colspan (which would make it appear as 1 column)
-                var firstRowHtml = $firstRow.html();
-                var hasColspan = firstRowHtml.indexOf('colspan') !== -1;
-                
-                // #region agent log
-                fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1509',message:'Column count verification',data:{tableId:tableId,theadColCount:theadColCount,tbodyColCount:tbodyColCount,allRowColCounts:allRowColCounts,hasColspan:hasColspan,firstRowHtml:firstRowHtml.substring(0,200),match:theadColCount===tbodyColCount},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'COLUMN_COUNT_CHECK'})}).catch(()=>{});
-                // #endregion agent log
-                
-                // CRITICAL: DataTables CANNOT initialize on tables with colspan rows
-                // If first row has colspan, it's an empty state row - REMOVE it before initializing
-                var firstTdColspan = parseInt($firstRow.find('td').first().attr('colspan') || '0');
-                if (hasColspan && tbodyColCount === 1 && firstTdColspan === theadColCount) {
-                    console.log('Table ' + tableId + ' has empty state row with colspan=' + firstTdColspan + ' - removing it before DataTables initialization');
-                    // Remove the empty state row - DataTables will show its own empty message
-                    $firstRow.remove();
-                    // Re-check row count after removal
-                    $lastCheck = $table.find('tbody tr');
-                    if ($lastCheck.length === 0) {
-                        console.log('Table ' + tableId + ' has no data rows after removing empty state - DataTables will handle empty state');
-                        // This is OK - DataTables can initialize on empty tbody
-                    }
-                } else if (theadColCount !== tbodyColCount) {
-                    console.error('COLUMN MISMATCH: Table ' + tableId + ' has ' + theadColCount + ' columns in thead but ' + tbodyColCount + ' columns in tbody. Row counts: ' + allRowColCounts.join(', '), 'DataTable() will fail. Aborting.');
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1525',message:'COLUMN MISMATCH BLOCK',data:{tableId:tableId,theadColCount:theadColCount,tbodyColCount:tbodyColCount,allRowColCounts:allRowColCounts,hasColspan:hasColspan},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'COLUMN_MISMATCH_BLOCK'})}).catch(()=>{});
-                    // #endregion agent log
-                    return;
-                }
-                
-                try {
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1522',message:'CALLING DataTable() - ERROR OCCURS HERE',data:{tableId:tableId,rowCount:$lastCheck.length,theadColCount:theadColCount,tbodyColCount:tbodyColCount},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'DATATABLE_CALL'})}).catch(()=>{});
-                    // #endregion agent log
-                    table = $(tableId).DataTable({
-                    dom: "<'row'<'col-sm-12'f>>" + // Search box only (length menu is custom at bottom)
-                    "<'row'<'col-sm-12'tr>>" + // Table
-                    "<'row'<'col-sm-5'i><'col-sm-7'p>>", // Info and pagination (no length menu)
-                scrollX: false,
-                scrollCollapse: false,
-                autoWidth: false,
-                fixedColumns: false,
-                columnDefs: [
-                    @if ($bulkDeleteEnabled)
-                        {
-                            orderable: false,
-                            searchable: false,
-                            targets: 0,
-                            className: 'select-checkbox no-export no-colvis no-sort',
-                            width: '30px'
-                        },
-                    @endif
-                    @foreach ($columns as $index => $column)
-                        @if (isset($column['width']) || (isset($column['orderable']) && !$column['orderable']))
-                            {
-                                targets: {{ $bulkDeleteEnabled ? $index + 1 : $index }},
-                                @if (isset($column['width']))
-                                    width: '{{ $column['width'] }}',
-                                @endif
-                                @if (isset($column['orderable']) && !$column['orderable'])
-                                    orderable: false,
-                                @endif
-                                @if (isset($column['searchable']) && !$column['searchable'])
-                                    searchable: false,
-                                @endif
-                            },
-                        @endif
-                    @endforeach {
-                        orderable: false,
-                        searchable: false,
-                        targets: -1,
-                        className: 'text-center no-export',
-                        width: '120px',
-                        visible: true,
-                        createdCell: function(td, cellData, rowData, row, col) {
-                            $(td).css({
-                                'width': '120px',
-                                'min-width': '120px',
-                                'max-width': '120px',
-                                'white-space': 'nowrap',
-                                'text-align': 'center'
-                            });
-                        }
-                    }
-                ],
-                buttons: [
-                    @if ($exportEnabled)
-                        {
-                            extend: 'excelHtml5',
-                            text: 'Excel',
-                            className: 'd-none',
-                            exportOptions: {
-                                columns: ':visible:not(.no-export)',
-                                format: {
-                                    body: function(data, row, column, node) {
-                                        // If data is already a string, return it directly
-                                        if (typeof data === 'string') {
-                                            // If it looks like HTML, try to extract text
-                                            if (data.trim().startsWith('<')) {
-                                                try {
-                                                    return $('<div>').html(data).text() || data;
-                                                } catch(e) {
-                                                    return data;
-                                                }
-                                            }
-                                            return data;
+
+                            if (filter{{ $loop->index }}) {
+                                @if (isset($filter['useDataAttribute']) && $filter['useDataAttribute'])
+                                    const filterValue{{ $loop->index }} = filter{{ $loop->index }};
+                                    const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                        if (settings.nTable.id !== '{{ $id }}') return true;
+                                        const $row = $(table.row(dataIndex).node());
+                                        const attrName = '{{ $filter['useDataAttribute'] }}';
+                                        let rowValue = $row.attr('data-' + attrName);
+                                        if (rowValue === null || rowValue === undefined) rowValue = '';
+                                        if (rowValue === '') {
+                                            const camelCaseName = attrName.replace(/-([a-z])/g, function(g) { return g[1].toUpperCase(); });
+                                            rowValue = $row.data(camelCaseName) || $row.data(attrName) || '';
                                         }
-                                        // If data is a DOM node, extract text
-                                        if (node && node.nodeType) {
-                                            return $(node).text() || data;
-                                        }
-                                        // Fallback: try to extract text, but catch errors
+                                        const normalizedRowValue = (rowValue === '-' || rowValue === '') ? '' : String(rowValue);
+                                        const normalizedFilterValue = (filterValue{{ $loop->index }} === '-' || filterValue{{ $loop->index }} === '') ? '' : String(filterValue{{ $loop->index }});
+                                        return normalizedRowValue === normalizedFilterValue;
+                                    };
+                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
+                                    $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                                @else
+                                    table.column({{ $filter['column'] }}).search('^' + filter{{ $loop->index }} + '$', true, false);
+                                @endif
+                            }
+                        @elseif ($filter['type'] === 'date')
+                            const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-date[data-filter="{{ $filter['name'] }}"]').val();
+                            if (filter{{ $loop->index }}) {
+                                @if (str_contains($filter['name'], 'from'))
+                                    const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                        if (settings.nTable.id !== '{{ $id }}') return true;
+                                        const filterVal = filter{{ $loop->index }};
+                                        if (!filterVal) return true;
                                         try {
-                                            return $(data).text() || data;
-                                        } catch(e) {
-                                            return String(data || '');
-                                        }
-                                    }
-                                }
-                            }
-                        }, {
-                            extend: 'pdfHtml5',
-                            text: 'PDF',
-                            className: 'd-none',
-                            exportOptions: {
-                                columns: ':visible:not(.no-export)',
-                                format: {
-                                    body: function(data, row, column, node) {
-                                        // If data is already a string, return it directly
-                                        if (typeof data === 'string') {
-                                            // If it looks like HTML, try to extract text
-                                            if (data.trim().startsWith('<')) {
-                                                try {
-                                                    return $('<div>').html(data).text() || data;
-                                                } catch(e) {
-                                                    return data;
-                                                }
-                                            }
-                                            return data;
-                                        }
-                                        // If data is a DOM node, extract text
-                                        if (node && node.nodeType) {
-                                            return $(node).text() || data;
-                                        }
-                                        // Fallback: try to extract text, but catch errors
+                                            const cellDate = new Date(data[{{ $filter['column'] }}]);
+                                            const filterDate = new Date(filterVal);
+                                            return !isNaN(cellDate.getTime()) && cellDate >= filterDate;
+                                        } catch (e) { return true; }
+                                    };
+                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
+                                    $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                                @elseif (str_contains($filter['name'], 'to'))
+                                    const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                        if (settings.nTable.id !== '{{ $id }}') return true;
+                                        const filterVal = filter{{ $loop->index }};
+                                        if (!filterVal) return true;
                                         try {
-                                            return $(data).text() || data;
-                                        } catch(e) {
-                                            return String(data || '');
-                                        }
-                                    }
-                                }
-                            },
-                            orientation: 'landscape',
-                            pageSize: 'A4'
-                        }, {
-                            extend: 'print',
-                            text: 'Print',
-                            className: 'd-none',
-                            exportOptions: {
-                                columns: ':visible:not(.no-export)'
+                                            const cellDate = new Date(data[{{ $filter['column'] }}]);
+                                            const filterDate = new Date(filterVal);
+                                            return !isNaN(cellDate.getTime()) && cellDate <= filterDate;
+                                        } catch (e) { return true; }
+                                    };
+                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
+                                    $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                                @endif
                             }
-                        }, {
-                            extend: 'colvis',
-                            text: 'Columns',
-                            className: 'd-none',
-                            columns: ':not(.no-colvis)',
-                            collectionLayout: 'three-column',
-                            postfixButtons: ['colvisRestore']
-                        }
-                    @endif
-                ],
-                pageLength: {{ $pageLength }},
-                lengthMenu: [], // Empty array prevents DataTables from creating length menu element - we use custom one at bottom
-                searching: true,
-                ordering: true,
-                order: {!! json_encode($order) !!},
-                @if ($responsive)
-                    responsive: {
-                        details: {
-                            type: 'column',
-                            target: 'tr'
-                        }
-                    },
-                @endif
-                language: {
-                    search: '',
-                    searchPlaceholder: '{{ $searchPlaceholder }}',
-                    lengthMenu: "",
-                    info: "",
-                    infoEmpty: "",
-                    infoFiltered: "",
-                    paginate: {
-                        first: "First",
-                        last: "Last",
-                        next: "Next",
-                        previous: "Previous"
-                    }
-                },
-                drawCallback: function() {
-                    // Remove any DataTables default icons that were added dynamically on every draw
-                    $(tableId + ' thead th').each(function() {
-                        var $th = $(this);
-                        // Remove any spans, icons, or other elements added by DataTables
-                        $th.find(
-                            'span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none'
-                        ).remove();
-                    });
-
-                    // Enforce actions column width on every draw to prevent stretching
-                    var $actionsHeader = $(tableId + ' thead th:last-child');
-                    var $actionsCells = $(tableId + ' tbody td:last-child');
-                    $actionsHeader.css({
-                        'width': '120px',
-                        'min-width': '120px',
-                        'max-width': '120px'
-                    });
-                    $actionsCells.css({
-                        'width': '120px',
-                        'min-width': '120px',
-                        'max-width': '120px',
-                        'white-space': 'nowrap'
-                    });
-
-                    // Use setTimeout to ensure table is fully initialized
-                    setTimeout(function() {
-                        if (table && typeof table.page !== 'undefined') {
-                            debouncedUpdateBulkActions();
-                            debouncedUpdateSelectAllState();
-                            // Only update pagination info text, not DOM manipulation
-                            const info = table.page.info();
-                            const text =
-                                `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
-                            const infoElement = $('#' + '{{ $id }}' + '_info');
-                            if (infoElement.length) {
-                                infoElement.text(text);
-                            }
-                        }
-                    }, 0);
-
-                    // Initialize tooltips only if not already initialized to prevent flickering
-                    $(tableId + ' [data-toggle="tooltip"]').each(function() {
-                        if (!$(this).data('bs.tooltip')) {
-                            $(this).tooltip();
-                        }
-                    });
-                },
-                initComplete: function(settings) {
-                    // Remove any DataTables default icons that were added dynamically
-                    $(tableId + ' thead th').each(function() {
-                        var $th = $(this);
-                        // Remove any spans, icons, or other elements added by DataTables
-                        $th.find(
-                            'span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none'
-                        ).remove();
-                        // Remove any ::before pseudo-element content by adding a class
-                        $th.addClass('custom-sort-header');
-                    });
-
-                    // Only run once to prevent blinking
-                    if (window['datatableInitComplete_{{ $id }}']) return;
-                    // Remove any empty rows DataTables might have added
-                    $(tableId + ' tbody tr').each(function() {
-                        const $row = $(this);
-                        const $cells = $row.find('td');
-                        let isEmpty = true;
-                        $cells.each(function() {
-                            const cellText = $(this).text().trim();
-                            const hasCheckbox = $(this).find('.row-checkbox').length >
-                                0;
-                            const hasInput = $(this).find('input, select, textarea')
-                                .length > 0;
-                            if (cellText !== '' || hasCheckbox || hasInput) {
-                                isEmpty = false;
-                                return false;
-                            }
-                        });
-                        if (isEmpty && $cells.length > 0) {
-                            $row.remove();
-                        }
-                    });
-
-                    // Apply column widths from column definitions
-                    @foreach ($columns as $index => $column)
-                        @if (isset($column['width']))
-                            var colIndex = {{ $bulkDeleteEnabled ? $index + 1 : $index }};
-                            var $th = $(tableId + ' thead th').eq(colIndex);
-                            var $tds = $(tableId + ' tbody td:nth-child(' + (colIndex + 1) + ')');
-                            var widthValue = '{{ $column['width'] }}';
-
-                            if ($th.length && widthValue) {
-                                // Apply width - percentages work better with auto layout
-                                $th.css('width', widthValue);
-                                $tds.css('width', widthValue);
-
-                                // For pixel values, also set min/max
-                                if (widthValue.includes('px')) {
-                                    $th.css('min-width', widthValue);
-                                    $th.css('max-width', widthValue);
-                                    $tds.css('min-width', widthValue);
-                                    $tds.css('max-width', widthValue);
-                                }
+                        @elseif ($filter['type'] === 'text')
+                            const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-text[data-filter="{{ $filter['name'] }}"]').val();
+                            if (filter{{ $loop->index }}) {
+                                @if (str_contains($filter['name'], 'min'))
+                                    const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
+                                        if (settings.nTable.id !== '{{ $id }}') return true;
+                                        const filterVal = parseFloat(filter{{ $loop->index }}) || 0;
+                                        if (!filterVal) return true;
+                                        const cellValue = parseFloat(String(data[{{ $filter['column'] }}]).replace(/[^0-9.-]+/g, '')) || 0;
+                                        return cellValue >= filterVal;
+                                    };
+                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
+                                    $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
+                                @else
+                                    table.column({{ $filter['column'] }}).search(filter{{ $loop->index }});
+                                @endif
                             }
                         @endif
                     @endforeach
 
-                    // Force actions column to maintain fixed width
-                    var $actionsHeader = $(tableId + ' thead th:last-child');
-                    var $actionsCells = $(tableId + ' tbody td:last-child');
-                    $actionsHeader.css({
-                        'width': '120px',
-                        'min-width': '120px',
-                        'max-width': '120px'
+                    window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                    table.draw();
+                };
+
+                $(document).off('click', '#{{ $id }}_applyFilters').on('click', '#{{ $id }}_applyFilters', function() {
+                    if (typeof window['applyFilters_{{ $id }}'] === 'function') {
+                        window['applyFilters_{{ $id }}']();
+                    }
+                });
+
+                $(document).off('click', '#{{ $id }}_clearFilters').on('click', '#{{ $id }}_clearFilters', function() {
+                    filterContainer_{{ $id }}.find('.filter-select, .filter-date, .filter-text').val('');
+                    filterContainer_{{ $id }}.find('.filter-select2').each(function() {
+                        $(this).val(null).trigger('change');
                     });
-                    $actionsCells.css({
-                        'width': '120px',
-                        'min-width': '120px',
-                        'max-width': '120px',
-                        'white-space': 'nowrap'
+
+                    const currentSearchFunctions = $.fn.dataTable.ext.search || [];
+                    const tableFilterFunctions = window['filterFunctions_{{ $id }}'] || [];
+                    $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
+                        return tableFilterFunctions.indexOf(fn) === -1;
                     });
 
-                    // Force column adjustment after width application
-                    setTimeout(function() {
-                        if (table && table.columns) {
-                            // Re-enforce actions column width after adjustment
-                            $actionsHeader.css({
-                                'width': '120px',
-                                'min-width': '120px',
-                                'max-width': '120px'
-                            });
-                            $actionsCells.css({
-                                'width': '120px',
-                                'min-width': '120px',
-                                'max-width': '120px',
-                                'white-space': 'nowrap'
-                            });
-                            table.columns.adjust().draw(false);
-                        }
-                    }, 100);
+                    filterFunctions_{{ $id }} = [];
+                    window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
 
-                    // Initial pagination setup - move pagination once
-                    setTimeout(function() {
-                        const defaultPagination = $(tableId + '_wrapper').find(
-                            '.dataTables_paginate');
-                        if (defaultPagination.length && defaultPagination.parent().attr(
-                                'id') !== '{{ $id }}_pagination_wrapper') {
-                            defaultPagination.appendTo('#' + '{{ $id }}' +
-                                '_pagination_wrapper');
-                            const paginationWrapper = $('#' + '{{ $id }}' +
-                                '_pagination_wrapper');
-                            paginationWrapper.show();
-                            paginationMoved = true;
-                        }
-
-                        // Update pagination info text
-                        if (table && typeof table.page !== 'undefined') {
-                            const info = table.page.info();
-                            const text =
-                                `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
-                            const infoElement = $('#' + '{{ $id }}' + '_info');
-                            if (infoElement.length) {
-                                infoElement.text(text);
-                            }
-                        }
-                    }, 200);
-
-                    window['datatableInitComplete_{{ $id }}'] = true;
-                    
-                    // Aggressively remove default length menu - multiple attempts to ensure it's gone
-                    function removeLengthMenu() {
-                        const wrapperId = tableId.replace('#', '');
-                        const $wrapper = $(tableId + '_wrapper');
-                        
-                        // Remove from wrapper
-                        $wrapper.find('.dataTables_length:not(.dataTables_length_bottom)').remove();
-                        
-                        // Remove from parent
-                        $wrapper.parent().find('.dataTables_length:not(.dataTables_length_bottom)').remove();
-                        
-                        // Remove any length menu that belongs to this table
-                        $('.dataTables_length:not(.dataTables_length_bottom)').each(function() {
-                            const $this = $(this);
-                            if ($this.closest('#' + wrapperId + '_wrapper').length > 0 || 
-                                $this.closest('.datatable-wrapper').length > 0 ||
-                                $this.closest('[id*="' + wrapperId + '"]').length > 0) {
-                                $this.remove();
-                            }
-                        });
-                        
-                        // Also try direct selector
-                        $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
-                    }
-                    
-                    // Remove immediately and on multiple intervals - more aggressive
-                    removeLengthMenu();
-                    setTimeout(removeLengthMenu, 10);
-                    setTimeout(removeLengthMenu, 50);
-                    setTimeout(removeLengthMenu, 100);
-                    setTimeout(removeLengthMenu, 200);
-                    setTimeout(removeLengthMenu, 500);
-                    setTimeout(removeLengthMenu, 1000);
-                    
-                    // Also remove on draw events - prevent it from reappearing
-                    // Use $(tableId).DataTable() to get the DataTable API instance inside initComplete
-                    try {
-                        const dtInstance = $(tableId).DataTable();
-                        if (dtInstance && typeof dtInstance.on === 'function') {
-                            dtInstance.on('draw', function() {
-                                removeLengthMenu();
-                            });
-                        }
-                    } catch(e) {
-                        // Ignore errors attaching draw event
-                    }
-                    
-                    // Use MutationObserver to catch if it's re-added
-                    if (typeof MutationObserver !== 'undefined') {
-                        const observer = new MutationObserver(function(mutations) {
-                            removeLengthMenu();
-                        });
-                        const wrapperElement = document.getElementById(tableId.replace('#', '') + '_wrapper');
-                        if (wrapperElement) {
-                            observer.observe(wrapperElement, {
-                                childList: true,
-                                subtree: true
-                            });
-                        }
-                    }
-                    
-                    // Final aggressive removal after all initialization is complete
-                    // This ensures the length menu is removed even if DataTables creates it despite our settings
-                    setTimeout(function() {
-                        const wrapperId = tableId.replace('#', '');
-                        // Remove all length menus except the custom bottom one
-                        $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
-                        $('.dataTables_length:not(.dataTables_length_bottom)').filter(function() {
-                            return $(this).closest('#' + wrapperId + '_wrapper').length > 0;
-                        }).remove();
-                    }, 2000);
-                }
-            });
-                // Store table reference immediately after initialization
-                if (table) {
-                    window['table_{{ $id }}'] = table;
-                    window['datatable_{{ $id }}'] = table;
-                }
-                } catch (err) {
-                    // Don't re-throw - let it fail silently
-                    console.error('DataTable initialization failed:', err);
-                    // #region agent log
-                    fetch('http://127.0.0.1:7242/ingest/c8dd4f40-9714-49ad-ad6c-e2b0cb29dd16',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({location:'datatable.blade.php:1920',message:'DataTable() ERROR CAUGHT',data:{tableId:tableId,error:err.toString(),errorMessage:err.message},timestamp:Date.now(),sessionId:'debug-session',runId:'component-init',hypothesisId:'DATATABLE_ERROR'})}).catch(()=>{});
-                    // #endregion agent log
-                }
-
-            // Initial pagination info update - only text, no DOM manipulation
-            setTimeout(function() {
-                if (table && typeof table.page !== 'undefined') {
-                    const info = table.page.info();
-                    const text = `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
-                    const infoElement = $('#' + '{{ $id }}' + '_info');
-                    if (infoElement.length) {
-                        infoElement.text(text);
-                    }
-                    if (table.columns) {
-                        table.columns.adjust();
-                    }
-                }
-            }, 300);
-            // Custom length menu - use event delegation to ensure it works
-            $(document).off('change', '#{{ $id }}_length').on('change', '#{{ $id }}_length', function() {
-                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                if (table && typeof table.page === 'function') {
-                table.page.len($(this).val()).draw();
-                setTimeout(function() {
-                    // Only update text, no DOM manipulation
-                    if (table && typeof table.page !== 'undefined') {
-                        const info = table.page.info();
-                        const text =
-                            `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
-                        const infoElement = $('#' + '{{ $id }}' + '_info');
-                        if (infoElement.length) {
-                            infoElement.text(text);
-                        }
-                    }
-                }, 100);
-                }
-            });
-
-            // Custom search - using enhanced version below
-
-            // Custom column visibility with localStorage persistence
-            // Use a versioned storage key so structural changes to the table
-            // automatically reset stale column-visibility preferences.
-            var storageKey = 'datatable_colvis_{{ $id }}_v2';
-            // Clean up legacy key to avoid stale visibility states
-            localStorage.removeItem('datatable_colvis_{{ $id }}');
-
-            // Load saved column visibility on init
-            function loadColumnVisibility() {
-                try {
-                    var saved = localStorage.getItem(storageKey);
-                    if (saved) {
-                        var columns = JSON.parse(saved);
-                        var currentCount = table.columns().count();
-                        var savedCount = Object.keys(columns).length;
-
-                        // If structure changed, drop the old preferences
-                        if (savedCount !== currentCount) {
-                            localStorage.removeItem(storageKey);
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.draw === 'function') {
+                        // Use the isServerSide variable from outer scope
+                        if (isServerSide) {
+                            table.draw();
                         } else {
-                            table.columns().every(function(index) {
-                                var column = this;
-                                var columnIndex = column.index();
-                                if (columns.hasOwnProperty(columnIndex)) {
-                                    column.visible(columns[columnIndex], false);
-                                }
-                            });
-                            table.columns.adjust().draw(false);
+                            table.search('').columns().search('').draw();
                         }
                     }
-                } catch (e) {
-                    console.error('Error loading column visibility:', e);
-                }
-            }
-
-            // Save column visibility to localStorage
-            function saveColumnVisibility() {
-                try {
-                    var columns = {};
-                    table.columns().every(function() {
-                        var column = this;
-                        columns[column.index()] = column.visible();
-                    });
-                    localStorage.setItem(storageKey, JSON.stringify(columns));
-                } catch (e) {
-                    console.error('Error saving column visibility:', e);
-                }
-            }
-
-            // Override default colvis button behavior
-            $('#' + '{{ $id }}' + '_columns').on('click', function(e) {
-                e.preventDefault();
-                e.stopPropagation();
-
-                // Get button position for dropdown placement - use getBoundingClientRect for viewport coordinates
-                var $button = $(this);
-                var buttonRect = this.getBoundingClientRect();
-                var buttonWidth = buttonRect.width;
-                var buttonHeight = buttonRect.height;
-                var dropdownWidth = 200; // dropdown width
-
-                // Remove existing custom dropdown if any
-                $('.custom-colvis-dropdown').remove();
-
-                // Calculate dropdown position relative to viewport (for position: fixed)
-                // Position dropdown below button, aligned to right edge
-                var dropdownLeft = buttonRect.right - dropdownWidth;
-                var dropdownTop = buttonRect.bottom + 5; // 5px gap below button
-                var estimatedDropdownHeight = 300; // approximate height
-
-                // Ensure dropdown doesn't go off right edge of screen
-                if (dropdownLeft < 10) {
-                    dropdownLeft = buttonRect.left; // Align to left edge of button if too far left
-                }
-
-                // Ensure dropdown doesn't go off left edge of screen
-                if (dropdownLeft < 10) {
-                    dropdownLeft = 10;
-                }
-
-                // Ensure dropdown doesn't go off right edge of screen
-                if (dropdownLeft + dropdownWidth > window.innerWidth - 10) {
-                    dropdownLeft = window.innerWidth - dropdownWidth - 10;
-                }
-
-                // Check if dropdown would go off bottom of screen
-                if (dropdownTop + estimatedDropdownHeight > window.innerHeight - 10) {
-                    // Show above button instead
-                    dropdownTop = buttonRect.top - estimatedDropdownHeight - 5;
-                    if (dropdownTop < 10) {
-                        dropdownTop = 10; // If still doesn't fit, show at top
-                    }
-                }
-
-                // Ensure dropdown doesn't go off top of screen
-                if (dropdownTop < 10) {
-                    dropdownTop = 10;
-                }
-
-                // Create custom dropdown with viewport-relative positioning
-                var $dropdown = $(
-                    '<div class="custom-colvis-dropdown dropdown-menu show position-fixed" style="top: ' +
-                    dropdownTop + 'px; left: ' + dropdownLeft +
-                    'px; min-width: ' + dropdownWidth + 'px; max-width: ' + dropdownWidth +
-                    'px; z-index: 1050;"></div>');
-
-                // Add column checkboxes
-                table.columns().every(function() {
-                    var column = this;
-                    var columnIndex = column.index();
-                    var columnHeader = $(column.header());
-                    var columnTitle = columnHeader.text().trim();
-                    var isVisible = column.visible();
-                    var isNoColvis = columnHeader.hasClass('no-colvis') || columnHeader.closest(
-                        'th').hasClass('no-colvis');
-                    var isCheckboxColumn = columnHeader.hasClass('select-checkbox') || columnHeader
-                        .closest(
-                            'th').hasClass('select-checkbox');
-
-                    // Skip columns marked as no-colvis or checkbox column
-                    if (isNoColvis || isCheckboxColumn) return;
-
-                    var $item = $(
-                        '<div class="dropdown-item-text d-flex align-items-center justify-content-between p-2" style="cursor: pointer;"></div>'
-                    );
-                    var $label = $('<label class="mb-0 flex-fill" style="cursor: pointer;">' +
-                        columnTitle + '</label>');
-                    var $checkbox = $('<input type="checkbox" class="form-check-input ms-2" ' + (
-                            isVisible ? 'checked' : '') + ' data-column="' + columnIndex +
-                        '" style="cursor: pointer; flex-shrink: 0;"></input>');
-
-                    $item.append($label).append($checkbox);
-                    $dropdown.append($item);
-
-                    // Handle checkbox change
-                    $checkbox.on('change', function() {
-                        var isChecked = $(this).is(':checked');
-                        column.visible(isChecked, false);
-                        table.columns.adjust().draw(false);
-                        saveColumnVisibility();
-                    });
-
-                    // Make entire item clickable
-                    $item.on('click', function(e) {
-                        if (e.target.type !== 'checkbox') {
-                            $checkbox.prop('checked', !$checkbox.prop('checked')).trigger(
-                                'change');
-                        }
-                    });
                 });
+            @endif
 
-                // Add to body and show
-                $('body').append($dropdown);
-
-                // Close on outside click
-                $(document).on('click.customColvis', function(e) {
-                    if (!$dropdown.is(e.target) && $dropdown.has(e.target).length === 0 && !$button
-                        .is(e.target)) {
-                        $dropdown.remove();
-                        $(document).off('click.customColvis');
-                    }
-                });
-            });
-
-            // Save column visibility on column visibility change (fallback)
-            table.on('column-visibility', function(e, settings, column, state) {
-                saveColumnVisibility();
-            });
-
-            // Load saved preferences after table init
-            setTimeout(function() {
-                loadColumnVisibility();
-            }, 500);
-
-            // Export button handlers - moved outside to ensure they're always attached
-            // (Handlers are now attached immediately above, before initializeDataTable)
-
-
-            @if ($bulkDeleteEnabled)
-                // Prevent sorting when clicking on checkbox column header (but allow checkbox clicks)
-                $(tableId + ' thead th.select-checkbox').on('click', function(e) {
-                    // Only stop propagation if not clicking directly on the checkbox
-                    if (!$(e.target).is('input[type="checkbox"], label')) {
-                        e.stopPropagation();
-                        e.preventDefault();
-                    }
-                });
-
-                // Ensure checkbox clicks work properly
-                $(tableId + ' thead th.select-checkbox input[type="checkbox"]').on('click', function(e) {
-                    e.stopPropagation(); // Prevent header click from interfering
-                });
-
-                // Individual checkbox selection
-                $(document).on('change', tableId + ' tbody .row-checkbox', function() {
-                    // Don't use DataTables select API, just track checkbox state
-                    debouncedUpdateSelectAllState();
-                    debouncedUpdateBulkActions();
-                });
-                // Bulk delete function
-                function performBulkDelete() {
-                    const selectedIds = [];
-
-                    // Get IDs from checked checkboxes only
-                    $(tableId + ' tbody .row-checkbox:checked').each(function() {
-                        const id = $(this).val();
-                        if (id) {
-                            selectedIds.push(id);
-                        }
-                    });
-
-                    if (selectedIds.length === 0) {
-                        Swal.fire({
-                            icon: 'warning',
-                            title: 'No Selection',
-                            text: 'Please select at least one row to delete.',
-                            confirmButtonText: 'OK'
-                        });
+            // FIXME: This function is not being called either when dom loads or when the page length is changed.
+            function initializeDataTable(forceInit = false) {
+                var $table = $(tableId);
+                if (!$table.length) return;
+                
+                // For server-side tables in hidden tabs, only initialize if forced (from tab event)
+                if (isServerSide && !forceInit) {
+                    const $tabPane = $table.closest('.tab-pane');
+                    if ($tabPane.length && !$tabPane.hasClass('show')) {
+                        console.log('initializeDataTable called but tab is hidden - skipping (use forceInit=true to override)');
                         return;
                     }
+                }
+                
+                // Check if already initialized
+                if ($.fn.DataTable.isDataTable(tableId)) {
+                    console.log('DataTable already initialized, skipping');
+                    return;
+                }
+
+                // Use the isServerSide variable from outer scope
+                console.log("Table is processing server side initializeDataTable: ", isServerSide);
+                
+                var $tbody = $table.find('tbody');
+                const domRowCount = $tbody.length > 0 ? $tbody.find('tr').length : 0;
+
+                if (!isServerSide) {
+                    if ($tbody.length > 0) {
+                        var tbodyContent = $tbody.html().trim().replace(/<!--.*?-->/g, '').trim();
+                        if ($tbody.find('tr').length === 0 || tbodyContent === '') {
+                             return;
+                        }
+                    }
+                } else {
+                    // CRITICAL FIX: For server-side tables, ALWAYS clear DOM rows
+                    // DataTables will switch to client-side mode if it detects rows in DOM,
+                    // even when serverSide: true is set. This forces server-side AJAX mode.
+                    // Also, deferLoading with DOM rows can cause client-side mode, so we clear rows.
+                    if (domRowCount > 0) {
+                        $tbody.empty();
+                    }
+                    // Store flag to remove deferLoading from config if we cleared rows
+                    window['_clearDomRows_{{ $id }}'] = (domRowCount > 0);
+                }
+
+                try {
+                    const ajaxUrl = @json($ajaxUrl);
+                    
+                    var dtConfig = {
+                        dom: "<'row'<'col-sm-12'f>><'row'<'col-sm-12'tr>><'row'<'col-sm-5'i><'col-sm-7'p>>",
+                        scrollX: false,
+                        scrollCollapse: false,
+                        autoWidth: false,
+                        fixedColumns: false,
+                        columnDefs: [
+                            @if ($bulkDeleteEnabled)
+                                { orderable: false, searchable: false, targets: 0, className: 'select-checkbox no-export no-colvis no-sort', width: '30px' },
+                            @endif
+                            @foreach ($columns as $index => $column)
+                                @if (isset($column['width']) || (isset($column['orderable']) && !$column['orderable']))
+                                    {
+                                        targets: {{ $bulkDeleteEnabled ? $index + 1 : $index }},
+                                        @if (isset($column['width'])) width: '{{ $column['width'] }}', @endif
+                                        @if (isset($column['orderable']) && !$column['orderable']) orderable: false, @endif
+                                        @if (isset($column['searchable']) && !$column['searchable']) searchable: false, @endif
+                                    },
+                                @endif
+                            @endforeach
+                            {
+                                orderable: false, searchable: false, targets: -1, className: 'text-center no-export', width: '140px', visible: true,
+                                createdCell: function(td) {
+                                    $(td).css({ 'width': '140px', 'min-width': '140px', 'max-width': '140px', 'white-space': 'nowrap', 'text-align': 'center' });
+                                }
+                            }
+                        ],
+                        buttons: [
+                            @if ($exportEnabled)
+                                { extend: 'excelHtml5', text: 'Excel', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)' } },
+                                { extend: 'pdfHtml5', text: 'PDF', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)' }, orientation: 'landscape', pageSize: 'A4' },
+                                { extend: 'print', text: 'Print', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)' } },
+                                { extend: 'colvis', text: 'Columns', className: 'd-none', columns: ':not(.no-colvis)', collectionLayout: 'three-column', postfixButtons: ['colvisRestore'] }
+                            @endif
+                        ],
+                        @if ($serverSide || (isset($ajaxUrl) && !empty($ajaxUrl)))
+                            processing: {{ $processing ? 'true' : 'false' }},
+                            serverSide: true,
+                            @if (isset($deferLoading) && $deferLoading) deferLoading: {{ (int) $deferLoading }}, @endif
+                            ajax: {
+                                url: ajaxUrl,
+                                type: 'GET',
+                                dataSrc: function(json) { return json.data; },
+                                @if ($ajaxData)
+                                    data: function(d) {
+                                        if (typeof {{ $ajaxData }} === 'function') {{ $ajaxData }}(d);
+                                        return d;
+                                    },
+                                @endif
+                                error: function(xhr, error, thrown) { console.error('DataTables AJAX error:', error); }
+                            },
+                            columns: [
+                                @if ($bulkDeleteEnabled)
+                                    { data: 0, name: 'checkbox', orderable: false, searchable: false, className: 'select-checkbox no-export no-colvis no-sort', width: '30px' },
+                                @endif
+                                @foreach ($columns as $index => $column)
+                                    {
+                                        data: {{ $bulkDeleteEnabled ? $index + 1 : $index }},
+                                        name: '{{ $column['title'] ?? 'col_' . $index }}',
+                                        orderable: {{ isset($column['orderable']) && !$column['orderable'] ? 'false' : 'true' }},
+                                        searchable: {{ isset($column['searchable']) && !$column['searchable'] ? 'false' : 'true' }},
+                                        @if (isset($column['width'])) width: '{{ $column['width'] }}', @endif
+                                        render: function(data, type) {
+                                            if (type === 'display' || type === 'type') return data;
+                                            if (typeof data === 'string' && data.trim().startsWith('<')) {
+                                                try { return $('<div>').html(data).text() || data; } catch (e) { return data; }
+                                            }
+                                            return data;
+                                        }
+                                    },
+                                @endforeach
+                                { data: {{ $bulkDeleteEnabled ? count($columns) + 1 : count($columns) }}, name: 'actions', orderable: false, searchable: false, className: 'text-center no-export', width: '140px' }
+                            ],
+                        @endif
+                        pageLength: {{ $pageLength }},
+                        lengthMenu: [],
+                        searching: true,
+                        ordering: true,
+                        order: {!! json_encode($order) !!},
+                        @if ($responsive)
+                            responsive: { details: { type: 'column', target: 'tr' } },
+                        @endif
+                        language: {
+                            search: '', searchPlaceholder: '{{ $searchPlaceholder }}', lengthMenu: "", info: "", infoEmpty: "", infoFiltered: "",
+                            paginate: { first: "First", last: "Last", next: "Next", previous: "Previous" }
+                        },
+                        drawCallback: function() {
+                            $(tableId + ' thead th').each(function() {
+                                $(this).find('span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none').remove();
+                            });
+
+                            var $actionsHeader = $(tableId + ' thead th:last-child');
+                            var $actionsCells = $(tableId + ' tbody td:last-child');
+                            $actionsHeader.css({ 'width': '120px', 'min-width': '120px' });
+                            $actionsCells.css({ 'width': '120px', 'min-width': '120px', 'white-space': 'nowrap' });
+
+                            try {
+                                var hasCheckbox = {{ $bulkDeleteEnabled ? 'true' : 'false' }};
+                                $(tableId + ' tbody tr').each(function() {
+                                    var $row = $(this);
+                                    var $cells = $row.children('td');
+                                    $cells.each(function(idx) {
+                                        var isCheckboxCol = hasCheckbox && idx === 0;
+                                        var isActionsCol = idx === $cells.length - 1;
+                                        if (!isCheckboxCol && !isActionsCol) {
+                                            var $cell = $(this);
+                                            $cell.addClass('dt-truncate');
+                                            var text = $.trim($cell.text());
+                                            if (text) $cell.attr('title', text);
+                                        }
+                                    });
+                                });
+                            } catch (e) {}
+
+                            setTimeout(function() {
+                                if (table && typeof table.page !== 'undefined') {
+                                    debouncedUpdateBulkActions();
+                                    debouncedUpdateSelectAllState();
+                                    const info = table.page.info();
+                                    const text = `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
+                                    $('#' + '{{ $id }}' + '_info').text(text);
+                                }
+                            }, 0);
+
+                            $(tableId + ' [data-toggle="tooltip"]').each(function() {
+                                if (!$(this).data('bs.tooltip')) $(this).tooltip();
+                            });
+                        },
+                        initComplete: function(settings) {
+                            const dtInstance = $(tableId).DataTable();
+                            const expectedPageLength = {{ $pageLength }};
+                            const $lengthSelect = $('#{{ $id }}_length');
+                            
+                            if ($lengthSelect.length && dtInstance && typeof dtInstance.page === 'function') {
+                                if (dtInstance.page.len() !== expectedPageLength) {
+                                    dtInstance.page.len(expectedPageLength).draw(false);
+                                }
+                                $lengthSelect.val(expectedPageLength);
+                            }
+
+                            $(tableId + ' thead th').each(function() {
+                                $(this).find('span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none').remove();
+                                $(this).addClass('custom-sort-header');
+                            });
+
+                            if (window['datatableInitComplete_{{ $id }}']) return;
+
+                            @foreach ($columns as $index => $column)
+                                @if (isset($column['width']))
+                                    var colIndex = {{ $bulkDeleteEnabled ? $index + 1 : $index }};
+                                    var $th = $(tableId + ' thead th').eq(colIndex);
+                                    var $tds = $(tableId + ' tbody td:nth-child(' + (colIndex + 1) + ')');
+                                    var widthValue = '{{ $column['width'] }}';
+                                    if ($th.length && widthValue) {
+                                        $th.css('width', widthValue);
+                                        $tds.css('width', widthValue);
+                                        if (widthValue.includes('px')) {
+                                            $th.css('min-width', widthValue).css('max-width', widthValue);
+                                            $tds.css('min-width', widthValue).css('max-width', widthValue);
+                                        }
+                                    }
+                                @endif
+                            @endforeach
+
+                            setTimeout(function() {
+                                if (table && table.columns) {
+                                    table.columns.adjust().draw(false);
+                                }
+                            }, 100);
+
+                            setTimeout(function() {
+                                const defaultPagination = $(tableId + '_wrapper').find('.dataTables_paginate');
+                                if (defaultPagination.length && defaultPagination.parent().attr('id') !== '{{ $id }}_pagination_wrapper') {
+                                    defaultPagination.appendTo('#' + '{{ $id }}' + '_pagination_wrapper');
+                                    $('#' + '{{ $id }}' + '_pagination_wrapper').show();
+                                    paginationMoved = true;
+                                }
+                                if (table && typeof table.page !== 'undefined') {
+                                    const info = table.page.info();
+                                    $('#' + '{{ $id }}' + '_info').text(`Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`);
+                                }
+                            }, 200);
+
+                            window['datatableInitComplete_{{ $id }}'] = true;
+
+                            function removeLengthMenu() {
+                                const wrapperId = tableId.replace('#', '');
+                                $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
+                                $('.dataTables_length:not(.dataTables_length_bottom)').filter(function() {
+                                    return $(this).closest('#' + wrapperId + '_wrapper').length > 0;
+                                }).remove();
+                            }
+                            
+                            removeLengthMenu();
+                            setTimeout(removeLengthMenu, 500);
+                        }
+                    };
+
+                    // CRITICAL: If we cleared DOM rows, remove deferLoading to force AJAX request
+                    // deferLoading is meant to work WITH DOM rows, not without them
+                    if (isServerSide && window['_clearDomRows_{{ $id }}'] && dtConfig.hasOwnProperty('deferLoading')) {
+                        delete dtConfig.deferLoading;
+                    }
+                    
+                    table = $(tableId).DataTable(dtConfig);
+
+                    if (table) {
+                        window['table_{{ $id }}'] = table;
+                        window['datatable_{{ $id }}'] = table;
+                    }
+
+                } catch (err) {
+                    console.error('DataTable initialization failed:', err);
+                }
+
+                setTimeout(function() {
+                    if (table && typeof table.page !== 'undefined') {
+                        const info = table.page.info();
+                        $('#' + '{{ $id }}' + '_info').text(`Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`);
+                        if (table.columns) table.columns.adjust();
+                    }
+                }, 300);
+
+                $(document).off('change', '#{{ $id }}_length').on('change', '#{{ $id }}_length', function() {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.page === 'function') {
+                        table.page.len($(this).val()).draw();
+                        setTimeout(function() {
+                             if (table && typeof table.page !== 'undefined') {
+                                const info = table.page.info();
+                                $('#' + '{{ $id }}' + '_info').text(`Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`);
+                             }
+                        }, 100);
+                    }
+                });
+
+                var storageKey = 'datatable_colvis_{{ $id }}_v2';
+                localStorage.removeItem('datatable_colvis_{{ $id }}');
+
+                function loadColumnVisibility() {
+                    try {
+                        var saved = localStorage.getItem(storageKey);
+                        if (saved) {
+                            var columns = JSON.parse(saved);
+                            if (Object.keys(columns).length === table.columns().count()) {
+                                table.columns().every(function() {
+                                    if (columns.hasOwnProperty(this.index())) this.visible(columns[this.index()], false);
+                                });
+                                table.columns.adjust().draw(false);
+                            } else {
+                                localStorage.removeItem(storageKey);
+                            }
+                        }
+                    } catch (e) {}
+                }
+
+                function saveColumnVisibility() {
+                    try {
+                        var columns = {};
+                        table.columns().every(function() { columns[this.index()] = this.visible(); });
+                        localStorage.setItem(storageKey, JSON.stringify(columns));
+                    } catch (e) {}
+                }
+
+                table.on('column-visibility', function() { saveColumnVisibility(); });
+                setTimeout(loadColumnVisibility, 500);
+
+                @if ($bulkDeleteEnabled)
+                    $(tableId + ' thead th.select-checkbox').on('click', function(e) {
+                        if (!$(e.target).is('input[type="checkbox"], label')) {
+                            e.stopPropagation();
+                            e.preventDefault();
+                        }
+                    });
+
+                    $(tableId + ' thead th.select-checkbox input[type="checkbox"]').on('click', function(e) {
+                        e.stopPropagation();
+                    });
+
+                    $(document).on('change', tableId + ' tbody .row-checkbox', function() {
+                        debouncedUpdateSelectAllState();
+                        debouncedUpdateBulkActions();
+                    });
+
+                    $('#{{ $id }}_bulkDeleteBtn').on('click', function() {
+                        const selectedIds = [];
+                        $(tableId + ' tbody .row-checkbox:checked').each(function() {
+                            if ($(this).val()) selectedIds.push($(this).val());
+                        });
+
+                        if (selectedIds.length === 0) {
+                            Swal.fire({ icon: 'warning', title: 'No Selection', text: 'Please select at least one row.', confirmButtonText: 'OK' });
+                            return;
+                        }
+
+                        Swal.fire({
+                            title: 'Are you sure?',
+                            text: `Delete ${selectedIds.length} item(s)?`,
+                            icon: 'warning',
+                            showCancelButton: true,
+                            confirmButtonColor: '#d33',
+                            confirmButtonText: 'Yes, delete!',
+                            cancelButtonText: 'Cancel'
+                        }).then((result) => {
+                            if (result.isConfirmed) {
+                                $.ajax({
+                                    url: '{{ $bulkDeleteRoute ?? '#' }}',
+                                    type: 'POST',
+                                    data: { _token: '{{ csrf_token() }}', ids: selectedIds },
+                                    success: function(response) {
+                                        Swal.fire({ icon: 'success', title: 'Deleted!', text: response.message, timer: 1500, showConfirmButton: false })
+                                            .then(() => window.location.reload());
+                                    },
+                                    error: function(xhr) {
+                                        Swal.fire({ icon: 'error', title: 'Error!', text: xhr.responseJSON?.message || 'Failed.', confirmButtonText: 'OK' });
+                                    }
+                                });
+                            }
+                        });
+                    });
+
+                    table.on('draw', function() { debouncedUpdateSelectAllState(); });
+
+                    $(document).on('change', '#{{ $id }}_selectAll', function() {
+                        if (!table || typeof table.rows === 'undefined') return;
+                        const isChecked = $(this).is(':checked');
+                        $(table.rows({ page: 'current' }).nodes()).find('.row-checkbox').prop('checked', isChecked);
+                        debouncedUpdateBulkActions();
+                        debouncedUpdateSelectAllState();
+                    });
+                @endif
+
+                $(document).off('keyup', '#{{ $id }}_search').on('keyup', '#{{ $id }}_search', function() {
+                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    if (table && typeof table.search === 'function') table.search($(this).val()).draw();
+                });
+
+                $(document).off('keypress', '#{{ $id }}_search').on('keypress', '#{{ $id }}_search', function(e) {
+                    if (e.which === 13) {
+                         const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                         if (table && typeof table.search === 'function') table.search($(this).val()).draw();
+                    }
+                });
+
+                $(document).off('click', tableId + ' tbody tr').on('click', tableId + ' tbody tr', function(e) {
+                    const $target = $(e.target);
+                    if ($target.closest('a, button, input, label, .row-checkbox, .select2-container').length) return;
+                    $(this).toggleClass('dt-row-active');
+                });
+
+                @if ($exportEnabled)
+                    $(document).off('click', '#{{ $id }}_excel').on('click', '#{{ $id }}_excel', function() {
+                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        if (table && typeof table.button === 'function') table.button('.buttons-excel').trigger();
+                    });
+                    $(document).off('click', '#{{ $id }}_pdf').on('click', '#{{ $id }}_pdf', function() {
+                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        if (table && typeof table.button === 'function') table.button('.buttons-pdf').trigger();
+                    });
+                    $(document).off('click', '#{{ $id }}_print').on('click', '#{{ $id }}_print', function() {
+                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        if (table && typeof table.button === 'function') table.button('.buttons-print').trigger();
+                    });
+
+                    $(document).off('click', '#{{ $id }}_columns').on('click', '#{{ $id }}_columns', function(e) {
+                        e.preventDefault(); e.stopPropagation();
+                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        if (!table) return;
+
+                        var $button = $(this);
+                        var buttonRect = this.getBoundingClientRect();
+                        var dropdownWidth = 200;
+                        $('.custom-colvis-dropdown').remove();
+
+                        var dropdownLeft = buttonRect.right - dropdownWidth;
+                        if (dropdownLeft < 10) dropdownLeft = 10;
+                        
+                        var dropdownTop = buttonRect.bottom + 5;
+                        if (dropdownTop + 300 > window.innerHeight) dropdownTop = buttonRect.top - 300 - 5;
+
+                        var $dropdown = $('<div class="custom-colvis-dropdown dropdown-menu show position-fixed" style="top: ' + dropdownTop + 'px; left: ' + dropdownLeft + 'px; min-width: ' + dropdownWidth + 'px; max-width: ' + dropdownWidth + 'px; z-index: 1050;"></div>');
+
+                        table.columns().every(function() {
+                            var column = this;
+                            var columnHeader = $(column.header());
+                            if (columnHeader.hasClass('no-colvis') || columnHeader.hasClass('select-checkbox')) return;
+                            
+                            var $item = $('<div class="dropdown-item-text d-flex align-items-center justify-content-between p-2" style="cursor: pointer;"></div>');
+                            var $label = $('<label class="mb-0 flex-fill" style="cursor: pointer;">' + columnHeader.text().trim() + '</label>');
+                            var $checkbox = $('<input type="checkbox" class="form-check-input ms-2" ' + (column.visible() ? 'checked' : '') + ' style="cursor: pointer;"></input>');
+                            
+                            $item.append($label).append($checkbox);
+                            $dropdown.append($item);
+                            
+                            $checkbox.on('change', function() {
+                                column.visible($(this).is(':checked'), false);
+                                table.columns.adjust().draw(false);
+                                saveColumnVisibility();
+                            });
+                            
+                            $item.on('click', function(e) {
+                                if (e.target.type !== 'checkbox') $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
+                            });
+                        });
+                        $('body').append($dropdown);
+                        $(document).on('click.customColvis', function(e) {
+                            if (!$dropdown.is(e.target) && $dropdown.has(e.target).length === 0 && !$button.is(e.target)) {
+                                $dropdown.remove();
+                                $(document).off('click.customColvis');
+                            }
+                        });
+                    });
+                @endif
+
+                $(tableId + ' tbody').on('click', '.delete-row', function(e) {
+                    e.preventDefault();
+                    const id = $(this).data('id');
+                    const name = $(this).data('name') || 'this item';
+                    const deleteUrl = $(this).data('url') || '{{ $deleteRoute ?? '#' }}'.replace(':id', id);
 
                     Swal.fire({
                         title: 'Are you sure?',
-                        text: `You are about to delete ${selectedIds.length} item(s). This action cannot be undone!`,
+                        text: `Delete ${name}?`,
                         icon: 'warning',
                         showCancelButton: true,
                         confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
-                        confirmButtonText: 'Yes, delete them!',
+                        confirmButtonText: 'Yes, delete!',
                         cancelButtonText: 'Cancel'
                     }).then((result) => {
                         if (result.isConfirmed) {
                             $.ajax({
-                                url: '{{ $bulkDeleteRoute ?? '#' }}',
+                                url: deleteUrl,
                                 type: 'POST',
-                                data: {
-                                    _token: '{{ csrf_token() }}',
-                                    ids: selectedIds
-                                },
+                                data: { _token: '{{ csrf_token() }}', _method: 'DELETE' },
                                 success: function(response) {
-                                    Swal.fire({
-                                        icon: 'success',
-                                        title: 'Deleted!',
-                                        text: response.message ||
-                                            'Selected items have been deleted.',
-                                        timer: 1500,
-                                        showConfirmButton: false
-                                    }).then(() => {
-                                        // Reload the page to refresh the table, preserving hash
-                                        const currentHash = window.location.hash;
-                                        window.location.reload();
-                                    });
+                                    Swal.fire({ icon: 'success', title: 'Deleted!', text: response.message, timer: 2000, showConfirmButton: false });
+                                    table.row($(e.target).closest('tr')).remove().draw();
                                 },
                                 error: function(xhr) {
-                                    Swal.fire({
-                                        icon: 'error',
-                                        title: 'Error!',
-                                        text: xhr.responseJSON?.message ||
-                                            'Failed to delete items. Please try again.',
-                                        confirmButtonText: 'OK'
-                                    });
+                                    Swal.fire({ icon: 'error', title: 'Error!', text: xhr.responseJSON?.message || 'Failed.', confirmButtonText: 'OK' });
                                 }
                             });
                         }
                     });
-                }
-
-                $('#{{ $id }}_bulkDeleteBtn').on('click', function() {
-                    performBulkDelete();
                 });
-
-                // After bulk delete, update select all state
-                table.on('draw', function() {
-                    debouncedUpdateSelectAllState();
-                });
-            @endif
-
-            // Attach select all event after table initialization
-            if (@json($bulkDeleteEnabled)) {
-                // Select All functionality: listen on any visible select-all checkbox
-                // Use event delegation to ensure it works even if checkbox is recreated
-                $(document).on('change', '#{{ $id }}_selectAll', function() {
-                    if (!table || typeof table.rows === 'undefined') return;
-
-                    const $headerCheckbox = $(this);
-                    const isChecked = $headerCheckbox.is(':checked');
-
-                    // Get all rows on current page
-                    const currentPageRows = table.rows({
-                        page: 'current'
-                    }).nodes();
-
-                    // Update all checkboxes on current page
-                    $(currentPageRows).find('.row-checkbox').prop('checked', isChecked);
-
-                    // Update bulk actions and select all state
-                    debouncedUpdateBulkActions();
-                    debouncedUpdateSelectAllState();
-                });
-
-                // Also attach directly in case event delegation doesn't catch it
-                setTimeout(function() {
-                    $('#{{ $id }}_selectAll').off('change').on('change', function() {
-                        if (!table || typeof table.rows === 'undefined') return;
-                        const isChecked = $(this).is(':checked');
-                        const currentPageRows = table.rows({
-                            page: 'current'
-                        }).nodes();
-                        $(currentPageRows).find('.row-checkbox').prop('checked', isChecked);
-                        debouncedUpdateBulkActions();
-                        debouncedUpdateSelectAllState();
-                    });
-                }, 100);
             }
 
-            // Search handler - attach immediately, works for all tables
-            $(document).off('keyup', '#{{ $id }}_search').on('keyup', '#{{ $id }}_search', function() {
-                const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                if (table && typeof table.search === 'function') {
-                    table.search($(this).val()).draw();
-                }
-            });
-
-            $(document).off('keypress', '#{{ $id }}_search').on('keypress', '#{{ $id }}_search', function(e) {
-                if (e.which === 13) {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                    if (table && typeof table.search === 'function') {
-                        table.search($(this).val()).draw();
-                    }
-                }
-            });
-
-            // Export and column handlers - attach immediately, works for all tables
-            @if ($exportEnabled)
-                $(document).off('click', '#{{ $id }}_excel').on('click', '#{{ $id }}_excel', function() {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                    if (table && typeof table.button === 'function') {
-                        table.button('.buttons-excel').trigger();
-                    }
-                });
-
-                $(document).off('click', '#{{ $id }}_pdf').on('click', '#{{ $id }}_pdf', function() {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                    if (table && typeof table.button === 'function') {
-                        table.button('.buttons-pdf').trigger();
-                    }
-                });
-
-                $(document).off('click', '#{{ $id }}_print').on('click', '#{{ $id }}_print', function() {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                    if (table && typeof table.button === 'function') {
-                        table.button('.buttons-print').trigger();
-                    }
-                });
-
-                $(document).off('click', '#{{ $id }}_columns').on('click', '#{{ $id }}_columns', function(e) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
-                    if (!table || typeof table.columns === 'undefined') return;
-                    
-                    // Get button position for dropdown placement
-                    var $button = $(this);
-                    var buttonRect = this.getBoundingClientRect();
-                    var buttonWidth = buttonRect.width;
-                    var buttonHeight = buttonRect.height;
-                    var dropdownWidth = 200;
-
-                    // Remove existing custom dropdown if any
-                    $('.custom-colvis-dropdown').remove();
-
-                    // Calculate dropdown position
-                    var dropdownLeft = buttonRect.right - dropdownWidth;
-                    var dropdownTop = buttonRect.bottom + 5;
-                    var estimatedDropdownHeight = 300;
-
-                    if (dropdownLeft < 10) {
-                        dropdownLeft = buttonRect.left;
-                    }
-                    if (dropdownLeft < 10) {
-                        dropdownLeft = 10;
-                    }
-                    if (dropdownLeft + dropdownWidth > window.innerWidth - 10) {
-                        dropdownLeft = window.innerWidth - dropdownWidth - 10;
-                    }
-                    if (dropdownTop + estimatedDropdownHeight > window.innerHeight - 10) {
-                        dropdownTop = buttonRect.top - estimatedDropdownHeight - 5;
-                        if (dropdownTop < 10) {
-                            dropdownTop = 10;
-                        }
-                    }
-                    if (dropdownTop < 10) {
-                        dropdownTop = 10;
-                    }
-
-                    var $dropdown = $('<div class="custom-colvis-dropdown dropdown-menu show position-fixed" style="top: ' + dropdownTop + 'px; left: ' + dropdownLeft + 'px; min-width: ' + dropdownWidth + 'px; max-width: ' + dropdownWidth + 'px; z-index: 1050;"></div>');
-
-                    table.columns().every(function() {
-                        var column = this;
-                        var columnIndex = column.index();
-                        var columnHeader = $(column.header());
-                        var columnTitle = columnHeader.text().trim();
-                        var isVisible = column.visible();
-                        var isNoColvis = columnHeader.hasClass('no-colvis') || columnHeader.closest('th').hasClass('no-colvis');
-                        var isCheckboxColumn = columnHeader.hasClass('select-checkbox') || columnHeader.closest('th').hasClass('select-checkbox');
-
-                        if (isNoColvis || isCheckboxColumn) return;
-
-                        var $item = $('<div class="dropdown-item-text d-flex align-items-center justify-content-between p-2" style="cursor: pointer;"></div>');
-                        var $label = $('<label class="mb-0 flex-fill" style="cursor: pointer;">' + columnTitle + '</label>');
-                        var $checkbox = $('<input type="checkbox" class="form-check-input ms-2" ' + (isVisible ? 'checked' : '') + ' data-column="' + columnIndex + '" style="cursor: pointer; flex-shrink: 0;"></input>');
-
-                        $item.append($label).append($checkbox);
-                        $dropdown.append($item);
-
-                        $checkbox.on('change', function() {
-                            var isChecked = $(this).is(':checked');
-                            column.visible(isChecked, false);
-                            table.columns.adjust().draw(false);
-                            if (typeof saveColumnVisibility === 'function') {
-                                saveColumnVisibility();
-                            }
-                        });
-
-                        $item.on('click', function(e) {
-                            if (e.target.type !== 'checkbox') {
-                                $checkbox.prop('checked', !$checkbox.prop('checked')).trigger('change');
-                            }
-                        });
-                    });
-
-                    $('body').append($dropdown);
-
-                    $(document).on('click.customColvis', function(e) {
-                        if (!$dropdown.is(e.target) && $dropdown.has(e.target).length === 0 && !$button.is(e.target)) {
-                            $dropdown.remove();
-                            $(document).off('click.customColvis');
-                        }
-                    });
-                });
-            @endif
-
-            // Individual delete functionality
-            $(tableId + ' tbody').on('click', '.delete-row', function(e) {
-                e.preventDefault();
-                const id = $(this).data('id');
-                const name = $(this).data('name') || 'this item';
-                const deleteUrl = $(this).data('url') || '{{ $deleteRoute ?? '#' }}'.replace(':id', id);
-
-                Swal.fire({
-                    title: 'Are you sure?',
-                    text: `You are about to delete ${name}. This action cannot be undone!`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#d33',
-                    cancelButtonColor: '#3085d6',
-                    confirmButtonText: 'Yes, delete it!',
-                    cancelButtonText: 'Cancel'
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        $.ajax({
-                            url: deleteUrl,
-                            type: 'POST',
-                            data: {
-                                _token: '{{ csrf_token() }}',
-                                _method: 'DELETE'
-                            },
-                            success: function(response) {
-                                Swal.fire({
-                                    icon: 'success',
-                                    title: 'Deleted!',
-                                    text: response.message ||
-                                        'Item has been deleted.',
-                                    timer: 2000,
-                                    showConfirmButton: false
-                                });
-                                table.row($(e.target).closest('tr')).remove().draw();
-                            },
-                            error: function(xhr) {
-                                Swal.fire({
-                                    icon: 'error',
-                                    title: 'Error!',
-                                    text: xhr.responseJSON?.message ||
-                                        'Failed to delete item. Please try again.',
-                                    confirmButtonText: 'OK'
-                                });
-                            }
-                        });
-                    }
-                });
-            });
+            // CRITICAL: Call the function immediately to load the table
+            // But skip server-side tables in hidden tab panes (they'll initialize when tab is shown)
+            const $table = $(tableId);
+            const $tabPane = $table.closest('.tab-pane');
+            // Use the isServerSide variable from outer scope
+            const inHiddenTab = $tabPane.length > 0 && !$tabPane.hasClass('show');
             
-            // Store table reference globally for tab visibility checks
-            window['datatable_{{ $id }}'] = table;
-            window['table_{{ $id }}'] = table;
+            if (isServerSide && inHiddenTab) {
+                console.log('Skipping initial table load - server-side table in hidden tab, will initialize when tab is shown');
+            } else {
+                initializeTable();
             }
-            
-            // Initialize Select2 for filter-select2 elements
+
             function initializeSelect2Filters() {
                 $('.filter-select2').each(function() {
                     if (!$(this).hasClass('select2-hidden-accessible')) {
-                        $(this).select2({
-                            placeholder: $(this).find('option:first').text(),
-                            allowClear: true,
-                            width: '100%'
-                        });
+                        $(this).select2({ placeholder: $(this).find('option:first').text(), allowClear: true, width: '100%' });
                     }
                 });
             }
-            
-            // Initialize table only if visible, otherwise wait
-            // BUT: Don't initialize if we're skipping (check again in case flag was set)
+
             if (!skipInit_{{ $id }}) {
-                // Re-check skip flag one more time before initializing
-                var $finalTableCheck = $(tableId);
-                var $finalWrapperCheck = $('#datatable-wrapper-{{ $id }}');
-                var finalShouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
-                    $finalTableCheck.attr('data-server-side') === 'true' ||
-                    $finalTableCheck.closest('[data-server-side="true"]').length > 0 ||
-                    ($finalWrapperCheck.length > 0 && $finalWrapperCheck.attr('data-server-side') === 'true');
-                
-                if (!finalShouldSkip) {
-                    initializeTable();
-                } else {
-                    console.log('Skipping initializeTable() call for ' + tableId + ' (server-side processing - final check)');
+                setTimeout(initializeSelect2Filters, 500);
+            }
+
+            // Fallback initialization - but skip server-side tables in hidden tabs
+            setTimeout(function() {
+                if (!skipInit_{{ $id }} && !$.fn.DataTable.isDataTable(tableId)) {
+                    const $table = $(tableId);
+                    const $tabPane = $table.closest('.tab-pane');
+                    // Use the isServerSide variable from outer scope
+                    const inHiddenTab = $tabPane.length > 0 && !$tabPane.hasClass('show');
+                    
+                    if (isServerSide && inHiddenTab) {
+                        console.log('Skipping fallback initialization - server-side table in hidden tab');
+                    } else {
+                        initializeTable();
+                    }
                 }
-            } else {
-                console.log('Skipping initializeTable() call for ' + tableId + ' (server-side processing)');
-            }
-            
-            // Initialize Select2 after table is ready (only if not skipping)
-            if (!skipInit_{{ $id }}) {
-                setTimeout(function() {
-                    initializeSelect2Filters();
-                }, 500);
-            }
-            
-            // Also listen for tab visibility changes
+            }, 1000);
+
+            // Listen for Bootstrap tab events - try both Bootstrap 4 and 5 event names
             $(document).on('shown.bs.tab', function(e) {
-                // CRITICAL: Check if this table should be skipped BEFORE doing anything
-                var $tableCheck = $(tableId);
-                var $wrapperCheck = $('#datatable-wrapper-{{ $id }}');
-                var shouldSkip = window['skipAutoInit_{{ $id }}'] === true || 
-                    $tableCheck.attr('data-server-side') === 'true' ||
-                    $tableCheck.closest('[data-server-side="true"]').length > 0 ||
-                    ($wrapperCheck.length > 0 && $wrapperCheck.attr('data-server-side') === 'true');
+                console.log('Bootstrap tab event fired', e.target);
                 
-                if (shouldSkip) {
-                    console.log('Skipping tab-init for ' + tableId + ' (server-side processing)');
-                    return; // Exit immediately, don't initialize
-                }
+                // Get the target tab pane
+                const targetSelector = $(e.target).attr('data-bs-target') || 
+                                     $(e.target).attr('data-target') || 
+                                     $(e.target).attr('href');
+                const $targetTab = $(targetSelector);
+                const $table = $(tableId);
+                const $tableTabPane = $table.closest('.tab-pane');
                 
-                // Wait a bit for tab transition to complete
-                setTimeout(function() {
-                    try {
-                        // Force initialization when tab is shown, regardless of visibility check
-                        // The visibility check might be too strict during tab transitions
-                        if (!$.fn.DataTable.isDataTable(tableId)) {
-                            // Table not initialized yet, initialize it
-                            // Use a small delay to ensure tab transition is complete
-                            setTimeout(function() {
-                                // Double-check skip flag before initializing
-                                var $tableCheck2 = $(tableId);
-                                var $wrapperCheck2 = $('#datatable-wrapper-{{ $id }}');
-                                var shouldSkip2 = window['skipAutoInit_{{ $id }}'] === true || 
-                                    $tableCheck2.attr('data-server-side') === 'true' ||
-                                    $tableCheck2.closest('[data-server-side="true"]').length > 0 ||
-                                    ($wrapperCheck2.length > 0 && $wrapperCheck2.attr('data-server-side') === 'true');
-                                
-                                if (!shouldSkip2 && !$.fn.DataTable.isDataTable(tableId)) {
-                                    initializeDataTable();
-                                }
-                            }, 150);
+                console.log('Target tab:', targetSelector, 'Table tab pane:', $tableTabPane.attr('id'));
+                
+                // Check if the shown tab contains our table
+                const tabMatches = $targetTab.length && $tableTabPane.length && 
+                                 ($targetTab.is($tableTabPane) || $targetTab.attr('id') === $tableTabPane.attr('id'));
+                
+                console.log('Tab matches:', tabMatches, 'Table already initialized:', $.fn.DataTable.isDataTable(tableId));
+                
+                if (tabMatches) {
+                    setTimeout(function() {
+                        const isDataTable = $.fn.DataTable.isDataTable(tableId);
+                        console.log('Tab matches, checking table state. Is DataTable:', isDataTable);
+                        
+                        if (!isDataTable) {
+                            console.log('Initializing DataTable from tab event - table not yet initialized');
+                            // Force initialization when tab is shown - this is the correct time for server-side tables
+                            initializeDataTable(true); // Pass true to force initialization even if tab was hidden
                         } else {
-                            // Table already initialized, just adjust columns and redraw
+                            // Table exists, but for server-side tables, verify it has loaded data
                             try {
-                                const existingTable = $(tableId).DataTable();
-                                existingTable.columns.adjust().draw(false);
-                            } catch (err) {
-                                // If adjustment fails, try re-initializing
-                                var $tableCheck3 = $(tableId);
-                                var $wrapperCheck3 = $('#datatable-wrapper-{{ $id }}');
-                                var shouldSkip3 = window['skipAutoInit_{{ $id }}'] === true || 
-                                    $tableCheck3.attr('data-server-side') === 'true' ||
-                                    $tableCheck3.closest('[data-server-side="true"]').length > 0 ||
-                                    ($wrapperCheck3.length > 0 && $wrapperCheck3.attr('data-server-side') === 'true');
+                                const table = $(tableId).DataTable();
+                                const info = table.page.info();
+                                console.log('Table exists. Records:', info.recordsTotal, 'Displayed:', info.recordsDisplay);
                                 
-                                if (!shouldSkip3) {
+                                // For server-side tables, if no data has been loaded, re-initialize
+                                if (isServerSide && info.recordsTotal === 0 && info.recordsDisplay === 0) {
+                                    console.log('Server-side table has no data, destroying and re-initializing');
+                                    table.destroy();
+                                    initializeDataTable(true); // Force re-initialization
+                                } else {
+                                    console.log('Table already initialized with data, adjusting columns');
+                                    table.columns.adjust().draw(false);
+                                }
+                            } catch (err) {
+                                console.error('Error accessing DataTable, re-initializing:', err);
+                                // If there's an error accessing the table, destroy and re-initialize
+                                try {
                                     if ($.fn.DataTable.isDataTable(tableId)) {
                                         $(tableId).DataTable().destroy();
                                     }
-                                    initializeDataTable();
-                                }
+                                } catch (e) {}
+                                initializeDataTable(true); // Force re-initialization
                             }
                         }
-                        // Initialize Select2 when tab is shown
                         initializeSelect2Filters();
-                    } catch(err) {
-                        // Ignore errors in tab shown handler
-                    }
-                        
-                        // CRITICAL FIX: Remove length menu IMMEDIATELY after tab is shown
-                        // DataTables creates it during initialization, so we must remove it here
-                        setTimeout(function() {
-                            const wrapperId = tableId.replace('#', '');
-                            // Remove ALL length menus except the custom bottom one - be very aggressive
-                            $('#' + wrapperId + '_wrapper .dataTables_length:not(.dataTables_length_bottom)').remove();
-                            $('.dataTables_length:not(.dataTables_length_bottom)').filter(function() {
-                                return $(this).closest('#' + wrapperId + '_wrapper').length > 0;
-                            }).remove();
-                            // Also check parent and all ancestors
-                            $('#' + wrapperId + '_wrapper').parent().find('.dataTables_length:not(.dataTables_length_bottom)').remove();
-                            $('#' + wrapperId + '_wrapper').closest('.tab-pane').find('.dataTables_length:not(.dataTables_length_bottom)').remove();
-                        }, 300);
-                }, 100);
+                    }, 150);
+                } else {
+                    console.log('Tab does not match, skipping initialization');
+                }
             });
-        });
+            
+            // Also listen directly on the tab pane and button as fallbacks
+            setTimeout(function() {
+                const $table = $(tableId);
+                const $tableTabPane = $table.closest('.tab-pane');
+                if ($tableTabPane.length) {
+                    const tabPaneId = $tableTabPane.attr('id');
+                    if (tabPaneId) {
+                        // Listen on the tab pane itself
+                        $tableTabPane.on('shown.bs.tab', function(e) {
+                            console.log('Tab pane event fired for', tabPaneId);
+                            setTimeout(function() {
+                                if (!$.fn.DataTable.isDataTable(tableId)) {
+                                    console.log('Initializing DataTable from tab pane event');
+                                    initializeDataTable(true); // Force initialization from tab event
+                                }
+                            }, 150);
+                        });
+                        
+                        // Also listen for click on the tab button as a backup
+                        const $tabButton = $('[data-bs-target="#' + tabPaneId + '"], [href="#' + tabPaneId + '"]');
+                        if ($tabButton.length) {
+                            console.log('Found tab button for table, attaching click listener');
+                            $tabButton.on('click', function(e) {
+                                console.log('Tab button clicked for', tabPaneId);
+                                // Wait for Bootstrap to show the tab, then initialize
+                                setTimeout(function() {
+                                    if ($tableTabPane.hasClass('show') && !$.fn.DataTable.isDataTable(tableId)) {
+                                        console.log('Initializing DataTable from tab button click');
+                                        initializeDataTable(true); // Force initialization from tab button click
+                                    }
+                                }, 300);
+                            });
+                        }
+                    }
+                }
+            }, 500);
+        }
     </script>
 @endpush
