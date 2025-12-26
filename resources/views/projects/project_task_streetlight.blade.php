@@ -273,7 +273,7 @@
                     let filterFunctions = [];
 
                     // Intercept applyFilters button click
-                    $(document).off('click', '#applyFilters').on('click', '#applyFilters', function(e) {
+                    $(document).off('click', '#targetsTable_applyFilters').on('click', '#targetsTable_applyFilters', function(e) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
 
@@ -286,17 +286,22 @@
                         });
                         filterFunctions = [];
 
+                        // Get filter container for this datatable
+                        const filterContainer = $('#datatable-wrapper-targetsTable');
+                        
                         // Get filter values (Select2 compatible)
-                        const statusFilter = $('.filter-select[data-filter="filter_status"]').val();
-                        const panchayatSelect = $('.filter-select[data-filter="filter_panchayat"]');
+                        const statusSelect = filterContainer.find('.filter-select[data-filter="filter_status"]');
+                        const statusFilter = statusSelect.hasClass('select2-hidden-accessible') ?
+                            statusSelect.select2('val') : statusSelect.val();
+                        const panchayatSelect = filterContainer.find('.filter-select[data-filter="filter_panchayat"]');
                         const panchayatFilter = panchayatSelect.hasClass(
                                 'select2-hidden-accessible') ?
                             panchayatSelect.select2('val') : panchayatSelect.val();
-                        const engineerSelect = $('.filter-select[data-filter="filter_engineer"]');
+                        const engineerSelect = filterContainer.find('.filter-select[data-filter="filter_engineer"]');
                         const engineerFilter = engineerSelect.hasClass(
                             'select2-hidden-accessible') ?
                             engineerSelect.select2('val') : engineerSelect.val();
-                        const vendorSelect = $('.filter-select[data-filter="filter_vendor"]');
+                        const vendorSelect = filterContainer.find('.filter-select[data-filter="filter_vendor"]');
                         const vendorFilter = vendorSelect.hasClass('select2-hidden-accessible') ?
                             vendorSelect.select2('val') : vendorSelect.val();
 
@@ -350,9 +355,12 @@
                     });
 
                     // Clear filters
-                    $(document).off('click', '#clearFilters').on('click', '#clearFilters', function(e) {
+                    $(document).off('click', '#targetsTable_clearFilters').on('click', '#targetsTable_clearFilters', function(e) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
+
+                        // Get filter container for this datatable
+                        const filterContainer = $('#datatable-wrapper-targetsTable');
 
                         // Remove all filter functions
                         filterFunctions.forEach(function(filterFn) {
@@ -364,9 +372,9 @@
                         filterFunctions = [];
 
                         // Clear filter inputs and redraw
-                        $('.filter-select, .filter-date, .filter-text').val('');
+                        filterContainer.find('.filter-select, .filter-date, .filter-text').val('');
                         // Clear Select2 dropdowns
-                        $('.filter-select2').each(function() {
+                        filterContainer.find('.filter-select2').each(function() {
                             if ($(this).hasClass('select2-hidden-accessible')) {
                                 $(this).val(null).trigger('change');
                             }
@@ -380,15 +388,31 @@
             setTimeout(function() {
                 const bulkActionsDiv = $('#targetsTable_bulkActions');
                 if (bulkActionsDiv.length && $('#bulkReassignBtn').length === 0) {
+                    const deleteBtn = $('#targetsTable_bulkDeleteBtn');
+                    const deleteBtnParent = deleteBtn.parent();
+                    
+                    // Check if buttons wrapper already exists, if not create it
+                    let buttonsWrapper = deleteBtnParent.find('.bulk-actions-buttons');
+                    if (buttonsWrapper.length === 0) {
+                        // Create wrapper div for vertically stacked buttons
+                        buttonsWrapper = $('<div>').addClass('d-flex flex-column gap-2 bulk-actions-buttons');
+                        // Move delete button into wrapper
+                        deleteBtn.detach().appendTo(buttonsWrapper);
+                        // Append wrapper to parent
+                        deleteBtnParent.append(buttonsWrapper);
+                    }
+                    
+                    // Create reassign button
                     const reassignBtn = $('<button>')
                         .attr('type', 'button')
                         .attr('id', 'bulkReassignBtn')
                         .addClass(
-                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto ms-2'
+                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto'
                         )
                         .html('<i class="mdi mdi-account-switch"></i><span>Reassign Selected</span>');
-
-                    $('#targetsTable_bulkDeleteBtn').parent().append(reassignBtn);
+                    
+                    // Append reassign button to wrapper (below delete button)
+                    buttonsWrapper.append(reassignBtn);
 
                     $('#bulkReassignBtn').on('click', function() {
                         const table = $('#targetsTable').DataTable();
@@ -490,18 +514,18 @@
             <div class="text-left">
               <div class="mb-3">
                 <label for="reassignEngineer" class="form-label">Select Engineer (Optional)</label>
-                <select id="reassignEngineer" class="form-select">
+                <select id="reassignEngineer" class="form-select select2-reassign-engineer">
                   <option value="">No Change</option>
-                  @foreach ($assignedEngineers as $engineer)
+                  @foreach ($reassignEngineers as $engineer)
                     <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
                   @endforeach
                 </select>
               </div>
               <div class="mb-3">
                 <label for="reassignVendor" class="form-label">Select Vendor (Optional)</label>
-                <select id="reassignVendor" class="form-select">
+                <select id="reassignVendor" class="form-select select2-reassign-vendor">
                   <option value="">No Change</option>
-                  @foreach ($assignedVendors as $vendor)
+                  @foreach ($reassignVendors as $vendor)
                     <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
                   @endforeach
                 </select>
@@ -511,9 +535,37 @@
                     showCancelButton: true,
                     confirmButtonText: 'Reassign',
                     cancelButtonText: 'Cancel',
+                    didOpen: () => {
+                        // Small delay to ensure modal DOM is fully rendered
+                        setTimeout(() => {
+                            // Initialize Select2 for engineer dropdown
+                            $('#reassignEngineer').select2({
+                                placeholder: 'Search engineer...',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: $('.swal2-container'),
+                                minimumResultsForSearch: 0, // Always show search box
+                            });
+
+                            // Initialize Select2 for vendor dropdown
+                            $('#reassignVendor').select2({
+                                placeholder: 'Search vendor...',
+                                allowClear: true,
+                                width: '100%',
+                                dropdownParent: $('.swal2-container'),
+                                minimumResultsForSearch: 0, // Always show search box
+                            });
+                        }, 100);
+                    },
                     preConfirm: () => {
-                        const engineerId = document.getElementById('reassignEngineer').value;
-                        const vendorId = document.getElementById('reassignVendor').value;
+                        const engineerSelect = $('#reassignEngineer');
+                        const vendorSelect = $('#reassignVendor');
+                        const engineerId = engineerSelect.hasClass('select2-hidden-accessible') 
+                            ? engineerSelect.select2('val') 
+                            : engineerSelect.val();
+                        const vendorId = vendorSelect.hasClass('select2-hidden-accessible') 
+                            ? vendorSelect.select2('val') 
+                            : vendorSelect.val();
 
                         if (!engineerId && !vendorId) {
                             Swal.showValidationMessage('Please select at least one field to reassign');

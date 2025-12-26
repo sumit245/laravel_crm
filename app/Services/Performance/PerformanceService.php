@@ -78,7 +78,7 @@ class PerformanceService implements PerformanceServiceInterface
     private function getEngineerHierarchy(int $engineerId, int $projectId, bool $isStreetlight, array $filters): array
     {
         // Get vendors either by site_engineer_id relationship OR those who have tasks under this engineer
-        $vendors = User::where('role', 3)
+        $vendors = User::where('role', \App\Enums\UserRole::VENDOR->value)
             ->where(function($query) use ($engineerId, $projectId, $isStreetlight) {
                 $query->where(function($q) use ($engineerId, $projectId) {
                     $q->where('site_engineer_id', $engineerId)
@@ -126,7 +126,7 @@ class PerformanceService implements PerformanceServiceInterface
             $metrics = $this->calculateUserMetrics($engineer->id, $projectId, $isStreetlight, $filters, 1);
             
             // Get vendors under this engineer
-            $vendors = User::where('role', 3)
+            $vendors = User::where('role', \App\Enums\UserRole::VENDOR->value)
                 ->where(function($query) use ($engineer, $projectId, $isStreetlight) {
                     $query->where(function($q) use ($engineer, $projectId) {
                         $q->where('site_engineer_id', $engineer->id)
@@ -159,7 +159,7 @@ class PerformanceService implements PerformanceServiceInterface
     private function getVendorsByManager(int $managerId, int $projectId, bool $isStreetlight, array $filters): array
     {
         // Get vendors either through site_engineer relationship OR those who have tasks under this manager
-        $vendors = User::where('role', 3)
+        $vendors = User::where('role', \App\Enums\UserRole::VENDOR->value)
             ->where(function($query) use ($managerId, $projectId, $isStreetlight) {
                 $query->where(function($q) use ($managerId, $projectId) {
                     $q->whereHas('siteEngineer', function ($se) use ($managerId) {
@@ -228,7 +228,7 @@ class PerformanceService implements PerformanceServiceInterface
 
         // Surveyed and installed poles
         // For vendor role, use pole.vendor_id instead of task_id for accurate tracking after reassignments
-        if ($userRole == 3) { // Vendor role
+        if ($userRole == \App\Enums\UserRole::VENDOR->value) { // Vendor role
             $surveyedPoles = Pole::where('vendor_id', $userId)
                 ->whereIn('task_id', $taskIds)
                 ->where('isSurveyDone', 1)

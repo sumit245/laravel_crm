@@ -10,19 +10,24 @@ use App\Models\Streetlight;
 use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Dashboard\DashboardAnalyticsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
+    protected DashboardAnalyticsService $analyticsService;
+
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct()
+    public function __construct(DashboardAnalyticsService $analyticsService)
     {
         $this->middleware('auth');
+        $this->analyticsService = $analyticsService;
     }
 
     /**
@@ -36,35 +41,101 @@ class HomeController extends Controller
         $user = auth()->user();
         $selectedProjectId = $this->getSelectedProject($request, $user);
 
-        if (!$selectedProjectId) {
-            return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project.');
+        // Prepare filters
+        $filters = [
+            'project_id' => $selectedProjectId,
+            'date_filter' => $request->query('date_filter', 'this_month'),
+            'start_date' => $request->query('start_date'),
+            'end_date' => $request->query('end_date'),
+        ];
+
+        // Get available projects
+        $projects = $this->getAvailableProjects($user);
+
+        // If no project selected but projects available, use first project as default (but allow "All Projects")
+        if (!$selectedProjectId && $projects->isNotEmpty() && $user->role !== UserRole::ADMIN->value) {
+            // Non-admin users must have a project selected
+            return redirect()->route('dashboard', ['project_id' => $projects->first()->id]);
         }
 
-        $project = Project::findOrFail($selectedProjectId);
-        $dateRange = $this->getDateRange($request->query('date_filter', 'today'));
-        $isStreetLightProject = $project->project_type == 1;
-        $taskModel = $isStreetLightProject ? StreetlightTask::class : Task::class;
-        $siteModel = $isStreetLightProject ? Streetlight::class : Site::class;
-        $siteStats = $this->getSiteStatistics($siteModel, $taskModel, $selectedProjectId, $dateRange, $isStreetLightProject);
-        $poleStats = $isStreetLightProject ?
-            $this->getPoleStatistics($selectedProjectId) :
-            ['totalSurveyedPoles' => null, 'totalInstalledPoles' => null];
-        $rolePerformances = $this->calculateRolePerformances(
-            $user,
-            $selectedProjectId,
-            $taskModel,
-            $dateRange,
-            $isStreetLightProject
-        );
-        $userCounts = $this->getUserCounts($user, $selectedProjectId);
-        $statistics = $this->prepareStatistics($siteStats, $userCounts, $isStreetLightProject);
+        // Get all analytics data with error handling
+        try {
+            $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
+        } catch (\Exception $e) {
+            \Log::error('Dashboard Performance Analytics Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->id,
+                'filters' => $filters
+            ]);
+            $performanceAnalytics = [
+                'district_performance' => [],
+                'top_performers' => ['engineers' => [], 'vendors' => []],
+                'unified_metrics' => [
+                    'streetlight' => ['total_poles' => 0, 'surveyed_poles' => 0, 'installed_poles' => 0, 'progress' => 0],
+                    'rooftop' => ['total_sites' => 0, 'completed_sites' => 0, 'in_progress_sites' => 0, 'progress' => 0],
+                    'combined' => ['total' => 0, 'completed' => 0, 'progress' => 0]
+                ],
+                'pole_speed_metrics' => [],
+                'leaderboard' => [],
+            ];
+        }
 
-        return view('dashboard', array_merge(
-            compact('rolePerformances', 'statistics', 'isStreetLightProject', 'project'),
-            $siteStats,
-            $poleStats,
-            ['projects' => $this->getAvailableProjects($user)]
-        ));
+        try {
+            $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
+        } catch (\Exception $e) {
+            \Log::error('Dashboard Meeting Analytics Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->id,
+                'filters' => $filters
+            ]);
+            $meetingAnalytics = [
+                'overview' => ['total_meetings' => 0, 'active_discussions' => 0, 'discussions_this_month' => 0],
+                'meeting_types' => [],
+                'recent_meetings' => [],
+                'discussion_points' => ['total' => 0, 'resolved' => 0, 'pending' => 0],
+                'top_topics' => [],
+            ];
+        }
+
+        try {
+            $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
+        } catch (\Exception $e) {
+            \Log::error('Dashboard TADA Analytics Error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->id,
+                'filters' => $filters
+            ]);
+            $tadaAnalytics = [
+                'financial_overview' => [
+                    'total_amount' => 0,
+                    'disbursed_this_month' => 0,
+                    'pending_amount' => 0,
+                    'distance_travelled' => 0,
+                    'avg_per_travel' => 0,
+                    'avg_per_km' => 0,
+                    'highest_traveller' => null,
+                ],
+                'per_project_disbursals' => [],
+                'top_travellers' => [],
+                'travel_breakdown' => ['by_vehicle' => [], 'by_status' => []],
+            ];
+        }
+
+        // Legacy data for backward compatibility (if needed)
+        $project = $selectedProjectId ? Project::find($selectedProjectId) : null;
+        $isStreetLightProject = $project ? $project->project_type == 1 : false;
+
+        return view('dashboard', [
+            'user' => $user,
+            'project' => $project,
+            'projects' => $projects,
+            'selected_project_id' => $selectedProjectId,
+            'filters' => $filters,
+            'performance_analytics' => $performanceAnalytics,
+            'meeting_analytics' => $meetingAnalytics,
+            'tada_analytics' => $tadaAnalytics,
+            'is_streetlight_project' => $isStreetLightProject,
+        ]);
     }
 
     private function calculateRolePerformances($user, $projectId, $taskModel, $dateRange, $isStreetLightProject)
@@ -343,9 +414,255 @@ class HomeController extends Controller
 
 
 
-    public function exportToExcel()
+    /**
+     * Export dashboard data to Excel
+     */
+    public function exportToExcel(Request $request)
     {
-        // TODO: Implement actual dashboard data export
-        return redirect()->back()->with('error', 'Export functionality not yet implemented.');
+        try {
+            $user = auth()->user();
+            $filters = [
+                'project_id' => $request->query('project_id'),
+                'date_filter' => $request->query('date_filter', 'this_month'),
+                'start_date' => $request->query('start_date'),
+                'end_date' => $request->query('end_date'),
+            ];
+
+            // Get all analytics data
+            $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
+            $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
+            $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
+
+            // Generate filename
+            $project = $filters['project_id'] ? Project::find($filters['project_id']) : null;
+            $projectName = $project ? str_replace(' ', '_', $project->project_name) : 'All';
+            $dateFilter = $filters['date_filter'];
+            $filename = "Dashboard_Export_{$projectName}_{$dateFilter}_" . now()->format('Y-m-d') . ".xlsx";
+
+            // Prepare data for Excel export
+            $sheets = [];
+
+            // Performance Analytics Sheet
+            if (!empty($performanceAnalytics['district_performance'])) {
+                $performanceData = [];
+                foreach ($performanceAnalytics['district_performance'] as $pm) {
+                    $performanceData[] = [
+                        'Project Manager' => $pm['pm_name'],
+                        'Primary District' => $pm['primary_district'] ?? 'N/A',
+                        'Total Districts' => $pm['district_count'],
+                        'Total Poles' => $pm['total_poles'],
+                        'Surveyed Poles' => $pm['surveyed_poles'],
+                        'Surveyed Progress (%)' => number_format($pm['surveyed_progress'], 2),
+                        'Installed Poles' => $pm['installed_poles'],
+                        'Installed Progress (%)' => number_format($pm['installed_progress'], 2),
+                        'Overall Progress (%)' => number_format($pm['overall_progress'], 2),
+                    ];
+                }
+                $sheets['Performance by PM'] = $performanceData;
+            }
+
+            // Top Performers Sheet
+            if (!empty($performanceAnalytics['top_performers'])) {
+                $topPerformersData = [];
+                
+                // Engineers
+                if (!empty($performanceAnalytics['top_performers']['engineers'])) {
+                    foreach ($performanceAnalytics['top_performers']['engineers'] as $index => $engineer) {
+                        $topPerformersData[] = [
+                            'Rank' => $index + 1,
+                            'Type' => 'Engineer',
+                            'Name' => $engineer['name'],
+                            'Sites' => $engineer['sites'],
+                            'Poles' => $engineer['poles'],
+                            'Progress (%)' => number_format($engineer['progress'], 2),
+                        ];
+                    }
+                }
+                
+                // Vendors
+                if (!empty($performanceAnalytics['top_performers']['vendors'])) {
+                    foreach ($performanceAnalytics['top_performers']['vendors'] as $index => $vendor) {
+                        $topPerformersData[] = [
+                            'Rank' => $index + 1,
+                            'Type' => 'Vendor',
+                            'Name' => $vendor['name'],
+                            'Sites' => 0,
+                            'Poles' => $vendor['poles'],
+                            'Progress (%)' => number_format($vendor['progress'], 2),
+                        ];
+                    }
+                }
+                
+                if (!empty($topPerformersData)) {
+                    $sheets['Top Performers'] = $topPerformersData;
+                }
+            }
+
+            // Meeting Analytics Sheet
+            if (!empty($meetingAnalytics)) {
+                $meetingData = [];
+                
+                // Overview
+                if (!empty($meetingAnalytics['overview'])) {
+                    $meetingData[] = [
+                        'Metric' => 'Total Meetings',
+                        'Value' => $meetingAnalytics['overview']['total_meetings'] ?? 0,
+                    ];
+                    $meetingData[] = [
+                        'Metric' => 'Active Discussions',
+                        'Value' => $meetingAnalytics['overview']['active_discussions'] ?? 0,
+                    ];
+                    $meetingData[] = [
+                        'Metric' => 'Discussions This Month',
+                        'Value' => $meetingAnalytics['overview']['discussions_this_month'] ?? 0,
+                    ];
+                }
+                
+                // Discussion Points
+                if (!empty($meetingAnalytics['discussion_points'])) {
+                    $meetingData[] = [
+                        'Metric' => 'Total Discussion Points',
+                        'Value' => $meetingAnalytics['discussion_points']['total'] ?? 0,
+                    ];
+                    $meetingData[] = [
+                        'Metric' => 'Resolved Points',
+                        'Value' => $meetingAnalytics['discussion_points']['resolved'] ?? 0,
+                    ];
+                    $meetingData[] = [
+                        'Metric' => 'Pending Points',
+                        'Value' => $meetingAnalytics['discussion_points']['pending'] ?? 0,
+                    ];
+                }
+                
+                if (!empty($meetingData)) {
+                    $sheets['Meeting Analytics'] = $meetingData;
+                }
+            }
+
+            // TA/DA Analytics Sheet
+            if (!empty($tadaAnalytics)) {
+                $tadaData = [];
+                
+                // Financial Overview
+                if (!empty($tadaAnalytics['financial_overview'])) {
+                    $fo = $tadaAnalytics['financial_overview'];
+                    $tadaData[] = [
+                        'Metric' => 'Total Amount (₹)',
+                        'Value' => number_format($fo['total_amount'] ?? 0, 2),
+                    ];
+                    $tadaData[] = [
+                        'Metric' => 'Disbursed This Month (₹)',
+                        'Value' => number_format($fo['disbursed_this_month'] ?? 0, 2),
+                    ];
+                    $tadaData[] = [
+                        'Metric' => 'Pending Approval (₹)',
+                        'Value' => number_format($fo['pending_amount'] ?? 0, 2),
+                    ];
+                    $tadaData[] = [
+                        'Metric' => 'Distance Travelled (km)',
+                        'Value' => number_format($fo['distance_travelled'] ?? 0, 0),
+                    ];
+                    $tadaData[] = [
+                        'Metric' => 'Average per Travel (₹)',
+                        'Value' => number_format($fo['avg_per_travel'] ?? 0, 2),
+                    ];
+                    $tadaData[] = [
+                        'Metric' => 'Average per km (₹)',
+                        'Value' => number_format($fo['avg_per_km'] ?? 0, 2),
+                    ];
+                }
+                
+                // Top Travellers
+                if (!empty($tadaAnalytics['top_travellers'])) {
+                    $travellersData = [];
+                    foreach ($tadaAnalytics['top_travellers'] as $index => $traveller) {
+                        $travellersData[] = [
+                            'Rank' => $index + 1,
+                            'Staff Name' => $traveller['name'],
+                            'Travels' => $traveller['travels'],
+                            'Distance (km)' => number_format($traveller['distance'], 0),
+                            'Amount (₹)' => number_format($traveller['amount'], 2),
+                        ];
+                    }
+                    if (!empty($travellersData)) {
+                        $sheets['Top Travellers'] = $travellersData;
+                    }
+                }
+                
+                if (!empty($tadaData)) {
+                    $sheets['TA/DA Financial'] = $tadaData;
+                }
+            }
+
+            // Filter out empty sheets and ensure data is properly formatted
+            $validSheets = [];
+            foreach ($sheets as $sheetName => $sheetData) {
+                if (!empty($sheetData) && is_array($sheetData)) {
+                    // Ensure all rows are arrays
+                    $validData = [];
+                    foreach ($sheetData as $row) {
+                        if (is_array($row) || is_object($row)) {
+                            $validData[] = (array) $row;
+                        }
+                    }
+                    if (!empty($validData)) {
+                        $validSheets[$sheetName] = $validData;
+                    }
+                }
+            }
+
+            if (empty($validSheets)) {
+                return response()->json(['message' => 'No data available to export'], 400);
+            }
+
+            return \App\Helpers\ExcelHelper::exportMultipleSheets($validSheets, $filename);
+            
+        } catch (\Exception $e) {
+            Log::error('Dashboard export error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            return response()->json([
+                'error' => 'Error exporting dashboard data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * AJAX endpoint for filtering dashboard data
+     */
+    public function filterData(Request $request)
+    {
+        try {
+            $user = auth()->user();
+            $filters = [
+                'project_id' => $request->input('project_id') ? (int)$request->input('project_id') : null,
+                'date_filter' => $request->input('date_filter', 'this_month'),
+                'start_date' => $request->input('start_date'),
+                'end_date' => $request->input('end_date'),
+            ];
+
+            $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
+            $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
+            $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
+
+            return response()->json([
+                'success' => true,
+                'performance' => $performanceAnalytics,
+                'meetings' => $meetingAnalytics,
+                'tada' => $tadaAnalytics,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Dashboard filter error: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => 'Error loading dashboard data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

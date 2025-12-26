@@ -40,6 +40,11 @@ class Project extends Model
         return $this->hasMany(Task::class);
     }
 
+    public function streetlightTasks()
+    {
+        return $this->hasMany(StreetlightTask::class);
+    }
+
     public function stores()
     {
         return $this->hasMany(Stores::class);

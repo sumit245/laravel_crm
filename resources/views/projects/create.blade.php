@@ -4,29 +4,69 @@
   <div class="content-wrapper p-2">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">Add Projects</h4>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Add Projects</h4>
+          <a href="{{ route('projects.index') }}" class="btn btn-light">
+            <i class="mdi mdi-arrow-left me-2"></i>Back to Projects
+          </a>
+        </div>
 
         <!-- Display validation errors -->
         @if ($errors->any())
-          <div class="alert alert-danger">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
+          <script>
+            const validationErrors = {!! json_encode($errors->all()) !!};
+            Swal.fire({
+              title: 'Validation errors',
+              icon: 'error',
+              html: validationErrors.join('<br>'),
+              confirmButtonText: 'OK',
+              width: '600px'
+            });
+          </script>
         @endif
+
+        @if (session('success'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: {!! json_encode(session('success')) !!},
+              showConfirmButton: false,
+              timer: 4000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
+        @if (session('error'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: {!! json_encode(session('error')) !!},
+              showConfirmButton: false,
+              timer: 5000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
         <form class="forms-sample" action="{{ route("projects.store") }}" method="POST">
           @csrf
 
           <!-- Project Type -->
           <div class="form-group">
-            <label for="project_type" class="form-label">Select Project Type</label>
-            <select name="project_type" class="form-select" id="project_type" required>
+            <label for="project_type" class="form-label">Select Project Type <span class="text-danger">*</span></label>
+            <select name="project_type" class="form-select @error('project_type') is-invalid @enderror" id="project_type" required>
               <option value="" disabled selected>-- Select Project Type --</option>
-              <option value="0">Rooftop Installation</option>
-              <option value="1">Streetlight Installation</option>
+              <option value="0" {{ old('project_type') == '0' ? 'selected' : '' }}>Rooftop Installation</option>
+              <option value="1" {{ old('project_type') == '1' ? 'selected' : '' }}>Streetlight Installation</option>
             </select>
+            @error('project_type')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <!-- Agreement Fields (Only for Streetlight) -->
@@ -49,21 +89,27 @@
 
           <!-- Other Fields -->
           <div class="form-group">
-            <label for="project_name" class="form-label">Project Name</label>
-            <input type="text" name="project_name" class="form-control" id="project_name" placeholder="BREDA"
-              value="{{ old("project_name") }}">
+            <label for="project_name" class="form-label">Project Name <span class="text-danger">*</span></label>
+            <input type="text" name="project_name" class="form-control @error('project_name') is-invalid @enderror" id="project_name" placeholder="BREDA"
+              value="{{ old("project_name") }}" required>
+            @error('project_name')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <div class="form-group">
-            <label for="state" class="form-label">Select State</label>
-            <select name="project_in_state" class="form-select" id="state">
+            <label for="state" class="form-label">Select State <span class="text-danger">*</span></label>
+            <select name="project_in_state" class="form-select @error('project_in_state') is-invalid @enderror" id="state" required>
               <option value="" disabled selected>-- Select State --</option>
               @foreach ($states as $state)
-                <option value="{{ $state->id }}" {{ old("state") == $state->id ? "selected" : "" }}>
+                <option value="{{ $state->id }}" {{ old("project_in_state") == $state->id ? "selected" : "" }}>
                   {{ $state->name }}
                 </option>
               @endforeach
             </select>
+            @error('project_in_state')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <div class="form-group">
@@ -82,20 +128,29 @@
 
           <div class="form-group">
             <label for="work_order_number" class="form-label">Work Order Number</label>
-            <input type="text" name="work_order_number" class="form-control" id="work_order_number"
+            <input type="text" name="work_order_number" class="form-control @error('work_order_number') is-invalid @enderror" id="work_order_number"
               placeholder="PO202412-01" value="{{ old("work_order_number") }}">
+            @error('work_order_number')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <div class="form-group">
             <label for="rate" class="form-label">Rate (Excluding all taxes and duties in rupees)</label>
-            <input type="number" step="0.01" name="rate" class="form-control" id="rate" placeholder="50L"
+            <input type="number" step="0.01" name="rate" class="form-control @error('rate') is-invalid @enderror" id="rate" placeholder="50000"
               value="{{ old("rate") }}">
+            @error('rate')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <div class="form-group">
-            <label for="project_capacity" class="form-label">Project Capacity</label>
-            <input type="number" step="0.01" name="project_capacity" class="form-control" id="project_capacity"
-              placeholder="50kW" value="{{ old("project_capacity") }}">
+            <label for="project_capacity" class="form-label">Project Capacity (kW)</label>
+            <input type="number" step="0.01" name="project_capacity" class="form-control @error('project_capacity') is-invalid @enderror" id="project_capacity"
+              placeholder="50" value="{{ old("project_capacity") }}">
+            @error('project_capacity')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
           <div class="form-group">
@@ -108,9 +163,15 @@
             <label for="description" class="form-label">Scope of Project</label>
             <textarea class="form-control" id="description" name="description" style="height:100px;"
               placeholder="Briefly describe your project here">{{ old("description") }}</textarea>
+            @error('description')
+              <div class="invalid-feedback d-block">{{ $message }}</div>
+            @enderror
           </div>
 
-          <button type="submit" class="btn btn-primary">Create Project</button>
+          <div class="mt-4 d-flex justify-content-end">
+            <a href="{{ route('projects.index') }}" class="btn btn-light me-2">Cancel</a>
+            <button type="submit" class="btn btn-primary">Create Project</button>
+          </div>
         </form>
       </div>
     </div>
@@ -122,6 +183,13 @@
     .select2-container--default .select2-selection--single:read-only {
       padding: 0px;
       display: flex;
+    }
+    
+    /* Consistent card styling to match theme */
+    .content-wrapper .card {
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e3e3e3;
     }
   </style>
 @endpush

@@ -26,14 +26,23 @@ class Streetlight extends Model
         'ward_type',
     ];
 
-    // Relationship: A streetlight has multiple poles
+    /**
+     * Get all poles associated with this streetlight site
+     * Relationship is indirect: Streetlight → StreetlightTask → Pole
+     * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
+     */
     public function poles()
     {
-        return $this->hasMany(Pole::class);
+        // Indirect relationship - poles belong to tasks, tasks belong to this site
+        return $this->hasManyThrough(Pole::class, StreetlightTask::class, 'site_id', 'task_id');
     }
 
-
-    // Define the relationship
+    /**
+     * Get the project this streetlight site belongs to
+     * Relationship: Streetlight belongs to Project
+     * Foreign Key: streetlights.project_id → projects.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function project()
     {
         return $this->belongsTo(Project::class);
@@ -58,25 +67,14 @@ class Streetlight extends Model
             ->sum('number_of_installed_poles');
     }
 
-    // Relationship with engineer
-    public function engineer()
-    {
-        return $this->belongsTo(User::class, 'engineer_id');
-    }
-    // In the Streetlight model
+    /**
+     * Get all streetlight tasks for this site
+     * Relationship: Streetlight has many StreetlightTasks
+     * Foreign Key: streetlight_tasks.site_id → streetlights.id
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function streetlightTasks()
     {
         return $this->hasMany(StreetlightTask::class, 'site_id');
-    }
-
-    public function tasks()
-    {
-        return $this->hasMany(StreetlightTask::class, 'site_id');
-        // Modify the method which should contain only task per site id
-    }
-    public function task()
-    {
-        // Assumes your 'streetlight_poles' table has a 'task_id' foreign key.
-        return $this->belongsTo(StreetlightTask::class, 'task_id');
     }
 }

@@ -29,19 +29,45 @@ class InventroyStreetLightModel extends Model
         'eway_bill',        // E-way bill number
         'received_date',    // Date the items were received
     ];
+    /**
+     * Get the site this inventory belongs to (if applicable)
+     * Relationship: InventoryStreetlight belongs to Site
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function site()
     {
         return $this->belongsTo(Site::class);
     }
 
+    /**
+     * Get the project this inventory belongs to
+     * Relationship: InventoryStreetlight belongs to Project
+     * Foreign Key: inventory_streetlight.project_id → projects.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
+
+    /**
+     * Get the store this inventory belongs to
+     * Relationship: InventoryStreetlight belongs to Store
+     * Foreign Key: inventory_streetlight.store_id → stores.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function store()
     {
         return $this->belongsTo(Stores::class);
     }
+
+    /**
+     * Get the dispatch record for this inventory item
+     * Relationship: InventoryStreetlight has one InventoryDispatch
+     * Foreign Key: inventory_dispatch.serial_number → inventory_streetlight.serial_number
+     * Note: Relationship is via serial_number (not a foreign key constraint in database)
+     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     */
     public function dispatch(){
         return $this->hasOne(InventoryDispatch::class, 'serial_number', 'serial_number');     
     }

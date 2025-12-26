@@ -4,17 +4,55 @@
   <div class="content-wrapper p-2">
     <div class="card">
       <div class="card-body">
-        <h4 class="card-title">Add Staff</h4>
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <h4 class="card-title mb-0">Add Staff</h4>
+          <a href="{{ route('staff.index') }}" class="btn btn-light">
+            <i class="mdi mdi-arrow-left me-2"></i>Back to Staff
+          </a>
+        </div>
+
         <!-- Display validation errors -->
         @if ($errors->any())
-          <div class="alert alert-danger">
-            <ul>
-              @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
-              @endforeach
-            </ul>
-          </div>
+          <script>
+            const validationErrors = {!! json_encode($errors->all()) !!};
+            Swal.fire({
+              title: 'Validation errors',
+              icon: 'error',
+              html: validationErrors.join('<br>'),
+              confirmButtonText: 'OK',
+              width: '600px'
+            });
+          </script>
         @endif
+
+        @if (session('success'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'success',
+              title: {!! json_encode(session('success')) !!},
+              showConfirmButton: false,
+              timer: 4000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
+        @if (session('error'))
+          <script>
+            Swal.fire({
+              toast: true,
+              position: 'top-end',
+              icon: 'error',
+              title: {!! json_encode(session('error')) !!},
+              showConfirmButton: false,
+              timer: 5000,
+              timerProgressBar: true
+            });
+          </script>
+        @endif
+
         <form class="forms-sample" action="{{ route("staff.store") }}" method="POST">
           @csrf
           <div class="d-none mb-3 hidden"> <!-- Mark it as hidden if needed -->
@@ -55,21 +93,21 @@
         <div class="row">
           <div class="col-sm-6 col-md-6">
             <div class="form-group">
-              <label for="firstName" class="form-label">First Name</label>
-              <input type="text" name="firstName" class="form-control" id="firstName" placeholder="Ravi"
+              <label for="firstName" class="form-label">First Name <span class="text-danger">*</span></label>
+              <input type="text" name="firstName" class="form-control @error('firstName') is-invalid @enderror" id="firstName" placeholder="Ravi"
                 value="{{ old("firstName") }}" required>
               @error("firstName")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
           <div class="col-sm-6 col-md-6">
             <div class="form-group">
-              <label for="lastName" class="form-label">Last Name</label>
-              <input type="text" name="lastName" class="form-control" id="lastName" placeholder="Sharma"
+              <label for="lastName" class="form-label">Last Name <span class="text-danger">*</span></label>
+              <input type="text" name="lastName" class="form-control @error('lastName') is-invalid @enderror" id="lastName" placeholder="Sharma"
                 value="{{ old("lastName") }}" required>
               @error("lastName")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
@@ -78,21 +116,21 @@
         <div class="row">
           <div class="col-sm-6 col-md-6">
             <div class="form-group">
-              <label for="email" class="form-label">Email</label>
-              <input type="email" name="email" class="form-control" id="email"
+              <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
+              <input type="email" name="email" class="form-control @error('email') is-invalid @enderror" id="email"
                 placeholder="info@dashandots.tech" value="{{ old("email") }}" required>
               @error("email")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
           <div class="col-sm-6 col-md-6">
             <div class="form-group">
-              <label for="contactNo" class="form-label">Contact Number</label>
-              <input type="text" name="contactNo" class="form-control" id="contactNo" placeholder="9649240944"
+              <label for="contactNo" class="form-label">Contact Number <span class="text-danger">*</span></label>
+              <input type="text" name="contactNo" class="form-control @error('contactNo') is-invalid @enderror" id="contactNo" placeholder="9649240944"
                 value="{{ old("contactNo") }}" required>
               @error("contactNo")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
@@ -101,11 +139,11 @@
         <div class="row">
           <div class="col-sm-12 col-md-12">
             <div class="form-group">
-              <label for="address" class="form-label">Address</label>
-              <input type="text" name="address" class="form-control" id="address" placeholder="Enter staff address"
+              <label for="address" class="form-label">Address <span class="text-danger">*</span></label>
+              <input type="text" name="address" class="form-control @error('address') is-invalid @enderror" id="address" placeholder="Enter staff address"
                 value="{{ old("address") }}" required>
               @error("address")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
@@ -247,40 +285,54 @@
         <div class="row">
           <div class="col-sm-6 col-md-6">
             <div class="form-group position-relative">
-              <label for="password" class="form-label">Password</label>
-              <input type="password" name="password" class="form-control" id="password" placeholder="Password"
+              <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
+              <input type="password" name="password" class="form-control @error('password') is-invalid @enderror" id="password" placeholder="Password"
                 required>
               <span class="position-absolute translate-middle-y end-0 me-3" style="cursor:pointer; top:3rem;"
                 onclick="togglePasswordVisibility('password', 'icon-password')">
                 <i id="icon-password" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
               </span>
               @error("password")
-              <small class="text-danger">{{ $message }}</small>
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
-          <div class="col-sm-6 col-md-6">
+            <div class="col-sm-6 col-md-6">
             <div class="form-group position-relative">
-              <label for="password_confirmation" class="form-label">Confirm Password</label>
-              <input type="password" name="password_confirmation" class="form-control" id="password_confirmation"
+              <label for="password_confirmation" class="form-label">Confirm Password <span class="text-danger">*</span></label>
+              <input type="password" name="password_confirmation" class="form-control @error('password_confirmation') is-invalid @enderror" id="password_confirmation"
                 placeholder="Confirm Password" required>
               <span class="position-absolute translate-middle-y end-0 me-3" style="cursor:pointer; top:3rem;"
                 onclick="togglePasswordVisibility('password_confirmation', 'icon-confirm-password')">
                 <i id="icon-confirm-password" class="mdi mdi-eye" style="font-size:1.4rem;"></i>
               </span>
-              @error("confirm_password")
-              <small class="text-danger">{{ $message }}</small>
+              @error("password_confirmation")
+              <div class="invalid-feedback d-block">{{ $message }}</div>
               @enderror
             </div>
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary">Add Staff</button>
+        <div class="mt-4 d-flex justify-content-end">
+          <a href="{{ route('staff.index') }}" class="btn btn-light me-2">Cancel</a>
+          <button type="submit" class="btn btn-primary">Add Staff</button>
+        </div>
       </form>
     </div>
   </div>
 </div>
 @endsection
+
+@push("styles")
+  <style>
+    /* Consistent card styling to match theme */
+    .content-wrapper .card {
+      border-radius: 4px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      border: 1px solid #e3e3e3;
+    }
+  </style>
+@endpush
 
 @push("scripts")
 <script>

@@ -134,20 +134,23 @@
         @else
             <div class="row">
                 @foreach ($stores as $store)
-                    <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="col-md-3 mb-3">
                         <div class="card" style="cursor: pointer;"
                             onclick="window.location.href='{{ route('store.show', $store->id) }}'">
                             <div class="card-body">
                                 <div class="d-flex justify-content-between align-items-start mb-2">
-                                    <div>
-                                        <h6 class="card-title mb-1">{{ $store->store_name }}</h6>
-                                        <p class="text-muted small mb-0">{{ $store->address }}</p>
+                                    <div class="flex-grow-1" style="min-width: 0;">
+                                        <h6 class="card-title mb-2 fw-normal" style="font-size: 0.95rem;">{{ $store->store_name }}</h6>
+                                        <div class="d-flex align-items-start text-muted mb-2" style="font-size: 0.75rem;">
+                                            <i class="mdi mdi-map-marker me-1 mt-1" style="font-size: 0.875rem; flex-shrink: 0;"></i>
+                                            <span class="text-truncate" style="line-height: 1.3; min-width: 0; flex: 1 1 auto;">{{ $store->address }}</span>
+                                        </div>
                                     </div>
-                                    <i class="mdi mdi-chevron-right text-muted"></i>
+                                    <i class="mdi mdi-chevron-right text-muted ms-2" style="flex-shrink: 0;"></i>
                                 </div>
                                 <div class="mt-2">
-                                    <small class="text-muted">Incharge: </small>
-                                    <small class="fw-semibold">{{ $store->storeIncharge->firstName ?? 'N/A' }}
+                                    <small class="text-muted" style="font-size: 0.7rem;">Incharge: </small>
+                                    <small class="fw-normal" style="font-size: 0.75rem;">{{ $store->storeIncharge->firstName ?? 'N/A' }}
                                         {{ $store->storeIncharge->lastName ?? '' }}</small>
                                 </div>
                             </div>
@@ -157,8 +160,6 @@
             </div>
         @endif
     </div>
-
-    <!-- @include('projects.dispatchInventory') -->
 </div>
 
 @push('styles')
@@ -322,6 +323,28 @@
             flex: 1 1 auto !important;
             display: flex !important;
             flex-direction: column !important;
+        }
+
+        /* Store card title - primary, normal weight */
+        #storeList .card .card-title {
+            font-weight: 500 !important;
+            font-size: 0.95rem !important;
+            color: #212529 !important;
+            margin-bottom: 0.5rem !important;
+        }
+
+        /* Address with icon - truncate on overflow */
+        #storeList .card .d-flex .text-truncate {
+            display: block;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+
+        /* Incharge text - secondary, normal weight */
+        #storeList .card small.fw-normal {
+            font-weight: 400 !important;
         }
 
         /* Form Card - Higher Specificity */

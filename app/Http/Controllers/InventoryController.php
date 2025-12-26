@@ -1231,17 +1231,131 @@ class InventoryController extends Controller
     public function bulkDelete(Request $request)
     {
         try {
-            $ids = json_decode($request->input('ids'), true);
-
+            $ids = $request->input('ids', []);
+            
+            // Handle both array and JSON string formats
+            if (is_string($ids)) {
+                $ids = json_decode($ids, true);
+            }
+            
             if (!is_array($ids) || empty($ids)) {
-                return redirect()->back()->with('error', 'No valid items selected for deletion.');
+                return response()->json([
+                    'message' => 'No valid items selected for deletion.'
+                ], 400);
             }
 
-            InventroyStreetLightModel::whereIn('id', $ids)->delete();
+            // Try to delete from both inventory models
+            $deletedCount = 0;
+            $deletedCount += InventroyStreetLightModel::whereIn('id', $ids)->delete();
+            $deletedCount += Inventory::whereIn('id', $ids)->delete();
 
-            return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
+            if ($deletedCount > 0) {
+                return response()->json([
+                    'message' => "{$deletedCount} item(s) deleted successfully."
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'No items were deleted. Please check if the selected items exist.'
+                ], 400);
+            }
         } catch (\Throwable $th) {
-            return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+            Log::error('Bulk delete error: ' . $th->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while deleting inventory items: ' . $th->getMessage()
+            ], 500);
+        }
+    }
+
+    public function bulkReturn(Request $request)
+    {
+        try {
+            $serialNumbers = $request->input('serial_numbers', []);
+            
+            if (!is_array($serialNumbers) || empty($serialNumbers)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No valid items selected for return.'
+                ], 400);
+            }
+
+            $returnedCount = 0;
+            $errors = [];
+
+            DB::beginTransaction();
+
+            foreach ($serialNumbers as $serialNumber) {
+                try {
+                    $inventory = InventroyStreetLightModel::where('serial_number', $serialNumber)->first();
+                    
+                    if (!$inventory) {
+                        $errors[] = "Inventory item not found for serial number: {$serialNumber}";
+                        continue;
+                    }
+
+                    // Verify item is dispatched (quantity should be 0 or item should have dispatch record)
+                    $dispatch = InventoryDispatch::where('serial_number', $serialNumber)
+                        ->whereNull('streetlight_pole_id')
+                        ->where('isDispatched', true)
+                        ->first();
+
+                    if (!$dispatch) {
+                        $errors[] = "Item with serial number {$serialNumber} is not dispatched or is already consumed.";
+                        continue;
+                    }
+
+                    // Return the item
+                    $inventory->quantity = 1;
+                    $inventory->save();
+
+                    // Log history
+                    $project = Project::find($inventory->project_id);
+                    $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+                    $this->historyService->logReturned(
+                        $inventory,
+                        $inventoryType,
+                        $inventory->project_id,
+                        $inventory->store_id,
+                        1
+                    );
+
+                    // Delete dispatch record
+                    $dispatch->delete();
+                    $returnedCount++;
+                } catch (\Exception $e) {
+                    Log::error('Failed to return inventory item', [
+                        'serial_number' => $serialNumber,
+                        'error' => $e->getMessage()
+                    ]);
+                    $errors[] = "Failed to return item {$serialNumber}: " . $e->getMessage();
+                }
+            }
+
+            DB::commit();
+
+            if ($returnedCount > 0) {
+                $message = "{$returnedCount} item(s) returned successfully.";
+                if (!empty($errors)) {
+                    $message .= " " . count($errors) . " item(s) failed: " . implode(', ', array_slice($errors, 0, 3));
+                }
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'returned_count' => $returnedCount,
+                    'errors' => $errors
+                ]);
+            } else {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No items were returned. ' . implode(', ', array_slice($errors, 0, 3))
+                ], 400);
+            }
+        } catch (\Throwable $th) {
+            DB::rollBack();
+            Log::error('Bulk return failed', ['error' => $th->getMessage()]);
+            return response()->json([
+                'success' => false,
+                'message' => 'An error occurred while returning inventory items: ' . $th->getMessage()
+            ], 500);
         }
     }
 
