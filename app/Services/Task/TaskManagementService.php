@@ -579,7 +579,7 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
         return User::whereHas('projects', function ($query) use ($projectId) {
             $query->where('projects.id', $projectId);
         })
-            ->where('role', 3) // Vendor
+            ->where('role', \App\Enums\UserRole::VENDOR->value) // Vendor
             ->get();
     }
 

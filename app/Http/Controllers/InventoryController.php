@@ -1231,17 +1231,38 @@ class InventoryController extends Controller
     public function bulkDelete(Request $request)
     {
         try {
-            $ids = json_decode($request->input('ids'), true);
-
+            $ids = $request->input('ids', []);
+            
+            // Handle both array and JSON string formats
+            if (is_string($ids)) {
+                $ids = json_decode($ids, true);
+            }
+            
             if (!is_array($ids) || empty($ids)) {
-                return redirect()->back()->with('error', 'No valid items selected for deletion.');
+                return response()->json([
+                    'message' => 'No valid items selected for deletion.'
+                ], 400);
             }
 
-            InventroyStreetLightModel::whereIn('id', $ids)->delete();
+            // Try to delete from both inventory models
+            $deletedCount = 0;
+            $deletedCount += InventroyStreetLightModel::whereIn('id', $ids)->delete();
+            $deletedCount += Inventory::whereIn('id', $ids)->delete();
 
-            return redirect()->back()->with('success', 'Selected inventory items deleted successfully.');
+            if ($deletedCount > 0) {
+                return response()->json([
+                    'message' => "{$deletedCount} item(s) deleted successfully."
+                ]);
+            } else {
+                return response()->json([
+                    'message' => 'No items were deleted. Please check if the selected items exist.'
+                ], 400);
+            }
         } catch (\Throwable $th) {
-            return redirect()->back()->with('error', 'An error occurred while deleting inventory items.');
+            Log::error('Bulk delete error: ' . $th->getMessage());
+            return response()->json([
+                'message' => 'An error occurred while deleting inventory items: ' . $th->getMessage()
+            ], 500);
         }
     }
 

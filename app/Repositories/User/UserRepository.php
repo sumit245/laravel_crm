@@ -80,7 +80,7 @@ class UserRepository extends BaseRepository implements UserRepositoryInterface
     {
         return $this->model->newQuery()
             ->where('site_engineer_id', $engineerId)
-            ->where('role', 3) // Vendor role
+            ->where('role', \App\Enums\UserRole::VENDOR->value) // Vendor role
             ->with(['usercategory'])
             ->get();
     }

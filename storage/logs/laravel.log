@@ -1885,3 +1885,30 @@
 [2025-12-24 22:59:12] local.INFO: Store ID: 26  
 [2025-12-24 22:59:32] local.INFO: Ajax request received for inventory data  
 [2025-12-24 22:59:32] local.INFO: Store ID: 26  
+[2025-12-25 21:35:13] local.INFO: Staff removed from project {"project_id":"11","user_ids":["201","204","205","207"],"targets_reassigned":9,"reassigned_to":158,"removed_by":11} 
+[2025-12-25 21:35:48] local.INFO: Inventory Total: 13439  
+[2025-12-25 21:35:48] local.INFO: Inventory Items: 3  
+[2025-12-26 07:03:09] local.INFO: Inventory Total: 13439  
+[2025-12-26 07:03:09] local.INFO: Inventory Items: 3  
+[2025-12-26 07:03:12] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:03:12] local.INFO: Store ID: 26  
+[2025-12-26 07:03:13] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:03:13] local.INFO: Store ID: 26  
+[2025-12-26 07:27:59] local.INFO: Inventory Total: 13439  
+[2025-12-26 07:27:59] local.INFO: Inventory Items: 3  
+[2025-12-26 07:28:04] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:28:04] local.INFO: Store ID: 26  
+[2025-12-26 07:28:04] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:28:04] local.INFO: Store ID: 26  
+[2025-12-26 07:28:12] local.INFO: Inventory Total: 13436  
+[2025-12-26 07:28:12] local.INFO: Inventory Items: 3  
+[2025-12-26 07:28:15] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:28:15] local.INFO: Store ID: 26  
+[2025-12-26 07:28:16] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:28:16] local.INFO: Store ID: 26  
+[2025-12-26 07:36:14] local.INFO: Inventory Total: 13436  
+[2025-12-26 07:36:14] local.INFO: Inventory Items: 3  
+[2025-12-26 07:36:19] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:36:19] local.INFO: Store ID: 26  
+[2025-12-26 07:36:19] local.INFO: Ajax request received for inventory data  
+[2025-12-26 07:36:19] local.INFO: Store ID: 26  

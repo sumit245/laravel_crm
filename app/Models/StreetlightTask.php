@@ -23,47 +23,80 @@ class StreetlightTask extends Model
         'billed',
     ];
 
-    // Relationship: A task belongs to a pole
-    public function pole()
-    {
-        return $this->belongsTo(Pole::class);
-    }
-
-    // Relationship: A task belongs to a project
+    /**
+     * Get the project this task belongs to
+     * Relationship: StreetlightTask belongs to Project
+     * Foreign Key: streetlight_tasks.project_id → projects.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * Get the streetlight site this task belongs to
+     * Relationship: StreetlightTask belongs to Streetlight (site)
+     * Foreign Key: streetlight_tasks.site_id → streetlights.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function site()
     {
         return $this->belongsTo(Streetlight::class, 'site_id');
     }
 
-    // Relationship: A task belongs to an engineer
+    /**
+     * Get the engineer assigned to this task
+     * Relationship: StreetlightTask belongs to User (Site Engineer)
+     * Foreign Key: streetlight_tasks.engineer_id → users.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function engineer()
     {
         return $this->belongsTo(User::class, 'engineer_id', 'id');
     }
 
-    // Relationship: A task belongs to a vendor
+    /**
+     * Get the vendor assigned to this task
+     * Relationship: StreetlightTask belongs to User (Vendor)
+     * Foreign Key: streetlight_tasks.vendor_id → users.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function vendor()
     {
         return $this->belongsTo(User::class, 'vendor_id', 'id');
     }
+
+    /**
+     * Get the project manager assigned to this task
+     * Relationship: StreetlightTask belongs to User (Project Manager)
+     * Foreign Key: streetlight_tasks.manager_id → users.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function manager()
     {
         return $this->belongsTo(User::class, 'manager_id', 'id');
     }
 
+    /**
+     * Get all poles associated with this task
+     * Relationship: StreetlightTask has many Poles
+     * Foreign Key: streelight_poles.task_id → streetlight_tasks.id
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
     public function poles()
     {
         return $this->hasMany(Pole::class, 'task_id');
     }
+
+    /**
+     * Get the streetlight site this task belongs to (alias for site())
+     * Relationship: StreetlightTask belongs to Streetlight (site)
+     * Foreign Key: streetlight_tasks.site_id → streetlights.id
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
     public function streetlight()
     {
-        // This matches the hasMany relationship on your Streetlight model.
-        // Assumes your 'streetlight_tasks' table has a 'site_id' foreign key.
         return $this->belongsTo(Streetlight::class, 'site_id');
     }
 }

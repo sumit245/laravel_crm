@@ -62,7 +62,7 @@ class DashboardService extends BaseService implements DashboardServiceInterface
                 'users' => [
                     'total' => User::count(),
                     'engineers' => User::where('role', '1')->count(),
-                    'vendors' => User::where('role', '3')->count(),
+                    'vendors' => User::where('role', \App\Enums\UserRole::VENDOR->value)->count(),
                 ],
                 'tasks' => [
                     'total' => Task::count() + StreetlightTask::count(),
@@ -106,7 +106,7 @@ class DashboardService extends BaseService implements DashboardServiceInterface
                 ],
                 'team' => [
                     'engineers' => User::where('role', '1')->whereIn('project_id', $projectIds)->count(),
-                    'vendors' => User::where('role', '3')->whereIn('project_id', $projectIds)->count(),
+                    'vendors' => User::where('role', \App\Enums\UserRole::VENDOR->value)->whereIn('project_id', $projectIds)->count(),
                 ],
                 'projects_list' => $projects->map(fn($p) => [
                     'id' => $p->id,
@@ -136,7 +136,7 @@ class DashboardService extends BaseService implements DashboardServiceInterface
                     'pending' => Site::where('site_engineer', $userId)->whereNull('commissioning_date')->count(),
                 ],
                 'vendors' => [
-                    'assigned' => User::where('role', '3')->where('engineer_id', $userId)->count(),
+                    'assigned' => User::where('role', \App\Enums\UserRole::VENDOR->value)->where('engineer_id', $userId)->count(),
                 ],
                 'pending_tasks' => Task::where('engineer_id', $userId)
                     ->whereIn('status', ['Pending', 'In Progress'])

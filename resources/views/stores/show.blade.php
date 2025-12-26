@@ -442,7 +442,7 @@
                 {{-- Use datatable component with server-side processing --}}
                 <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)"
                     ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray" :bulkDeleteEnabled="$isAdmin"
-                    :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')"
+                    :bulkDeleteRoute="route('inventory.bulkDelete')" :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')"
                     :exportEnabled="true" :importEnabled="false" pageLength="50" searchPlaceholder="Search inventory..."
                     :deferLoading="$inventoryTotal ?? null" :filters="[
                         [
@@ -846,16 +846,13 @@
                                 ['title' => 'Vendor'],
                                 ['title' => 'Dispatch Date'],
                                 ['title' => 'Value'],
-                                [
-                                    'title' => 'Actions',
-                                    'width' => '120px',
-                                    'orderable' => false,
-                                    'searchable' => false,
-                                ],
+                                // Note: Actions column is auto-added by datatable component
                             ];
 
                             // Calculate order array for DataTables
                             // Order by dispatch_date column (index 5 for admin, index 4 for user)
+                            // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:vendor, 5:date, 6:val, 7:act]
+                            // User:  [0:code, 1:item, 2:serial, 3:vendor, 4:date, 5:val, 6:act]
                             $dispatchedOrderColumn = $isAdmin ? 5 : 4;
                             $dispatchedOrderArray = [[$dispatchedOrderColumn, 'desc']]; // Order by dispatch date descending
                         @endphp
@@ -1300,10 +1297,10 @@
             // The datatable component already removes the top length menu and creates a custom bottom one
 
 
-            // Delete item handler
+            // Delete item handler (fallback for any delete-item buttons outside the table)
             $(document).on('click', '.delete-item', function() {
                 const itemId = $(this).data('id');
-                const deleteUrl = '{{ url('inventory') }}/' + itemId;
+                const deleteUrl = '{{ route('inventory.destroy', ':id') }}'.replace(':id', itemId);
 
                 Swal.fire({
                     title: 'Are you sure?',
@@ -1324,17 +1321,22 @@
                             },
                             success: function(response) {
                                 if (response.success) {
-                                    Swal.fire('Deleted!', response.message, 'success')
+                                    Swal.fire('Deleted!', response.message || 'Item deleted successfully', 'success')
                                         .then(() => {
-                                            location.reload();
+                                            // Reload the table if it exists, otherwise reload page
+                                            if (typeof table !== 'undefined' && table) {
+                                                table.ajax.reload();
+                                            } else {
+                                                location.reload();
+                                            }
                                         });
                                 } else {
-                                    Swal.fire('Error!', response.message ||
-                                        'Failed to delete item', 'error');
+                                    Swal.fire('Error!', response.message || 'Failed to delete item', 'error');
                                 }
                             },
-                            error: function() {
-                                Swal.fire('Error!', 'Failed to delete item', 'error');
+                            error: function(xhr) {
+                                const errorMsg = xhr.responseJSON?.message || 'Failed to delete item';
+                                Swal.fire('Error!', errorMsg, 'error');
                             }
                         });
                     }
