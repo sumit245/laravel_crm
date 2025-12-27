@@ -40,6 +40,21 @@
             </div>
         </div>
 
+        <!-- Bulk Dispatch Processing Overlay -->
+        <div id="bulkDispatchOverlay" class="import-overlay d-none">
+            <div class="import-overlay-content text-center">
+                <div class="spinner-border text-primary mb-3" role="status" style="width: 3rem; height: 3rem;">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h5 class="mb-2">Processing Bulk Dispatch</h5>
+                <div class="text-muted" id="bulkDispatchStatus">Please wait while we process your request...</div>
+                <div class="mt-3 small text-muted">
+                    <i class="mdi mdi-information-outline"></i>
+                    This may take a few minutes for large files. Do not close this page.
+                </div>
+            </div>
+        </div>
+
         <!-- Metrics Cards -->
         @if ($project->project_type == 1)
             <div class="row mb-4">
@@ -1860,6 +1875,9 @@
 
                         const button = this;
                         const originalText = button.innerHTML;
+                        const bulkDispatchOverlay = document.getElementById('bulkDispatchOverlay');
+                        const bulkDispatchStatus = document.getElementById('bulkDispatchStatus');
+                        
                         button.disabled = true;
                         button.innerHTML = `
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -1879,6 +1897,18 @@
                             return;
                         }
 
+                        // Show persistent overlay
+                        if (bulkDispatchOverlay) {
+                            bulkDispatchOverlay.classList.remove('d-none');
+                            if (bulkDispatchStatus) {
+                                bulkDispatchStatus.textContent = `Dispatching ${serialNumbers.length} item(s). Please wait...`;
+                            }
+                        }
+
+                        // Create AbortController for timeout handling
+                        const confirmAbortController = new AbortController();
+                        const confirmTimeoutId = setTimeout(() => confirmAbortController.abort(), 300000); // 5 minutes timeout
+
                         fetch("{{ route('inventory.confirm-bulk-dispatch') }}", {
                                 method: "POST",
                                 headers: {
@@ -1893,10 +1923,22 @@
                                     store_id: storeId,
                                     store_incharge_id: storeInchargeId,
                                     serial_numbers: serialNumbers
-                                })
+                                }),
+                                signal: confirmAbortController.signal
                             })
-                            .then(response => response.json())
+                            .then(response => {
+                                clearTimeout(confirmTimeoutId); // Clear timeout on success
+                                if (!response.ok) {
+                                    throw new Error(`HTTP error! status: ${response.status}`);
+                                }
+                                return response.json();
+                            })
                             .then(data => {
+                                // Hide overlay
+                                if (bulkDispatchOverlay) {
+                                    bulkDispatchOverlay.classList.add('d-none');
+                                }
+                                
                                 button.disabled = false;
                                 button.innerHTML = originalText;
                                 if (data.status === 'success') {
@@ -1918,12 +1960,27 @@
                                 }
                             })
                             .catch(error => {
+                                clearTimeout(confirmTimeoutId); // Clear timeout on error
                                 console.error(error);
+                                
+                                // Hide overlay on error
+                                if (bulkDispatchOverlay) {
+                                    bulkDispatchOverlay.classList.add('d-none');
+                                }
+                                
                                 button.disabled = false;
                                 button.innerHTML = originalText;
+                                
+                                let errorMessage = 'Something went wrong. Please try again.';
+                                if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.name === 'AbortController') {
+                                    errorMessage = 'Request timed out after 5 minutes. Processing too many items may take longer. Please try with fewer items or contact support.';
+                                } else if (error.message && (error.message.includes('gateway') || error.message.includes('timeout'))) {
+                                    errorMessage = 'Gateway timeout error. The server took too long to respond. Please try again with fewer items or contact support.';
+                                }
+                                
                                 Swal.fire({
                                     title: 'Error!',
-                                    text: 'Something went wrong. Please try again.',
+                                    text: errorMessage,
                                     icon: 'error',
                                     confirmButtonText: 'OK'
                                 });
@@ -2059,15 +2116,42 @@
 
                     const btn = this;
                     const originalText = btn.innerHTML;
+                    const bulkDispatchOverlay = document.getElementById('bulkDispatchOverlay');
+                    const bulkDispatchStatus = document.getElementById('bulkDispatchStatus');
+                    
                     btn.disabled = true;
                     btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Processing...';
+                    
+                    // Show persistent overlay
+                    if (bulkDispatchOverlay) {
+                        bulkDispatchOverlay.classList.remove('d-none');
+                        if (bulkDispatchStatus) {
+                            bulkDispatchStatus.textContent = 'Reading Excel file and validating data...';
+                        }
+                    }
+
+                    // Create AbortController for timeout handling
+                    const abortController = new AbortController();
+                    const timeoutId = setTimeout(() => abortController.abort(), 300000); // 5 minutes timeout
 
                     fetch('{{ route('inventory.bulk-dispatch') }}', {
                             method: 'POST',
-                            body: formData
+                            body: formData,
+                            signal: abortController.signal
                         })
-                        .then(response => response.json())
+                        .then(response => {
+                            clearTimeout(timeoutId); // Clear timeout on success
+                            if (!response.ok) {
+                                throw new Error(`HTTP error! status: ${response.status}`);
+                            }
+                            return response.json();
+                        })
                         .then(data => {
+                            // Hide overlay
+                            if (bulkDispatchOverlay) {
+                                bulkDispatchOverlay.classList.add('d-none');
+                            }
+                            
                             btn.disabled = false;
                             btn.innerHTML = originalText;
 
@@ -2111,10 +2195,30 @@
                             }
                         })
                         .catch(error => {
+                            clearTimeout(timeoutId); // Clear timeout on error
                             console.error(error);
+                            
+                            // Hide overlay on error
+                            if (bulkDispatchOverlay) {
+                                bulkDispatchOverlay.classList.add('d-none');
+                            }
+                            
                             btn.disabled = false;
                             btn.innerHTML = originalText;
-                            Swal.fire('Error', 'Something went wrong. Please try again.', 'error');
+                            
+                            let errorMessage = 'Something went wrong. Please try again.';
+                            if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.name === 'AbortController') {
+                                errorMessage = 'Request timed out after 5 minutes. The file may be too large. Please try with a smaller file or contact support.';
+                            } else if (error.message && (error.message.includes('gateway') || error.message.includes('timeout'))) {
+                                errorMessage = 'Gateway timeout error. The server took too long to respond. Please try again with a smaller file or contact support.';
+                            }
+                            
+                            Swal.fire({
+                                title: 'Error',
+                                text: errorMessage,
+                                icon: 'error',
+                                confirmButtonText: 'OK'
+                            });
                         });
                 });
             }
