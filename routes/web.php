@@ -242,6 +242,8 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::get('/tasks/export/excel', [TasksController::class, 'exportToExcel'])->name('tasks.export');
     Route::post('/tasks/bulk-delete', [ProjectsController::class, 'bulkDeleteTargets'])->name('tasks.bulkDelete');
     Route::post('/tasks/bulk-reassign', [ProjectsController::class, 'bulkReassignTargets'])->name('tasks.bulkReassign');
+    Route::get('/projects/targets/deletion-progress/{jobId}', [ProjectsController::class, 'getDeletionProgress'])->name('targets.deletionProgress');
+    Route::get('/projects/targets/active-deletion-jobs', [ProjectsController::class, 'getActiveDeletionJobs'])->name('targets.activeJobs');
     Route::get('/tasks/download/import-format', [ProjectsController::class, 'downloadTargetImportFormat'])->name('tasks.importFormat');
     Route::post('/tasks/import', [ProjectsController::class, 'importTargets'])->name('tasks.import');
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])

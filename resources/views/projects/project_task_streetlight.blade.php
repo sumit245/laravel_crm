@@ -616,21 +616,21 @@
 
             // Delete button handler
             $(document).on('click', '.delete-task-btn', function(e) {
-    e.preventDefault();
+                e.preventDefault();
                 const taskId = $(this).data('id');
                 const deleteUrl = $(this).data('url');
     
-    Swal.fire({
-      title: 'Are you sure?',
+                Swal.fire({
+                    title: 'Are you sure?',
                     text: 'You are about to delete this target. This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-    }).then((result) => {
-      if (result.isConfirmed) {
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         $.ajax({
                             url: deleteUrl,
                             type: 'POST',
@@ -639,18 +639,25 @@
                                 _method: 'DELETE',
                             },
                             success: function(response) {
-                                Swal.fire('Deleted!', 'Target has been deleted.',
-                                    'success');
-                                setTimeout(() => window.location.reload(), 1500);
+                                // Check if async deletion was initiated
+                                if (response.job_id) {
+                                    // Async deletion - start progress tracking
+                                    if (window.targetDeletionProgress) {
+                                        window.targetDeletionProgress.startProgressTracking(response.job_id);
+                                    }
+                                } else {
+                                    // Synchronous deletion - show success and reload
+                                    Swal.fire('Deleted!', response.message || 'Target has been deleted.', 'success');
+                                    setTimeout(() => window.location.reload(), 1500);
+                                }
                             },
                             error: function(xhr) {
-                                Swal.fire('Error!', xhr.responseJSON?.message ||
-                                    'Failed to delete target.', 'error');
+                                Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to delete target.', 'error');
                             }
                         });
                     }
-  });
-});
+                });
+            });
     
             // Select2 for panchayat search
       $('#panchayatSearch').select2({
@@ -728,6 +735,75 @@
           });
         }
       });
+    });
+  </script>
+  
+  <!-- Target Deletion Progress Tracker -->
+  <script>
+    // Set poll interval from config
+    window.TARGET_DELETION_POLL_INTERVAL = {{ config('target_deletion.progress_poll_interval', 2000) }};
+  </script>
+  <script src="{{ asset('js/target-deletion-progress.js') }}"></script>
+  
+  <!-- Override bulk delete to handle async responses -->
+  <script>
+    $(document).ready(function() {
+        // Override the default bulk delete handler from datatable component
+        $(document).on('click', '#targetsTable_bulkDeleteBtn', function() {
+            const table = $('#targetsTable').DataTable();
+            const selectedIds = [];
+            
+            // Get all checked checkboxes
+            $('#targetsTable tbody .row-checkbox:checked').each(function() {
+                const taskId = $(this).val();
+                if (taskId) {
+                    selectedIds.push(taskId);
+                }
+            });
+            
+            if (selectedIds.length === 0) {
+                Swal.fire('Error', 'Please select at least one target.', 'error');
+                return;
+            }
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                text: `You are about to delete ${selectedIds.length} target(s). This action cannot be undone.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete them!',
+                cancelButtonText: 'Cancel',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{{ route('tasks.bulkDelete') }}",
+                        method: 'POST',
+                        data: {
+                            _token: "{{ csrf_token() }}",
+                            ids: selectedIds,
+                        },
+                        success: function(response) {
+                            // Check if async deletion was initiated
+                            if (response.job_id) {
+                                // Async deletion - start progress tracking
+                                if (window.targetDeletionProgress) {
+                                    window.targetDeletionProgress.startProgressTracking(response.job_id);
+                                }
+                            } else {
+                                // Synchronous deletion - show success and reload
+                                Swal.fire('Deleted!', response.message || 'Targets deleted successfully.', 'success');
+                                setTimeout(() => window.location.reload(), 1500);
+                            }
+                        },
+                        error: function(xhr) {
+                            Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to delete targets.', 'error');
+                        }
+                    });
+                }
+            });
+        });
     });
   </script>
 @endpush

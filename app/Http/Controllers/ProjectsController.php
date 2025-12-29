@@ -11,8 +11,11 @@ use App\Models\Project;
 use App\Models\State;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
+use App\Models\TargetDeletionJob;
 use App\Models\Task;
 use App\Models\User;
+use App\Jobs\ProcessTargetDeletionChunk;
+use App\Services\Task\TargetDeletionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -669,12 +672,53 @@ class ProjectsController extends Controller
         }
     }
 
-    public function destroyTarget($id)
+    public function destroyTarget(Request $request, $id)
     {
-        $task = StreetlightTask::findOrFail($id);
-        $task->delete();
+        try {
+            $deletionService = app(TargetDeletionService::class);
+            $task = StreetlightTask::with('poles')->findOrFail($id);
+            
+            // Count total poles to determine if we should process synchronously
+            $totalPoles = $task->poles->count();
+            $syncThreshold = config('target_deletion.sync_threshold', 100);
 
-        return redirect()->back()->with('success', 'Task permanently deleted.');
+            if ($totalPoles < $syncThreshold) {
+                // Small deletion - process synchronously
+                $result = $deletionService->deleteTargets([$id]);
+                
+                $message = 'Target deleted successfully. ';
+                $message .= $result['poles_deleted'] . ' pole(s) deleted. ';
+                $message .= $result['inventory_items_returned'] . ' inventory item(s) returned to stock.';
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message
+                    ]);
+                }
+
+                return redirect()->back()->with('success', $message);
+            } else {
+                // Large deletion - use async processing
+                return $this->initiateAsyncDeletion([$id], $request);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to delete target', [
+                'task_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            $message = 'Failed to delete target: ' . $e->getMessage();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
     }
 
     public function bulkDeleteTargets(Request $request)
@@ -685,18 +729,36 @@ class ProjectsController extends Controller
         ]);
 
         try {
-            $deleted = StreetlightTask::whereIn('id', $request->ids)->delete();
+            $deletionService = app(TargetDeletionService::class);
+            // Count total poles to determine processing method
+            $totalPoles = Pole::whereIn('task_id', $request->ids)->count();
+            $syncThreshold = config('target_deletion.sync_threshold', 100);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => "{$deleted} target(s) deleted successfully."
-                ]);
+            if ($totalPoles < $syncThreshold && count($request->ids) == 1) {
+                // Small single deletion - process synchronously
+                $result = $deletionService->deleteTargets($request->ids);
+                
+                $message = count($request->ids) . ' target(s) deleted successfully. ';
+                $message .= $result['poles_deleted'] . ' pole(s) deleted. ';
+                $message .= $result['inventory_items_returned'] . ' inventory item(s) returned to stock.';
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message
+                    ]);
+                }
+
+                return redirect()->back()->with('success', $message);
+            } else {
+                // Large or bulk deletion - use async processing
+                return $this->initiateAsyncDeletion($request->ids, $request);
             }
-
-            return redirect()->back()->with('success', "{$deleted} target(s) deleted successfully.");
         } catch (\Exception $e) {
-            Log::error('Failed to bulk delete targets', ['error' => $e->getMessage()]);
+            Log::error('Failed to bulk delete targets', [
+                'task_ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
 
             if ($request->expectsJson()) {
                 return response()->json([
@@ -707,6 +769,99 @@ class ProjectsController extends Controller
 
             return redirect()->back()->with('error', 'Failed to delete targets: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Initiate async deletion with progress tracking
+     */
+    protected function initiateAsyncDeletion(array $taskIds, ?Request $request = null)
+    {
+        // Count total poles
+        $totalPoles = Pole::whereIn('task_id', $taskIds)->count();
+
+        // Create deletion job
+        $job = TargetDeletionJob::create([
+            'task_ids' => $taskIds,
+            'total_tasks' => count($taskIds),
+            'total_poles' => $totalPoles,
+            'user_id' => auth()->id(),
+            'status' => 'pending',
+        ]);
+
+        // Queue first chunk
+        $chunkSize = config('target_deletion.chunk_size', 50);
+        ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize);
+
+        if ($request && $request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Deletion started. Processing in background...',
+                'job_id' => $job->job_id,
+                'total_tasks' => count($taskIds),
+                'total_poles' => $totalPoles,
+            ]);
+        }
+
+        return redirect()->back()->with([
+            'success' => 'Deletion started. Processing in background...',
+            'deletion_job_id' => $job->job_id,
+        ]);
+    }
+
+    /**
+     * Get deletion progress
+     */
+    public function getDeletionProgress($jobId)
+    {
+        $job = TargetDeletionJob::where('job_id', $jobId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        $progress = $job->progress_percentage;
+        $status = $job->status;
+
+        $message = "Deleting {$job->processed_tasks} item(s) out of {$job->total_tasks}";
+        if ($job->total_poles > 0) {
+            $message .= " ({$job->processed_poles} poles processed)";
+        }
+
+        return response()->json([
+            'job_id' => $job->job_id,
+            'status' => $status,
+            'progress_percentage' => $progress,
+            'processed_tasks' => $job->processed_tasks,
+            'total_tasks' => $job->total_tasks,
+            'processed_poles' => $job->processed_poles,
+            'total_poles' => $job->total_poles,
+            'message' => $message,
+            'error_message' => $job->error_message,
+            'started_at' => $job->started_at?->toIso8601String(),
+            'completed_at' => $job->completed_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get active deletion jobs for current user
+     */
+    public function getActiveDeletionJobs()
+    {
+        $jobs = TargetDeletionJob::where('user_id', auth()->id())
+            ->whereIn('status', ['pending', 'processing'])
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->map(function ($job) {
+                return [
+                    'job_id' => $job->job_id,
+                    'status' => $job->status,
+                    'progress_percentage' => $job->progress_percentage,
+                    'total_tasks' => $job->total_tasks,
+                    'processed_tasks' => $job->processed_tasks,
+                ];
+            });
+
+        return response()->json([
+            'jobs' => $jobs,
+        ]);
     }
 
     public function bulkReassignTargets(Request $request)
