@@ -688,6 +688,10 @@ class InventoryController extends Controller
     public function bulkDispatchFromExcel(Request $request)
     {
         try {
+            // Increase execution time for large file processing
+            set_time_limit(600); // 10 minutes
+            ini_set('max_execution_time', '600');
+            
             $request->validate([
                 'file' => 'required|mimes:xlsx,xls,csv|max:2048',
                 'vendor_id' => 'required|exists:users,id',
@@ -710,18 +714,44 @@ class InventoryController extends Controller
             
             // Track serial numbers seen in uploaded file for duplicate detection
             $seenSerials = [];
+            $allSerialNumbers = [];
+            $allItemCodes = [];
 
-            // First pass: Detect duplicates within the uploaded file
+            // First pass: Detect duplicates within the uploaded file and collect serial numbers
             foreach ($data as $row) {
                 $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
+                $itemCode = $row['item_code'] ?? $row['ITEM_CODE'] ?? null;
                 if ($serialNumber) {
                     if (isset($seenSerials[$serialNumber])) {
                         $seenSerials[$serialNumber]++;
                     } else {
                         $seenSerials[$serialNumber] = 1;
+                        $allSerialNumbers[] = $serialNumber;
+                        if ($itemCode) {
+                            $allItemCodes[$serialNumber] = $itemCode;
+                        }
                     }
                 }
             }
+
+            // Optimize: Load all inventory items at once to reduce database queries
+            $inventoryItems = collect();
+            if (!empty($allSerialNumbers)) {
+                $inventoryItems = $inventoryModel::whereIn('serial_number', $allSerialNumbers)
+                    ->where('project_id', $request->project_id)
+                    ->where('store_id', $request->store_id)
+                    ->get()
+                    ->keyBy(function($item) {
+                        return $item->serial_number . '_' . $item->item_code;
+                    });
+            }
+            
+            // Optimize: Load all existing dispatches at once
+            $existingDispatches = InventoryDispatch::whereIn('serial_number', $allSerialNumbers)
+                ->where('isDispatched', true)
+                ->pluck('serial_number')
+                ->toArray();
+            $existingDispatchesSet = array_flip($existingDispatches);
 
             // Second pass: Categorize items
             foreach ($data as $row) {
@@ -752,12 +782,8 @@ class InventoryController extends Controller
                     continue;
                 }
 
-                // Check if serial number exists in inventory
-                $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
-                    ->where('project_id', $request->project_id)
-                    ->where('store_id', $request->store_id)
-                    ->where('item_code', $itemCode)
-                    ->first();
+                // Check if serial number exists in inventory (from pre-loaded collection)
+                $inventoryItem = $inventoryItems->get($serialNumber . '_' . $itemCode);
 
                 if (!$inventoryItem) {
                     $nonExisting[] = [
@@ -782,12 +808,8 @@ class InventoryController extends Controller
                     continue;
                 }
 
-                // Check if already dispatched
-                $existingDispatch = InventoryDispatch::where('serial_number', $serialNumber)
-                    ->where('isDispatched', true)
-                    ->exists();
-
-                if ($existingDispatch) {
+                // Check if already dispatched (using pre-loaded data)
+                if (isset($existingDispatchesSet[$serialNumber])) {
                     $alreadyDispatched[] = [
                         'item_code' => $itemCode,
                         'item' => $itemName,
@@ -853,6 +875,10 @@ class InventoryController extends Controller
     public function confirmBulkDispatch(Request $request)
     {
         try {
+            // Increase execution time for bulk dispatch processing
+            set_time_limit(600); // 10 minutes
+            ini_set('max_execution_time', '600');
+            
             $request->validate([
                 'vendor_id' => 'required|exists:users,id',
                 'project_id' => 'required|exists:projects,id',
@@ -872,13 +898,24 @@ class InventoryController extends Controller
             DB::beginTransaction();
 
             try {
+                // Optimize: Load all inventory items at once to reduce database queries
+                $inventoryItems = $inventoryModel::whereIn('serial_number', $serialNumbers)
+                    ->where('project_id', $request->project_id)
+                    ->where('store_id', $request->store_id)
+                    ->where('quantity', '>', 0)
+                    ->get()
+                    ->keyBy('serial_number');
+                
+                // Check for already dispatched items in bulk
+                $existingDispatches = InventoryDispatch::whereIn('serial_number', $serialNumbers)
+                    ->where('isDispatched', true)
+                    ->pluck('serial_number')
+                    ->toArray();
+                $existingDispatchesSet = array_flip($existingDispatches);
+
                 foreach ($serialNumbers as $serialNumber) {
-                    // Find the inventory item
-                    $inventoryItem = $inventoryModel::where('serial_number', $serialNumber)
-                        ->where('project_id', $request->project_id)
-                        ->where('store_id', $request->store_id)
-                        ->where('quantity', '>', 0)
-                        ->first();
+                    // Find the inventory item from pre-loaded collection
+                    $inventoryItem = $inventoryItems->get($serialNumber);
 
                     if (!$inventoryItem) {
                         $failedItems[] = [
@@ -888,7 +925,16 @@ class InventoryController extends Controller
                         continue;
                     }
 
-                    // Double-check if already dispatched (race condition protection)
+                    // Double-check if already dispatched (race condition protection) - using pre-loaded data
+                    if (isset($existingDispatchesSet[$serialNumber])) {
+                        $failedItems[] = [
+                            'serial_number' => $serialNumber,
+                            'error' => 'Item already dispatched'
+                        ];
+                        continue;
+                    }
+                    
+                    // Double-check with a fresh query for race condition protection
                     $existingDispatch = InventoryDispatch::where('serial_number', $serialNumber)
                         ->where('isDispatched', true)
                         ->exists();

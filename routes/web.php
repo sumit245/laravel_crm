@@ -31,7 +31,6 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
     Route::get('/', [HomeController::class, 'index'])->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
-    Route::post('dashboard/filter', [HomeController::class, 'filterData'])->name('dashboard.filter');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
 
     // JICR
@@ -224,9 +223,9 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
             Route::get('edit/{id}', [InventoryController::class, 'editInventory'])->name('editInventory');
             Route::put('update/{id}', [InventoryController::class, 'updateInventory'])->name('updateInventory');
             Route::post('bulk-delete', [InventoryController::class, 'bulkDelete'])->name('bulkDelete');
-            Route::post('bulk-return', [InventoryController::class, 'bulkReturn'])->name('bulkReturn');
             Route::get('dispatch', [InventoryController::class, 'showDispatchInventory'])->name('showDispatchInventory');
             Route::post('return', [InventoryController::class, 'returnInventory'])->name('return');
+            Route::post('bulk-return', [InventoryController::class, 'bulkReturn'])->name('bulkReturn');
         });
     Route::get('/store/{store}', [StoreController::class, 'show'])->name('store.show');
     Route::get('/store/{store}/inventory', [StoreController::class, 'inventory'])->name('store.inventory');

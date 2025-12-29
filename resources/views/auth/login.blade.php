@@ -34,9 +34,11 @@
             </div>
 
             <div class="form-check mx-sm-1">
-                <label class="form-check-label" for="remember">
-                    <input type="checkbox" name="remember" class="form-check-input" id="remember"
-                        {{ old('remember') ? 'checked' : '' }}>
+                <input type="checkbox" name="remember" class="form-check-input" id="remember"
+                    {{ old('remember') ? 'checked' : '' }}
+                    aria-label="Keep me signed in"
+                    aria-describedby="remember-description">
+                <label class="form-check-label" for="remember" id="remember-description">
                     Keep me signed in
                 </label>
             </div>

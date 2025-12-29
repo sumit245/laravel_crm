@@ -16,6 +16,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ExcelHelper;
 
@@ -806,63 +807,83 @@ class ProjectsController extends Controller
 
         try {
             $file = $request->file('file');
-            $data = Excel::toArray([], $file);
+            $projectId = $request->project_id;
+            $currentUser = auth()->user();
 
-            if (empty($data) || empty($data[0])) {
-                return redirect()->back()->with('error', 'The file is empty or invalid.');
-            }
+            $import = new \App\Imports\TargetImport($projectId, $currentUser);
+            Excel::import($import, $file);
 
-            $rows = $data[0];
-            $header = array_shift($rows); // Remove header row
+            $errors = $import->getErrors();
+            $importedCount = $import->getImportedCount();
+            $errorFileUrl = null;
 
-            $imported = 0;
-            $errors = [];
-
-            foreach ($rows as $index => $row) {
-                try {
-                    $siteId = $row[0] ?? null;
-                    $engineerId = $row[1] ?? null;
-                    $vendorId = $row[2] ?? null;
-                    $startDate = $row[3] ?? now();
-                    $endDate = $row[4] ?? null;
-
-                    if (!$siteId) {
-                        $errors[] = "Row " . ($index + 2) . ": Site ID is required";
-                        continue;
-                    }
-
-                    // Check if task already exists
-                    $existingTask = StreetlightTask::where('site_id', $siteId)
-                        ->where('project_id', $request->project_id)
-                        ->first();
-
-                    if ($existingTask) {
-                        $errors[] = "Row " . ($index + 2) . ": Task already exists for this site";
-                        continue;
-                    }
-
-                    StreetlightTask::create([
-                        'project_id' => $request->project_id,
-                        'site_id' => $siteId,
-                        'engineer_id' => $engineerId,
-                        'vendor_id' => $vendorId,
-                        'start_date' => $startDate,
-                        'end_date' => $endDate,
-                        'status' => 'Pending',
-                    ]);
-
-                    $imported++;
-                } catch (\Exception $e) {
-                    $errors[] = "Row " . ($index + 2) . ": " . $e->getMessage();
-                }
-            }
-
-            $message = "{$imported} target(s) imported successfully.";
+            // Generate error.txt file if there are errors
             if (!empty($errors)) {
-                $message .= " " . count($errors) . " error(s) occurred.";
+                $lines = [];
+                $lines[] = 'Target Import Errors - ' . now()->toDateTimeString();
+                $lines[] = 'Project ID: ' . $projectId;
+                $lines[] = str_repeat('=', 80);
+                $lines[] = '';
+
+                $errorCounter = 1;
+                foreach ($errors as $err) {
+                    $reason = $err['reason'] ?? 'unknown';
+                    $row = $err['row'] ?? 'Unknown';
+                    $panchayat = $err['panchayat'] ?? '';
+                    $engineerName = $err['engineer_name'] ?? '';
+                    $vendorName = $err['vendor_name'] ?? '';
+                    $wards = $err['wards'] ?? '';
+
+                    $lines[] = "T{$errorCounter} failed because {$reason}";
+                    $lines[] = "  Row: {$row}";
+                    $lines[] = "  Panchayat: {$panchayat}";
+                    $lines[] = "  Engineer Name: {$engineerName}";
+                    $lines[] = "  Vendor Name: {$vendorName}";
+                    $lines[] = "  Wards: {$wards}";
+                    $lines[] = str_repeat('-', 40);
+                    $lines[] = '';
+
+                    $errorCounter++;
+                }
+
+                $content = implode(PHP_EOL, $lines) . PHP_EOL;
+
+                // Use the public disk so URL generation is reliable
+                $disk = Storage::disk('public');
+                if (!$disk->exists('import_errors')) {
+                    $disk->makeDirectory('import_errors');
+                }
+
+                $fileName = 'target_errors_project_' . $projectId . '_' . time() . '.txt';
+                $relativePath = 'import_errors/' . $fileName;
+                $disk->put($relativePath, $content);
+
+                // Public URL (requires `php artisan storage:link` once)
+                $errorFileUrl = $disk->url($relativePath);
             }
 
-            return redirect()->back()->with('success', $message)->with('import_errors', $errors);
+            // Set proper session flash messages based on results
+            $redirect = redirect()->back();
+
+            if ($importedCount > 0 && empty($errors)) {
+                // All successful
+                $message = "{$importedCount} target(s) imported successfully.";
+                $redirect->with('success', $message);
+            } elseif ($importedCount > 0 && !empty($errors)) {
+                // Partial success
+                $message = "{$importedCount} target(s) imported successfully. " . count($errors) . " error(s) occurred.";
+                $redirect->with('warning', $message)
+                    ->with('import_errors_url', $errorFileUrl)
+                    ->with('import_errors_count', count($errors));
+            } else {
+                // All failed
+                $message = "0 target(s) imported successfully. " . count($errors) . " error(s) occurred.";
+                $redirect->with('error', $message)
+                    ->with('import_errors_url', $errorFileUrl)
+                    ->with('import_errors_count', count($errors));
+            }
+
+            return $redirect;
         } catch (\Exception $e) {
             Log::error('Failed to import targets', ['error' => $e->getMessage()]);
             return redirect()->back()->with('error', 'Failed to import targets: ' . $e->getMessage());
