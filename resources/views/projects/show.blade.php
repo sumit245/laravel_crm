@@ -2,10 +2,26 @@
 
 @section('content')
     <div class="container p-2">
-        @if (session('success') || session('error') || $errors->any())
-            <div class="alert {{ session('success') ? 'alert-success' : 'alert-danger' }} alert-dismissible fade show"
-                role="alert">
-                {{ session('success') ?? session('error') ?? $errors->first() }}
+        @if (session('success') || session('warning') || session('error') || $errors->any())
+            @php
+                $alertClass = 'alert-success';
+                $alertMessage = session('success') ?? session('warning') ?? session('error') ?? $errors->first();
+                
+                if (session('error')) {
+                    $alertClass = 'alert-danger';
+                } elseif (session('warning')) {
+                    $alertClass = 'alert-warning';
+                } elseif (session('success')) {
+                    // Check if there are errors even with success message (backward compatibility)
+                    if (session('import_errors_count') && session('import_errors_count') > 0) {
+                        $alertClass = 'alert-warning';
+                    } else {
+                        $alertClass = 'alert-success';
+                    }
+                }
+            @endphp
+            <div class="alert {{ $alertClass }} alert-dismissible fade show" role="alert">
+                {{ $alertMessage }}
                 @if (session('import_errors_url') && session('import_errors_count') > 0)
                     <br>
                     <small>
