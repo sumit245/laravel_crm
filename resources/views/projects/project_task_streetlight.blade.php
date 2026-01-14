@@ -743,67 +743,200 @@
     // Set poll interval from config
     window.TARGET_DELETION_POLL_INTERVAL = {{ config('target_deletion.progress_poll_interval', 2000) }};
   </script>
-  <script src="{{ asset('js/target-deletion-progress.js') }}"></script>
+  <script src="{{ asset('js/target-deletion-progress.js') }}?v={{ time() }}"></script>
   
   <!-- Override bulk delete to handle async responses -->
   <script>
+    // Wait for both jQuery and the progress tracker script to be loaded
     $(document).ready(function() {
-        // Override the default bulk delete handler from datatable component
-        $(document).on('click', '#targetsTable_bulkDeleteBtn', function() {
-            const table = $('#targetsTable').DataTable();
-            const selectedIds = [];
+        // Ensure progress tracker is initialized
+        if (typeof window.targetDeletionProgress === 'undefined' && typeof TargetDeletionProgress !== 'undefined') {
+            window.targetDeletionProgress = new TargetDeletionProgress();
+            window.targetDeletionProgress.init();
+        }
+        // Function to attach our custom bulk delete handler
+        function attachBulkDeleteHandler() {
+            const bulkDeleteBtn = $('#targetsTable_bulkDeleteBtn');
             
-            // Get all checked checkboxes
-            $('#targetsTable tbody .row-checkbox:checked').each(function() {
-                const taskId = $(this).val();
-                if (taskId) {
-                    selectedIds.push(taskId);
-                }
-            });
-            
-            if (selectedIds.length === 0) {
-                Swal.fire('Error', 'Please select at least one target.', 'error');
-                return;
-            }
-            
-            Swal.fire({
-                title: 'Are you sure?',
-                text: `You are about to delete ${selectedIds.length} target(s). This action cannot be undone.`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Yes, delete them!',
-                cancelButtonText: 'Cancel',
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: "{{ route('tasks.bulkDelete') }}",
-                        method: 'POST',
-                        data: {
-                            _token: "{{ csrf_token() }}",
-                            ids: selectedIds,
-                        },
-                        success: function(response) {
-                            // Check if async deletion was initiated
-                            if (response.job_id) {
-                                // Async deletion - start progress tracking
-                                if (window.targetDeletionProgress) {
-                                    window.targetDeletionProgress.startProgressTracking(response.job_id);
-                                }
-                            } else {
-                                // Synchronous deletion - show success and reload
-                                Swal.fire('Deleted!', response.message || 'Targets deleted successfully.', 'success');
-                                setTimeout(() => window.location.reload(), 1500);
-                            }
-                        },
-                        error: function(xhr) {
-                            Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to delete targets.', 'error');
+            if (bulkDeleteBtn.length && !bulkDeleteBtn.data('custom-handler-attached')) {
+                // Mark as attached to prevent duplicate handlers
+                bulkDeleteBtn.data('custom-handler-attached', true);
+                
+                // Unbind any existing handlers from datatable component
+                bulkDeleteBtn.off('click');
+                
+                // Add our custom handler with higher priority
+                bulkDeleteBtn.on('click', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    e.stopPropagation();
+                    
+                    const table = $('#targetsTable').DataTable();
+                    if (!table) {
+                        Swal.fire('Error', 'Table not initialized.', 'error');
+                        return false;
+                    }
+                    
+                    const selectedIds = [];
+                    
+                    // Get all checked checkboxes
+                    $('#targetsTable tbody .row-checkbox:checked').each(function() {
+                        const taskId = $(this).val();
+                        if (taskId) {
+                            selectedIds.push(parseInt(taskId));
                         }
                     });
-                }
+                    
+                    if (selectedIds.length === 0) {
+                        Swal.fire('Error', 'Please select at least one target.', 'error');
+                        return false;
+                    }
+                    
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `You are about to delete ${selectedIds.length} target(s). This action cannot be undone.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, delete them!',
+                        cancelButtonText: 'Cancel',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show progress modal IMMEDIATELY before making AJAX call
+                            let tempJobId = 'temp-' + Date.now();
+                            
+                            // Ensure progress tracker is initialized
+                            if (typeof window.targetDeletionProgress === 'undefined') {
+                                if (typeof TargetDeletionProgress !== 'undefined') {
+                                    window.targetDeletionProgress = new TargetDeletionProgress();
+                                } else {
+                                    console.error('TargetDeletionProgress class not loaded!');
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Progress Tracker Not Loaded',
+                                        text: 'Please refresh the page and try again.',
+                                        confirmButtonText: 'OK'
+                                    });
+                                    return;
+                                }
+                            }
+                            
+                            // Show modal immediately with "Initializing..." message
+                            if (window.targetDeletionProgress) {
+                                window.targetDeletionProgress.showProgressModal(tempJobId);
+                                window.targetDeletionProgress.updateProgressModal({
+                                    progress_percentage: 0,
+                                    processed_tasks: 0,
+                                    total_tasks: selectedIds.length,
+                                    message: 'Initializing deletion...',
+                                    status: 'pending'
+                                });
+                            }
+                            
+                            // Now make the AJAX call
+                            $.ajax({
+                                url: "{{ route('tasks.bulkDelete') }}",
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                },
+                                data: {
+                                    _token: "{{ csrf_token() }}",
+                                    ids: selectedIds,
+                                },
+                                success: function(response) {
+                                    console.log('Bulk delete response:', response);
+                                    console.log('Response type:', typeof response);
+                                    console.log('Response has job_id:', response && response.job_id);
+                                    console.log('Response keys:', response ? Object.keys(response) : 'null');
+                                    
+                                    // Check if async deletion was initiated
+                                    if (response && response.job_id) {
+                                        // Async deletion - start progress tracking with real job_id
+                                        console.log('Starting progress tracking for job:', response.job_id);
+                                        
+                                        if (window.targetDeletionProgress) {
+                                            try {
+                                                // Update modal with real job_id and start polling
+                                                window.targetDeletionProgress.currentJobId = response.job_id;
+                                                localStorage.setItem('target_deletion_job_id', response.job_id);
+                                                window.targetDeletionProgress.startPolling(response.job_id);
+                                                console.log('Progress tracking started successfully');
+                                            } catch (error) {
+                                                console.error('Error starting progress tracking:', error);
+                                                console.error('Error stack:', error.stack);
+                                                window.targetDeletionProgress.updateProgressModal({
+                                                    status: 'failed',
+                                                    error_message: 'Progress tracking failed: ' + error.message
+                                                });
+                                            }
+                                        }
+                                    } else {
+                                        // Synchronous deletion - update modal and reload
+                                        console.log('No job_id in response, treating as synchronous deletion');
+                                        console.log('Response:', JSON.stringify(response));
+                                        
+                                        if (window.targetDeletionProgress) {
+                                            window.targetDeletionProgress.updateProgressModal({
+                                                progress_percentage: 100,
+                                                status: 'completed',
+                                                message: response.message || 'Targets deleted successfully.'
+                                            });
+                                            
+                                            setTimeout(() => {
+                                                const modal = document.getElementById('targetDeletionProgressModal');
+                                                if (modal) {
+                                                    const bsModal = bootstrap.Modal.getInstance(modal);
+                                                    if (bsModal) {
+                                                        bsModal.hide();
+                                                    }
+                                                }
+                                                window.location.reload();
+                                            }, 1500);
+                                        } else {
+                                            Swal.fire('Deleted!', response.message || 'Targets deleted successfully.', 'success');
+                                            setTimeout(() => window.location.reload(), 1500);
+                                        }
+                                    }
+                                },
+                                error: function(xhr) {
+                                    console.error('Bulk delete error:', xhr);
+                                    
+                                    // Update modal with error
+                                    if (window.targetDeletionProgress) {
+                                        const errorMsg = xhr.responseJSON?.message || xhr.responseJSON?.error || 'Failed to delete targets.';
+                                        window.targetDeletionProgress.updateProgressModal({
+                                            status: 'failed',
+                                            error_message: errorMsg
+                                        });
+                                    } else {
+                                        Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to delete targets.', 'error');
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    
+                    return false;
+                });
+            }
+        }
+        
+        // Try to attach immediately
+        attachBulkDeleteHandler();
+        
+        // Also try after a short delay (in case datatable initializes later)
+        setTimeout(attachBulkDeleteHandler, 500);
+        setTimeout(attachBulkDeleteHandler, 1500);
+        
+        // Also try when the table is drawn
+        if ($.fn.DataTable && $('#targetsTable').length) {
+            $('#targetsTable').on('draw.dt', function() {
+                setTimeout(attachBulkDeleteHandler, 100);
             });
-        });
+        }
     });
   </script>
 @endpush

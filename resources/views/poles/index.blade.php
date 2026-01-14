@@ -45,31 +45,56 @@
           </div>
 
           <div class="col-sm-6">
-            <div class="mb-6">
-              <label for="wardSelect" class="form-label">
-                Select a file to import
-                <small>or <a href=""download>Download Sample</a>
-                  <small>
-              </label>
-              {{-- <form action="{{ route("import.device") }}" method="POST" enctype="multipart/form-data"> --}}
-              {{-- @csrf --}}
-              <div class="input-group">
-                <input type="file" name="file" class="form-control form-control-sm" style="height: 2.4rem; background-color: transparent" required>
-                <button type="submit" class="btn btn-sm btn-primary" data-toggle="tooltip" title="Import Devices">
-                  <i class="mdi mdi-upload"></i> Import
-                </button>
+            <div class="mb-3">
+              
+              <div class="import-section d-flex flex-column gap-2">
+                <label for="importPoles" class="form-label">Import Poles</label>
+                <form action="{{ route("import.device") }}" method="POST" enctype="multipart/form-data"
+                    class="import-form-group d-flex align-items-stretch mt-0">
+                  @csrf
+                  <div class="input-group input-group-sm import-input-wrapper">
+                    <input type="file" name="file" class="form-control form-control-sm import-file-input"
+                        accept=".xlsx,.xls,.csv" required>
+                    <button type="submit"
+                        class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1">
+                      <i class="mdi mdi-upload"></i>
+                      <span>Import</span>
+                    </button>
+                  </div>
+                </form>
+                <a href="{{ route('device.import.sample') }}" class="download-format-link" target="_blank">
+                  <i class="mdi mdi-download"></i>
+                  <span>Download Sample</span>
+                </a>
               </div>
-              {{-- </form> --}}
             </div>
           </div>
-
-        </div>
-        <div class="mt-3">
-          <button type="submit" class="btn btn-primary">Import Device</button>
         </div>
 
-    </div>
-    </form>
+        <!-- Progress Bar (hidden initially) -->
+        <div id="importProgressSection" class="row p-4" style="display: none;">
+          <div class="col-12">
+            <div class="card">
+              <div class="card-body">
+                <h6 class="card-title">Import Progress</h6>
+                <div class="progress mb-2" style="height: 25px;">
+                  <div id="importProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" 
+                       role="progressbar" style="width: 0%">
+                    <span id="importProgressText">0%</span>
+                  </div>
+                </div>
+                <div id="importProgressMessage" class="text-muted small"></div>
+                <div id="importErrorFileSection" style="display: none;" class="mt-3">
+                  <a id="importErrorFileLink" href="#" class="btn btn-sm btn-outline-danger" download>
+                    <i class="mdi mdi-download"></i> Download Error File
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </form>
+
     @if (session("success"))
       <div class="alert alert-success alert-dismissible fade show" role="alert">
         {{ session("success") }}
@@ -84,7 +109,15 @@
       </div>
     @endif
 
-  </div>
+    @if (session("import_errors_url"))
+      <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        Import completed with {{ session("import_errors_count", 0) }} error(s).
+        <a href="{{ session('import_errors_url') }}" class="alert-link" download>Download error file</a>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+      </div>
+    @endif
+
+    </div>
   </div>
 @endsection
 
@@ -140,7 +173,7 @@
         $('#panchayatSelect').prop('disabled', false).empty().append(
           '<option value="">Select a Panchayat</option>');
 
-        if (block) { // You're checking 'district' instead of 'block'
+        if (block) {
           $.ajax({
             url: '/jicr/panchayats/' + block,
             type: 'GET',
@@ -165,7 +198,7 @@
         $('#wardSelect').prop('disabled', false).empty().append(
           '<option value="">Select a Ward</option>');
 
-        if (block) { // You're checking 'district' instead of 'block'
+        if (block) {
           $.ajax({
             url: '/jicr/ward/' + block,
             type: 'GET',
@@ -184,7 +217,67 @@
           });
         }
       });
+
+      // Check if there's an import job ID in the session
+      @if(session('import_job_id'))
+        var jobId = '{{ session("import_job_id") }}';
+        startProgressPolling(jobId);
+      @endif
     });
+
+    function startProgressPolling(jobId) {
+      $('#importProgressSection').show();
+      
+      var pollInterval = setInterval(function() {
+        $.ajax({
+          url: '{{ route("device.import.progress", ":jobId") }}'.replace(':jobId', jobId),
+          type: 'GET',
+          dataType: 'json',
+          success: function(response) {
+            if (response.status === 'success') {
+              var progress = response.progress_percentage || 0;
+              var status = response.job_status;
+              
+              // Update progress bar
+              $('#importProgressBar').css('width', progress + '%');
+              $('#importProgressBar').text(Math.round(progress) + '%');
+              
+              // Update message
+              var message = response.message || 'Processing...';
+              $('#importProgressMessage').text(message);
+              
+              // If completed or failed, stop polling
+              if (status === 'completed' || status === 'failed') {
+                clearInterval(pollInterval);
+                
+                if (status === 'completed') {
+                  $('#importProgressBar').removeClass('progress-bar-animated');
+                  $('#importProgressBar').addClass('bg-success');
+                  $('#importProgressMessage').html('<strong>Import completed!</strong> ' + 
+                    'Success: ' + (response.success_count || 0) + 
+                    ', Errors: ' + (response.error_count || 0));
+                  
+                  // Show error file link if available
+                  if (response.error_file_url) {
+                    $('#importErrorFileLink').attr('href', response.error_file_url);
+                    $('#importErrorFileSection').show();
+                  }
+                } else {
+                  $('#importProgressBar').removeClass('progress-bar-animated');
+                  $('#importProgressBar').addClass('bg-danger');
+                  $('#importProgressMessage').html('<strong>Import failed!</strong> ' + 
+                    (response.message || 'An error occurred'));
+                }
+              }
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error('Error polling progress:', error);
+            // Continue polling even on error
+          }
+        });
+      }, 2000); // Poll every 2 seconds
+    }
   </script>
 @endpush
 

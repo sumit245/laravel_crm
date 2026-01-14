@@ -17,6 +17,13 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->command('backup:database')->dailyAt('00:00');
+        
+        // Process queue jobs every minute (if cron is available)
+        // This works even on shared hosting if cron is available
+        $schedule->command('queue:work --stop-when-empty --tries=3 --max-time=300')
+            ->everyMinute()
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     // protected function schedule(Schedule $schedule): void

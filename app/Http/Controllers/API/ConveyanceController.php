@@ -23,6 +23,8 @@ use Log;
 use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
+use App\Services\ConveyanceService;
+
 class ConveyanceController extends Controller
 {
     /**
@@ -302,6 +304,7 @@ class ConveyanceController extends Controller
             ]);
         }
     }
+    
     public function allowExpense(Request $request)
     {
         try {
@@ -380,4 +383,31 @@ class ConveyanceController extends Controller
         //
     }
 
+    /**
+     * Get allowed vehicles for a specific user.
+     *
+     * @param int $id
+     * @param ConveyanceService $conveyanceService
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getAllowedVehicles(int $id, ConveyanceService $conveyanceService)
+    {
+        try {
+            $vehicles = $conveyanceService->getAllowedVehicles($id);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Allowed vehicles fetched successfully',
+                'data' => $vehicles
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to fetch allowed vehicles',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
+

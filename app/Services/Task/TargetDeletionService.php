@@ -30,6 +30,9 @@ class TargetDeletionService extends BaseService
      */
     public function deleteTargets(array $taskIds, ?string $jobId = null): array
     {
+        // #region agent log
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'D','location'=>'TargetDeletionService.php:33','message'=>'deleteTargets called','data'=>['task_ids'=>$taskIds,'job_id'=>$jobId],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        // #endregion
         $result = [
             'poles_deleted' => 0,
             'surveyed_poles_deleted' => 0,
@@ -40,11 +43,18 @@ class TargetDeletionService extends BaseService
         ];
 
         foreach ($taskIds as $taskId) {
+            // Wrap each task deletion in its own transaction for atomicity
+            DB::beginTransaction();
+            
             try {
                 $task = StreetlightTask::with('poles')->find($taskId);
+                // #region agent log
+                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'D','location'=>'TargetDeletionService.php:52','message'=>'Task found, processing deletion','data'=>['task_id'=>$taskId,'poles_count'=>$task?->poles->count()??0],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                // #endregion
                 
                 if (!$task) {
                     Log::warning('Task not found for deletion', ['task_id' => $taskId]);
+                    DB::rollBack();
                     continue;
                 }
 
@@ -66,6 +76,9 @@ class TargetDeletionService extends BaseService
 
                 // Update streetlight counts
                 if ($task->site_id) {
+                    // #region agent log
+                    file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'E','location'=>'TargetDeletionService.php:75','message'=>'Updating streetlight counts','data'=>['site_id'=>$task->site_id,'surveyed_count'=>$surveyedCount,'installed_count'=>$installedCount],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                    // #endregion
                     $this->updateStreetlightCounts(
                         $task->site_id,
                         $surveyedCount,
@@ -79,8 +92,22 @@ class TargetDeletionService extends BaseService
 
                 // Delete the task
                 $task->delete();
+                // #region agent log
+                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'D','location'=>'TargetDeletionService.php:89','message'=>'Task and poles deleted, committing transaction','data'=>['task_id'=>$taskId],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                // #endregion
+
+                // Commit transaction for this task
+                DB::commit();
+                
+                Log::info('Successfully deleted task and related data', [
+                    'task_id' => $taskId,
+                    'poles_deleted' => $poles->count(),
+                    'surveyed_poles' => $surveyedCount,
+                    'installed_poles' => $installedCount
+                ]);
 
             } catch (\Exception $e) {
+                DB::rollBack();
                 Log::error('Error deleting target', [
                     'task_id' => $taskId,
                     'error' => $e->getMessage(),
@@ -89,6 +116,9 @@ class TargetDeletionService extends BaseService
                 throw $e;
             }
         }
+        // #region agent log
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'D','location'=>'TargetDeletionService.php:110','message'=>'deleteTargets completed','data'=>['total_poles_deleted'=>$result['poles_deleted'],'inventory_returned'=>$result['inventory_items_returned']],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        // #endregion
 
         return $result;
     }
@@ -113,10 +143,20 @@ class TargetDeletionService extends BaseService
         $dispatchesByPole = InventoryDispatch::where('streetlight_pole_id', $pole->id)->get();
 
         foreach ($dispatchesByPole as $dispatch) {
-            $this->returnInventoryFromDispatch($dispatch);
-            $processedDispatchIds[] = $dispatch->id;
-            $result['inventory_returned']++;
-            $result['dispatches_deleted']++;
+            try {
+                $this->returnInventoryFromDispatch($dispatch);
+                $processedDispatchIds[] = $dispatch->id;
+                $result['inventory_returned']++;
+                $result['dispatches_deleted']++;
+            } catch (\Exception $e) {
+                Log::error('Error processing dispatch for pole', [
+                    'pole_id' => $pole->id,
+                    'dispatch_id' => $dispatch->id,
+                    'error' => $e->getMessage()
+                ]);
+                // Continue with next dispatch
+                continue;
+            }
         }
 
         // Also check for dispatches by serial numbers from pole
@@ -186,9 +226,10 @@ class TargetDeletionService extends BaseService
      */
     protected function returnInventoryFromDispatch(InventoryDispatch $dispatch): void
     {
+        // Note: This method is called within a transaction from processPoleDeletion
+        // So we don't need another transaction wrapper here
+        
         try {
-            DB::beginTransaction();
-
             // Find the inventory item by serial number
             $inventory = InventroyStreetLightModel::where('serial_number', $dispatch->serial_number)
                 ->first();
@@ -219,10 +260,7 @@ class TargetDeletionService extends BaseService
 
             // Delete the dispatch record
             $dispatch->delete();
-
-            DB::commit();
         } catch (\Exception $e) {
-            DB::rollBack();
             Log::error('Error returning inventory from dispatch', [
                 'dispatch_id' => $dispatch->id,
                 'serial_number' => $dispatch->serial_number,

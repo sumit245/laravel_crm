@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
+use App\Http\Controllers\{API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, QueueProcessorController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -21,6 +21,7 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 
 Route::get('privacy-policy', fn() => view('privacy'));
 Route::get('terms-and-conditions', fn() => view('terms'));
+Route::get('/queue/process', [QueueProcessorController::class, 'process'])->name('queue.process');
 Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
 Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
 Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
@@ -272,6 +273,8 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     // Device Import
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
+    Route::get('/devices-import/sample', [DeviceController::class, 'downloadSample'])->name('device.import.sample');
+    Route::get('/devices-import/progress/{jobId}', [DeviceController::class, 'getImportProgress'])->name('device.import.progress');
 
     // RMS Push
     Route::get('/rms-export', [RMSController::class, 'index'])->name('rms.index');
