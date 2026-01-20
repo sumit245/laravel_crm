@@ -11,6 +11,8 @@ use App\Models\User;
 use App\Policies\ProjectPolicy;
 use App\Policies\StorePolicy;
 use App\Policies\UserPolicy;
+use App\Models\ActivityLog;
+use App\Policies\ActivityLogPolicy;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -23,6 +25,7 @@ class AuthServiceProvider extends ServiceProvider
         Project::class => ProjectPolicy::class,
         User::class => UserPolicy::class,
         Stores::class => StorePolicy::class,
+        ActivityLog::class => ActivityLogPolicy::class,
     ];
 
     /**

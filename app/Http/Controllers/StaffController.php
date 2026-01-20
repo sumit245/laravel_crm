@@ -7,6 +7,8 @@ use App\Enums\UserRole;
 use App\Helpers\WhatsappHelper;
 use App\Imports\StaffImport;
 use App\Models\DiscussionPoint;
+use App\Models\InventoryDispatch;
+use App\Models\InventroyStreetLightModel;
 use App\Models\Meet;
 use App\Models\Pole;
 use App\Models\Project;
@@ -903,5 +905,225 @@ class StaffController extends Controller
         }
 
         return view('engineer', compact('engineerids', 'engineerPoleCounts', 'engineerPoleCountsToday'));
+    }
+
+    /**
+     * Delete all entries from a panchayat
+     * Returns consumed inventory back to vendor in dispatched state
+     * Updates number_of_surveyed_poles and number_of_installed_poles in streetlights table
+     */
+    public function deletePanchayat(Request $request, $projectId, $panchayat)
+    {
+        try {
+            DB::beginTransaction();
+
+            // Get all streetlight sites for this panchayat and project
+            $streetlights = Streetlight::where('project_id', $projectId)
+                ->where('panchayat', $panchayat)
+                ->get();
+
+            if ($streetlights->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No streetlight sites found for this panchayat.'
+                ], 404);
+            }
+
+            $totalSurveyed = 0;
+            $totalInstalled = 0;
+            $polesDeleted = 0;
+            $inventoryReturned = 0;
+
+            // Process each streetlight site
+            foreach ($streetlights as $streetlight) {
+                // Get all tasks for this site
+                $tasks = StreetlightTask::where('site_id', $streetlight->id)->get();
+
+                foreach ($tasks as $task) {
+                    // Get all poles for this task
+                    $poles = Pole::where('task_id', $task->id)->get();
+
+                    foreach ($poles as $pole) {
+                        // Count surveyed and installed
+                        if ($pole->isSurveyDone) {
+                            $totalSurveyed++;
+                        }
+                        if ($pole->isInstallationDone) {
+                            $totalInstalled++;
+                        }
+
+                        // Return inventory to dispatched state (not consumed)
+                        $serialNumbers = array_filter([
+                            $pole->panel_qr,
+                            $pole->battery_qr,
+                            $pole->luminary_qr,
+                        ]);
+
+                        foreach ($serialNumbers as $serialNumber) {
+                            if (empty($serialNumber)) continue;
+
+                            // Find dispatch record
+                            $dispatch = InventoryDispatch::where('serial_number', $serialNumber)
+                                ->where('streetlight_pole_id', $pole->id)
+                                ->first();
+
+                            if ($dispatch) {
+                                // Update dispatch to dispatched state (not consumed)
+                                $dispatch->update([
+                                    'is_consumed' => false,
+                                    'streetlight_pole_id' => null,
+                                ]);
+
+                                // Update inventory quantity back to 0 (dispatched)
+                                $inventory = InventroyStreetLightModel::where('serial_number', $serialNumber)->first();
+                                if ($inventory) {
+                                    $inventory->quantity = 0; // Dispatched, not in stock
+                                    $inventory->save();
+                                }
+
+                                $inventoryReturned++;
+                            }
+                        }
+
+                        $polesDeleted++;
+                    }
+
+                    // Delete poles
+                    Pole::where('task_id', $task->id)->delete();
+
+                    // Delete task
+                    $task->delete();
+                }
+
+                // Update streetlight counts
+                $streetlight->update([
+                    'number_of_surveyed_poles' => 0,
+                    'number_of_installed_poles' => 0,
+                ]);
+
+                // Delete streetlight site
+                $streetlight->delete();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Panchayat '{$panchayat}' deleted successfully.",
+                'data' => [
+                    'poles_deleted' => $polesDeleted,
+                    'inventory_returned' => $inventoryReturned,
+                    'surveyed_poles_removed' => $totalSurveyed,
+                    'installed_poles_removed' => $totalInstalled,
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to delete panchayat', [
+                'project_id' => $projectId,
+                'panchayat' => $panchayat,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete panchayat: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Push panchayat to RMS server
+     */
+    public function pushPanchayatToRMS(Request $request, $projectId, $panchayat)
+    {
+        try {
+            // Get all streetlight sites for this panchayat and project
+            $streetlights = Streetlight::where('project_id', $projectId)
+                ->where('panchayat', $panchayat)
+                ->get();
+
+            if ($streetlights->isEmpty()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No streetlight sites found for this panchayat.'
+                ], 404);
+            }
+
+            $responses = [];
+            $successCount = 0;
+            $errorCount = 0;
+
+            foreach ($streetlights as $streetlight) {
+                // Get all tasks for this site
+                $tasks = StreetlightTask::where('site_id', $streetlight->id)->get();
+
+                foreach ($tasks as $task) {
+                    // Get all installed poles for this task
+                    $poles = Pole::where('task_id', $task->id)
+                        ->where('isInstallationDone', true)
+                        ->get();
+
+                    foreach ($poles as $pole) {
+                        try {
+                            $engineer = $task->engineer;
+                            $approved_by = $engineer ? ($engineer->firstName . ' ' . $engineer->lastName) : 'System';
+
+                            // Push to RMS
+                            $apiResponse = \App\Helpers\RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
+
+                            if ($apiResponse && $apiResponse->successful()) {
+                                $successCount++;
+                                $responses[] = [
+                                    'pole_id' => $pole->id,
+                                    'status' => 'success',
+                                    'message' => 'Pushed successfully'
+                                ];
+                            } else {
+                                $errorCount++;
+                                $responses[] = [
+                                    'pole_id' => $pole->id,
+                                    'status' => 'error',
+                                    'message' => $apiResponse ? 'API returned error' : 'No response from API'
+                                ];
+                            }
+                        } catch (\Exception $e) {
+                            $errorCount++;
+                            Log::error('Failed to push pole to RMS', [
+                                'pole_id' => $pole->id,
+                                'error' => $e->getMessage()
+                            ]);
+
+                            $responses[] = [
+                                'pole_id' => $pole->id,
+                                'status' => 'error',
+                                'message' => $e->getMessage()
+                            ];
+                        }
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => "Panchayat '{$panchayat}' pushed to RMS. Success: {$successCount}, Errors: {$errorCount}",
+                'data' => [
+                    'success_count' => $successCount,
+                    'error_count' => $errorCount,
+                    'responses' => $responses
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to push panchayat to RMS', [
+                'project_id' => $projectId,
+                'panchayat' => $panchayat,
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to push panchayat to RMS: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

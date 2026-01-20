@@ -84,53 +84,45 @@
       </div>
     </form>
     <!-- Candidate Data Table with scroll support -->
+    <form method="POST" action="{{ route('candidates.bulkUpdate') }}" id="candidateBulkForm">
+      @csrf
+      <div class="mb-3" id="bulk-action-buttons" style="display: none;">
+        <button type="submit" name="action" value="accept" class="btn btn-success btn-sm">
+          Accept
+        </button>
+        <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">
+          Reject
+        </button>
+      </div>
+    </form>
     <div class="table-responsive">
-      <form method="POST" action="{{ route('candidates.bulkUpdate') }}">
-        @csrf
-        <div class="mb-3" id="bulk-action-buttons" style="display: none;">
-          <button type="submit" name="action" value="accept" class="btn btn-success btn-sm">
-            Accept
-          </button>
-          <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm">
-            Reject
-          </button>
-        </div>
-      <x-data-table id="candidateTable" class="table-striped table-sm">
-        <x-slot:thead>
-          <tr>
-            <th>
-              <input type="checkbox" id="select-all" />
-            </th>
-            <th>Name</th>
-            <!-- <th>Email</th> -->
-            <!-- <th>Phone</th> -->
-            <th>Date of Offer</th>
-            <!-- <th>Address</th> -->
-            <th>Designation</th>
-            <th>Department</th>
-            <!-- <th>Location</th> -->
-            <th>Experience</th>
-            <!-- <th>Last Salary</th> -->
-            <th>Candidate Status</th>
-            <th>Company Response</th>
-          </tr>
-        </x-slot:thead>
-        <x-slot:tbody>
+      <x-datatable id="candidateTable" 
+          title="Candidates" 
+          :columns="[
+              ['title' => 'Name', 'width' => '15%'],
+              ['title' => 'Date of Offer', 'width' => '12%'],
+              ['title' => 'Designation', 'width' => '15%'],
+              ['title' => 'Department', 'width' => '15%'],
+              ['title' => 'Experience', 'width' => '10%'],
+              ['title' => 'Candidate Status', 'width' => '15%'],
+              ['title' => 'Company Response', 'width' => '13%'],
+            ]" 
+          :exportEnabled="true" 
+          :importEnabled="false" 
+          :bulkDeleteEnabled="true"
+          :bulkDeleteRoute="route('candidates.bulkDelete')"
+          pageLength="50" 
+          searchPlaceholder="Search candidates...">
           @foreach ($candidates as $index => $candidate)
             <tr>
               <td>
-                <input type="checkbox" name="selected_candidates[]" value="{{ $candidate->id }}" class="candidate-checkbox" />
+                <input type="checkbox" name="selected_candidates[]" value="{{ $candidate->id }}" form="candidateBulkForm" class="row-checkbox candidate-checkbox" />
               </td>
               <td class="text-wrap">{{ $candidate->name }}</td>
-              <!-- <td class="text-wrap">{{ $candidate->email }}</td> -->
-              <!-- <td>{{ $candidate->phone }}</td> -->
               <td>{{ $candidate->date_of_offer }}</td>
-              <!-- <td class="text-wrap">{{ $candidate->address }}</td> -->
               <td>{{ $candidate->designation }}</td>
               <td>{{ $candidate->department }}</td>
-              <!-- <td>{{ $candidate->location }}</td> -->
               <td>{{ $candidate->experience }} yrs</td>
-              <!-- <td>₹{{ number_format($candidate->last_salary, 2) }}</td> -->
               <td>
                 <span class="badge 
                   @if ($candidate->status == 0) bg-warning 
@@ -145,24 +137,22 @@
                     Success
                   @endif
                 </span>
-             
-              <a href="{{ route('admin-preview', $candidate->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-                  <i class="mdi mdi-eye"></i>
-              </a>
-
-              @if ($candidate->id)
-                <button
-                  type="button"
-                  class="btn btn-icon btn-danger delete-staff"
-                  data-toggle="tooltip"
-                  title="Delete Staff"
-                  data-url="{{ route('candidates.destroy', $candidate->id) }}"
-                  onclick="deleteCandidate(this)"
-                >
-                  <i class="mdi mdi-delete"></i>
-                </button>
-              @endif
-            </td>
+                <a href="{{ route('admin-preview', $candidate->id) }}" class="btn btn-icon btn-info ml-1" data-toggle="tooltip" title="View Details">
+                    <i class="mdi mdi-eye"></i>
+                </a>
+                @if ($candidate->id)
+                  <button
+                    type="button"
+                    class="btn btn-icon btn-danger delete-staff ml-1"
+                    data-toggle="tooltip"
+                    title="Delete Staff"
+                    data-url="{{ route('candidates.destroy', $candidate->id) }}"
+                    onclick="deleteCandidate(this)"
+                  >
+                    <i class="mdi mdi-delete"></i>
+                  </button>
+                @endif
+              </td>
               <td class="text-center">
                 <span class="badge 
                   @if (is_null($candidate->company_response)) bg-warning 
@@ -180,8 +170,7 @@
               </td>
             </tr>
           @endforeach
-        </x-slot:tbody>
-      </x-data-table>
+      </x-datatable>
       </form>
     </div>
   </div>

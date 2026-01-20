@@ -77,29 +77,25 @@
     </div>
     <div class="card-body">
       <div class="table-responsive">
-        <x-data-table id="convenienceTable" class="table-bordered table-striped table-sm mt-4 table table">
-          <x-slot:thead class="table-white">
-            <tr>
-
-              <th><input type="checkbox" id="selectAll" /></th>
-              <th>Name</th>
-              <!-- <th>Employee Id</th> -->
-               <th>Date</th>
-              <!-- <th>Department</th> -->
-              <th>Distance</th>
-              <th>Amount</th>
-              <th>Status</th>
-              <th>Actions</th>
-            </tr>
-          </x-slot:thead>
-          <x-slot:tbody>
+        <x-datatable id="convenienceTable" 
+            title="Convenience Requests" 
+            :columns="[
+                ['title' => 'Name', 'width' => '20%'],
+                ['title' => 'Date', 'width' => '15%'],
+                ['title' => 'Distance', 'width' => '12%'],
+                ['title' => 'Amount', 'width' => '12%'],
+                ['title' => 'Status', 'width' => '15%'],
+              ]" 
+            :exportEnabled="true" 
+            :importEnabled="false" 
+            :bulkDeleteEnabled="true"
+            :bulkDeleteRoute="route('conveyance.bulkDelete')"
+            pageLength="50" 
+            searchPlaceholder="Search convenience requests...">
             @foreach ($cons as $row)
               <tr data-id="{{ $row->id }}">
-                <td><input type="checkbox" class="checkboxItem" /></td>
                 <td>{{ $row->user->firstName ?? "N/A" }} {{ $row->user->lastName ?? "N/A" }}</td>
-                <!-- <td>{{ $row->user->id ?? "N/A" }}</td> -->
-                 <td>{{ \Carbon\Carbon::parse($row->created_at)->format('d-m-Y') }}</td>
-                <!-- <td>{{ $row->department ?? "N/A" }}</td> -->
+                <td>{{ \Carbon\Carbon::parse($row->created_at)->format('d-m-Y') }}</td>
                 <td>{{ $row->kilometer ?? "N/A" }}</td>
                 <td>{{ $row->amount ?? 0 }}</td>
                 <td class="text-center">
@@ -112,35 +108,13 @@
                   @endif
                 </td>
                 <td class="text-center">
-                  <a href="{{ route("convenience.details", $row->id) }}" class="btn btn-sm btn-info"
-                     >
+                  <a href="{{ route("convenience.details", $row->id) }}" class="btn btn-sm btn-info">
                     <i class="mdi mdi-eye"></i>
                   </a>
-                  <!-- @if ($row->status === null)
-                    <form action="{{ route("conveyance.accept", $row->id) }}" method="POST"
-                      style="display: inline-block;" class="action-form" data-action="accept">
-                      @csrf
-                      <button type="button" class="btn btn-sm btn-warning action-btn" data-toggle="tooltip"
-                        title="Accept">
-                        <i class="mdi mdi-check"></i>
-                      </button>
-                    </form>
-
-                    <form action="{{ route("conveyance.reject", $row->id) }}" method="POST"
-                      style="display: inline-block;" class="action-form" data-action="reject">
-                      @csrf
-                      <button type="button" class="btn btn-sm btn-danger action-btn" data-toggle="tooltip"
-                        title="Reject">
-                        <i class="mdi mdi-close"></i>
-                      </button>
-                    </form>
-                  @endif -->
-
                 </td>
               </tr>
             @endforeach
-          </x-slot:tbody>
-        </x-data-table>
+        </x-datatable>
         <form action="{{ route('conveyance.bulkAction') }}" method="POST" id="bulkActionForm">
           @csrf
           <input type="hidden" name="action_type" id="action_type">

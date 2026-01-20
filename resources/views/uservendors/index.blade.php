@@ -52,30 +52,16 @@
                                 : '')
                             : '');
                     $managerName = $member->projectManager ? $member->projectManager->name : '';
-                    // Get districts from vendor's projects
-$districtNames = collect();
-foreach ($member->projects as $project) {
-    if ($project->project_type == 1) {
-        // Streetlight project - get districts from streetlights
-        $districts = \App\Models\Streetlight::where('project_id', $project->id)
-            ->whereNotNull('district')
-            ->distinct()
-            ->pluck('district');
-        $districtNames = $districtNames->merge($districts);
-    } else {
-        // Rooftop project - get districts from sites
-        $districts = \App\Models\Site::where('project_id', $project->id)
-            ->whereNotNull('district')
-            ->with('districtRelation')
-            ->get()
-            ->map(function ($site) {
-                return $site->districtRelation ? $site->districtRelation->name : null;
-            })
-            ->filter();
-        $districtNames = $districtNames->merge($districts);
-    }
-}
-$districtNames = $districtNames->unique()->filter()->join(', ');
+                    // Get districts from vendor's project assignments (pivot)
+                    $districtNames = $member->projects
+                        ->map(function ($project) {
+                            return $project->pivot && $project->pivot->district_id
+                                ? optional(\App\Models\City::find($project->pivot->district_id))->name
+                                : null;
+                        })
+                        ->filter()
+                        ->unique()
+                        ->join(', ');
                 @endphp
                 <tr>
                     <td>

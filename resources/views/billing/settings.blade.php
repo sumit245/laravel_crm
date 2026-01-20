@@ -49,40 +49,41 @@
                     <div class="card shadow-sm">
                       <div class="card-body">
                         <div class="table-responsive">
-                          <x-data-table id="vehicleTable" class="table table-bordered table-striped table-sm display nowrap" style="width:100%">
-          <x-slot:thead class="table-light">
-            <tr>
-              <th>Vehicle Name</th>
-              <th>Category</th>
-              <th>Sub Category</th>
-              <th>Rate/KM</th>
-              <th>Actions</th>
-            </tr>
-          </x-slot:thead>
-          <x-slot:tbody>
-            @foreach ($vehicles as $vehicle)
-              <tr>
-                <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
-                <td>{{ $vehicle->category ?? "N/A" }}</td>
-                <td>{{ $vehicle->sub_category }}</td>
-                <td>{{ $vehicle->rate }}</td>
-                <td>
-                  <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
-                    <i class="mdi mdi-pencil"></i>
-                  </a>
-                  <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
-                    @csrf
-                    @method('DELETE')
-                    <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
-                      onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
-                      <i class="mdi mdi-delete"></i>
-                    </button>
-                  </form>
-                </td>
-              </tr>
-            @endforeach
-          </x-slot:tbody>
-        </x-data-table>
+                          <x-datatable id="vehicleTable" 
+                              title="Vehicles" 
+                              :columns="[
+                                  ['title' => 'Vehicle Name', 'width' => '25%'],
+                                  ['title' => 'Category', 'width' => '20%'],
+                                  ['title' => 'Sub Category', 'width' => '20%'],
+                                  ['title' => 'Rate/KM', 'width' => '15%'],
+                                ]" 
+                              :exportEnabled="true" 
+                              :importEnabled="false" 
+                              :bulkDeleteEnabled="false"
+                              pageLength="50" 
+                              searchPlaceholder="Search vehicles...">
+                              @foreach ($vehicles as $vehicle)
+                                <tr>
+                                  <td>{{ $vehicle->vehicle_name ?? "N/A" }}</td>
+                                  <td>{{ $vehicle->category ?? "N/A" }}</td>
+                                  <td>{{ $vehicle->sub_category }}</td>
+                                  <td>{{ $vehicle->rate }}</td>
+                                  <td class="text-center">
+                                    <a href="{{ route('billing.editvehicle', $vehicle->id) }}" class="btn btn-icon btn-warning" title="Edit Vehicle">
+                                      <i class="mdi mdi-pencil"></i>
+                                    </a>
+                                    <form action="{{ route('billing.deletevehicle', $vehicle->id) }}" method="POST" style="display:inline;">
+                                      @csrf
+                                      @method('DELETE')
+                                      <button type="submit" class="btn btn-icon btn-danger" title="Delete Vehicle"
+                                        onclick="return confirm('Are you sure you want to delete {{ $vehicle->vehicle_name }}?')">
+                                        <i class="mdi mdi-delete"></i>
+                                      </button>
+                                    </form>
+                                  </td>
+                                </tr>
+                              @endforeach
+                          </x-datatable>
                         </div>
                       </div>
                     </div>
@@ -97,28 +98,27 @@
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
-                  <x-data-table id="userTable" class="table-bordered table-striped table-sm table">
-                    <x-slot:thead class="table-light">
-                      <tr>
-                        <th><input type="checkbox" id="selectAllUsers"></th>
-                        <!-- <th>#</th> -->
-                        <th>Name</th>
-                        <th>Role</th>
-                        <th>Email</th>
-                        <th>Category</th>
-                        <th>Actions</th>
-                      </tr>
-                    </x-slot:thead>
-                  <x-slot:tbody>
+                  <x-datatable id="userTable" 
+                      title="Users" 
+                      :columns="[
+                          ['title' => 'Name', 'width' => '20%'],
+                          ['title' => 'Role', 'width' => '15%'],
+                          ['title' => 'Email', 'width' => '25%'],
+                          ['title' => 'Category', 'width' => '15%'],
+                        ]" 
+                      :exportEnabled="true" 
+                      :importEnabled="false" 
+                      :bulkDeleteEnabled="true"
+                      :bulkDeleteRoute="route('billing.bulkDeleteUsers')"
+                      pageLength="50" 
+                      searchPlaceholder="Search users...">
                       @foreach ($users as $user)
                         <tr>
-                          <td><input type="checkbox" class="user-checkbox" data-id="{{ $user->id }}"></td>
-                          <!-- <td>{{ $user->id ?? 0 }}</td> -->
                           <td>{{ $user->firstName ?? "N/A" }} {{ $user->lastName ?? "N/A" }}</td>
                           <td>{{ $user->role ?? "N/A" }}</td>
                           <td>{{ $user->email ?? "N/A" }}</td>
                           <td>{{ $user->usercategory->category_code ?? "N/A" }}</td>
-                          <td>
+                          <td class="text-center">
                             <a href="{{ route("billing.edituser", $user->id) }}" class="btn btn-icon btn-warning"
                               title="Edit Category">
                               <i class="mdi mdi-pencil"></i>
@@ -126,8 +126,7 @@
                           </td>
                         </tr>
                       @endforeach
-                     </x-slot:tbody>
-                   </x-data-table>
+                  </x-datatable>
                 </div>
               </div>
             </div>
@@ -151,23 +150,22 @@
                     </div>
                 @endif
                 <div class="table-responsive">
-                  <x-data-table id="categoryTable" class="table-bordered table-striped table-sm table">
-                    <x-slot:thead class="table-light">
-                      <tr>
-                        <!-- <th>#</th> -->
-                        <th>User Category</th>
-                        <th>Vehicles Allowed</th>
-                        <th>City Category</th>
-                        <th>Daily Amount</th>
-                        <th>Actions</th>
-                      </tr>
-                    </x-slot:thead>
-                    <x-slot:tbody>
+                  <x-datatable id="categoryTable" 
+                      title="Categories" 
+                      :columns="[
+                          ['title' => 'User Category', 'width' => '20%'],
+                          ['title' => 'Vehicles Allowed', 'width' => '30%'],
+                          ['title' => 'City Category', 'width' => '15%'],
+                          ['title' => 'Daily Amount', 'width' => '15%'],
+                        ]" 
+                      :exportEnabled="true" 
+                      :importEnabled="false" 
+                      :bulkDeleteEnabled="false"
+                      pageLength="50" 
+                      searchPlaceholder="Search categories...">
                       @foreach ($categories as $cat)
                         <tr>
-                          <!-- <td>{{ $cat->id }}</td> -->
                           <td>{{ $cat->category_code }}</td>
-                          <!-- <td>{{ $cat->allowed_vehicles }}</td> -->
                           <td>
                             @php
                               $vehicleIds = json_decode($cat->allowed_vehicles, true);
@@ -186,7 +184,7 @@
                           </td>
                           <td>{{ $cat->city_category ?? 'Define' }}</td>
                           <td>{{ $cat->dailyamount ?? "null" }}</td>
-                          <td>
+                          <td class="text-center">
                             <a href="{{ route("billing.editcategory", $cat->id) }}" class="btn btn-icon btn-warning">
                               <i class="mdi mdi-pencil"></i>
                             </a>
@@ -202,8 +200,7 @@
                           </td>
                         </tr>
                       @endforeach
-                    </x-slot:tbody>
-                  </x-data-table>
+                  </x-datatable>
                 </div>
               </div>
             </div>
@@ -217,36 +214,30 @@
             <div class="card shadow-sm">
               <div class="card-body">
                 <div class="table-responsive">
-                  <x-data-table id="allowedExpenseTable" class="table table-bordered table-striped table-sm">
-                    <x-slot:thead class="table-light">
-                      <tr>
-                        <th>
-                          <input type="checkbox" id="selectAllExpense" />
-                        </th>
-                        <th>City Name</th>
-                        <th>City Category</th>
-                        <th>Actions</th>
-                      </tr>
-                    </x-slot:thead>
-                    <x-slot:tbody>
-                      <!-- Example Row -->
+                  <x-datatable id="allowedExpenseTable" 
+                      title="City Categories" 
+                      :columns="[
+                          ['title' => 'City Name', 'width' => '40%'],
+                          ['title' => 'City Category', 'width' => '40%'],
+                        ]" 
+                      :exportEnabled="true" 
+                      :importEnabled="false" 
+                      :bulkDeleteEnabled="true"
+                      :bulkDeleteRoute="route('billing.bulkDeleteCities')"
+                      pageLength="50" 
+                      searchPlaceholder="Search cities...">
                       @foreach($cities as $city)
-                      <tr>
-                        <td>
-                          <input type="checkbox" class="expenseCheckbox" data-id="{{ $city->id }}" />
-                        </td>
-                        <td>{{ $city->name }}</td>
-                        <td>{{ $city->category }}</td>
-                        <td>
-                          <a href="{{ route('billing.allowedexpense', $city->id) }}" class="btn btn-icon btn-warning">
-                              <i class="mdi mdi-pencil"></i>
-                          </a>
-                        </td>
-                      </tr>
+                        <tr>
+                          <td>{{ $city->name }}</td>
+                          <td>{{ $city->category }}</td>
+                          <td class="text-center">
+                            <a href="{{ route('billing.allowedexpense', $city->id) }}" class="btn btn-icon btn-warning">
+                                <i class="mdi mdi-pencil"></i>
+                            </a>
+                          </td>
+                        </tr>
                       @endforeach
-                      <!-- Add more rows as needed -->
-                    </x-slot:tbody>
-                  </x-data-table>
+                  </x-datatable>
                 </div>
               </div>
             </div>
@@ -389,108 +380,27 @@
         $('#vehiclesAllowed').select2('open');
       });
       
-      // Initialize DataTables
-      $('#userTable').DataTable({
-        dom: "<'row'<'col-sm-12'f>>" +
-          "<'row'<'col-sm-12'tr>>" +
-          "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-        buttons: [{
-            extend: 'excel',
-            text: '<i class="mdi mdi-file-excel text-light"></i>',
-            className: 'btn btn-icon btn-dark',
-            titleAttr: 'Export to Excel'
-          },
-          {
-            extend: 'pdf',
-            text: '<i class="mdi mdi-file-pdf"></i>',
-            className: 'btn btn-icon btn-danger',
-            titleAttr: 'Export to PDF'
-          },
-          {
-            extend: 'print',
-            text: '<i class="mdi mdi-printer"></i>',
-            className: 'btn btn-icon btn-info',
-            titleAttr: 'Print Table'
-          }
-        ],
-        paging: true,
-        pageLength: 50,
-        searching: true,
-        ordering: true,
-        responsive: true,
-        language: {
-          search: '',
-          searchPlaceholder: 'Search Users'
+      // DataTables are now initialized automatically by the x-datatable component
+      // Reinitialize when tabs are shown to ensure proper column adjustment
+      $('#v-pills-tab button[data-bs-toggle="pill"]').on('shown.bs.tab', function (e) {
+        const target = $(e.target).data('bs-target');
+        let tableId = '';
+        
+        if (target === '#v-pills-user') {
+          tableId = '#userTable';
+        } else if (target === '#v-pills-category') {
+          tableId = '#categoryTable';
+        } else if (target === '#v-pills-allowed-expense') {
+          tableId = '#allowedExpenseTable';
         }
-      });
-
-
-      $('#categoryTable').DataTable({
-        dom: "<'row'<'col-sm-12'f>>" +
-          "<'row'<'col-sm-12'tr>>" +
-          "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-        buttons: [{
-            extend: 'excel',
-            text: '<i class="mdi mdi-file-excel text-light"></i>',
-            className: 'btn btn-icon btn-dark',
-            titleAttr: 'Export to Excel'
-          },
-          {
-            extend: 'pdf',
-            text: '<i class="mdi mdi-file-pdf"></i>',
-            className: 'btn btn-icon btn-danger',
-            titleAttr: 'Export to PDF'
-          },
-          {
-            extend: 'print',
-            text: '<i class="mdi mdi-printer"></i>',
-            className: 'btn btn-icon btn-info',
-            titleAttr: 'Print Table'
-          }
-        ],
-        paging: true,
-        pageLength: 50,
-        searching: true,
-        ordering: true,
-        responsive: true,
-        language: {
-          search: '',
-          searchPlaceholder: 'Search Categories'
-        }
-      });
-
-      // Initialize DataTable for City Category (Allowed Expense)
-      $('#allowedExpenseTable').DataTable({
-        dom: "<'row'<'col-sm-12'f>>" +
-          "<'row'<'col-sm-12'tr>>" +
-          "<'row my-4'<'col-sm-5'i><'col-sm-7'p>>",
-        buttons: [{
-            extend: 'excel',
-            text: '<i class="mdi mdi-file-excel text-light"></i>',
-            className: 'btn btn-icon btn-dark',
-            titleAttr: 'Export to Excel'
-          },
-          {
-            extend: 'pdf',
-            text: '<i class="mdi mdi-file-pdf"></i>',
-            className: 'btn btn-icon btn-danger',
-            titleAttr: 'Export to PDF'
-          },
-          {
-            extend: 'print',
-            text: '<i class="mdi mdi-printer"></i>',
-            className: 'btn btn-icon btn-info',
-            titleAttr: 'Print Table'
-          }
-        ],
-        paging: true,
-        pageLength: 50,
-        searching: true,
-        ordering: true,
-        responsive: true,
-        language: {
-          search: '',
-          searchPlaceholder: 'Search Cities'
+        
+        if (tableId) {
+          setTimeout(function() {
+            const table = $(tableId).DataTable();
+            if (table) {
+              table.columns.adjust().draw();
+            }
+          }, 100);
         }
       });
 

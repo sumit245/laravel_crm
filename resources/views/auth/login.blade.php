@@ -28,12 +28,12 @@
                 </span>
                 @error('password')
                     <span class="invalid-feedback" role="alert">
-                        <strong>{{ $message }}</strong>
+                        <strong>{{omm. $message }}</strong>
                     </span>
                 @enderror
             </div>
 
-            <div class="form-check mx-sm-1">
+            <div class="form-group position-relative">
                 <input type="checkbox" name="remember" class="form-check-input" id="remember"
                     {{ old('remember') ? 'checked' : '' }}
                     aria-label="Keep me signed in"

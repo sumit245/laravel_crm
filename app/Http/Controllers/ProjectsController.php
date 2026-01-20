@@ -16,6 +16,7 @@ use App\Models\Task;
 use App\Models\User;
 use App\Jobs\ProcessTargetDeletionChunk;
 use App\Services\Task\TargetDeletionService;
+use App\Services\Logging\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -35,8 +36,10 @@ class ProjectsController extends Controller
      *
      * @param User $user
      */
-    public function __construct(public Project $project)
-    {
+    public function __construct(
+        public Project $project,
+        protected ActivityLogger $activityLogger
+    ) {
     }
 
     /**
@@ -81,6 +84,10 @@ class ProjectsController extends Controller
 
         try {
             $project = Project::create($validated);
+
+            $this->activityLogger->log('project', 'created', $project, [
+                'description' => 'Project created.',
+            ]);
 
             return redirect()->route('projects.show', $project->id)
                 ->with('success', 'Project created successfully.');
@@ -289,10 +296,33 @@ class ProjectsController extends Controller
             });
         $reassignVendors = $reassignVendorsQuery->get();
 
-        $streetlightDistricts = Streetlight::where('project_id', $id)
-            ->select('district')
-            ->distinct()
-            ->get();
+        // Districts for this project (for vendor assignment)
+        // For streetlight projects, use distinct streetlight.district names mapped to City records
+        // For rooftop projects, use distinct site districts via districtRelation
+        $projectDistricts = collect();
+        if ($project->project_type == 1) {
+            $districtNames = Streetlight::where('project_id', $project->id)
+                ->whereNotNull('district')
+                ->distinct()
+                ->pluck('district');
+
+            if ($districtNames->isNotEmpty()) {
+                $projectDistricts = \App\Models\City::whereIn('name', $districtNames->toArray())
+                    ->orderBy('name')
+                    ->get();
+            }
+        } else {
+            $siteDistricts = $project->sites()
+                ->whereNotNull('district')
+                ->with('districtRelation')
+                ->get()
+                ->map(function (Site $site) {
+                    return $site->districtRelation;
+                })
+                ->filter();
+
+            $projectDistricts = $siteDistricts->unique('id')->sortBy('name')->values();
+        }
 
         $data = [
             'project' => $project,
@@ -314,7 +344,8 @@ class ProjectsController extends Controller
             'isProjectManager' => $isProjectManager,
             'initialStockValue' => $initialStockValue,
             'inStoreStockValue' => $inStoreStockValue,
-            'dispatchedStockValue' => $dispatchedStockValue
+            'dispatchedStockValue' => $dispatchedStockValue,
+            'projectDistricts' => $projectDistricts,
         ];
 
         if ($project->project_type == 1) {
@@ -481,6 +512,7 @@ class ProjectsController extends Controller
             $validated = $request->validate([
                 'user_ids' => 'required|array',
                 'user_ids.*' => 'exists:users,id',
+                'district_id' => 'nullable|exists:cities,id',
             ]);
 
             $user = auth()->user();
@@ -488,6 +520,27 @@ class ProjectsController extends Controller
 
             // Get users with their roles to set pivot role correctly
             $usersToAssign = User::whereIn('id', $validated['user_ids'])->get();
+
+            $isVendorAssignmentRoute = $request->routeIs('projects.assignVendors');
+
+            // For vendor assignment route: require district when at least one vendor is being assigned
+            if ($isVendorAssignmentRoute) {
+                $hasVendor = $usersToAssign->contains(function (User $u) {
+                    return (int) $u->role === UserRole::VENDOR->value;
+                });
+
+                if ($hasVendor && empty($validated['district_id'])) {
+                    $message = 'District is required when assigning vendors to a project.';
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => $message,
+                        ], 422);
+                    }
+
+                    return redirect()->back()->with('error', $message);
+                }
+            }
 
             // For Project Managers: Verify all users being assigned have manager_id = current_user->id
             if ($isProjectManager) {
@@ -506,10 +559,19 @@ class ProjectsController extends Controller
 
             DB::beginTransaction();
 
-            // Sync with pivot role data - format: [user_id => ['role' => role_value]]
+            // Sync with pivot role data - format: [user_id => ['role' => role_value, 'district_id' => x]]
             $syncData = [];
+            $districtId = $validated['district_id'] ?? null;
+
             foreach ($usersToAssign as $userToAssign) {
-                $syncData[$userToAssign->id] = ['role' => $userToAssign->role];
+                $pivot = ['role' => $userToAssign->role];
+
+                // Only attach district for vendors when provided
+                if (!is_null($districtId) && (int) $userToAssign->role === UserRole::VENDOR->value) {
+                    $pivot['district_id'] = $districtId;
+                }
+
+                $syncData[$userToAssign->id] = $pivot;
             }
             $project->users()->syncWithoutDetaching($syncData);
 

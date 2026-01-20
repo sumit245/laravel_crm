@@ -148,7 +148,17 @@ class VendorController extends Controller
         
         $siteEngineers = User::where('role', UserRole::PROJECT_MANAGER->value)->get();
         $projects = Project::all();
-        return view('uservendors.create', compact('siteEngineers', 'projects'));
+
+        // Only districts actually used in streetlight panchayats
+        $streetlightDistrictNames = Streetlight::whereNotNull('district')
+            ->distinct()
+            ->pluck('district');
+
+        $districts = City::whereIn('name', $streetlightDistrictNames)
+            ->orderBy('name')
+            ->get();
+
+        return view('uservendors.create', compact('siteEngineers', 'projects', 'districts'));
     }
 
     /**
@@ -169,6 +179,7 @@ class VendorController extends Controller
             'firstName' => 'required|string|max:255',
             'manager_id' => 'nullable|exists:users,id',
             'project_id' => 'nullable|exists:projects,id',
+            'district_id' => 'nullable|exists:cities,id',
             'lastName' => 'required|string|max:255',
             'contactNo' => 'nullable|string|max:255',
             'address' => 'nullable|string|max:255',
@@ -188,11 +199,16 @@ class VendorController extends Controller
             $validated['username'] = $this->generateUniqueUsername($validated['name']);
             $validated['password'] = bcrypt($validated['password']);
             $validated['role'] = UserRole::VENDOR->value;
+
+            // district_id is only for pivot; do not persist on users table
+            $districtId = $validated['district_id'] ?? null;
+            unset($validated['district_id']);
+
             $vendor = User::create($validated);
 
             // Sync to project_user pivot table if project_id is provided
             if (!empty($validated['project_id'])) {
-                $vendor->assignToProject($validated['project_id']);
+                $vendor->assignToProject($validated['project_id'], $districtId);
             }
 
             return redirect()->route('uservendors.index')
@@ -570,10 +586,24 @@ class VendorController extends Controller
             abort(403, 'Unauthorized access');
         }
         
-        $vendor = User::where('role', UserRole::VENDOR->value)->findOrFail($id);
+        $vendor = User::where('role', UserRole::VENDOR->value)->with('projects')->findOrFail($id);
         $projectEngineers = User::where('role', UserRole::PROJECT_MANAGER->value)->get();
         $projects = Project::all();
-        return view('uservendors.edit', compact('vendor', 'projects', 'projectEngineers'));
+        $districts = City::orderBy('name')->get();
+
+        // Get current primary project pivot (if any) to pre-select district in view
+        $primaryProject = null;
+        $primaryDistrictId = null;
+
+        if ($vendor->project_id) {
+            $primaryProject = $vendor->projects->firstWhere('id', $vendor->project_id);
+        }
+
+        if ($primaryProject && $primaryProject->pivot) {
+            $primaryDistrictId = $primaryProject->pivot->district_id;
+        }
+
+        return view('uservendors.edit', compact('vendor', 'projects', 'projectEngineers', 'districts', 'primaryDistrictId'));
     }
 
     /**
@@ -594,6 +624,7 @@ class VendorController extends Controller
         try {
             $validated = $request->validate([
                 'project_id' => 'nullable|exists:projects,id',
+                'district_id' => 'nullable|exists:cities,id',
                 'manager_id' => 'nullable|exists:users,id',
                 'name' => 'required|string|max:255',
                 'firstName' => 'required|string|max:255',
@@ -611,11 +642,15 @@ class VendorController extends Controller
                 'email' => 'required|email|unique:users,email,' . $id,
             ]);
             
+            // district_id belongs to pivot, not users table
+            $districtId = $validated['district_id'] ?? null;
+            unset($validated['district_id']);
+
             $vendor->update($validated);
             
             // Sync to project_user pivot table if project_id is provided
             if (!empty($validated['project_id'])) {
-                $vendor->assignToProject($validated['project_id']);
+                $vendor->assignToProject($validated['project_id'], $districtId);
             }
             
             return redirect()->route('uservendors.show', $id)->with('success', 'Vendor updated successfully.');

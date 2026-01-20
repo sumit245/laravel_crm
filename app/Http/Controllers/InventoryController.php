@@ -21,11 +21,13 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Inventory\InventoryHistoryService;
+use App\Services\Logging\ActivityLogger;
 class InventoryController extends Controller
 {
     public function __construct(
         protected InventoryServiceInterface $inventoryService,
-        protected InventoryHistoryService $historyService
+        protected InventoryHistoryService $historyService,
+        protected ActivityLogger $activityLogger
     ) {
     }
     /**
@@ -102,6 +104,15 @@ class InventoryController extends Controller
         $storeId = $request->storeId;
         try {
             Excel::import(new InventoryImport($projectId, $storeId), $request->file('file'));
+
+            $this->activityLogger->log('inventory', 'imported', null, [
+                'description' => 'Rooftop inventory imported from Excel.',
+                'project_id' => $projectId,
+                'extra' => [
+                    'store_id' => $storeId,
+                ],
+            ]);
+
             return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
@@ -164,6 +175,16 @@ class InventoryController extends Controller
             }
 
             // On success, stay on store page and open View Inventory tab
+            $this->activityLogger->log('inventory', 'imported', null, [
+                'description' => 'Streetlight inventory imported from Excel.',
+                'project_id' => $projectId,
+                'extra' => [
+                    'store_id' => $storeId,
+                    'imported' => $importedCount,
+                    'skipped' => count($errors),
+                ],
+            ]);
+
             $redirect = redirect()->to(route('store.show', $storeId) . '#view')
                 ->with('import_errors_url', $errorFileUrl)
                 ->with('import_errors_count', count($errors));

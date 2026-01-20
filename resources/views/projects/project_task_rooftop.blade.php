@@ -100,54 +100,53 @@
     </div>
 
     <!-- Table to display targets -->
-    <div class="table-responsive">
-        <x-data-table id="bredaTargetTable" class="table-striped table">
-            <x-slot:thead>
-                <tr>
-                    <th>Site Name</th>
-                    <th>Activity</th>
-                    <th>Site Engineer</th>
-                    <th>Start Date</th>
-                    <th>End Date</th>
-                    <th>Actions</th>
-                </tr>
-            </x-slot:thead>
-            <x-slot:tbody>
-                @forelse ($targets as $target)
-                    <tr>
-                        <td>{{ $target->site->site_name }}</td>
-                        <td>{{ $target->activity }}</td>
-                        <td>
-                            @if ($target && $target->engineer)
-                                {{ $target->engineer->firstName }} {{ $target->engineer->lastName }}
-                            @else
-                                Not Assigned
-                            @endif
-                        </td>
-                        <td>{{ $target->start_date }}</td>
-                        <td>{{ $target->end_date }}</td>
-                        <td>
-                            <a href="{{ route('tasks.show', ['id' => $target->id]) }}"
-                                class="btn btn-icon btn-info"><i class="mdi mdi-eye"></i></a>
-                            <a href="{{ route('tasks.editrooftop', $target->id) }}"
-                                class="btn btn-icon btn-warning"><i class="mdi mdi-pencil"></i></a>
-                            <form action="{{ route('tasks.destroy', $target->id) }}" method="POST"
-                                style="display: inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-icon btn-danger"><i
-                                        class="mdi mdi-delete"></i></button>
-                            </form>
-                        </td>
-                    </tr>
-                @empty
-                    <!-- <tr>
-          <td colspan="6">No targets found.</td>
-        </tr> -->
-                @endforelse
-                </x-slot-tbody>
-        </x-data-table>
-    </div>
+    <x-datatable id="bredaTargetTable" 
+        title="Rooftop Targets" 
+        :columns="[
+            ['title' => 'Site Name', 'width' => '20%'],
+            ['title' => 'Activity', 'width' => '15%'],
+            ['title' => 'Site Engineer', 'width' => '20%'],
+            ['title' => 'Start Date', 'width' => '15%'],
+            ['title' => 'End Date', 'width' => '15%'],
+        ]" 
+        :exportEnabled="true" 
+        :importEnabled="false" 
+        :bulkDeleteEnabled="false"
+        pageLength="50" 
+        searchPlaceholder="Search targets...">
+        @forelse ($targets as $target)
+            <tr>
+                <td>{{ $target->site->site_name }}</td>
+                <td>{{ $target->activity }}</td>
+                <td>
+                    @if ($target && $target->engineer)
+                        {{ $target->engineer->firstName }} {{ $target->engineer->lastName }}
+                    @else
+                        Not Assigned
+                    @endif
+                </td>
+                <td>{{ $target->start_date }}</td>
+                <td>{{ $target->end_date }}</td>
+                <td class="text-center">
+                    <a href="{{ route('tasks.show', ['id' => $target->id]) }}"
+                        class="btn btn-icon btn-info" data-toggle="tooltip" title="View"><i class="mdi mdi-eye"></i></a>
+                    <a href="{{ route('tasks.editrooftop', $target->id) }}"
+                        class="btn btn-icon btn-warning" data-toggle="tooltip" title="Edit"><i class="mdi mdi-pencil"></i></a>
+                    <form action="{{ route('tasks.destroy', $target->id) }}" method="POST"
+                        style="display: inline-block;">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="btn btn-icon btn-danger" data-toggle="tooltip" title="Delete"
+                            onclick="return confirm('Are you sure you want to delete this target?')"><i class="mdi mdi-delete"></i></button>
+                    </form>
+                </td>
+            </tr>
+        @empty
+            <tr>
+                <td colspan="6" class="text-center">No targets found.</td>
+            </tr>
+        @endforelse
+    </x-datatable>
 
 </div>
 

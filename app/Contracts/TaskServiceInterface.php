@@ -156,6 +156,14 @@ interface TaskServiceInterface extends ServiceInterface
     public function getAvailableVendors(int $projectId);
 
     /**
+     * Get available project managers for a project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableManagers(int $projectId);
+
+    /**
      * Get available sites for a project
      * 
      * @param int $projectId

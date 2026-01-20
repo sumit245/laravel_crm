@@ -195,8 +195,11 @@
             }
         }
         
-        // Activate tab on page load
-        activateTabFromHash();
+        // Delay tab activation to ensure all scripts (including datatable components) are loaded
+        // This prevents datatable initialization issues when page loads with #tasks hash
+        setTimeout(function() {
+            activateTabFromHash();
+        }, 300);
         
         // Also handle hash changes (when user clicks browser back/forward)
         window.addEventListener('hashchange', activateTabFromHash);

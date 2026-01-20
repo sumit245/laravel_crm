@@ -6,28 +6,25 @@
     <h2> Dispatched Inventory</h2>
   @endif
 
-  <x-data-table id="tadaTable" :pageLength="50">
-    <x-slot:thead>
-      <tr>
-        <th data-select="true">
-          <input type="checkbox" id="selectAll" />
-        </th>
-        <th>Item</th>
-        <th>Serial number</th>
-        {{-- <th>Available Quantity</th> --}}
-        <th>Value</th>
-        <th>Vendor</th>
-        <th>Used At</th>
-        <th>Action</th>
-      </tr>
-    </x-slot:thead>
-    <x-slot:tbody>
+  <x-datatable id="tadaTable" 
+      title="Dispatched Inventory" 
+      :columns="[
+          ['title' => 'Item', 'width' => '15%'],
+          ['title' => 'Serial Number', 'width' => '15%'],
+          ['title' => 'Value', 'width' => '10%'],
+          ['title' => 'Vendor', 'width' => '15%'],
+          ['title' => 'Used At', 'width' => '20%'],
+        ]" 
+      :exportEnabled="true" 
+      :importEnabled="false" 
+      :bulkDeleteEnabled="true"
+      :bulkDeleteRoute="route('inventory.bulkDelete')"
+      pageLength="50" 
+      searchPlaceholder="Search inventory...">
       @foreach ($specificDispatch as $item)
         <tr>
-          <td><input type="checkbox" class="select-item" data-id="{{ $item->id }}" /></td>
           <td>{{ $item->item_code }}-{{ $item->item }}</td>
           <td>{{ $item->serial_number ?? "NA" }}</td>
-          {{-- <td>{{ $availableBattery ?? "N/A" }}</td> --}}
           <td>₹{{ $item->total_value ?? "N/A" }}</td>
           <td>{{ $item->vendor->name ?? "N/A" }}</td>
           <td>
@@ -44,11 +41,9 @@
                 ({{ $daysInCustody }} days)
               </span>
             @endif
-
           </td>
-          <td>
+          <td class="text-center">
             @if ($item->is_consumed && $item->streetlightPole)
-              {{-- Write code to show a modal --}}
               <button type="button" class="btn btn-danger btn-sm" data-bs-toggle="modal"
                 data-bs-target="#itemDetailsModal" data-item-id="{{ $item->id }}"
                 data-item-code="{{ $item->item_code }}" data-item-name="{{ $item->item }}"
@@ -69,8 +64,7 @@
           </td>
         </tr>
       @endforeach
-    </x-slot:tbody>
-  </x-data-table>
+  </x-datatable>
 
   <!-- Modal -->
   <div class="modal fade" id="itemDetailsModal" tabindex="-1" role="dialog" aria-labelledby="itemDetailsModalLabel"

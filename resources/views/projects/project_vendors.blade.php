@@ -299,6 +299,12 @@
     // Initialize project vendor management - set as global variables
     window.projectId = {{ $project->id }};
     window.csrfToken = '{{ csrf_token() }}';
+    window.projectDistricts = @json(($projectDistricts ?? collect())->map(function ($district) {
+        return [
+            'id' => $district->id,
+            'name' => $district->name,
+        ];
+    }));
     
     // Also set it in meta tag if not already set
     if (!document.querySelector('meta[name="csrf-token"]')) {

@@ -3,25 +3,30 @@
 namespace App\Imports;
 
 use App\Models\Pole;
+use App\Models\PoleImportJob;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
-use App\Models\PoleImportJob;
 use App\Services\Import\PoleImportService;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Concerns\ToCollection;
-use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
+use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
-class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkReading
+class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadingRow
 {
     protected ?string $jobId;
+
     protected ?PoleImportJob $job;
+
     protected PoleImportService $importService;
+
     protected array $errors = [];
+
     protected int $successCount = 0;
+
     protected int $errorCount = 0;
 
     public function __construct(?string $jobId = null, ?PoleImportJob $job = null)
@@ -44,13 +49,13 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
                 $this->errors[] = [
                     'row' => $rowNumber,
                     'complete_pole_number' => $rowArray['complete_pole_number'] ?? 'Unknown',
-                    'reason' => 'Unexpected error: ' . $e->getMessage(),
-                    'details' => $e->getTraceAsString()
+                    'reason' => 'Unexpected error: '.$e->getMessage(),
+                    'details' => $e->getTraceAsString(),
                 ];
                 Log::error('Error processing pole import row', [
                     'row' => $rowNumber,
                     'error' => $e->getMessage(),
-                    'row_data' => $rowArray
+                    'row_data' => $rowArray,
                 ]);
             }
         }
@@ -65,20 +70,42 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => '',
-                'reason' => 'Complete pole number is required'
+                'reason' => 'Complete pole number is required',
             ];
+
             return;
         }
 
         $existingPole = Pole::where('complete_pole_number', $completePoleNumber)->first();
         if ($existingPole) {
-            $this->errorCount++;
-            $this->errors[] = [
+            $updateResult = $this->importService->updateExistingPoleWithInventory($existingPole, $row, $task);
+            if ($updateResult['status'] === 'error') {
+                $this->errorCount++;
+                $this->errors[] = [
+                    'row' => $rowNumber,
+                    'complete_pole_number' => $completePoleNumber,
+                    'reason' => $updateResult['error'],
+                ];
+                Log::info('Poles rejected', [
+                    'row' => $rowNumber,
+                    'complete_pole_number' => $completePoleNumber,
+                    'error' => $updateResult['error'],
+                ]);
+
+                return;
+            }
+
+            // Success path for existing pole updates / replacements
+            $this->successCount++;
+
+            Log::info('Poles items replaced successfully', [
                 'row' => $rowNumber,
+                'pole_id' => $existingPole->id,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => "Pole with complete_pole_number '{$completePoleNumber}' already exists"
-            ];
+                'replaced_items' => $updateResult['replaced_items'] ?? [],
+            ]);
             return;
+
         }
 
         // Find streetlight site
@@ -91,36 +118,39 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => 'District, block, and panchayat are required'
+                'reason' => 'District, block, and panchayat are required',
             ];
+
             return;
         }
 
         $streetlight = Streetlight::where([
             ['district', $district],
             ['block', $block],
-            ['panchayat', $panchayat]
+            ['panchayat', $panchayat],
         ])->first();
 
-        if (!$streetlight) {
+        if (! $streetlight) {
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => "Streetlight site not found for: {$district}, {$block}, {$panchayat}"
+                'reason' => "Streetlight site not found for: {$district}, {$block}, {$panchayat}",
             ];
+
             return;
         }
 
         // Find task
         $task = StreetlightTask::where('site_id', $streetlight->id)->first();
-        if (!$task) {
+        if (! $task) {
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => "Target not allotted for site {$streetlight->panchayat}"
+                'reason' => "Target not allotted for site {$streetlight->panchayat}",
             ];
+
             return;
         }
 
@@ -130,13 +160,13 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
         $panelQr = trim($row['panel_qr'] ?? '');
 
         $itemsToValidate = [];
-        if (!empty($batteryQr)) {
+        if (! empty($batteryQr)) {
             $itemsToValidate['battery_qr'] = $batteryQr;
         }
-        if (!empty($luminaryQr)) {
+        if (! empty($luminaryQr)) {
             $itemsToValidate['luminary_qr'] = $luminaryQr;
         }
-        if (!empty($panelQr)) {
+        if (! empty($panelQr)) {
             $itemsToValidate['panel_qr'] = $panelQr;
         }
 
@@ -146,7 +176,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
 
         foreach ($itemsToValidate as $field => $serialNumber) {
             $validation = $this->importService->validateAndDispatchInventory($serialNumber, $task);
-            
+
             if ($validation['status'] === 'error') {
                 $validationErrors[] = $validation['error'];
             } else {
@@ -155,13 +185,14 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
         }
 
         // If any validation errors, skip this row
-        if (!empty($validationErrors)) {
+        if (! empty($validationErrors)) {
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => implode('; ', $validationErrors)
+                'reason' => implode('; ', $validationErrors),
             ];
+
             return;
         }
 
@@ -172,20 +203,20 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
                 'task_id' => $task->id,
                 'complete_pole_number' => $completePoleNumber,
                 'isSurveyDone' => true,
-                'beneficiary' => !empty($row['beneficiary']) ? trim($row['beneficiary']) : null,
-                'beneficiary_contact' => !empty($row['beneficiary_contact']) ? trim($row['beneficiary_contact']) : null,
-                'ward_name' => !empty($row['ward_name']) ? trim($row['ward_name']) : null,
+                'beneficiary' => ! empty($row['beneficiary']) ? trim($row['beneficiary']) : null,
+                'beneficiary_contact' => ! empty($row['beneficiary_contact']) ? trim($row['beneficiary_contact']) : null,
+                'ward_name' => ! empty($row['ward_name']) ? trim($row['ward_name']) : null,
                 'isNetworkAvailable' => true,
                 'isInstallationDone' => true,
-                'luminary_qr' => !empty($luminaryQr) ? $luminaryQr : null,
-                'sim_number' => !empty($row['sim_number']) ? trim($row['sim_number']) : null,
-                'battery_qr' => !empty($batteryQr) ? $batteryQr : null,
-                'panel_qr' => !empty($panelQr) ? $panelQr : null,
-                'lat' => !empty($row['lat']) ? $row['lat'] : null,
-                'lng' => !empty($row['long']) ? $row['long'] : null,
+                'luminary_qr' => ! empty($luminaryQr) ? $luminaryQr : null,
+                'sim_number' => ! empty($row['sim_number']) ? trim($row['sim_number']) : null,
+                'battery_qr' => ! empty($batteryQr) ? $batteryQr : null,
+                'panel_qr' => ! empty($panelQr) ? $panelQr : null,
+                'lat' => ! empty($row['lat']) ? $row['lat'] : null,
+                'lng' => ! empty($row['long']) ? $row['long'] : null,
             ];
 
-            if (!empty($row['date_of_installation'])) {
+            if (! empty($row['date_of_installation'])) {
                 try {
                     $poleData['updated_at'] = Carbon::parse($row['date_of_installation']);
                 } catch (\Exception $e) {
@@ -198,7 +229,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
 
             // Consume inventory for this pole
             $serialNumbers = array_filter(array_values($itemsToValidate));
-            if (!empty($serialNumbers)) {
+            if (! empty($serialNumbers)) {
                 $this->importService->consumeInventoryForPole($newPole, $serialNumbers);
             }
 
@@ -213,7 +244,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
 
             Log::info('Pole created successfully', [
                 'pole_id' => $newPole->id,
-                'complete_pole_number' => $completePoleNumber
+                'complete_pole_number' => $completePoleNumber,
             ]);
 
         } catch (\Exception $e) {
@@ -222,11 +253,11 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => 'Error creating pole: ' . $e->getMessage()
+                'reason' => 'Error creating pole: '.$e->getMessage(),
             ];
             Log::error('Error creating pole', [
                 'complete_pole_number' => $completePoleNumber,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -236,7 +267,7 @@ class StreetlightPoleImport implements ToCollection, WithHeadingRow, WithChunkRe
      */
     public function chunkSize(): int
     {
-        return 100; // Process 100 rows per chunk
+        return 40000; // Process 100 rows per chunk
     }
 
     /**

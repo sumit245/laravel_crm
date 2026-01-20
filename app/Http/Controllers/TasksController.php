@@ -9,11 +9,13 @@ use App\Http\Requests\Task\StoreTaskRequest;
 use App\Http\Requests\Task\UpdateTaskRequest;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Services\Logging\ActivityLogger;
 
 class TasksController extends Controller
 {
     public function __construct(
-        protected TaskServiceInterface $taskService
+        protected TaskServiceInterface $taskService,
+        protected ActivityLogger $activityLogger
     ) {
     }
     /**
@@ -98,6 +100,13 @@ class TasksController extends Controller
             auth()->id()
         );
 
+        $this->activityLogger->log('task', 'created', $project, [
+            'description' => 'Targets created.',
+            'extra' => [
+                'site_ids' => $request->sites,
+            ],
+        ]);
+
         return redirect()->route('projects.show', $request->project_id)
             ->with('success', 'Targets successfully added.');
     }
@@ -148,12 +157,41 @@ class TasksController extends Controller
     public function edit(string $id, Request $request)
     {
         $projectId = request()->query('project_id');
+        $project = null;
+        $task = null;
+        $wardInfo = null;
+        $inventoryStatus = null;
 
         if ($projectId) {
             $project = \App\Models\Project::find($projectId);
             if ($project && $project->project_type == 1) {
-                $task = \App\Models\StreetlightTask::with(['engineer', 'vendor', 'manager', 'site'])
+                $task = \App\Models\StreetlightTask::with(['engineer', 'vendor', 'manager', 'site', 'poles'])
                     ->findOrFail($id);
+                
+                // Get ward information for conflict checking
+                if ($task->site) {
+                    $wardInfo = [
+                        'site_id' => $task->site->id,
+                        'ward' => $task->site->ward,
+                        'ward_type' => $task->site->ward_type,
+                        'district' => $task->site->district,
+                        'panchayat' => $task->site->panchayat,
+                    ];
+                }
+                
+                // Get inventory status for current vendor
+                if ($task->vendor_id) {
+                    $pendingInventory = \App\Models\InventoryDispatch::where('vendor_id', $task->vendor_id)
+                        ->where('project_id', $projectId)
+                        ->where('isDispatched', true)
+                        ->where('is_consumed', false)
+                        ->count();
+                    
+                    $inventoryStatus = [
+                        'pending_count' => $pendingInventory,
+                        'has_pending' => $pendingInventory > 0,
+                    ];
+                }
             } else {
                 $task = $this->taskService->findById($id);
             }
@@ -162,12 +200,25 @@ class TasksController extends Controller
             if (!$task) {
                 $task = $this->taskService->findById($id);
             }
+            if ($task && $task->project_id) {
+                $project = \App\Models\Project::find($task->project_id);
+            }
         }
 
-        $engineers = $this->taskService->getAvailableEngineers($projectId);
-        $vendors = $this->taskService->getAvailableVendors($projectId);
+        $engineers = $this->taskService->getAvailableEngineers($projectId ?? $task->project_id ?? null);
+        $vendors = $this->taskService->getAvailableVendors($projectId ?? $task->project_id ?? null);
+        $managers = $this->taskService->getAvailableManagers($projectId ?? $task->project_id ?? null);
 
-        return view('tasks.edit', ['tasks' => $task, 'projectId' => $projectId, 'engineers' => $engineers, 'vendors' => $vendors]);
+        return view('tasks.edit', [
+            'tasks' => $task, 
+            'projectId' => $projectId ?? $task->project_id ?? null,
+            'project' => $project,
+            'engineers' => $engineers, 
+            'vendors' => $vendors,
+            'managers' => $managers,
+            'wardInfo' => $wardInfo,
+            'inventoryStatus' => $inventoryStatus,
+        ]);
     }
 
     public function editrooftop(string $id)
@@ -214,17 +265,122 @@ class TasksController extends Controller
                 if ($project && $project->project_type == 1) {
                     $task = \App\Models\StreetlightTask::findOrFail($id);
 
-                    $validData = $request->only([
-                        'engineer_id',
-                        'vendor_id',
-                        'manager_id',
-                        'start_date',
-                        'end_date',
-                        'description',
-                        'materials_consumed',
-                        'approved_by',
-                        'billed',
-                    ]);
+                    // Prevent reassignment of completed tasks (preserve historical data)
+                    if ($task->status === 'Completed') {
+                        // Only allow status and other non-assignment fields to be updated
+                        $validData = $request->only([
+                            'start_date',
+                            'end_date',
+                            'description',
+                            'materials_consumed',
+                            'approved_by',
+                            'billed',
+                            'extension_reason',
+                        ]);
+                        
+                        // Log date extension for completed tasks
+                        if ($request->has('end_date') && $task->end_date && $request->end_date != $task->end_date) {
+                            \Log::info('Date extension for completed task', [
+                                'task_id' => $id,
+                                'original_end_date' => $task->end_date,
+                                'new_end_date' => $request->end_date,
+                                'extension_reason' => $request->input('extension_reason'),
+                                'extended_by' => auth()->id()
+                            ]);
+                        }
+
+                        // Log attempt to reassign completed task
+                        if ($request->has('engineer_id') && $request->engineer_id != $task->engineer_id) {
+                            \Log::info('Attempted to reassign engineer on completed task', [
+                                'task_id' => $id,
+                                'original_engineer_id' => $task->engineer_id,
+                                'requested_engineer_id' => $request->engineer_id
+                            ]);
+                        }
+                        if ($request->has('vendor_id') && $request->vendor_id != $task->vendor_id) {
+                            \Log::info('Attempted to reassign vendor on completed task', [
+                                'task_id' => $id,
+                                'original_vendor_id' => $task->vendor_id,
+                                'requested_vendor_id' => $request->vendor_id
+                            ]);
+                        }
+                        if ($request->has('manager_id') && $request->manager_id != $task->manager_id) {
+                            \Log::info('Attempted to reassign manager on completed task', [
+                                'task_id' => $id,
+                                'original_manager_id' => $task->manager_id,
+                                'requested_manager_id' => $request->manager_id
+                            ]);
+                        }
+                    } else {
+                        // For pending/in-progress tasks, allow all updates
+                        $validData = $request->only([
+                            'engineer_id',
+                            'vendor_id',
+                            'manager_id',
+                            'start_date',
+                            'end_date',
+                            'description',
+                            'materials_consumed',
+                            'approved_by',
+                            'billed',
+                            'extension_reason',
+                        ]);
+
+                        // Track date extensions for audit trail
+                        if ($request->has('end_date') && $task->end_date && $request->end_date != $task->end_date) {
+                            \Log::info('Target date extended', [
+                                'task_id' => $id,
+                                'project_id' => $projectId,
+                                'original_end_date' => $task->end_date,
+                                'new_end_date' => $request->end_date,
+                                'extension_reason' => $request->input('extension_reason'),
+                                'extended_by' => auth()->id()
+                            ]);
+                            
+                            // Add extension info to description if provided
+                            if ($request->has('extension_reason') && !empty($request->extension_reason)) {
+                                $extensionNote = "\n\n[Date Extended on " . now()->format('Y-m-d H:i:s') . "]\n";
+                                $extensionNote .= "Reason: " . $request->extension_reason . "\n";
+                                $extensionNote .= "Extended from: " . \Carbon\Carbon::parse($task->end_date)->format('Y-m-d') . " to: " . \Carbon\Carbon::parse($request->end_date)->format('Y-m-d');
+                                $validData['description'] = ($task->description ?? '') . $extensionNote;
+                            }
+                        }
+
+                        // Track reassignments for audit trail
+                        $reassignmentLog = [];
+                        if ($request->has('engineer_id') && $request->engineer_id != $task->engineer_id) {
+                            $reassignmentLog['engineer'] = [
+                                'old' => $task->engineer_id,
+                                'new' => $request->engineer_id,
+                                'reassigned_at' => now()
+                            ];
+                        }
+                        if ($request->has('vendor_id') && $request->vendor_id != $task->vendor_id) {
+                            $reassignmentLog['vendor'] = [
+                                'old' => $task->vendor_id,
+                                'new' => $request->vendor_id,
+                                'reassigned_at' => now()
+                            ];
+                        }
+                        if ($request->has('manager_id') && $request->manager_id != $task->manager_id) {
+                            $reassignmentLog['manager'] = [
+                                'old' => $task->manager_id,
+                                'new' => $request->manager_id,
+                                'reassigned_at' => now()
+                            ];
+                        }
+
+                        // Log reassignments
+                        if (!empty($reassignmentLog)) {
+                            \Log::info('Task stakeholder reassignment', [
+                                'task_id' => $id,
+                                'project_id' => $projectId,
+                                'reassignments' => $reassignmentLog,
+                                'reason' => $request->input('reassignment_reason'),
+                                'reassigned_by' => auth()->id()
+                            ]);
+                        }
+                    }
 
                     if ($request->has('status')) {
                         $statusValue = $request->input('status');
@@ -248,7 +404,52 @@ class TasksController extends Controller
                 }
             }
 
-            $task = $this->taskService->updateTask($id, $request->validated());
+            // Handle rooftop tasks (Task model)
+            $task = $this->taskService->findById($id);
+            
+            if ($task) {
+                // Prevent reassignment of completed tasks
+                if ($task->status === 'Completed') {
+                    // Only allow non-assignment fields
+                    $validData = $request->only([
+                        'start_date',
+                        'end_date',
+                        'description',
+                        'materials_consumed',
+                        'approved_by',
+                    ]);
+
+                    // Log attempts to reassign
+                    if ($request->has('engineer_id') && $request->engineer_id != $task->engineer_id) {
+                        \Log::info('Attempted to reassign engineer on completed task', [
+                            'task_id' => $id,
+                            'original_engineer_id' => $task->engineer_id,
+                            'requested_engineer_id' => $request->engineer_id
+                        ]);
+                    }
+                    if ($request->has('vendor_id') && $request->vendor_id != $task->vendor_id) {
+                        \Log::info('Attempted to reassign vendor on completed task', [
+                            'task_id' => $id,
+                            'original_vendor_id' => $task->vendor_id,
+                            'requested_vendor_id' => $request->vendor_id
+                        ]);
+                    }
+                    if ($request->has('manager_id') && $request->manager_id != $task->manager_id) {
+                        \Log::info('Attempted to reassign manager on completed task', [
+                            'task_id' => $id,
+                            'original_manager_id' => $task->manager_id,
+                            'requested_manager_id' => $request->manager_id
+                        ]);
+                    }
+
+                    $task->update($validData);
+                } else {
+                    // For pending/in-progress tasks, allow all updates
+                    $task = $this->taskService->updateTask($id, $request->validated());
+                }
+            } else {
+                $task = $this->taskService->updateTask($id, $request->validated());
+            }
 
             return redirect()->route('projects.show', $request->project_id)
                 ->with('success', 'Task updated successfully.');
@@ -326,5 +527,106 @@ class TasksController extends Controller
 
         $filename = 'tasks_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx';
         return ExcelHelper::exportToExcel($exportData, $filename);
+    }
+
+    /**
+     * Check for ward conflicts when reassigning vendor
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function checkWardConflict(Request $request)
+    {
+        try {
+            $validated = $request->validate([
+                'vendor_id' => 'required|exists:users,id',
+                'project_id' => 'required|exists:projects,id',
+                'site_id' => 'nullable|exists:streetlights,id',
+                'district' => 'nullable|string',
+                'panchayat' => 'nullable|string',
+                'ward' => 'nullable|string',
+            ]);
+
+            $vendorId = $validated['vendor_id'];
+            $projectId = $validated['project_id'];
+            $ward = $validated['ward'] ?? null;
+            $district = $validated['district'] ?? null;
+            $panchayat = $validated['panchayat'] ?? null;
+
+            // If no ward information provided, no conflict check possible
+            if (!$ward && !$district && !$panchayat) {
+                return response()->json([
+                    'has_conflict' => false,
+                    'message' => 'Insufficient ward information to check conflicts'
+                ]);
+            }
+
+            // Get wards for the task (from site or pole data)
+            $taskWards = [];
+            if ($ward) {
+                // Parse comma-separated wards
+                $taskWards = array_map('trim', explode(',', $ward));
+            }
+
+            // Check if vendor has completed poles in the same wards
+            $hasConflict = false;
+            $conflictDetails = [
+                'completed_poles_count' => 0,
+                'conflicting_wards' => [],
+            ];
+
+            if (!empty($taskWards)) {
+                // Get all poles for this vendor that are completed
+                $completedPoles = \App\Models\Pole::where('vendor_id', $vendorId)
+                    ->where('isInstallationDone', 1)
+                    ->whereHas('task', function ($query) use ($projectId, $district, $panchayat) {
+                        $query->where('project_id', $projectId);
+                        if ($district) {
+                            $query->whereHas('site', function ($q) use ($district) {
+                                $q->where('district', $district);
+                            });
+                        }
+                        if ($panchayat) {
+                            $query->whereHas('site', function ($q) use ($panchayat) {
+                                $q->where('panchayat', $panchayat);
+                            });
+                        }
+                    })
+                    ->get();
+
+                // Check each completed pole's ward against task wards
+                foreach ($completedPoles as $pole) {
+                    $poleWard = $pole->ward_name ?? null;
+                    
+                    // Check if pole ward matches any task ward
+                    if ($poleWard && in_array($poleWard, $taskWards)) {
+                        $hasConflict = true;
+                        $conflictDetails['completed_poles_count']++;
+                        if (!in_array($poleWard, $conflictDetails['conflicting_wards'])) {
+                            $conflictDetails['conflicting_wards'][] = $poleWard;
+                        }
+                    }
+                }
+            }
+
+            return response()->json([
+                'has_conflict' => $hasConflict,
+                'conflict_details' => $conflictDetails,
+                'message' => $hasConflict 
+                    ? 'Vendor has completed installations in the same wards'
+                    : 'No ward conflicts found'
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error checking ward conflict', [
+                'error' => $e->getMessage(),
+                'request' => $request->all()
+            ]);
+
+            return response()->json([
+                'has_conflict' => false,
+                'error' => 'Error checking ward conflicts: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
