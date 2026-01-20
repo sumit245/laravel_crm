@@ -6,15 +6,20 @@ use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
 use App\Models\Pole;
 use App\Models\Project;
+use App\Models\RmsPushLog;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use App\Services\Logging\ActivityLogger;
 
 class RMSController extends Controller
 {
-    //
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
     public function index(Request $request)
     {
         // Validate incoming filter data
@@ -120,12 +125,52 @@ class RMSController extends Controller
                     // Call your helper to send the data.
                     $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
-                    $responses[] = ['pole_id' => $pole->id, 'status' => $apiResponse['status'], 'message' => $apiResponse['detail']];
+                    $status = 'error';
+                    $message = 'Unknown error';
+
+                    if ($apiResponse && $apiResponse->successful()) {
+                        $responseData = $apiResponse->json();
+                        if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                            $status = 'success';
+                            $message = $responseData['message'] ?? 'Successfully pushed to RMS';
+                        } else {
+                            $message = $responseData['message'] ?? 'Failed to push to RMS';
+                        }
+                    } else {
+                        $message = $apiResponse ? $apiResponse->body() : 'No response from RMS API';
+                    }
+
+                    // Store log
+                    RmsPushLog::create([
+                        'pole_id' => $pole->id,
+                        'status' => $status,
+                        'message' => $message,
+                        'response_data' => $apiResponse ? $apiResponse->json() : null,
+                        'district' => $streetlight->district ?? null,
+                        'block' => $streetlight->block ?? null,
+                        'panchayat' => $streetlight->panchayat ?? null,
+                        'pushed_by' => auth()->id(),
+                        'pushed_at' => now(),
+                    ]);
+
+                    $responses[] = ['pole_id' => $pole->id, 'status' => $status, 'message' => $message];
                 } catch (Exception $e) {
                     Log::error("Failed to send pole data to RMS", [
                         'pole_id' => $pole->id,
                         'error' => $e->getMessage(),
                     ]);
+                    // Store error log
+                    RmsPushLog::create([
+                        'pole_id' => $pole->id,
+                        'status' => 'error',
+                        'message' => $e->getMessage(),
+                        'district' => $validated['district'] ?? null,
+                        'block' => $validated['block'] ?? null,
+                        'panchayat' => $validated['panchayat'] ?? null,
+                        'pushed_by' => auth()->id(),
+                        'pushed_at' => now(),
+                    ]);
+
                     $responses[] = [
                         'pole_id' => $pole->id,
                         'status' => 'error',
@@ -134,9 +179,25 @@ class RMSController extends Controller
                 }
             }
 
+            $successCount = collect($responses)->where('status', 'success')->count();
+            $errorCount = collect($responses)->where('status', 'error')->count();
+
+            $this->activityLogger->log('rms', 'pushed', null, [
+                'description' => 'Panchayat data pushed to RMS.',
+                'extra' => [
+                    'district' => $validated['district'],
+                    'block' => $validated['block'],
+                    'panchayat' => $validated['panchayat'],
+                    'success_count' => $successCount,
+                    'error_count' => $errorCount,
+                ],
+            ]);
+
             return response()->json([
                 'message' => 'Pole data sync process completed for ' . $validated['panchayat'] . '.',
                 'result' => $responses,
+                'success_count' => $successCount,
+                'error_count' => $errorCount,
             ]);
         } catch (Exception $e) {
             // Catch any unexpected errors during the initial data fetch.
@@ -145,6 +206,48 @@ class RMSController extends Controller
                 'error' => $e->getMessage(),
             ]);
             return response()->json(['message' => 'A critical error occurred: ' . $e->getMessage()], 500);
+        }
+    }
+
+    public function export(Request $request)
+    {
+        try {
+            $query = RmsPushLog::with(['pole', 'pushedBy']);
+
+            // Filter by pole_id if provided
+            if ($request->filled('pole_id')) {
+                $query->where('pole_id', $request->pole_id);
+            }
+
+            // Filter by project_id if provided (through pole->task->streetlight)
+            if ($request->filled('project_id')) {
+                $query->whereHas('pole.task.streetlight', function ($q) use ($request) {
+                    $q->where('project_id', $request->project_id);
+                });
+            }
+
+            // Filter by panchayat if provided
+            if ($request->filled('panchayat')) {
+                $query->where('panchayat', $request->panchayat);
+            }
+
+            $logs = $query->orderBy('pushed_at', 'desc')->get();
+
+            $successLogs = $logs->where('status', 'success');
+            $errorLogs = $logs->where('status', 'error');
+
+            return view('rms.export', compact('logs', 'successLogs', 'errorLogs'));
+        } catch (\Exception $e) {
+            Log::error('RMS Export Error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            return view('rms.export', [
+                'logs' => collect(),
+                'successLogs' => collect(),
+                'errorLogs' => collect(),
+                'error' => 'Error loading RMS export data: ' . $e->getMessage(),
+            ]);
         }
     }
 }

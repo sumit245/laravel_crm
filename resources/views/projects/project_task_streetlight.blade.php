@@ -31,7 +31,7 @@
   <div class="modal fade" id="addTargetModal" tabindex="-1" aria-labelledby="addTargetModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
       <div class="modal-content">
-                <form action="{{ route('tasks.store') }}" method="POST">
+                <form action="{{ route('tasks.store') }}" method="POST" id="targetForm">
           @csrf
           <input type="hidden" name="project_id" value="{{ $project->id }}" />
           <div class="modal-header">
@@ -62,10 +62,31 @@
             <!-- Panchayat Search (Dependent on Block) -->
             <div class="mb-3">
               <label for="panchayatSearch" class="form-label">Select Panchayat</label>
-                            <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select"
-                                style="width: 100%;">
+              <select id="panchayatSearch" name="sites[]" multiple="multiple" class="form-select modern-select"
+                      style="width: 100%;">
                 <option value="">Select a Panchayat</option>
               </select>
+            </div>
+
+            <!-- Ward Selection (Dependent on Panchayat) -->
+            <div class="mb-3" id="wardSelectionContainer" style="display: none;">
+              <label for="wardSelection" class="form-label">
+                <i class="mdi mdi-map-marker text-primary"></i> Select Wards
+              </label>
+              <div class="ward-selection-wrapper">
+                <div class="ward-selection-header mb-2">
+                  <button type="button" class="btn btn-sm btn-link p-0" id="selectAllWards">
+                    <i class="mdi mdi-checkbox-marked"></i> Select All
+                  </button>
+                  <button type="button" class="btn btn-sm btn-link p-0 ml-2" id="deselectAllWards">
+                    <i class="mdi mdi-checkbox-blank-outline"></i> Deselect All
+                  </button>
+                </div>
+                <div id="wardCheckboxes" class="ward-checkboxes">
+                  <!-- Wards will be populated here -->
+                </div>
+                <input type="hidden" name="selected_wards" id="selectedWardsInput" value="">
+              </div>
             </div>
 
             <div class="mb-3">
@@ -616,21 +637,21 @@
 
             // Delete button handler
             $(document).on('click', '.delete-task-btn', function(e) {
-    e.preventDefault();
+                e.preventDefault();
                 const taskId = $(this).data('id');
                 const deleteUrl = $(this).data('url');
     
-    Swal.fire({
-      title: 'Are you sure?',
+                Swal.fire({
+                    title: 'Are you sure?',
                     text: 'You are about to delete this target. This action cannot be undone.',
-      icon: 'warning',
-      showCancelButton: true,
-      confirmButtonColor: '#d33',
-      cancelButtonColor: '#3085d6',
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'Cancel',
-    }).then((result) => {
-      if (result.isConfirmed) {
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Yes, delete it!',
+                    cancelButtonText: 'Cancel',
+                }).then((result) => {
+                    if (result.isConfirmed) {
                         $.ajax({
                             url: deleteUrl,
                             type: 'POST',
@@ -639,18 +660,25 @@
                                 _method: 'DELETE',
                             },
                             success: function(response) {
-                                Swal.fire('Deleted!', 'Target has been deleted.',
-                                    'success');
-                                setTimeout(() => window.location.reload(), 1500);
+                                // Check if async deletion was initiated
+                                if (response.job_id) {
+                                    // Async deletion - start progress tracking
+                                    if (window.targetDeletionProgress) {
+                                        window.targetDeletionProgress.startProgressTracking(response.job_id);
+                                    }
+                                } else {
+                                    // Synchronous deletion - show success and reload
+                                    Swal.fire('Deleted!', response.message || 'Target has been deleted.', 'success');
+                                    setTimeout(() => window.location.reload(), 1500);
+                                }
                             },
                             error: function(xhr) {
-                                Swal.fire('Error!', xhr.responseJSON?.message ||
-                                    'Failed to delete target.', 'error');
+                                Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to delete target.', 'error');
                             }
                         });
                     }
-  });
-});
+                });
+            });
     
             // Select2 for panchayat search
       $('#panchayatSearch').select2({
@@ -658,7 +686,7 @@
         allowClear: true,
         dropdownParent: $('#addTargetModal'),
         ajax: {
-                    url: "{{ route('streetlights.search') }}",
+          url: "{{ route('streetlights.search') }}",
           dataType: 'json',
           method: "GET",
           delay: 250,
@@ -676,6 +704,25 @@
             };
           }
         }
+      });
+
+      // Handle panchayat selection change for ward loading
+      $('#panchayatSearch').on('select2:select select2:unselect', function(e) {
+        const selectedPanchayats = $(this).val();
+        
+        if (!selectedPanchayats || selectedPanchayats.length === 0) {
+          $('#wardSelectionContainer').slideUp(300);
+          $('#wardCheckboxes').empty();
+          return;
+        }
+
+        // If multiple panchayats selected, show wards for the last selected one
+        // If single panchayat selected, show its wards
+        const siteId = Array.isArray(selectedPanchayats) 
+          ? selectedPanchayats[selectedPanchayats.length - 1] 
+          : selectedPanchayats;
+        
+        loadWardsForSite(siteId);
       });
 
       // Fetch Blocks Based on Selected District
@@ -709,17 +756,18 @@
         let block = $(this).val();
         $('#panchayatSearch').prop('disabled', false).empty().append(
           '<option value="">Select a Panchayat</option>');
+        $('#wardSelectionContainer').hide();
+        $('#wardCheckboxes').empty();
 
-                if (block) {
+        if (block) {
           $.ajax({
-                        url: '/panchayats-by-block/' + block,
+            url: '/panchayats-by-block/' + block,
             type: 'GET',
             dataType: 'json',
             success: function(data) {
               $.each(data, function(index, panchayat) {
-                                $('#panchayatSearch').append('<option value="' +
-                                    panchayat.panchayat + '">' + panchayat
-                                    .panchayat + '</option>');
+                $('#panchayatSearch').append('<option value="' +
+                  panchayat.id + '">' + panchayat.panchayat + '</option>');
               });
             },
             error: function(xhr, status, error) {
@@ -728,6 +776,289 @@
           });
         }
       });
+
+      // Function to load wards for a specific site
+      function loadWardsForSite(siteId) {
+        if (!siteId) {
+          $('#wardSelectionContainer').hide();
+          $('#wardCheckboxes').empty();
+          return;
+        }
+
+        $.ajax({
+          url: '/wards-by-site/' + siteId,
+          type: 'GET',
+          dataType: 'json',
+          success: function(wards) {
+            if (wards && wards.length > 0) {
+              displayWards(wards);
+              $('#wardSelectionContainer').slideDown(300);
+            } else {
+              $('#wardSelectionContainer').hide();
+            }
+          },
+          error: function(xhr, status, error) {
+            console.error("AJAX Error fetching wards:", status, error);
+            $('#wardSelectionContainer').hide();
+          }
+        });
+      }
+
+      function displayWards(wards) {
+        const container = $('#wardCheckboxes');
+        container.empty();
+        
+        wards.forEach(function(ward) {
+          const wardValue = ward.trim();
+          if (wardValue) {
+            const checkbox = $('<div>').addClass('form-check form-check-inline ward-checkbox-item mb-2');
+            checkbox.html(`
+              <input class="form-check-input ward-checkbox" type="checkbox" 
+                     id="ward_${wardValue}" value="${wardValue}" checked>
+              <label class="form-check-label" for="ward_${wardValue}">
+                Ward ${wardValue}
+              </label>
+            `);
+            container.append(checkbox);
+          }
+        });
+        
+        updateSelectedWards();
+      }
+
+      // Select/Deselect All Wards
+      $('#selectAllWards').on('click', function() {
+        $('.ward-checkbox').prop('checked', true);
+        updateSelectedWards();
+      });
+
+      $('#deselectAllWards').on('click', function() {
+        $('.ward-checkbox').prop('checked', false);
+        updateSelectedWards();
+      });
+
+      // Update selected wards when checkboxes change
+      $(document).on('change', '.ward-checkbox', function() {
+        updateSelectedWards();
+      });
+
+      function updateSelectedWards() {
+        const selectedWards = [];
+        $('.ward-checkbox:checked').each(function() {
+          selectedWards.push($(this).val());
+        });
+        $('#selectedWardsInput').val(selectedWards.join(','));
+      }
+
+      // Form submission - ensure selected wards are included
+      $('#targetForm').on('submit', function(e) {
+        const selectedWards = $('#selectedWardsInput').val();
+        if (selectedWards) {
+          // Wards are already in the hidden input, form will submit them
+        }
+      });
+    });
+  </script>
+  
+  <!-- Target Deletion Progress Tracker -->
+  <script>
+    // Set poll interval from config
+    window.TARGET_DELETION_POLL_INTERVAL = {{ config('target_deletion.progress_poll_interval', 2000) }};
+  </script>
+  <script src="{{ asset('js/target-deletion-progress.js') }}?v={{ time() }}"></script>
+  
+  <!-- Override bulk delete to handle async responses -->
+  <script>
+    // Wait for both jQuery and the progress tracker script to be loaded
+    $(document).ready(function() {
+        // Ensure progress tracker is initialized
+        if (typeof window.targetDeletionProgress === 'undefined' && typeof TargetDeletionProgress !== 'undefined') {
+            window.targetDeletionProgress = new TargetDeletionProgress();
+            window.targetDeletionProgress.init();
+        }
+        // Function to attach our custom bulk delete handler
+        function attachBulkDeleteHandler() {
+            const bulkDeleteBtn = $('#targetsTable_bulkDeleteBtn');
+            
+            if (bulkDeleteBtn.length && !bulkDeleteBtn.data('custom-handler-attached')) {
+                // Mark as attached to prevent duplicate handlers
+                bulkDeleteBtn.data('custom-handler-attached', true);
+                
+                // Unbind any existing handlers from datatable component
+                bulkDeleteBtn.off('click');
+                
+                // Add our custom handler with higher priority
+                bulkDeleteBtn.on('click', function(e) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    e.stopPropagation();
+                    
+                    const table = $('#targetsTable').DataTable();
+                    if (!table) {
+                        Swal.fire('Error', 'Table not initialized.', 'error');
+                        return false;
+                    }
+                    
+                    const selectedIds = [];
+                    
+                    // Get all checked checkboxes
+                    $('#targetsTable tbody .row-checkbox:checked').each(function() {
+                        const taskId = $(this).val();
+                        if (taskId) {
+                            selectedIds.push(parseInt(taskId));
+                        }
+                    });
+                    
+                    if (selectedIds.length === 0) {
+                        Swal.fire('Error', 'Please select at least one target.', 'error');
+                        return false;
+                    }
+                    
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: `You are about to delete ${selectedIds.length} target(s). This action cannot be undone.`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Yes, delete them!',
+                        cancelButtonText: 'Cancel',
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            // Show progress modal IMMEDIATELY before making AJAX call
+                            let tempJobId = 'temp-' + Date.now();
+                            
+                            // Ensure progress tracker is initialized
+                            if (typeof window.targetDeletionProgress === 'undefined') {
+                                if (typeof TargetDeletionProgress !== 'undefined') {
+                                    window.targetDeletionProgress = new TargetDeletionProgress();
+                                } else {
+                                    console.error('TargetDeletionProgress class not loaded!');
+                                    Swal.fire({
+                                        icon: 'warning',
+                                        title: 'Progress Tracker Not Loaded',
+                                        text: 'Please refresh the page and try again.',
+                                        confirmButtonText: 'OK'
+                                    });
+                                    return;
+                                }
+                            }
+                            
+                            // Show modal immediately with "Initializing..." message
+                            if (window.targetDeletionProgress) {
+                                window.targetDeletionProgress.showProgressModal(tempJobId);
+                                window.targetDeletionProgress.updateProgressModal({
+                                    progress_percentage: 0,
+                                    processed_tasks: 0,
+                                    total_tasks: selectedIds.length,
+                                    message: 'Initializing deletion...',
+                                    status: 'pending'
+                                });
+                            }
+                            
+                            // Now make the AJAX call
+                            $.ajax({
+                                url: "{{ route('tasks.bulkDelete') }}",
+                                method: 'POST',
+                                headers: {
+                                    'X-Requested-With': 'XMLHttpRequest',
+                                    'Accept': 'application/json',
+                                },
+                                data: {
+                                    _token: "{{ csrf_token() }}",
+                                    ids: selectedIds,
+                                },
+                                success: function(response) {
+                                    console.log('Bulk delete response:', response);
+                                    console.log('Response type:', typeof response);
+                                    console.log('Response has job_id:', response && response.job_id);
+                                    console.log('Response keys:', response ? Object.keys(response) : 'null');
+                                    
+                                    // Check if async deletion was initiated
+                                    if (response && response.job_id) {
+                                        // Async deletion - start progress tracking with real job_id
+                                        console.log('Starting progress tracking for job:', response.job_id);
+                                        
+                                        if (window.targetDeletionProgress) {
+                                            try {
+                                                // Update modal with real job_id and start polling
+                                                window.targetDeletionProgress.currentJobId = response.job_id;
+                                                localStorage.setItem('target_deletion_job_id', response.job_id);
+                                                window.targetDeletionProgress.startPolling(response.job_id);
+                                                console.log('Progress tracking started successfully');
+                                            } catch (error) {
+                                                console.error('Error starting progress tracking:', error);
+                                                console.error('Error stack:', error.stack);
+                                                window.targetDeletionProgress.updateProgressModal({
+                                                    status: 'failed',
+                                                    error_message: 'Progress tracking failed: ' + error.message
+                                                });
+                                            }
+                                        }
+                                    } else {
+                                        // Synchronous deletion - update modal and reload
+                                        console.log('No job_id in response, treating as synchronous deletion');
+                                        console.log('Response:', JSON.stringify(response));
+                                        
+                                        if (window.targetDeletionProgress) {
+                                            window.targetDeletionProgress.updateProgressModal({
+                                                progress_percentage: 100,
+                                                status: 'completed',
+                                                message: response.message || 'Targets deleted successfully.'
+                                            });
+                                            
+                                            setTimeout(() => {
+                                                const modal = document.getElementById('targetDeletionProgressModal');
+                                                if (modal) {
+                                                    const bsModal = bootstrap.Modal.getInstance(modal);
+                                                    if (bsModal) {
+                                                        bsModal.hide();
+                                                    }
+                                                }
+                                                window.location.reload();
+                                            }, 1500);
+                                        } else {
+                                            Swal.fire('Deleted!', response.message || 'Targets deleted successfully.', 'success');
+                                            setTimeout(() => window.location.reload(), 1500);
+                                        }
+                                    }
+                                },
+                                error: function(xhr) {
+                                    console.error('Bulk delete error:', xhr);
+                                    
+                                    // Update modal with error
+                                    if (window.targetDeletionProgress) {
+                                        const errorMsg = xhr.responseJSON?.message || xhr.responseJSON?.error || 'Failed to delete targets.';
+                                        window.targetDeletionProgress.updateProgressModal({
+                                            status: 'failed',
+                                            error_message: errorMsg
+                                        });
+                                    } else {
+                                        Swal.fire('Error!', xhr.responseJSON?.message || 'Failed to delete targets.', 'error');
+                                    }
+                                }
+                            });
+                        }
+                    });
+                    
+                    return false;
+                });
+            }
+        }
+        
+        // Try to attach immediately
+        attachBulkDeleteHandler();
+        
+        // Also try after a short delay (in case datatable initializes later)
+        setTimeout(attachBulkDeleteHandler, 500);
+        setTimeout(attachBulkDeleteHandler, 1500);
+        
+        // Also try when the table is drawn
+        if ($.fn.DataTable && $('#targetsTable').length) {
+            $('#targetsTable').on('draw.dt', function() {
+                setTimeout(attachBulkDeleteHandler, 100);
+            });
+        }
     });
   </script>
 @endpush
@@ -877,6 +1208,126 @@
             display: inline-flex;
             align-items: center;
             gap: 0.5rem;
-      }
+        }
+
+        /* Modern form styling */
+        .modern-select {
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .modern-select:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .form-label i {
+            margin-right: 0.5rem;
+        }
+
+        /* Ward Selection Styling */
+        .ward-selection-wrapper {
+            background-color: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 1rem;
+        }
+
+        .ward-selection-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .ward-selection-header .btn-link {
+            color: #007bff;
+            text-decoration: none;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .ward-selection-header .btn-link:hover {
+            color: #0056b3;
+            text-decoration: underline;
+        }
+
+        .ward-checkboxes {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+            max-height: 200px;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+
+        .ward-checkbox-item {
+            min-width: 120px;
+        }
+
+        .ward-checkbox-item .form-check-input {
+            margin-top: 0.25rem;
+            cursor: pointer;
+        }
+
+        .ward-checkbox-item .form-check-label {
+            cursor: pointer;
+            font-size: 0.875rem;
+            color: #495057;
+            margin-left: 0.5rem;
+        }
+
+        .ward-checkbox-item:hover .form-check-label {
+            color: #007bff;
+        }
+
+        /* Modal styling improvements */
+        .modal-content {
+            border-radius: 12px;
+            border: none;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0;
+            padding: 1.25rem 1.5rem;
+        }
+
+        .modal-header .modal-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .modal-header .btn-close {
+            filter: brightness(0) invert(1);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+        }
+
+        .modal-footer .btn {
+            border-radius: 6px;
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+        }
     </style>
 @endpush

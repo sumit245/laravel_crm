@@ -241,4 +241,18 @@ class StreetlightController extends Controller
             ->distinct()->get();
         return response()->json($panchayats);
     }
+
+    public function getWardsBySite($siteId)
+    {
+        $streetlight = Streetlight::find($siteId);
+        
+        if (!$streetlight || empty($streetlight->ward)) {
+            return response()->json([]);
+        }
+
+        $wards = array_map('trim', explode(',', $streetlight->ward));
+        $wardArray = array_filter($wards); // Remove empty values
+
+        return response()->json($wardArray);
+    }
 }

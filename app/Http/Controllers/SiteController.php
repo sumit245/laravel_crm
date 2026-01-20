@@ -19,9 +19,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Logging\ActivityLogger;
 
 class SiteController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
     public function import(Request $request, $projectId)
     {
         $request->validate([
@@ -79,6 +84,15 @@ class SiteController extends Controller
                     $errorFileUrl = $disk->url($relativePath);
                 }
 
+                $this->activityLogger->log('site', 'imported', $project, [
+                    'description' => 'Streetlight sites imported from Excel.',
+                    'extra' => [
+                        'imported' => $importedCount,
+                        'updated' => $updatedCount,
+                        'skipped' => count($errors),
+                    ],
+                ]);
+
                 $redirect = redirect()->route('projects.show', $projectId)
                     ->with('import_errors_url', $errorFileUrl)
                     ->with('import_errors_count', count($errors))
@@ -104,7 +118,13 @@ class SiteController extends Controller
 
                 return $redirect;
             } else {
-                Excel::import(new SiteImport($projectId), $request->file('file'));
+                $import = new SiteImport($projectId);
+                Excel::import($import, $request->file('file'));
+
+                $this->activityLogger->log('site', 'imported', $project, [
+                    'description' => 'Rooftop sites imported from Excel.',
+                ]);
+
                 return back()->with('success', 'Sites imported successfully!');
             }
         } catch (\Exception $e) {

@@ -606,51 +606,123 @@ class TaskController extends Controller
         }
 
         $user = auth()->user();
-        $query = Pole::where('isSurveyDone', 1);
+        $query = Pole::with(['task.streetlight', 'task'])
+            ->where('isSurveyDone', 1);
+
         // Apply filters based on request parameters
-        if ($request->has('search')) {
+        if ($request->filled('search')) {
             $query->where('complete_pole_number', 'like', '%' . $request->search . '%');
         }
-        if ($request->has('district')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('district_id', $request->district);
+
+        // Filter by project_id through streetlight relationship
+        if ($request->filled('project_id')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('project_id', $request->project_id);
             });
         }
 
-        if ($request->has('block')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('block_id', $request->block);
-            });
-        }
-        if ($request->has('panchayat')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('panchayat_id', $request->panchayat);
+        // Filter by panchayat through streetlight relationship (panchayat is a string field, not ID)
+        if ($request->filled('panchayat')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('panchayat', $request->panchayat);
             });
         }
 
-        if ($request->has('project_manager')) {
+        // Filter by ward - use pole's ward_name field
+        if ($request->filled('ward')) {
+            $query->where('ward_name', $request->ward);
+        }
+
+        // Filter by district through streetlight relationship
+        if ($request->filled('district')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('district', $request->district);
+            });
+        }
+
+        // Filter by block through streetlight relationship
+        if ($request->filled('block')) {
+            $query->whereHas('task.streetlight', function ($q) use ($request) {
+                $q->where('block', $request->block);
+            });
+        }
+
+        // Filter by project_manager through task relationship
+        if ($request->filled('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
             });
         }
 
-        if ($request->has('site_engineer')) {
+        // Filter by site_engineer through task relationship
+        if ($request->filled('site_engineer')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('engineer_id', $request->site_engineer);
             });
         }
 
-        if ($request->has('vendor')) {
+        // Filter by vendor through task relationship
+        if ($request->filled('vendor')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('vendor_id', $request->vendor);
             });
         }
-        $poles = $query->with(['task.site', 'task.engineer', 'task.vendor', 'task.manager'])->get();
+
+        $poles = $query->with(['task.streetlight', 'task.engineer', 'task.vendor', 'task.manager'])->get();
+        
+        // Eager load RMS logs for all poles to avoid N+1 queries
+        $poleIds = $poles->pluck('id');
+        $rmsLogs = \App\Models\RmsPushLog::whereIn('pole_id', $poleIds)->get()->groupBy('pole_id');
+        $poles->each(function($pole) use ($rmsLogs) {
+            $pole->rmsLogs = $rmsLogs->get($pole->id, collect());
+        });
         $totalSurveyed = $poles->count();
-        $districts = [];
-        $blocks = [];
-        $panchayats = [];
-        return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districts', 'blocks', 'panchayats'));
+        
+        // Get unique values for filters and convert to arrays
+        $districtOptions = ['' => 'All'];
+        foreach ($poles->pluck('task.streetlight.district')->filter()->unique()->sort()->values() as $district) {
+            if ($district) {
+                $districtOptions[$district] = $district;
+            }
+        }
+        
+        $blockOptions = ['' => 'All'];
+        foreach ($poles->pluck('task.streetlight.block')->filter()->unique()->sort()->values() as $block) {
+            if ($block) {
+                $blockOptions[$block] = $block;
+            }
+        }
+        
+        $panchayatOptions = ['' => 'All'];
+        foreach ($poles->pluck('task.streetlight.panchayat')->filter()->unique()->sort()->values() as $panchayat) {
+            if ($panchayat) {
+                $panchayatOptions[$panchayat] = $panchayat;
+            }
+        }
+        
+        $wardOptions = ['' => 'All'];
+        foreach ($poles->pluck('task.streetlight.ward')->filter()->unique()->sort()->values() as $ward) {
+            if ($ward) {
+                $wardOptions[$ward] = $ward;
+            }
+        }
+        
+        // Get unique project managers, site engineers, and vendors for filters
+        $projectManagerOptions = ['' => 'All'];
+        foreach ($poles->pluck('task.manager')->filter()->unique('id') as $manager) {
+            if ($manager && $manager->id) {
+                $projectManagerOptions[$manager->id] = $manager->name ?? 'N/A';
+            }
+        }
+        
+        $siteEngineerOptions = ['' => 'All'];
+        foreach ($poles->pluck('task.engineer')->filter()->unique('id') as $engineer) {
+            if ($engineer && $engineer->id) {
+                $siteEngineerOptions[$engineer->id] = $engineer->name ?? 'N/A';
+            }
+        }
+        
+        return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districtOptions', 'blockOptions', 'panchayatOptions', 'wardOptions', 'projectManagerOptions', 'siteEngineerOptions'));
     }
 
     // Fetch Installed Poles based on user role
@@ -690,10 +762,9 @@ class TaskController extends Controller
             });
         }
 
+        // Filter by ward - use pole's ward_name field
         if ($request->filled('ward')) {
-            $query->whereHas('task.streetlight', function ($q) use ($request) {
-                $q->where('ward', 'like', '%' . $request->ward . '%');
-            });
+            $query->where('ward_name', $request->ward);
         }
 
         // Apply status filters
@@ -726,6 +797,13 @@ class TaskController extends Controller
         }
 
         $poles = $query->orderBy('complete_pole_number', 'asc')->get();
+        
+        // Eager load RMS logs for all poles to avoid N+1 queries
+        $poleIds = $poles->pluck('id');
+        $rmsLogs = \App\Models\RmsPushLog::whereIn('pole_id', $poleIds)->get()->groupBy('pole_id');
+        $poles->each(function($pole) use ($rmsLogs) {
+            $pole->rmsLogs = $rmsLogs->get($pole->id, collect());
+        });
 
         return view('poles.installed', compact('poles'));
     }
@@ -1012,11 +1090,12 @@ class TaskController extends Controller
     public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
-        $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
+        // Note: Pole doesn't have direct streetlight relationship - access via task.streetlight
+        $pole = Pole::with(['task', 'task.streetlight'])->findOrFail($id);
         $surveyImages = $this->processImagesFromJson($pole->survey_image);
         $submissionImages = $this->processImagesFromJson($pole->submission_image);
         // Fetch related users from the latest task
-        $latestTask = $pole->task()->first();
+        $latestTask = $pole->task;
         $installer = $latestTask?->vendor;
         $projectManager = $latestTask?->manager;
         $siteEngineer = $latestTask?->engineer;

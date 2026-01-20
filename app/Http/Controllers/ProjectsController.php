@@ -11,8 +11,12 @@ use App\Models\Project;
 use App\Models\State;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
+use App\Models\TargetDeletionJob;
 use App\Models\Task;
 use App\Models\User;
+use App\Jobs\ProcessTargetDeletionChunk;
+use App\Services\Task\TargetDeletionService;
+use App\Services\Logging\ActivityLogger;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -32,8 +36,10 @@ class ProjectsController extends Controller
      *
      * @param User $user
      */
-    public function __construct(public Project $project)
-    {
+    public function __construct(
+        public Project $project,
+        protected ActivityLogger $activityLogger
+    ) {
     }
 
     /**
@@ -78,6 +84,10 @@ class ProjectsController extends Controller
 
         try {
             $project = Project::create($validated);
+
+            $this->activityLogger->log('project', 'created', $project, [
+                'description' => 'Project created.',
+            ]);
 
             return redirect()->route('projects.show', $project->id)
                 ->with('success', 'Project created successfully.');
@@ -286,10 +296,33 @@ class ProjectsController extends Controller
             });
         $reassignVendors = $reassignVendorsQuery->get();
 
-        $streetlightDistricts = Streetlight::where('project_id', $id)
-            ->select('district')
-            ->distinct()
-            ->get();
+        // Districts for this project (for vendor assignment)
+        // For streetlight projects, use distinct streetlight.district names mapped to City records
+        // For rooftop projects, use distinct site districts via districtRelation
+        $projectDistricts = collect();
+        if ($project->project_type == 1) {
+            $districtNames = Streetlight::where('project_id', $project->id)
+                ->whereNotNull('district')
+                ->distinct()
+                ->pluck('district');
+
+            if ($districtNames->isNotEmpty()) {
+                $projectDistricts = \App\Models\City::whereIn('name', $districtNames->toArray())
+                    ->orderBy('name')
+                    ->get();
+            }
+        } else {
+            $siteDistricts = $project->sites()
+                ->whereNotNull('district')
+                ->with('districtRelation')
+                ->get()
+                ->map(function (Site $site) {
+                    return $site->districtRelation;
+                })
+                ->filter();
+
+            $projectDistricts = $siteDistricts->unique('id')->sortBy('name')->values();
+        }
 
         $data = [
             'project' => $project,
@@ -311,7 +344,8 @@ class ProjectsController extends Controller
             'isProjectManager' => $isProjectManager,
             'initialStockValue' => $initialStockValue,
             'inStoreStockValue' => $inStoreStockValue,
-            'dispatchedStockValue' => $dispatchedStockValue
+            'dispatchedStockValue' => $dispatchedStockValue,
+            'projectDistricts' => $projectDistricts,
         ];
 
         if ($project->project_type == 1) {
@@ -478,6 +512,7 @@ class ProjectsController extends Controller
             $validated = $request->validate([
                 'user_ids' => 'required|array',
                 'user_ids.*' => 'exists:users,id',
+                'district_id' => 'nullable|exists:cities,id',
             ]);
 
             $user = auth()->user();
@@ -485,6 +520,27 @@ class ProjectsController extends Controller
 
             // Get users with their roles to set pivot role correctly
             $usersToAssign = User::whereIn('id', $validated['user_ids'])->get();
+
+            $isVendorAssignmentRoute = $request->routeIs('projects.assignVendors');
+
+            // For vendor assignment route: require district when at least one vendor is being assigned
+            if ($isVendorAssignmentRoute) {
+                $hasVendor = $usersToAssign->contains(function (User $u) {
+                    return (int) $u->role === UserRole::VENDOR->value;
+                });
+
+                if ($hasVendor && empty($validated['district_id'])) {
+                    $message = 'District is required when assigning vendors to a project.';
+                    if ($request->expectsJson()) {
+                        return response()->json([
+                            'success' => false,
+                            'message' => $message,
+                        ], 422);
+                    }
+
+                    return redirect()->back()->with('error', $message);
+                }
+            }
 
             // For Project Managers: Verify all users being assigned have manager_id = current_user->id
             if ($isProjectManager) {
@@ -503,10 +559,19 @@ class ProjectsController extends Controller
 
             DB::beginTransaction();
 
-            // Sync with pivot role data - format: [user_id => ['role' => role_value]]
+            // Sync with pivot role data - format: [user_id => ['role' => role_value, 'district_id' => x]]
             $syncData = [];
+            $districtId = $validated['district_id'] ?? null;
+
             foreach ($usersToAssign as $userToAssign) {
-                $syncData[$userToAssign->id] = ['role' => $userToAssign->role];
+                $pivot = ['role' => $userToAssign->role];
+
+                // Only attach district for vendors when provided
+                if (!is_null($districtId) && (int) $userToAssign->role === UserRole::VENDOR->value) {
+                    $pivot['district_id'] = $districtId;
+                }
+
+                $syncData[$userToAssign->id] = $pivot;
             }
             $project->users()->syncWithoutDetaching($syncData);
 
@@ -669,44 +734,355 @@ class ProjectsController extends Controller
         }
     }
 
-    public function destroyTarget($id)
+    public function destroyTarget(Request $request, $id)
     {
-        $task = StreetlightTask::findOrFail($id);
-        $task->delete();
+        try {
+            $deletionService = app(TargetDeletionService::class);
+            $task = StreetlightTask::with('poles')->findOrFail($id);
+            
+            // Count total poles to determine if we should process synchronously
+            $totalPoles = $task->poles->count();
+            $syncThreshold = config('target_deletion.sync_threshold', 100);
 
-        return redirect()->back()->with('success', 'Task permanently deleted.');
+            if ($totalPoles < $syncThreshold) {
+                // Small deletion - process synchronously
+                $result = $deletionService->deleteTargets([$id]);
+                
+                $message = 'Target deleted successfully. ';
+                $message .= $result['poles_deleted'] . ' pole(s) deleted. ';
+                $message .= $result['inventory_items_returned'] . ' inventory item(s) returned to stock.';
+
+                if ($request->expectsJson()) {
+                    return response()->json([
+                        'success' => true,
+                        'message' => $message
+                    ]);
+                }
+
+                return redirect()->back()->with('success', $message);
+            } else {
+                // Large deletion - use async processing
+                return $this->initiateAsyncDeletion([$id], $request);
+            }
+        } catch (\Exception $e) {
+            Log::error('Failed to delete target', [
+                'task_id' => $id,
+                'error' => $e->getMessage()
+            ]);
+
+            $message = 'Failed to delete target: ' . $e->getMessage();
+            
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => $message
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
     }
 
     public function bulkDeleteTargets(Request $request)
     {
+        // #region agent log
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:724','message'=>'bulkDeleteTargets called','data'=>['ids_count'=>count($request->ids ?? []),'user_id'=>auth()->id()],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        // #endregion
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'exists:streetlight_tasks,id',
         ]);
 
         try {
-            $deleted = StreetlightTask::whereIn('id', $request->ids)->delete();
+            $deletionService = app(TargetDeletionService::class);
+            // Count total poles to determine processing method
+            $totalPoles = Pole::whereIn('task_id', $request->ids)->count();
+            $syncThreshold = config('target_deletion.sync_threshold', 100);
+            $isBulkDeletion = count($request->ids) > 1;
+            // #region agent log
+            file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:736','message'=>'Pole count calculated','data'=>['total_poles'=>$totalPoles,'is_bulk'=>$isBulkDeletion,'sync_threshold'=>$syncThreshold],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+            // #endregion
 
-            if ($request->expectsJson()) {
+            // Use async processing for bulk deletions OR large single deletions
+            // Always use async for bulk deletions (more than 1 item) regardless of pole count
+            if ($isBulkDeletion || $totalPoles >= $syncThreshold) {
+                // #region agent log
+                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:742','message'=>'Using async deletion path','data'=>['reason'=>$isBulkDeletion?'bulk_deletion':'large_pole_count'],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                // #endregion
+                // Large or bulk deletion - use async processing
+                return $this->initiateAsyncDeletion($request->ids, $request);
+            } else {
+                // #region agent log
+                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'B','location'=>'ProjectsController.php:747','message'=>'Using sync deletion path','data'=>[],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                // #endregion
+                // Small single deletion - process synchronously
+                $result = $deletionService->deleteTargets($request->ids);
+                
+                $message = count($request->ids) . ' target(s) deleted successfully. ';
+                $message .= $result['poles_deleted'] . ' pole(s) deleted. ';
+                $message .= $result['inventory_items_returned'] . ' inventory item(s) returned to stock.';
+
+                // Always return JSON for bulk delete endpoint (it's always called via AJAX)
                 return response()->json([
                     'success' => true,
-                    'message' => "{$deleted} target(s) deleted successfully."
+                    'message' => $message
                 ]);
             }
-
-            return redirect()->back()->with('success', "{$deleted} target(s) deleted successfully.");
         } catch (\Exception $e) {
-            Log::error('Failed to bulk delete targets', ['error' => $e->getMessage()]);
+            Log::error('Failed to bulk delete targets', [
+                'task_ids' => $request->ids,
+                'error' => $e->getMessage()
+            ]);
 
-            if ($request->expectsJson()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Failed to delete targets: ' . $e->getMessage()
-                ], 500);
-            }
-
-            return redirect()->back()->with('error', 'Failed to delete targets: ' . $e->getMessage());
+            // Always return JSON for bulk delete endpoint
+            return response()->json([
+                'success' => false,
+                'message' => 'Failed to delete targets: ' . $e->getMessage()
+            ], 500);
         }
+    }
+
+    /**
+     * Initiate async deletion with progress tracking
+     */
+    protected function initiateAsyncDeletion(array $taskIds, ?Request $request = null)
+    {
+        // #region agent log
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:776','message'=>'initiateAsyncDeletion started','data'=>['task_ids_count'=>count($taskIds)],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        // #endregion
+        // Count total poles
+        $totalPoles = Pole::whereIn('task_id', $taskIds)->count();
+
+        // Create deletion job
+        $job = TargetDeletionJob::create([
+            'task_ids' => $taskIds,
+            'total_tasks' => count($taskIds),
+            'processed_tasks' => 0, // Initialize to 0
+            'total_poles' => $totalPoles,
+            'processed_poles' => 0, // Initialize to 0
+            'processed_task_ids' => [], // Initialize empty array
+            'user_id' => auth()->id(),
+            'status' => 'pending',
+        ]);
+        // #region agent log
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:791','message'=>'TargetDeletionJob created','data'=>['job_id'=>$job->job_id,'total_poles'=>$totalPoles,'queue_connection'=>config('queue.default')],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        // #endregion
+
+        // Queue first chunk
+        $chunkSize = config('target_deletion.chunk_size', 50);
+        // Ensure job is dispatched to the correct queue connection
+        ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize)
+            ->onConnection(config('queue.default'))
+            ->onQueue('default');
+        // #region agent log
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:798','message'=>'ProcessTargetDeletionChunk dispatched','data'=>['job_id'=>$job->job_id,'chunk_size'=>$chunkSize],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        // #endregion
+
+        // Always return JSON for bulk delete operations (they're always AJAX)
+        // Check if it's a bulk delete by checking if request has 'ids' array
+        $isBulkDelete = $request && $request->has('ids') && is_array($request->ids) && count($request->ids) > 0;
+        
+        // For bulk delete endpoint, always return JSON
+        if ($isBulkDelete || ($request && ($request->expectsJson() || $request->ajax() || $request->wantsJson()))) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Deletion started. Processing in background...',
+                'job_id' => $job->job_id,
+                'total_tasks' => count($taskIds),
+                'total_poles' => $totalPoles,
+            ]);
+        }
+
+        // Fallback for non-AJAX requests (shouldn't happen for bulk delete)
+        return redirect()->back()->with([
+            'success' => 'Deletion started. Processing in background...',
+            'deletion_job_id' => $job->job_id,
+        ]);
+    }
+
+    /**
+     * Get deletion progress
+     */
+    public function getDeletionProgress($jobId)
+    {
+        $job = TargetDeletionJob::where('job_id', $jobId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+
+        // If job is pending, re-dispatch it if not already in queue
+        if ($job->status === 'pending') {
+            $chunkSize = config('target_deletion.chunk_size', 50);
+            $allTaskIds = $job->task_ids ?? [];
+            $processedTaskIds = $job->processed_task_ids ?? [];
+            $remainingTaskIds = array_diff($allTaskIds, $processedTaskIds);
+            
+            // Only re-dispatch if there are remaining tasks
+            if (!empty($remainingTaskIds)) {
+                try {
+                    $queueConnection = config('queue.default');
+                    
+                    // Check if job is already in queue to avoid duplicates
+                    $jobsInQueue = 0;
+                    if ($queueConnection === 'database') {
+                        $jobsInQueue = \DB::table('jobs')
+                            ->where('payload', 'like', '%' . $job->job_id . '%')
+                            ->count();
+                    }
+                    
+                    // If jobs are stuck in queue (older than 30 seconds), process synchronously as fallback
+                    $shouldProcessSync = false;
+                    if ($queueConnection === 'database' && $jobsInQueue > 0) {
+                        $stuckJobs = \DB::table('jobs')
+                            ->where('payload', 'like', '%' . $job->job_id . '%')
+                            ->where('available_at', '<', time() - 30)
+                            ->whereNull('reserved_at')
+                            ->count();
+                        
+                        if ($stuckJobs > 0 && $job->created_at->diffInSeconds(now()) > 60) {
+                            $shouldProcessSync = true;
+                            Log::warning('Jobs stuck in queue, processing synchronously as fallback', [
+                                'job_id' => $jobId,
+                                'stuck_jobs' => $stuckJobs,
+                                'age_seconds' => $job->created_at->diffInSeconds(now())
+                            ]);
+                        }
+                    }
+                    
+                    if ($shouldProcessSync) {
+                        // Process first chunk synchronously
+                        $deletionService = app(\App\Services\Task\TargetDeletionService::class);
+                        $chunk = array_slice($remainingTaskIds, 0, min($chunkSize, 10)); // Process max 10 at a time
+                        
+                        foreach ($chunk as $taskId) {
+                            try {
+                                $result = $deletionService->deleteTargets([$taskId], $job->job_id);
+                                $job->addProcessedTaskId($taskId);
+                                $job->increment('processed_poles', $result['poles_deleted'] ?? 0);
+                                $job->refresh();
+                            } catch (\Exception $taskException) {
+                                Log::error('Error deleting task in sync fallback', [
+                                    'job_id' => $jobId,
+                                    'task_id' => $taskId,
+                                    'error' => $taskException->getMessage()
+                                ]);
+                                $job->addProcessedTaskId($taskId);
+                            }
+                        }
+                        
+                        // Queue next chunk if more remain
+                        $job->refresh();
+                        $remainingAfterChunk = array_diff($job->task_ids, $job->processed_task_ids);
+                        if (!empty($remainingAfterChunk)) {
+                            ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize)
+                                ->onConnection($queueConnection)
+                                ->onQueue('default');
+                        } else {
+                            $job->markAsCompleted();
+                        }
+                    } elseif ($jobsInQueue === 0) {
+                        try {
+                            $dispatchedJob = ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize)
+                                ->onConnection($queueConnection)
+                                ->onQueue('default');
+                            
+                            Log::info('Dispatched deletion job', [
+                                'job_id' => $jobId,
+                                'queue_connection' => $queueConnection
+                            ]);
+                        } catch (\Exception $dispatchException) {
+                            Log::error('Exception during job dispatch', [
+                                'job_id' => $jobId,
+                                'error' => $dispatchException->getMessage()
+                            ]);
+                        }
+                    } else {
+                        Log::debug('Job already in queue, skipping re-dispatch', [
+                            'job_id' => $jobId,
+                            'jobs_in_queue' => $jobsInQueue
+                        ]);
+                    }
+                } catch (\Exception $e) {
+                    Log::error('Failed to re-dispatch deletion job', [
+                        'job_id' => $jobId,
+                        'error' => $e->getMessage(),
+                        'trace' => $e->getTraceAsString()
+                    ]);
+                }
+            }
+        }
+
+        $progress = $job->progress_percentage;
+        $status = $job->status;
+
+        // Use processed_tasks from the model (calculated from processed_task_ids array)
+        $processedCount = $job->processed_tasks ?? (is_array($job->processed_task_ids) ? count($job->processed_task_ids) : 0);
+        $processedPoles = $job->processed_poles ?? 0;
+        $message = "Deleting {$processedCount} item(s) out of {$job->total_tasks}";
+        if ($job->total_poles > 0) {
+            $message .= " ({$processedPoles} poles processed)";
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'job_id' => $job->job_id,
+            'job_status' => $status, // For JavaScript compatibility - this is the actual job status
+            'progress_percentage' => $progress,
+            'processed_tasks' => $processedCount,
+            'total_tasks' => $job->total_tasks,
+            'processed_poles' => $job->processed_poles ?? 0,
+            'total_poles' => $job->total_poles,
+            'message' => $message,
+            'error_message' => $job->error_message,
+            'started_at' => $job->started_at?->toIso8601String(),
+            'completed_at' => $job->completed_at?->toIso8601String(),
+        ]);
+    }
+
+    /**
+     * Get active deletion jobs for current user
+     */
+    public function getActiveDeletionJobs()
+    {
+        $jobs = TargetDeletionJob::where('user_id', auth()->id())
+            ->whereIn('status', ['pending', 'processing'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+        
+        // Re-dispatch any pending jobs that haven't been processed
+        foreach ($jobs as $job) {
+            if ($job->status === 'pending') {
+                $chunkSize = config('target_deletion.chunk_size', 50);
+                $allTaskIds = $job->task_ids ?? [];
+                $processedTaskIds = $job->processed_task_ids ?? [];
+                $remainingTaskIds = array_diff($allTaskIds, $processedTaskIds);
+                
+                if (!empty($remainingTaskIds)) {
+                    try {
+                        ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize)
+                            ->onConnection(config('queue.default'))
+                            ->onQueue('default');
+                        Log::info('Re-dispatched pending deletion job from active jobs list', ['job_id' => $job->job_id]);
+                    } catch (\Exception $e) {
+                        Log::error('Failed to re-dispatch deletion job from active jobs', [
+                            'job_id' => $job->job_id,
+                            'error' => $e->getMessage()
+                        ]);
+                    }
+                }
+            }
+        }
+        
+        return response()->json([
+            'jobs' => $jobs->map(function ($job) {
+                return [
+                    'job_id' => $job->job_id,
+                    'status' => $job->status,
+                    'progress_percentage' => $job->progress_percentage,
+                    'total_tasks' => $job->total_tasks,
+                    'processed_tasks' => $job->processed_tasks,
+                ];
+            }),
+        ]);
     }
 
     public function bulkReassignTargets(Request $request)

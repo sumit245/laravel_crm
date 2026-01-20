@@ -87,7 +87,9 @@ class User extends Authenticatable
 
     public function projects()
     {
-        return $this->belongsToMany(Project::class, 'project_user')->withPivot('role')->withTimestamps();
+        return $this->belongsToMany(Project::class, 'project_user')
+            ->withPivot('role', 'district_id')
+            ->withTimestamps();
     }
     public function usercategory()
     {
@@ -194,10 +196,26 @@ class User extends Authenticatable
 
     /**
      * Assign user to a project (syncs pivot table)
+     *
+     * @param int $projectId
+     * @param int|null $districtId Optional district context for this user-project assignment
      */
-    public function assignToProject($projectId)
+    public function assignToProject($projectId, ?int $districtId = null)
     {
-        $this->projects()->syncWithoutDetaching([$projectId]);
+        $projectId = (int) $projectId;
+
+        $pivotAttributes = [];
+        if (!is_null($districtId)) {
+            $pivotAttributes['district_id'] = $districtId;
+        }
+
+        if (!empty($pivotAttributes)) {
+            $this->projects()->syncWithoutDetaching([
+                $projectId => $pivotAttributes,
+            ]);
+        } else {
+            $this->projects()->syncWithoutDetaching([$projectId]);
+        }
         
         // Update primary project_id if not set
         if (!$this->project_id) {

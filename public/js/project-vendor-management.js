@@ -113,9 +113,27 @@ function assignVendor(vendorIds, vendorName) {
         return;
     }
     
+    // Build district select HTML if projectDistricts are available
+    let districtSelectHtml = '';
+    if (Array.isArray(window.projectDistricts) && window.projectDistricts.length > 0) {
+        const options = window.projectDistricts.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+        districtSelectHtml = `
+            <div class="mt-3 text-start">
+                <label for="vendorDistrictSelect" class="form-label">Select District <span class="text-danger">*</span></label>
+                <select id="vendorDistrictSelect" class="form-select">
+                    <option value="">-- Select District --</option>
+                    ${options}
+                </select>
+                <small class="text-muted d-block mt-1">
+                    Choose the district where this vendor will work for this project.
+                </small>
+            </div>
+        `;
+    }
+
     Swal.fire({
         title: 'Assign Vendor',
-        html: `Assign <strong>${vendorName}</strong> to this project?`,
+        html: `Assign <strong>${vendorName}</strong> to this project?` + districtSelectHtml,
         icon: 'question',
         showCancelButton: true,
         confirmButtonColor: '#667eea',
@@ -123,12 +141,40 @@ function assignVendor(vendorIds, vendorName) {
         confirmButtonText: 'Yes, Assign',
         cancelButtonText: 'Cancel',
         showLoaderOnConfirm: true,
+        didOpen: () => {
+            // Enhance district select with Select2 inside the SweetAlert modal
+            if (Array.isArray(window.projectDistricts) && window.projectDistricts.length > 0 && window.jQuery && jQuery.fn.select2) {
+                const $select = $('#vendorDistrictSelect');
+                if ($select.length) {
+                    $select.select2({
+                        dropdownParent: $('.swal2-container').last(),
+                        width: '100%',
+                        placeholder: 'Select District',
+                        allowClear: true
+                    });
+                }
+            }
+        },
         preConfirm: () => {
+            // Validate district selection when districts are defined
+            let districtId = '';
+            if (Array.isArray(window.projectDistricts) && window.projectDistricts.length > 0) {
+                const selectEl = document.getElementById('vendorDistrictSelect');
+                districtId = selectEl ? selectEl.value : '';
+                if (!districtId) {
+                    Swal.showValidationMessage('Please select a district for this vendor.');
+                    return;
+                }
+            }
+
             // Create FormData for better CSRF token handling
             const formData = new FormData();
             vendorIds.forEach(id => {
                 formData.append('user_ids[]', id);
             });
+            if (districtId) {
+                formData.append('district_id', districtId);
+            }
             formData.append('_token', token);
             
             return fetch(`/projects/${currentProjectId}/assign-vendors`, {

@@ -384,7 +384,7 @@
                                         ['title' => 'District', 'width' => '12%'],
                                         ['title' => 'Block', 'width' => '12%'],
                                         ['title' => 'Panchayat', 'width' => '12%'],
-                                        ['title' => 'Ward', 'width' => '10%'],
+                                        ['title' => 'Ward', 'width' => '15%'],
                                         ['title' => 'Total Poles', 'width' => '10%'],
                                         ['title' => 'Surveyed', 'width' => '10%'],
                                         ['title' => 'Installed', 'width' => '10%'],
@@ -401,11 +401,11 @@
                                         <td>{{ $site['district'] ?? '-' }}</td>
                                         <td>{{ $site['block'] ?? '-' }}</td>
                                         <td>{{ $site['panchayat'] ?? '-' }}</td>
-                                        <td>
+                                        <td style="min-width: 180px; overflow: visible !important;">
                                             @if ($site['ward'])
                                                 @php
                                                     $wards = array_filter(array_map('trim', explode(',', $site['ward'])));
-                                                    $routeParams = ['project_id' => $project->id, 'ward' => ''];
+                                                    $routeParams = ['project_id' => $project->id, 'panchayat' => $site['panchayat'], 'ward' => ''];
                                                     if ($staff->role == \App\Enums\UserRole::SITE_ENGINEER->value) {
                                                         $routeParams['site_engineer'] = $staff->id;
                                                         $routeParams['role'] = 1;
@@ -417,19 +417,22 @@
                                                         $routeParams['role'] = 1;
                                                     }
                                                 @endphp
-                                                @foreach ($wards as $ward)
-                                                    @php $routeParams['ward'] = $ward; @endphp
-                                                    <a href="{{ route('installed.poles', $routeParams) }}" 
-                                                       class="badge badge-info ward-link" title="View installed poles for Ward {{ $ward }}">
-                                                        Ward {{ $ward }}
-                                                    </a>
-                                                @endforeach
+                                                <div class="ward-container">
+                                                    @foreach ($wards as $ward)
+                                                        @php $routeParams['ward'] = $ward; @endphp
+                                                        <a href="{{ route('installed.poles', $routeParams) }}" 
+                                                           class="ward-badge" 
+                                                           title="View installed poles for Ward {{ $ward }}">
+                                                            <i class="mdi mdi-map-marker"></i> {{ $ward }}
+                                                        </a>
+                                                    @endforeach
+                                                </div>
                                             @else
-                                                -
+                                                <span class="text-muted">-</span>
                                             @endif
                                         </td>
-                                        <td><strong>{{ $site['total_poles'] }}</strong></td>
-                                        <td>
+                                        <td><strong class="text-primary">{{ $site['total_poles'] }}</strong></td>
+                                        <td style="white-space: nowrap;">
                                             @php
                                                 $routeParams = ['project_id' => $project->id, 'panchayat' => $site['panchayat']];
                                                 if ($staff->role == \App\Enums\UserRole::SITE_ENGINEER->value) {
@@ -444,21 +447,43 @@
                                                 }
                                             @endphp
                                             <a href="{{ route('surveyed.poles', $routeParams) }}" 
-                                               class="badge badge-success clickable-count" title="View surveyed poles for {{ $site['panchayat'] }}">
-                                                {{ $site['surveyed_poles_count'] }}
+                                               class="count-badge surveyed-badge" 
+                                               title="View {{ $site['surveyed_poles_count'] }} surveyed poles for {{ $site['panchayat'] }}">
+                                                <i class="mdi mdi-check-circle"></i>
+                                                <span>{{ $site['surveyed_poles_count'] }}</span>
                                             </a>
                                         </td>
-                                        <td>
+                                        <td style="white-space: nowrap;">
                                             <a href="{{ route('installed.poles', $routeParams) }}" 
-                                               class="badge badge-primary clickable-count" title="View installed poles for {{ $site['panchayat'] }}">
-                                                {{ $site['installed_poles_count'] }}
+                                               class="count-badge installed-badge" 
+                                               title="View {{ $site['installed_poles_count'] }} installed poles for {{ $site['panchayat'] }}">
+                                                <i class="mdi mdi-lightning-bolt"></i>
+                                                <span>{{ $site['installed_poles_count'] }}</span>
                                             </a>
                                         </td>
-                                        <td class="text-center">
-                                            <a href="{{ route('installed.poles', $routeParams) }}" 
-                                               class="btn btn-icon btn-info" data-toggle="tooltip" title="View Poles">
-                                                <i class="mdi mdi-eye"></i>
-                                            </a>
+                                        <td class="text-center" style="white-space: nowrap;">
+                                            <div class="action-buttons">
+                                                <a href="{{ route('installed.poles', $routeParams) }}" 
+                                                   class="btn btn-icon btn-sm btn-info" data-toggle="tooltip" title="View Poles">
+                                                    <i class="mdi mdi-eye"></i>
+                                                </a>
+                                                <button type="button" 
+                                                    class="btn btn-icon btn-sm btn-danger delete-panchayat-btn" 
+                                                    data-project-id="{{ $project->id }}"
+                                                    data-panchayat="{{ $site['panchayat'] }}"
+                                                    data-toggle="tooltip" 
+                                                    title="Delete Panchayat">
+                                                    <i class="mdi mdi-delete"></i>
+                                                </button>
+                                                <button type="button" 
+                                                    class="btn btn-icon btn-sm btn-warning push-rms-btn" 
+                                                    data-project-id="{{ $project->id }}"
+                                                    data-panchayat="{{ $site['panchayat'] }}"
+                                                    data-toggle="tooltip" 
+                                                    title="Push to RMS">
+                                                    <i class="mdi mdi-cloud-upload"></i>
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -663,14 +688,175 @@
         padding: 0.25rem 0.5rem;
     }
     
-    .ward-link, .clickable-count {
-        cursor: pointer;
-        transition: opacity 0.2s ease;
+    /* Ward column styling */
+    .ward-container {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        width: 100%;
+        align-items: flex-start;
+        line-height: 1.6;
+        min-height: 28px;
     }
     
-    .ward-link:hover, .clickable-count:hover {
-        opacity: 0.8;
+    .ward-badge {
+        display: inline-block;
+        align-items: center;
+        padding: 4px 8px;
+        background-color: #e7f3ff;
+        color: #0066cc;
+        border: 1px solid #b3d9ff;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
         text-decoration: none;
+        transition: all 0.2s ease;
+        white-space: nowrap;
+        margin: 2px;
+        line-height: 1.5;
+    }
+    
+    .ward-badge:hover {
+        background-color: #0066cc;
+        color: white;
+        border-color: #0066cc;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,102,204,0.3);
+        text-decoration: none;
+    }
+    
+    .ward-badge i {
+        font-size: 0.7rem;
+        margin-right: 3px;
+    }
+    
+    /* Surveyed and Installed badges */
+    .count-badge {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 8px 12px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        min-width: 60px;
+    }
+    
+    .surveyed-badge {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+        border: none;
+    }
+    
+    .surveyed-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(40,167,69,0.4);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .installed-badge {
+        background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+        color: white;
+        border: none;
+    }
+    
+    .installed-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,123,255,0.4);
+        text-decoration: none;
+        color: white;
+    }
+    
+    .count-badge i {
+        font-size: 1rem;
+    }
+    
+    .count-badge span {
+        font-size: 0.9rem;
+    }
+    
+    /* Action buttons */
+    .action-buttons {
+        display: inline-flex;
+        gap: 4px;
+        align-items: center;
+    }
+    
+    .btn-icon {
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+    }
+    
+    .delete-panchayat-btn:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+        color: white;
+    }
+    
+    .push-rms-btn:hover {
+        background-color: #e0a800;
+        border-color: #d39e00;
+        color: white;
+    }
+    
+    /* Ensure table cells don't overflow */
+    .datatable-wrapper table td {
+        vertical-align: middle;
+        word-wrap: break-word;
+        position: relative;
+    }
+    
+    /* Ward column specific styling - prevent overflow */
+    .datatable-wrapper table td .ward-container {
+        overflow: visible !important;
+        width: 100%;
+    }
+    
+    /* Ensure ward column can expand */
+    .datatable-wrapper table th:nth-child(6),
+    .datatable-wrapper table td:nth-child(6) {
+        min-width: 180px !important;
+        max-width: 300px !important;
+        overflow: visible !important;
+    }
+    
+    /* Ensure count badges and action buttons don't wrap */
+    .datatable-wrapper table td:has(.count-badge),
+    .datatable-wrapper table td:has(.action-buttons) {
+        white-space: nowrap;
+        text-align: center;
+    }
+    
+    /* Override DataTables width constraints for ward column */
+    .datatable-wrapper table th:nth-child(6),
+    .datatable-wrapper table td:nth-child(6) {
+        min-width: 180px !important;
+        max-width: 350px !important;
+        overflow: visible !important;
+        width: auto !important;
+    }
+    
+    /* Specific fix for streetlight tables */
+    .datatable-wrapper[id*="streetlightTable"] table th:nth-child(6),
+    .datatable-wrapper[id*="streetlightTable"] table td:nth-child(6) {
+        min-width: 200px !important;
+        max-width: 400px !important;
+    }
+    
+    /* Ensure ward badges wrap properly */
+    .ward-container {
+        width: 100%;
+        min-height: 30px;
     }
 </style>
 @endpush
@@ -724,6 +910,135 @@
 
         // Initialize tooltips
         $('[data-toggle="tooltip"]').tooltip();
+
+        // Fix ward column width after DataTables initialization
+        setTimeout(function() {
+            $('[id^="streetlightTable-"]').each(function() {
+                const tableId = '#' + $(this).attr('id');
+                if ($.fn.DataTable.isDataTable(tableId)) {
+                    const table = $(tableId).DataTable();
+                    // Adjust ward column (6th column, index 5) width
+                    table.column(5).visible(true);
+                    setTimeout(function() {
+                        table.columns.adjust().draw(false);
+                        // Force ward column to have proper width
+                        $(tableId + '_wrapper table th:nth-child(6), ' + tableId + '_wrapper table td:nth-child(6)').css({
+                            'min-width': '200px',
+                            'max-width': '400px',
+                            'overflow': 'visible',
+                            'width': 'auto'
+                        });
+                    }, 500);
+                }
+            });
+        }, 1000);
+
+        // Delete Panchayat handler
+        $(document).on('click', '.delete-panchayat-btn', function(e) {
+            e.preventDefault();
+            const projectId = $(this).data('project-id');
+            const panchayat = $(this).data('panchayat');
+            const $btn = $(this);
+            
+            Swal.fire({
+                title: 'Are you sure?',
+                html: `This will delete all entries from <strong>${panchayat}</strong>.<br><br>
+                       All consumed inventory will be returned to vendor in dispatched state.<br>
+                       Surveyed and installed pole counts will be reset.`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!',
+                cancelButtonText: 'Cancel',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const url = '/staff/projects/' + projectId + '/panchayat/' + encodeURIComponent(panchayat) + '/delete';
+                    return $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        error: function(xhr) {
+                            throw new Error(xhr.responseJSON?.message || 'Failed to delete panchayat');
+                        }
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    Swal.fire({
+                        title: 'Deleted!',
+                        html: result.value.message || 'Panchayat deleted successfully.',
+                        icon: 'success',
+                        timer: 3000
+                    }).then(() => {
+                        location.reload();
+                    });
+                }
+            }).catch((error) => {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message || 'Failed to delete panchayat.',
+                    icon: 'error'
+                });
+            });
+        });
+
+        // Push to RMS handler
+        $(document).on('click', '.push-rms-btn', function(e) {
+            e.preventDefault();
+            const projectId = $(this).data('project-id');
+            const panchayat = $(this).data('panchayat');
+            const $btn = $(this);
+            
+            Swal.fire({
+                title: 'Push to RMS?',
+                html: `Push all installed poles from <strong>${panchayat}</strong> to RMS server?`,
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#ffc107',
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: 'Yes, push it!',
+                cancelButtonText: 'Cancel',
+                showLoaderOnConfirm: true,
+                preConfirm: () => {
+                    const url = '/staff/projects/' + projectId + '/panchayat/' + encodeURIComponent(panchayat) + '/push-rms';
+                    return $.ajax({
+                        url: url,
+                        method: 'POST',
+                        data: {
+                            _token: '{{ csrf_token() }}'
+                        },
+                        error: function(xhr) {
+                            throw new Error(xhr.responseJSON?.message || 'Failed to push to RMS');
+                        }
+                    });
+                },
+                allowOutsideClick: () => !Swal.isLoading()
+            }).then((result) => {
+                if (result.isConfirmed && result.value) {
+                    const data = result.value.data || {};
+                    const successCount = data.success_count || 0;
+                    const errorCount = data.error_count || 0;
+                    
+                    Swal.fire({
+                        title: 'Push Complete!',
+                        html: `Successfully pushed: <strong>${successCount}</strong><br>
+                               Errors: <strong>${errorCount}</strong>`,
+                        icon: successCount > 0 ? 'success' : 'warning',
+                        timer: 3000
+                    });
+                }
+            }).catch((error) => {
+                Swal.fire({
+                    title: 'Error!',
+                    text: error.message || 'Failed to push to RMS.',
+                    icon: 'error'
+                });
+            });
+        });
     });
 </script>
 @endpush

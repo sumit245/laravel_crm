@@ -1,0 +1,397 @@
+================================================================================
+                    LARAVEL CRM - SERVER MANAGEMENT USER MANUAL
+================================================================================
+
+This manual contains essential commands for managing the Laravel CRM application
+on an Ubuntu server. Commands are organized by category for easy reference.
+
+================================================================================
+1. NAVIGATION & DIRECTORY MANAGEMENT
+================================================================================
+
+cd /var/www/vhosts/slldm.com/
+    Navigate to the main application directory.
+    This is the root directory where all Laravel files are located.
+
+cd /var/www/vhosts/slldm.com/storage/logs/
+    Navigate to the Laravel logs directory.
+    Useful for viewing application error logs.
+
+cd /etc/nginx/sites-available/
+    Navigate to Nginx configuration directory.
+    Contains server block configuration files.
+
+pwd
+    Print current working directory.
+    Shows your current location in the filesystem.
+
+ls -ltr
+    List files with detailed information, sorted by modification time (newest last).
+    Useful for finding recently modified files.
+
+clear
+    Clear the terminal screen.
+    Keeps your terminal clean and organized.
+
+================================================================================
+2. GIT VERSION CONTROL
+================================================================================
+
+git pull origin main
+    Pull latest changes from the main branch.
+    Updates your local codebase with remote changes.
+
+git pull origin master
+    Pull latest changes from the master branch.
+    Alternative branch name (some repositories use 'master' instead of 'main').
+
+git add .
+    Stage all modified files for commit.
+    Prepares changes to be committed.
+
+git commit -m "Your commit message"
+    Commit staged changes with a descriptive message.
+    Saves your changes to the local repository.
+
+git config --global user.name "Your Name"
+    Set your Git username globally.
+    Required for making commits.
+
+git config --global user.email "your.email@example.com"
+    Set your Git email globally.
+    Required for making commits.
+
+git config --global --add safe.directory /var/www/vhosts/slldm.com
+    Mark a directory as safe for Git operations.
+    Sometimes needed when working with directories owned by different users.
+
+================================================================================
+3. NGINX WEB SERVER MANAGEMENT
+================================================================================
+
+sudo service nginx start
+    Start the Nginx web server.
+    Makes the application accessible via HTTP/HTTPS.
+
+sudo service nginx stop
+    Stop the Nginx web server.
+    Temporarily takes the application offline.
+
+sudo service nginx restart
+    Restart the Nginx web server.
+    Applies configuration changes and reloads the server.
+
+sudo service nginx status
+    Check the status of Nginx service.
+    Shows if Nginx is running, stopped, or has errors.
+
+sudo nginx -t
+    Test Nginx configuration for syntax errors.
+    ALWAYS run this before restarting Nginx to avoid breaking the server.
+
+sudo systemctl start nginx
+    Alternative command to start Nginx (systemd).
+    Modern Linux systems use systemctl instead of service.
+
+sudo systemctl stop nginx
+    Alternative command to stop Nginx (systemd).
+
+sudo systemctl restart nginx
+    Alternative command to restart Nginx (systemd).
+
+sudo systemctl status nginx.service
+    Check detailed status of Nginx service.
+    Shows more information than the basic status command.
+
+================================================================================
+4. LARAVEL ARTISAN COMMANDS
+================================================================================
+
+php artisan migrate
+    Run database migrations.
+    Updates database schema to match your migration files.
+
+sudo php artisan migrate
+    Run migrations with sudo privileges.
+    Sometimes needed if database requires elevated permissions.
+
+php artisan config:clear
+    Clear Laravel configuration cache.
+    Forces Laravel to reload configuration files.
+
+php artisan config:cache
+    Cache Laravel configuration for better performance.
+    Speeds up application by caching config files.
+
+sudo php artisan config:cache
+    Cache configuration with sudo privileges.
+
+php artisan cache:clear
+    Clear all application cache.
+    Removes cached data that might be outdated.
+
+sudo php artisan cache:clear
+    Clear cache with sudo privileges.
+
+php artisan view:clear
+    Clear compiled view files.
+    Forces Laravel to recompile Blade templates.
+
+php artisan views:clear
+    Alternative command to clear views (if available).
+
+================================================================================
+5. FILE PERMISSIONS & OWNERSHIP
+================================================================================
+
+chmod -R gu+w storage
+    Grant group and user write permissions to storage directory recursively.
+    Required for Laravel to write logs, cache, and uploaded files.
+
+sudo chown -R www-data:www-data /var/www/vhosts/slldm.com/storage
+    Change ownership of storage directory to www-data user and group.
+    Ensures web server can write to storage directory.
+
+sudo chown -R www-data:www-data /var/www/vhosts/slldm.com/bootstrap/cache
+    Change ownership of bootstrap cache directory.
+    Required for Laravel to cache compiled files.
+
+================================================================================
+6. LOG MANAGEMENT
+================================================================================
+
+tail -f storage/logs/laravel.log
+    Monitor Laravel log file in real-time.
+    Shows new log entries as they are written (press Ctrl+C to exit).
+
+tail -n 50 storage/logs/laravel.log
+    Display last 50 lines of Laravel log file.
+    Useful for viewing recent errors without opening the entire file.
+
+nano storage/logs/laravel.log
+    Open log file in nano text editor.
+    Allows you to read and search through log entries.
+
+sudo nano storage/logs/laravel.log
+    Open log file with sudo privileges.
+    Sometimes needed if log file has restricted permissions.
+
+rm storage/logs/laravel.log
+    Delete the log file.
+    Clears old logs (Laravel will create a new one automatically).
+
+sudo rm storage/logs/laravel.log
+    Delete log file with sudo privileges.
+
+================================================================================
+7. APACHE & PORT MANAGEMENT
+================================================================================
+
+sudo service apache2 stop
+    Stop Apache web server.
+    Required if Apache conflicts with Nginx on port 80/443.
+
+sudo systemctl stop apache2
+    Stop Apache using systemd.
+
+sudo systemctl restart apache2
+    Restart Apache web server.
+
+sudo lsof -i :80
+    List processes using port 80.
+    Helps identify what's blocking HTTP port.
+
+sudo lsof -i :443
+    List processes using port 443.
+    Helps identify what's blocking HTTPS port.
+
+sudo lsof -i :80 -i :443
+    List processes using ports 80 and 443.
+    Shows both HTTP and HTTPS port usage.
+
+sudo kill -9 [PID]
+    Forcefully kill a process by its Process ID.
+    Use with caution - only kill processes you're sure about.
+    Example: sudo kill -9 1382
+
+================================================================================
+8. PHP CONFIGURATION
+================================================================================
+
+php --version
+    Display PHP version.
+    Shows which PHP version is currently active.
+
+php --ini
+    Show path to php.ini configuration file.
+    Helps locate PHP configuration file for editing.
+
+php -i | grep 'post_max_size\|upload_max_filesize'
+    Check PHP upload size limits.
+    Shows maximum file upload size settings.
+
+php -i | grep memory
+    Check PHP memory settings.
+    Shows memory limit configuration.
+
+sudo nano /etc/php/8.4/fpm/php.ini
+    Edit PHP-FPM configuration file.
+    Modify PHP settings for web requests (adjust version number as needed).
+
+sudo nano /etc/php/8.4/cli/php.ini
+    Edit PHP CLI configuration file.
+    Modify PHP settings for command-line operations.
+
+================================================================================
+9. COMPOSER PACKAGE MANAGEMENT
+================================================================================
+
+composer install
+    Install all dependencies defined in composer.json.
+    Downloads and installs all required PHP packages.
+
+sudo composer install
+    Install dependencies with sudo privileges.
+    Sometimes needed for system-wide package installation.
+
+composer require [package-name] --with-all-dependencies
+    Install a new package with all its dependencies.
+    Example: composer require yajra/laravel-datatables --with-all-dependencies
+
+sudo composer require [package-name] --with-all-dependencies
+    Install package with sudo privileges.
+
+composer remove [package-name] -W
+    Remove a package and update composer.json.
+    Example: composer remove yajra/laravel-datatables -W
+
+sudo composer remove [package-name] -W
+    Remove package with sudo privileges.
+
+composer show [package-name]
+    Display information about an installed package.
+    Example: composer show yajra/laravel-datatables
+
+================================================================================
+10. SSL CERTIFICATE MANAGEMENT
+================================================================================
+
+sudo apt install certbot python3-certbot-nginx
+    Install Certbot for Nginx SSL certificate management.
+    Required for obtaining free SSL certificates from Let's Encrypt.
+
+sudo certbot --nginx -d slldm.com
+    Obtain and install SSL certificate for your domain.
+    Automatically configures Nginx for HTTPS.
+
+ls -l /etc/letsencrypt/live/slldm.com/
+    List SSL certificate files.
+    Shows certificate, private key, and chain files.
+
+================================================================================
+11. FILE EDITING & VIEWING
+================================================================================
+
+nano [filename]
+    Open file in nano text editor.
+    Simple text editor for quick edits.
+
+sudo nano [filename]
+    Open file with sudo privileges.
+    Required for editing system files or files with restricted permissions.
+
+whoami
+    Display current username.
+    Shows which user you're logged in as.
+
+================================================================================
+12. USER & PRIVILEGE MANAGEMENT
+================================================================================
+
+sudo su
+    Switch to root user (superuser).
+    Grants full system access - use with caution!
+
+exit
+    Exit from sudo su or current shell session.
+    Returns to your regular user account.
+
+================================================================================
+13. NGINX CONFIGURATION FILES
+================================================================================
+
+sudo nano /etc/nginx/sites-available/slldm
+    Edit Nginx server block configuration.
+    Main configuration file for your domain.
+
+sudo nano /etc/nginx/nginx.conf
+    Edit main Nginx configuration file.
+    Global Nginx settings (use with extreme caution).
+
+================================================================================
+14. ENVIRONMENT CONFIGURATION
+================================================================================
+
+sudo nano .env
+    Edit Laravel environment configuration file.
+    Contains database credentials, app settings, and API keys.
+    NEVER commit this file to Git!
+
+================================================================================
+15. COMMON WORKFLOWS
+================================================================================
+
+DEPLOYMENT WORKFLOW:
+    1. cd /var/www/vhosts/slldm.com/
+    2. sudo git pull origin main
+    3. sudo php artisan migrate
+    4. sudo php artisan config:cache
+    5. sudo php artisan cache:clear
+    6. sudo service nginx restart
+
+TROUBLESHOOTING WORKFLOW:
+    1. tail -n 50 storage/logs/laravel.log
+    2. sudo nginx -t
+    3. sudo service nginx status
+    4. php artisan config:clear
+    5. php artisan cache:clear
+
+PERMISSION FIX WORKFLOW:
+    1. chmod -R gu+w storage
+    2. sudo chown -R www-data:www-data storage
+    3. sudo chown -R www-data:www-data bootstrap/cache
+
+================================================================================
+16. IMPORTANT NOTES & BEST PRACTICES
+================================================================================
+
+1. ALWAYS test Nginx configuration before restarting:
+   sudo nginx -t
+
+2. Clear Laravel cache after configuration changes:
+   php artisan config:clear
+   php artisan cache:clear
+
+3. Check logs when encountering errors:
+   tail -f storage/logs/laravel.log
+
+4. Use sudo only when necessary - it grants elevated privileges.
+
+5. Before editing configuration files, make backups:
+   sudo cp /etc/nginx/sites-available/slldm /etc/nginx/sites-available/slldm.backup
+
+6. After pulling code changes, always run:
+   - Database migrations (if any)
+   - Cache clearing commands
+   - Service restart
+
+7. Monitor disk space regularly:
+   df -h
+
+8. Keep your system updated:
+   sudo apt update && sudo apt upgrade
+
+================================================================================
+END OF MANUAL
+================================================================================
+

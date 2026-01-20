@@ -15,9 +15,14 @@ use App\Models\Vehicle;
 use DB;
 use Illuminate\Http\Request;
 use Log;
+use App\Services\Logging\ActivityLogger;
 
 class ConvenienceController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
     /**
      * Display a listing of the resource.
      */
@@ -51,13 +56,29 @@ class ConvenienceController extends Controller
 
     public function accept($id)
     {
+        $conveyance = Conveyance::findOrFail($id);
         Conveyance::where('id', $id)->update(['status' => 1]);
+
+        $this->activityLogger->log('billing', 'status_changed', $conveyance, [
+            'description' => 'Conveyance claim accepted.',
+            'extra' => [
+                'status' => 1,
+            ],
+        ]);
         return back()->with('success', 'Status updated to Accepted.');
     }
 
     public function reject($id)
     {
+        $conveyance = Conveyance::findOrFail($id);
         Conveyance::where('id', $id)->update(['status' => 0]);
+
+        $this->activityLogger->log('billing', 'status_changed', $conveyance, [
+            'description' => 'Conveyance claim rejected.',
+            'extra' => [
+                'status' => 0,
+            ],
+        ]);
 
         return back()->with('success', 'Status updated to Accepted.');
     }
@@ -73,6 +94,14 @@ class ConvenienceController extends Controller
             $status = $request->action_type === 'accept' ? 1 : 0;
 
             Conveyance::whereIn('id', $request->ids)->update(['status' => $status]);
+
+            $this->activityLogger->log('billing', 'status_changed', null, [
+                'description' => 'Bulk conveyance status update.',
+                'extra' => [
+                    'ids' => $request->ids,
+                    'status' => $status,
+                ],
+            ]);
 
             return redirect()->back()->with('success', 'Bulk action completed successfully.');
         } catch (\Throwable $th) {

@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\UserRole;
 use App\Http\Controllers\Controller;
+use App\Services\Logging\ActivityLogger;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,18 +14,23 @@ class LoginController extends Controller
 {
     use AuthenticatesUsers;
 
-    protected $redirectTo = '/dashboard';
-
-    public function __construct()
-    {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
         $this->middleware('guest')->except('logout');
     }
+
+    protected $redirectTo = '/dashboard';
 
     /**
      * Handle user login.
      */
     protected function authenticated(Request $request, $user)
     {
+        $this->activityLogger->log('auth', 'login', $user, [
+            'description' => 'User logged in via web.',
+        ]);
+
         if ($user->role === UserRole::VENDOR->value) {
             Auth::logout();
             return redirect()->route('login')->withErrors([
@@ -50,5 +56,23 @@ class LoginController extends Controller
         }
 
         return redirect()->intended($this->redirectTo);
+    }
+
+    public function logout(Request $request)
+    {
+        $user = Auth::user();
+
+        $this->activityLogger->log('auth', 'logout', $user, [
+            'description' => 'User logged out via web.',
+        ]);
+
+        // Replicate the default AuthenticatesUsers::logout behaviour
+        $this->guard()->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        return redirect('/');
     }
 }

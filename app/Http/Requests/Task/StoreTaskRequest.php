@@ -42,6 +42,7 @@ class StoreTaskRequest extends FormRequest
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'image' => ['nullable', 'string'],
             'materials_consumed' => ['nullable', 'string'],
+            'selected_wards' => ['nullable', 'string'],
         ];
     }
 

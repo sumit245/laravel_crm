@@ -29,6 +29,14 @@
     'processing' => true,
 ])
 
+@php
+    // CRITICAL: Sanitize ID for use in JavaScript variable names
+    // Replace hyphens, dots, and spaces with underscores to create valid JavaScript identifiers
+    // Example: "streetlightTable-11" becomes "streetlightTable_11"
+    // This prevents JavaScript syntax errors like "var skipInit_streetlightTable-11 = false;" which is invalid
+    $jsSafeId = str_replace(['-', '.', ' '], '_', $id);
+@endphp
+
 <div class="datatable-wrapper" id="datatable-wrapper-{{ $id }}">
     {{-- Header Section: Import and Add Button on Same Line --}}
     <div class="d-flex flex-column flex-md-row justify-content-between align-items-start mb-4 gap-3">
@@ -209,11 +217,12 @@
         <div class="d-flex align-items-center gap-2">
             <label class="mb-0 small fw-semibold">Show:</label>
             <select class="form-control form-control-sm" id="{{ $id }}_length" style="width: auto;">
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200" selected>200</option>
-                <option value="500">500</option>
-                <option value="-1">All</option>
+                <option value="25" {{ $pageLength == 25 ? 'selected' : '' }}>25</option>
+                <option value="50" {{ $pageLength == 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ $pageLength == 100 ? 'selected' : '' }}>100</option>
+                <option value="200" {{ $pageLength == 200 ? 'selected' : '' }}>200</option>
+                <option value="500" {{ $pageLength == 500 ? 'selected' : '' }}>500</option>
+                <option value="-1" {{ $pageLength == -1 ? 'selected' : '' }}>All</option>
             </select>
             <span class="small">entries</span>
         </div>
@@ -675,9 +684,9 @@
 
 @push('scripts')
     <script>
-        var skipInit_{{ $id }} = false;
+        var skipInit_{{ $jsSafeId }} = false;
         if (typeof window !== 'undefined') {
-            skipInit_{{ $id }} = window['skipAutoInit_{{ $id }}'] === true;
+            skipInit_{{ $jsSafeId }} = window['skipAutoInit_{{ $jsSafeId }}'] === true;
         }
 
         $(document).ready(function() {
@@ -690,7 +699,7 @@
                     waitAttempts++;
                     if (typeof $.fn !== 'undefined' && typeof $.fn.DataTable !== 'undefined') {
                         clearInterval(waitForDataTables);
-                        initializeTableAfterReady_{{ $id }}();
+                        initializeTableAfterReady_{{ $jsSafeId }}();
                     } else if (waitAttempts >= 50) { 
                         clearInterval(waitForDataTables);
                         console.error('DataTables failed to load after 5 seconds');
@@ -699,11 +708,11 @@
                 return;
             }
 
-            initializeTableAfterReady_{{ $id }}();
+            initializeTableAfterReady_{{ $jsSafeId }}();
         });
 
         // Unique function name to prevent conflicts if multiple tables exist
-        function initializeTableAfterReady_{{ $id }}() {
+        function initializeTableAfterReady_{{ $jsSafeId }}() {
             // MOVED UP: Define table variables in the main scope so inner functions can access them
             const tableId = '#{{ $id }}';
             let table;
@@ -714,16 +723,16 @@
             console.log("Table is processing server side: ", isServerSide);
 
             // Legacy skip flag check
-            if (!skipInit_{{ $id }}) {
+            if (!skipInit_{{ $jsSafeId }}) {
                 var $tableCheck = $(tableId);
                 var $wrapperCheck = $('#datatable-wrapper-{{ $id }}');
-                skipInit_{{ $id }} = (window['skipAutoInit_{{ $id }}'] === true ||
+                skipInit_{{ $jsSafeId }} = (window['skipAutoInit_{{ $jsSafeId }}'] === true ||
                     $tableCheck.attr('data-server-side') === 'true' ||
                     $tableCheck.closest('[data-server-side="true"]').length > 0 ||
                     $wrapperCheck.attr('data-server-side') === 'true') && !isServerSide;
             }
 
-            if (skipInit_{{ $id }} && !isServerSide) {
+            if (skipInit_{{ $jsSafeId }} && !isServerSide) {
                 return;
             }
 
@@ -771,7 +780,7 @@
 
                 if (!isServerSide) {
                     var $wrapper = $('#datatable-wrapper-{{ $id }}');
-                    var shouldSkip = window['skipAutoInit_{{ $id }}'] === true ||
+                    var shouldSkip = window['skipAutoInit_{{ $jsSafeId }}'] === true ||
                         $table.attr('data-server-side') === 'true' ||
                         $table.closest('[data-server-side="true"]').length > 0 ||
                         ($wrapper.length > 0 && $wrapper.attr('data-server-side') === 'true');
@@ -952,12 +961,12 @@
             });
 
             @if (!empty($filters))
-                const filterContainer_{{ $id }} = $('#datatable-wrapper-{{ $id }}');
-                let filterFunctions_{{ $id }} = [];
-                window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                const filterContainer_{{ $jsSafeId }} = $('#datatable-wrapper-{{ $id }}');
+                let filterFunctions_{{ $jsSafeId }} = [];
+                window['filterFunctions_{{ $jsSafeId }}'] = filterFunctions_{{ $jsSafeId }};
 
-                window['applyFilters_{{ $id }}'] = function() {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                window['applyFilters_{{ $jsSafeId }}'] = function() {
+                    const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                     if (!table || typeof table.draw !== 'function') return;
 
                     // Use the isServerSide variable from outer scope
@@ -967,22 +976,22 @@
                     }
 
                     const currentSearchFunctions = $.fn.dataTable.ext.search || [];
-                    const existingTableFilters = window['filterFunctions_{{ $id }}'] || [];
+                    const existingTableFilters = window['filterFunctions_{{ $jsSafeId }}'] || [];
                     $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
                         return existingTableFilters.indexOf(fn) === -1;
                     });
 
-                    filterFunctions_{{ $id }} = [];
-                    window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                    filterFunctions_{{ $jsSafeId }} = [];
+                    window['filterFunctions_{{ $jsSafeId }}'] = filterFunctions_{{ $jsSafeId }};
                     table.search('').columns().search('');
 
                     @foreach ($filters as $filter)
                         @if ($filter['type'] === 'select')
                             @if (isset($filter['select2']) && $filter['select2'])
-                                const select2Val_{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-select2[data-filter="{{ $filter['name'] }}"]').select2('val');
+                                const select2Val_{{ $loop->index }} = filterContainer_{{ $jsSafeId }}.find('.filter-select2[data-filter="{{ $filter['name'] }}"]').select2('val');
                                 const filter{{ $loop->index }} = Array.isArray(select2Val_{{ $loop->index }}) ? select2Val_{{ $loop->index }}[0] : select2Val_{{ $loop->index }};
                             @else
-                                const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-select[data-filter="{{ $filter['name'] }}"]').val();
+                                const filter{{ $loop->index }} = filterContainer_{{ $jsSafeId }}.find('.filter-select[data-filter="{{ $filter['name'] }}"]').val();
                             @endif
 
                             if (filter{{ $loop->index }}) {
@@ -1002,7 +1011,7 @@
                                         const normalizedFilterValue = (filterValue{{ $loop->index }} === '-' || filterValue{{ $loop->index }} === '') ? '' : String(filterValue{{ $loop->index }});
                                         return normalizedRowValue === normalizedFilterValue;
                                     };
-                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    filterFunctions_{{ $jsSafeId }}.push(filterFn{{ $loop->index }});
                                     if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
                                     $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
                                 @else
@@ -1010,7 +1019,7 @@
                                 @endif
                             }
                         @elseif ($filter['type'] === 'date')
-                            const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-date[data-filter="{{ $filter['name'] }}"]').val();
+                            const filter{{ $loop->index }} = filterContainer_{{ $jsSafeId }}.find('.filter-date[data-filter="{{ $filter['name'] }}"]').val();
                             if (filter{{ $loop->index }}) {
                                 @if (str_contains($filter['name'], 'from'))
                                     const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
@@ -1023,7 +1032,7 @@
                                             return !isNaN(cellDate.getTime()) && cellDate >= filterDate;
                                         } catch (e) { return true; }
                                     };
-                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    filterFunctions_{{ $jsSafeId }}.push(filterFn{{ $loop->index }});
                                     if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
                                     $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
                                 @elseif (str_contains($filter['name'], 'to'))
@@ -1037,13 +1046,13 @@
                                             return !isNaN(cellDate.getTime()) && cellDate <= filterDate;
                                         } catch (e) { return true; }
                                     };
-                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    filterFunctions_{{ $jsSafeId }}.push(filterFn{{ $loop->index }});
                                     if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
                                     $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
                                 @endif
                             }
                         @elseif ($filter['type'] === 'text')
-                            const filter{{ $loop->index }} = filterContainer_{{ $id }}.find('.filter-text[data-filter="{{ $filter['name'] }}"]').val();
+                            const filter{{ $loop->index }} = filterContainer_{{ $jsSafeId }}.find('.filter-text[data-filter="{{ $filter['name'] }}"]').val();
                             if (filter{{ $loop->index }}) {
                                 @if (str_contains($filter['name'], 'min'))
                                     const filterFn{{ $loop->index }} = function(settings, data, dataIndex) {
@@ -1053,7 +1062,7 @@
                                         const cellValue = parseFloat(String(data[{{ $filter['column'] }}]).replace(/[^0-9.-]+/g, '')) || 0;
                                         return cellValue >= filterVal;
                                     };
-                                    filterFunctions_{{ $id }}.push(filterFn{{ $loop->index }});
+                                    filterFunctions_{{ $jsSafeId }}.push(filterFn{{ $loop->index }});
                                     if (!$.fn.dataTable.ext.search) $.fn.dataTable.ext.search = [];
                                     $.fn.dataTable.ext.search.push(filterFn{{ $loop->index }});
                                 @else
@@ -1063,32 +1072,32 @@
                         @endif
                     @endforeach
 
-                    window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                    window['filterFunctions_{{ $jsSafeId }}'] = filterFunctions_{{ $jsSafeId }};
                     table.draw();
                 };
 
                 $(document).off('click', '#{{ $id }}_applyFilters').on('click', '#{{ $id }}_applyFilters', function() {
-                    if (typeof window['applyFilters_{{ $id }}'] === 'function') {
-                        window['applyFilters_{{ $id }}']();
+                    if (typeof window['applyFilters_{{ $jsSafeId }}'] === 'function') {
+                        window['applyFilters_{{ $jsSafeId }}']();
                     }
                 });
 
                 $(document).off('click', '#{{ $id }}_clearFilters').on('click', '#{{ $id }}_clearFilters', function() {
-                    filterContainer_{{ $id }}.find('.filter-select, .filter-date, .filter-text').val('');
-                    filterContainer_{{ $id }}.find('.filter-select2').each(function() {
+                    filterContainer_{{ $jsSafeId }}.find('.filter-select, .filter-date, .filter-text').val('');
+                    filterContainer_{{ $jsSafeId }}.find('.filter-select2').each(function() {
                         $(this).val(null).trigger('change');
                     });
 
                     const currentSearchFunctions = $.fn.dataTable.ext.search || [];
-                    const tableFilterFunctions = window['filterFunctions_{{ $id }}'] || [];
+                    const tableFilterFunctions = window['filterFunctions_{{ $jsSafeId }}'] || [];
                     $.fn.dataTable.ext.search = currentSearchFunctions.filter(function(fn) {
                         return tableFilterFunctions.indexOf(fn) === -1;
                     });
 
-                    filterFunctions_{{ $id }} = [];
-                    window['filterFunctions_{{ $id }}'] = filterFunctions_{{ $id }};
+                    filterFunctions_{{ $jsSafeId }} = [];
+                    window['filterFunctions_{{ $jsSafeId }}'] = filterFunctions_{{ $jsSafeId }};
 
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                     if (table && typeof table.draw === 'function') {
                         // Use the isServerSide variable from outer scope
                         if (isServerSide) {
@@ -1142,7 +1151,7 @@
                         $tbody.empty();
                     }
                     // Store flag to remove deferLoading from config if we cleared rows
-                    window['_clearDomRows_{{ $id }}'] = (domRowCount > 0);
+                    window['_clearDomRows_{{ $jsSafeId }}'] = (domRowCount > 0);
                 }
 
                 try {
@@ -1293,7 +1302,7 @@
                                 $(this).addClass('custom-sort-header');
                             });
 
-                            if (window['datatableInitComplete_{{ $id }}']) return;
+                            if (window['datatableInitComplete_{{ $jsSafeId }}']) return;
 
                             @foreach ($columns as $index => $column)
                                 @if (isset($column['width']))
@@ -1331,7 +1340,7 @@
                                 }
                             }, 200);
 
-                            window['datatableInitComplete_{{ $id }}'] = true;
+                            window['datatableInitComplete_{{ $jsSafeId }}'] = true;
 
                             function removeLengthMenu() {
                                 const wrapperId = tableId.replace('#', '');
@@ -1348,15 +1357,15 @@
 
                     // CRITICAL: If we cleared DOM rows, remove deferLoading to force AJAX request
                     // deferLoading is meant to work WITH DOM rows, not without them
-                    if (isServerSide && window['_clearDomRows_{{ $id }}'] && dtConfig.hasOwnProperty('deferLoading')) {
+                    if (isServerSide && window['_clearDomRows_{{ $jsSafeId }}'] && dtConfig.hasOwnProperty('deferLoading')) {
                         delete dtConfig.deferLoading;
                     }
                     
                     table = $(tableId).DataTable(dtConfig);
 
                     if (table) {
-                        window['table_{{ $id }}'] = table;
-                        window['datatable_{{ $id }}'] = table;
+                        window['table_{{ $jsSafeId }}'] = table;
+                        window['datatable_{{ $jsSafeId }}'] = table;
                     }
 
                 } catch (err) {
@@ -1372,7 +1381,7 @@
                 }, 300);
 
                 $(document).off('change', '#{{ $id }}_length').on('change', '#{{ $id }}_length', function() {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                     if (table && typeof table.page === 'function') {
                         table.page.len($(this).val()).draw();
                         setTimeout(function() {
@@ -1384,8 +1393,8 @@
                     }
                 });
 
-                var storageKey = 'datatable_colvis_{{ $id }}_v2';
-                localStorage.removeItem('datatable_colvis_{{ $id }}');
+                var storageKey = 'datatable_colvis_{{ $jsSafeId }}_v2';
+                localStorage.removeItem('datatable_colvis_{{ $jsSafeId }}');
 
                 function loadColumnVisibility() {
                     try {
@@ -1584,13 +1593,13 @@
                 @endif
 
                 $(document).off('keyup', '#{{ $id }}_search').on('keyup', '#{{ $id }}_search', function() {
-                    const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                    const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                     if (table && typeof table.search === 'function') table.search($(this).val()).draw();
                 });
 
                 $(document).off('keypress', '#{{ $id }}_search').on('keypress', '#{{ $id }}_search', function(e) {
                     if (e.which === 13) {
-                         const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                         const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                          if (table && typeof table.search === 'function') table.search($(this).val()).draw();
                     }
                 });
@@ -1603,21 +1612,21 @@
 
                 @if ($exportEnabled)
                     $(document).off('click', '#{{ $id }}_excel').on('click', '#{{ $id }}_excel', function() {
-                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                         if (table && typeof table.button === 'function') table.button('.buttons-excel').trigger();
                     });
                     $(document).off('click', '#{{ $id }}_pdf').on('click', '#{{ $id }}_pdf', function() {
-                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                         if (table && typeof table.button === 'function') table.button('.buttons-pdf').trigger();
                     });
                     $(document).off('click', '#{{ $id }}_print').on('click', '#{{ $id }}_print', function() {
-                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                         if (table && typeof table.button === 'function') table.button('.buttons-print').trigger();
                     });
 
                     $(document).off('click', '#{{ $id }}_columns').on('click', '#{{ $id }}_columns', function(e) {
                         e.preventDefault(); e.stopPropagation();
-                        const table = window['table_{{ $id }}'] || $(tableId).DataTable();
+                        const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                         if (!table) return;
 
                         var $button = $(this);
@@ -1719,13 +1728,13 @@
                 });
             }
 
-            if (!skipInit_{{ $id }}) {
+            if (!skipInit_{{ $jsSafeId }}) {
                 setTimeout(initializeSelect2Filters, 500);
             }
 
             // Fallback initialization - but skip server-side tables in hidden tabs
             setTimeout(function() {
-                if (!skipInit_{{ $id }} && !$.fn.DataTable.isDataTable(tableId)) {
+                if (!skipInit_{{ $jsSafeId }} && !$.fn.DataTable.isDataTable(tableId)) {
                     const $table = $(tableId);
                     const $tabPane = $table.closest('.tab-pane');
                     // Use the isServerSide variable from outer scope

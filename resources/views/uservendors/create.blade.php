@@ -56,10 +56,10 @@
         <form class="forms-sample" action="{{ route('uservendors.store') }}" method="POST" enctype="multipart/form-data">
           @csrf
 
-          <!-- Project Selection Dropdown -->
+          <!-- Project & District Selection -->
           <div class="form-group mb-4">
             <div class="row">
-              <div class="col-md-12">
+              <div class="col-md-6">
                 <div class="form-group">
                   <label for="select_project" class="form-label">Select Project</label>
                   <select name="project_id" class="form-select" id="select_project">
@@ -68,6 +68,23 @@
                       <option value="{{ $category->id }}">{{ $category->project_name }}</option>
                     @endforeach
                   </select>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label for="district_id" class="form-label">District (for selected project)</label>
+                  <select name="district_id" id="district_id" class="form-select">
+                    <option value="">-- Select District --</option>
+                    @foreach ($districts as $district)
+                      <option value="{{ $district->id }}" {{ old('district_id') == $district->id ? 'selected' : '' }}>
+                        {{ $district->name }}
+                      </option>
+                    @endforeach
+                  </select>
+                  <small class="text-muted d-block mt-1">
+                    If a project is selected, choose the district where this vendor will primarily work.
+                  </small>
+                  @error('district_id') <div class="invalid-feedback d-block">{{ $message }}</div> @enderror
                 </div>
               </div>
             </div>
@@ -273,6 +290,15 @@
 
 @push("scripts")
   <script>
+    $(document).ready(function() {
+      // Make district select searchable with Select2
+      $('#district_id').select2({
+        placeholder: 'Select District',
+        allowClear: true,
+        width: '100%'
+      });
+    });
+
     function togglePasswordVisibility(fieldId, iconId) {
       const passwordField = document.getElementById(fieldId);
       const toggleIcon = document.getElementById(iconId);

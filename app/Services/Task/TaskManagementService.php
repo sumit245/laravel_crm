@@ -474,6 +474,15 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
                     }
 
                     // Prepare task data for streetlight
+                    $description = $taskData['description'] ?? '';
+                    
+                    // Add selected wards to description if provided
+                    if (!empty($taskData['selected_wards'])) {
+                        $selectedWards = $taskData['selected_wards'];
+                        $wardInfo = "\n\nSelected Wards: " . $selectedWards;
+                        $description = $description . $wardInfo;
+                    }
+                    
                     $streetlightTaskData = [
                         'project_id' => $projectId,
                         'site_id' => $siteId,
@@ -483,6 +492,7 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
                         'status' => TaskStatus::PENDING->value,
                         'start_date' => $taskData['start_date'] ?? now(),
                         'end_date' => $taskData['end_date'] ?? null,
+                        'description' => $description,
                     ];
 
                     StreetlightTask::create($streetlightTaskData);
@@ -580,6 +590,21 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
             $query->where('projects.id', $projectId);
         })
             ->where('role', \App\Enums\UserRole::VENDOR->value) // Vendor
+            ->get();
+    }
+
+    /**
+     * Get available project managers for a project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getAvailableManagers(int $projectId)
+    {
+        return User::whereHas('projects', function ($query) use ($projectId) {
+            $query->where('projects.id', $projectId);
+        })
+            ->where('role', \App\Enums\UserRole::PROJECT_MANAGER->value) // Project Manager
             ->get();
     }
 
