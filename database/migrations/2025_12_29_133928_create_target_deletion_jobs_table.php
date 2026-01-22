@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->string('job_id')->unique(); // UUID for job identification
             $table->json('task_ids'); // Array of task IDs to delete
-            $table->json('processed_task_ids')->default('[]'); // Track progress
+            $table->json('processed_task_ids'); // Track progress
             $table->integer('total_tasks');
             $table->integer('processed_tasks')->default(0);
             $table->integer('total_poles')->default(0);
