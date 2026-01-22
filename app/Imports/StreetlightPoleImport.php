@@ -78,6 +78,18 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
         $existingPole = Pole::where('complete_pole_number', $completePoleNumber)->first();
         if ($existingPole) {
+            // Get task from existing pole's relationship
+            $task = $existingPole->task;
+            if (!$task) {
+                $this->errorCount++;
+                $this->errors[] = [
+                    'row' => $rowNumber,
+                    'complete_pole_number' => $completePoleNumber,
+                    'reason' => 'Existing pole does not have an associated task',
+                ];
+                return;
+            }
+            
             $updateResult = $this->importService->updateExistingPoleWithInventory($existingPole, $row, $task);
             if ($updateResult['status'] === 'error') {
                 $this->errorCount++;
