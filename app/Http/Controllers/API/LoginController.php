@@ -24,7 +24,8 @@ class LoginController extends Controller
             return response()->json(['error' => 'credentialError', 'status' => 401], 401);
         }
 
-        $token = $user->createToken('authToken')->accessToken;
+        $tokenResult = $user->createToken('authToken');
+        $accessToken = $tokenResult->plainTextToken;
 
         // Fetch projects associated with the user
         $projects = DB::table('project_user')
@@ -35,7 +36,7 @@ class LoginController extends Controller
 
         return response()->json([
             'message' => 'Login successful',
-            'token'   => $token,
+            'access_token' => $accessToken,
             'user'    => [
                 'id'           => $user->id,
                 'firstName'    => $user->firstName,
