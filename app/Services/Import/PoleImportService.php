@@ -246,9 +246,38 @@ class PoleImportService extends BaseService
 
         $validationErrors = [];
         $validDispatches = [];
+        $itemsToValidateOnly = []; // Items that actually need validation (changed items)
 
-        // 1. Validate all new items using existing logic
+        // 1. Check each item against current pole values
+        // If item matches current pole value, use existing dispatch (skip validation)
+        // Only validate items that are actually changing
         foreach ($itemsToValidate as $field => $serialNumber) {
+            $oldSerial = trim($pole->{$field} ?? '');
+            
+            // If serial matches current pole value, it's unchanged - use existing dispatch
+            if ($oldSerial && $serialNumber === $oldSerial) {
+                // Find existing dispatch consumed by this pole
+                $existingDispatch = \App\Models\InventoryDispatch::where('serial_number', $serialNumber)
+                    ->where('streetlight_pole_id', $pole->id)
+                    ->where('is_consumed', true)
+                    ->where('isDispatched', true)
+                    ->first();
+                
+                if ($existingDispatch) {
+                    // Use existing dispatch without validation
+                    $validDispatches[$field] = $existingDispatch;
+                } else {
+                    // Serial matches but no dispatch found - treat as new item and validate
+                    $itemsToValidateOnly[$field] = $serialNumber;
+                }
+            } else {
+                // Serial is different or pole doesn't have this field - needs validation
+                $itemsToValidateOnly[$field] = $serialNumber;
+            }
+        }
+
+        // 2. Validate only items that are actually changing
+        foreach ($itemsToValidateOnly as $field => $serialNumber) {
             $validation = $this->validateAndDispatchInventory($serialNumber, $task);
 
             if ($validation['status'] === 'error') {
@@ -265,12 +294,14 @@ class PoleImportService extends BaseService
             ];
         }
 
-        // 2. Constraint (a): all items must belong to same store and same vendor, and not consumed
+        // 3. Constraint (a): all items must belong to same store and same vendor
+        // Note: $validDispatches now includes both validated new items and existing unchanged items
         $storeIds = [];
         $vendorIds = [];
 
         foreach ($validDispatches as $dispatch) {
-            // dispatches here are already "not consumed" by validateAndDispatchInventory
+            // For new items: dispatches are "not consumed" by validateAndDispatchInventory
+            // For unchanged items: dispatches are already consumed by this pole (which is fine)
             $storeIds[] = $dispatch->store_id;
             $vendorIds[] = $dispatch->vendor_id;
         }
@@ -285,7 +316,7 @@ class PoleImportService extends BaseService
             ];
         }
 
-        // 3. Start transaction to handle replacement and pole update
+        // 4. Start transaction to handle replacement and pole update
         return $this->executeInTransaction(function () use ($pole, $row, $task, $itemsToValidate, $validDispatches) {
             $replacedItems = [];
 
@@ -293,9 +324,9 @@ class PoleImportService extends BaseService
             foreach (['battery_qr', 'luminary_qr', 'panel_qr'] as $field) {
                 $newSerial = $itemsToValidate[$field] ?? null;
                 $newDisp = $validDispatches[$field] ?? null;
-                $oldSerial = $pole->{$field} ?? null;
+                $oldSerial = trim($pole->{$field} ?? '');
 
-                // No change for this field
+                // No change for this field (empty or matches existing)
                 if (! $newSerial || $newSerial === $oldSerial) {
                     continue;
                 }
