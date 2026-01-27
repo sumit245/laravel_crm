@@ -58,13 +58,16 @@
             pageLength="50"
             searchPlaceholder="Search logs...">
             @forelse($logs as $log)
-                <tr data-status="{{ $log->status }}">
+                @php
+                    $rmsStatus = strtoupper((string) ($log->response_data['status'] ?? ''));
+                @endphp
+                <tr data-status="{{ $rmsStatus }}">
                     <td>{{ $log->pole->complete_pole_number ?? 'N/A' }}</td>
                     <td>
-                        @if($log->status === 'success')
-                            <span class="badge badge-success">Success</span>
+                        @if($rmsStatus === 'OK')
+                            <span class="badge badge-success">OK</span>
                         @else
-                            <span class="badge badge-danger">Error</span>
+                            <span class="badge badge-danger">ERR</span>
                         @endif
                     </td>
                     <td>{{ $log->response_data['detail'] ?? $log->message ?? 'N/A' }}</td>

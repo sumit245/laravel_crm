@@ -125,27 +125,24 @@ class RMSController extends Controller
                     // Call your helper to send the data.
                     $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
+                    $responseData = $apiResponse ? $apiResponse->json() : null;
                     $status = 'error';
                     $message = 'Unknown error';
 
-                    if ($apiResponse && $apiResponse->successful()) {
-                        $responseData = $apiResponse->json();
-                        if (isset($responseData['status']) && $responseData['status'] === 'success') {
-                            $status = 'success';
-                            $message = $responseData['message'] ?? 'Successfully pushed to RMS';
-                        } else {
-                            $message = $responseData['message'] ?? 'Failed to push to RMS';
-                        }
+                    if ($apiResponse && $apiResponse->successful() && $responseData && isset($responseData['status']) && strtoupper((string) $responseData['status']) === 'OK') {
+                        $status = 'success';
+                        $message = $responseData['detail'] ?? $responseData['details'] ?? 'Successfully pushed to RMS';
                     } else {
-                        $message = $apiResponse ? $apiResponse->body() : 'No response from RMS API';
+                        $message = $responseData['detail'] ?? $responseData['details'] ?? ($apiResponse ? $apiResponse->body() : 'No response from RMS API');
+                        if (! $responseData || ! isset($responseData['status'])) {
+                            $responseData = ['status' => 'ERR', 'detail' => $message];
+                        }
                     }
 
-                    // Store log
                     RmsPushLog::create([
                         'pole_id' => $pole->id,
-                        'status' => $status,
                         'message' => $message,
-                        'response_data' => $apiResponse ? $apiResponse->json() : null,
+                        'response_data' => $responseData,
                         'district' => $streetlight->district ?? null,
                         'block' => $streetlight->block ?? null,
                         'panchayat' => $streetlight->panchayat ?? null,
@@ -159,11 +156,10 @@ class RMSController extends Controller
                         'pole_id' => $pole->id,
                         'error' => $e->getMessage(),
                     ]);
-                    // Store error log
                     RmsPushLog::create([
                         'pole_id' => $pole->id,
-                        'status' => 'error',
                         'message' => $e->getMessage(),
+                        'response_data' => ['status' => 'ERR', 'detail' => $e->getMessage()],
                         'district' => $validated['district'] ?? null,
                         'block' => $validated['block'] ?? null,
                         'panchayat' => $validated['panchayat'] ?? null,
@@ -233,8 +229,8 @@ class RMSController extends Controller
 
             $logs = $query->orderBy('pushed_at', 'desc')->get();
 
-            $successLogs = $logs->where('status', 'success');
-            $errorLogs = $logs->where('status', 'error');
+            $successLogs = $logs->filter(fn ($log) => strtoupper((string) ($log->response_data['status'] ?? '')) === 'OK');
+            $errorLogs = $logs->filter(fn ($log) => strtoupper((string) ($log->response_data['status'] ?? '')) !== 'OK');
 
             return view('rms.export', compact('logs', 'successLogs', 'errorLogs'));
         } catch (\Exception $e) {

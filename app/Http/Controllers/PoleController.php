@@ -552,29 +552,25 @@ class PoleController extends Controller
                     $status = 'error';
                     $message = 'Unknown error';
 
-                    if ($apiResponse && $apiResponse->successful()) {
-                        $responseData = $apiResponse->json();
-                        Log::info('Bulk push RMS response', ['responseData' => $responseData]);
-                        $detail = $responseData['detail'] ?? $responseData['details'] ?? null;
-                        if (isset($responseData['status']) && strtoupper((string) $responseData['status']) === 'OK') {
-                            $status = 'success';
-                            $message = $detail ?? 'Successfully pushed to RMS';
-                            $successCount++;
-                        } else {
-                            $message = $detail ?? 'Failed to push to RMS';
-                            $errorCount++;
-                        }
+                    $responseData = $apiResponse ? $apiResponse->json() : null;
+                    if ($apiResponse && $apiResponse->successful() && $responseData && isset($responseData['status']) && strtoupper((string) $responseData['status']) === 'OK') {
+                        $status = 'success';
+                        $message = $responseData['detail'] ?? $responseData['details'] ?? 'Successfully pushed to RMS';
+                        $successCount++;
                     } else {
-                        $message = $apiResponse ? $apiResponse->body() : 'No response from RMS API';
+                        $status = 'error';
+                        $message = $responseData['detail'] ?? $responseData['details'] ?? ($apiResponse ? $apiResponse->body() : 'No response from RMS API');
                         $errorCount++;
+                        if (! $responseData || ! isset($responseData['status'])) {
+                            $responseData = ['status' => 'ERR', 'detail' => $message];
+                        }
                     }
+                    Log::info('Bulk push RMS response', ['responseData' => $responseData]);
 
-                    // Store log
                     \App\Models\RmsPushLog::create([
                         'pole_id' => $pole->id,
-                        'status' => $status,
                         'message' => $message,
-                        'response_data' => $apiResponse ? $apiResponse->json() : null,
+                        'response_data' => $responseData,
                         'district' => $streetlight->district ?? null,
                         'block' => $streetlight->block ?? null,
                         'panchayat' => $streetlight->panchayat ?? null,
@@ -596,8 +592,8 @@ class PoleController extends Controller
 
                     \App\Models\RmsPushLog::create([
                         'pole_id' => $pole->id,
-                        'status' => 'error',
                         'message' => $e->getMessage(),
+                        'response_data' => ['status' => 'ERR', 'detail' => $e->getMessage()],
                         'district' => $pole->task?->streetlight?->district ?? null,
                         'block' => $pole->task?->streetlight?->block ?? null,
                         'panchayat' => $pole->task?->streetlight?->panchayat ?? null,
