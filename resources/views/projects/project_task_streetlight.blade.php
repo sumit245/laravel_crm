@@ -94,7 +94,7 @@
                         <div class="mb-3">
                             <label for="selectEngineer" class="form-label">Select Site Engineer <span
                                     class="text-danger">*</span></label>
-                            <select id="selectEngineer" name="engineer_id" class="form-select" required>
+                            <select id="selectEngineer" name="engineer_id" class="form-select select2-engineer" style="width: 100%;" required>
                                 <option value="">Select Engineer</option>
                                 @foreach ($assignedEngineers as $engineer)
                                     <option value="{{ $engineer->id }}">{{ $engineer->firstName }}
@@ -106,7 +106,7 @@
                         <div class="form-group mb-3">
                             <label for="selectVendor" class="form-label">Select Vendor <span
                                     class="text-danger">*</span></label>
-                            <select id="selectVendor" name="vendor_id" class="form-select" required>
+                            <select id="selectVendor" name="vendor_id" class="form-select select2-vendor" style="width: 100%;" required>
                                 <option value="">Select Vendor</option>
                                 @foreach ($assignedVendors as $vendor)
                                     <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
@@ -152,7 +152,7 @@
         ['title' => 'Panchayat', 'width' => '12%'],
         ['title' => 'Engineer Name', 'width' => '12%'],
         ['title' => 'Vendor Name', 'width' => '12%'],
-        ['title' => 'Assigned Date', 'width' => '10%'],
+        ['title' => 'Start Date', 'width' => '10%'],
         ['title' => 'End Date', 'width' => '10%'],
         ['title' => 'Wards', 'width' => '15%'],
         ['title' => 'Status', 'width' => '10%'],
@@ -220,8 +220,8 @@
                 <td>{{ $panchayatName }}</td>
                 <td>{{ $engineerName }}</td>
                 <td>{{ $vendorName }}</td>
-                <td>{{ $target->created_at ? $target->created_at->format('Y-m-d') : 'N/A' }}</td>
-                <td>{{ $target->end_date ? \Carbon\Carbon::parse($target->end_date)->format('Y-m-d') : 'N/A' }}</td>
+                <td>{{ $target->start_date ? \Carbon\Carbon::parse($target->start_date)->format('d/m/y') : 'N/A' }}</td>
+                <td>{{ $target->end_date ? \Carbon\Carbon::parse($target->end_date)->format('d/m/y') : 'N/A' }}</td>
                 <td class="wards-cell">
                     <div class="wards-content" title="{{ $target->site->ward ?? 'N/A' }}">
                         @php
@@ -718,11 +718,11 @@
                 
                 // Disable panchayat search if district or block is not selected
                 if (!district || !block) {
-                    $('#panchayatSearch').prop('disabled', true);
+                    $('#panchayatSearch').prop('disabled', true).empty();
                     return;
                 }
                 
-                $('#panchayatSearch').prop('disabled', false);
+                $('#panchayatSearch').prop('disabled', false).empty();
                 
                 $('#panchayatSearch').select2({
                     placeholder: "Type to search panchayats in " + block + " block",
@@ -744,10 +744,7 @@
                         processResults: function(data) {
                             if (data.length === 0) {
                                 return {
-                                    results: [{
-                                        id: '',
-                                        text: 'No panchayats found. Please select district and block first.'
-                                    }]
+                                    results: []
                                 };
                             }
                             return {
@@ -764,9 +761,57 @@
                 });
             }
             
+            // Function to initialize Engineer and Vendor Select2
+            function initializeEngineerVendorSelect2() {
+                // Initialize Select2 for Engineer dropdown
+                const engineerSelect = $('#selectEngineer');
+                if (engineerSelect.length && !engineerSelect.hasClass('select2-hidden-accessible')) {
+                    engineerSelect.select2({
+                        placeholder: 'Search and select engineer...',
+                        allowClear: true,
+                        dropdownParent: $('#addTargetModal'),
+                        width: '100%',
+                        minimumResultsForSearch: 0, // Always show search box
+                        dropdownCssClass: 'select2-dropdown-engineer',
+                    });
+                }
+                
+                // Initialize Select2 for Vendor dropdown
+                const vendorSelect = $('#selectVendor');
+                if (vendorSelect.length && !vendorSelect.hasClass('select2-hidden-accessible')) {
+                    vendorSelect.select2({
+                        placeholder: 'Search and select vendor...',
+                        allowClear: true,
+                        dropdownParent: $('#addTargetModal'),
+                        width: '100%',
+                        minimumResultsForSearch: 0, // Always show search box
+                        dropdownCssClass: 'select2-dropdown-vendor',
+                    });
+                }
+            }
+
             // Initialize Select2 when modal opens
             $('#addTargetModal').on('shown.bs.modal', function() {
                 initializePanchayatSelect2();
+                
+                // Small delay to ensure modal is fully rendered
+                setTimeout(function() {
+                    initializeEngineerVendorSelect2();
+                }, 100);
+            });
+
+            // Also initialize on modal show (earlier event) as fallback
+            $('#addTargetModal').on('show.bs.modal', function() {
+                // Reinitialize if already initialized (to ensure it works)
+                const engineerSelect = $('#selectEngineer');
+                const vendorSelect = $('#selectVendor');
+                
+                if (engineerSelect.hasClass('select2-hidden-accessible')) {
+                    engineerSelect.select2('destroy');
+                }
+                if (vendorSelect.hasClass('select2-hidden-accessible')) {
+                    vendorSelect.select2('destroy');
+                }
             });
             
             // Reinitialize Select2 when district or block changes
@@ -807,8 +852,7 @@
 
                 $('#blockSearch').prop('disabled', false).empty().append(
                     '<option value="">Select a Block</option>');
-                $('#panchayatSearch').prop('disabled', true).empty().append(
-                    '<option value="">Select a Panchayat</option>');
+                $('#panchayatSearch').prop('disabled', true).empty();
                 $('#wardSelectionContainer').hide();
                 $('#wardCheckboxes').empty();
 
@@ -1001,14 +1045,18 @@
                 clearFormErrors();
 
                 // Validate engineer
-                const engineerId = $('#selectEngineer').val();
+                const engineerSelect = $('#selectEngineer');
+                const engineerId = engineerSelect.hasClass('select2-hidden-accessible') ?
+                    engineerSelect.select2('val') : engineerSelect.val();
                 if (!engineerId) {
                     showFieldError('engineer_id', 'Please select an engineer.');
                     isValid = false;
                 }
 
                 // Validate vendor
-                const vendorId = $('#selectVendor').val();
+                const vendorSelect = $('#selectVendor');
+                const vendorId = vendorSelect.hasClass('select2-hidden-accessible') ?
+                    vendorSelect.select2('val') : vendorSelect.val();
                 if (!vendorId) {
                     showFieldError('vendor_id', 'Please select a vendor.');
                     isValid = false;
@@ -1059,6 +1107,22 @@
                 // Reset form
                 $('#targetForm')[0].reset();
                 $('#panchayatSearch').val(null).trigger('change');
+                
+                // Reset select2 dropdowns properly
+                const engineerSelect = $('#selectEngineer');
+                const vendorSelect = $('#selectVendor');
+                
+                if (engineerSelect.hasClass('select2-hidden-accessible')) {
+                    engineerSelect.val(null).trigger('change');
+                } else {
+                    engineerSelect.val(null);
+                }
+                
+                if (vendorSelect.hasClass('select2-hidden-accessible')) {
+                    vendorSelect.val(null).trigger('change');
+                } else {
+                    vendorSelect.val(null);
+                }
             });
 
             // Clear errors when reset button is clicked
@@ -1662,6 +1726,48 @@
 
         .ward-checkbox-item .form-check-label {
             cursor: pointer;
+        }
+
+        /* Select2 Dropdown Z-Index Fix */
+        #addTargetModal .select2-container--open {
+            z-index: 9999 !important;
+        }
+
+        #addTargetModal .select2-dropdown {
+            z-index: 9999 !important;
+            position: absolute !important;
+        }
+
+        #addTargetModal .select2-dropdown-engineer,
+        #addTargetModal .select2-dropdown-vendor {
+            z-index: 9999 !important;
+        }
+
+        /* Ensure ward container doesn't interfere with Select2 */
+        #wardSelectionContainer {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Select2 results container should appear above everything */
+        #addTargetModal .select2-results {
+            z-index: 10000 !important;
+        }
+
+        /* Ensure Select2 search input is accessible */
+        #addTargetModal .select2-search--dropdown {
+            z-index: 10001 !important;
+            position: relative;
+        }
+
+        /* Fix for Select2 dropdown positioning in modal */
+        #addTargetModal .modal-body .select2-container {
+            z-index: 9998;
+        }
+
+        #addTargetModal .modal-body .select2-container--open {
+            z-index: 9999;
+        }
             font-size: 0.875rem;
             color: #495057;
             margin-left: 0.5rem;
@@ -1696,6 +1802,7 @@
 
         .modal-body {
             padding: 1.5rem;
+            overflow: visible;
         }
 
         .modal-footer {

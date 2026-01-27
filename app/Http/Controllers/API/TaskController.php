@@ -276,15 +276,14 @@ class TaskController extends Controller
 
     public function getSitesForVendor($vendorId)
     {
-        // Fetch tasks where the given vendor_id matches and eager load the site relationship
-        $tasks = Task::with('site')
+        // Fetch streetlight tasks for the vendor and eager load the streetlight site
+        $tasks = StreetlightTask::with('site')
             ->where('vendor_id', $vendorId)
             ->get();
 
-        // Extract unique sites from the tasks
-        $sites = $tasks->pluck('site')->unique('id')->values();
+        // Extract unique streetlight sites from the tasks
+        $sites = $tasks->pluck('site')->filter()->unique('id')->values();
 
-        // Return the response
         return response()->json([
             'status' => 'success',
             'vendor_id' => $vendorId,

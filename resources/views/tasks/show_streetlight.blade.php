@@ -70,6 +70,21 @@
       <strong>Total Poles</strong><p> {{ $streetlightTask->site->total_poles }}</p>
     </div>
   </div>
+
+  <div class="row">
+    <div class="col-md-4 mb-3">
+      <strong>Assigned Date</strong>
+      <p>{{ $streetlightTask->created_at ? $streetlightTask->created_at->format('d/m/y') : 'N/A' }}</p>
+    </div>
+    <div class="col-md-4 mb-3">
+      <strong>Start Date</strong>
+      <p>{{ $streetlightTask->start_date ? \Carbon\Carbon::parse($streetlightTask->start_date)->format('d/m/y') : 'N/A' }}</p>
+    </div>
+    <div class="col-md-4 mb-3">
+      <strong>End Date</strong>
+      <p>{{ $streetlightTask->end_date ? \Carbon\Carbon::parse($streetlightTask->end_date)->format('d/m/y') : 'N/A' }}</p>
+    </div>
+  </div>
 </div>
  <hr class="my-1" />
 

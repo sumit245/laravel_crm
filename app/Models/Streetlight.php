@@ -27,6 +27,24 @@ class Streetlight extends Model
     ];
 
     /**
+     * Ensure code fields are always trimmed (no extra spaces/newlines).
+     */
+    public function getDistrictCodeAttribute($value)
+    {
+        return is_string($value) ? trim($value) : $value;
+    }
+
+    public function getBlockCodeAttribute($value)
+    {
+        return is_string($value) ? trim($value) : $value;
+    }
+
+    public function getPanchayatCodeAttribute($value)
+    {
+        return is_string($value) ? trim($value) : $value;
+    }
+
+    /**
      * Get all poles associated with this streetlight site
      * Relationship is indirect: Streetlight → StreetlightTask → Pole
      * @return \Illuminate\Database\Eloquent\Relations\HasManyThrough
