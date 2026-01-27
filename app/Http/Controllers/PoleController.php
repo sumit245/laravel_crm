@@ -554,14 +554,14 @@ class PoleController extends Controller
 
                     if ($apiResponse && $apiResponse->successful()) {
                         $responseData = $apiResponse->json();
-                        Log::info("finally sending data to rms");
-                        Log::info($responseData);
-                        if (isset($responseData['status']) && $responseData['status'] === 'success') {
+                        Log::info('Bulk push RMS response', ['responseData' => $responseData]);
+                        $detail = $responseData['detail'] ?? $responseData['details'] ?? null;
+                        if (isset($responseData['status']) && strtoupper((string) $responseData['status']) === 'OK') {
                             $status = 'success';
-                            $message = $responseData['message'] ?? 'Successfully pushed to RMS';
+                            $message = $detail ?? 'Successfully pushed to RMS';
                             $successCount++;
                         } else {
-                            $message = $responseData['message'] ?? 'Failed to push to RMS';
+                            $message = $detail ?? 'Failed to push to RMS';
                             $errorCount++;
                         }
                     } else {

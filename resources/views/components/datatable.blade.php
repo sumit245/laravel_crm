@@ -20,6 +20,7 @@
     'title' => null,
     'filters' => [],
     'customActions' => [],
+    'actionsColumnEnabled' => true,
     'responsive' => true,
     'order' => [[0, 'desc']],
     'serverSide' => false,
@@ -199,7 +200,9 @@
                             {{ $column['title'] ?? '' }}
                         </th>
                     @endforeach
-                    <th width="120px" class="text-center">Actions</th>
+                    @if ($actionsColumnEnabled)
+                        <th width="120px" class="text-center">Actions</th>
+                    @endif
                 </tr>
             </thead>
             <tbody>
@@ -1177,12 +1180,14 @@
                                     },
                                 @endif
                             @endforeach
+                            @if ($actionsColumnEnabled)
                             {
                                 orderable: false, searchable: false, targets: -1, className: 'text-center no-export', width: '140px', visible: true,
                                 createdCell: function(td) {
                                     $(td).css({ 'width': '140px', 'min-width': '140px', 'max-width': '140px', 'white-space': 'nowrap', 'text-align': 'center' });
                                 }
                             }
+                            @endif
                         ],
                         buttons: [
                             @if ($exportEnabled)
@@ -1228,7 +1233,9 @@
                                         }
                                     },
                                 @endforeach
+                                @if ($actionsColumnEnabled)
                                 { data: {{ $bulkDeleteEnabled ? count($columns) + 1 : count($columns) }}, name: 'actions', orderable: false, searchable: false, className: 'text-center no-export', width: '140px' }
+                                @endif
                             ],
                         @endif
                         pageLength: {{ $pageLength }},
@@ -1248,19 +1255,22 @@
                                 $(this).find('span, i, .dtr-details, .dt-orderable-asc, .dt-orderable-desc, .dt-orderable-none').remove();
                             });
 
+                            @if ($actionsColumnEnabled)
                             var $actionsHeader = $(tableId + ' thead th:last-child');
                             var $actionsCells = $(tableId + ' tbody td:last-child');
                             $actionsHeader.css({ 'width': '120px', 'min-width': '120px' });
                             $actionsCells.css({ 'width': '120px', 'min-width': '120px', 'white-space': 'nowrap' });
+                            @endif
 
                             try {
                                 var hasCheckbox = {{ $bulkDeleteEnabled ? 'true' : 'false' }};
+                                var actionsEnabled = {{ $actionsColumnEnabled ? 'true' : 'false' }};
                                 $(tableId + ' tbody tr').each(function() {
                                     var $row = $(this);
                                     var $cells = $row.children('td');
                                     $cells.each(function(idx) {
                                         var isCheckboxCol = hasCheckbox && idx === 0;
-                                        var isActionsCol = idx === $cells.length - 1;
+                                        var isActionsCol = actionsEnabled && idx === $cells.length - 1;
                                         if (!isCheckboxCol && !isActionsCol) {
                                             var $cell = $(this);
                                             $cell.addClass('dt-truncate');
