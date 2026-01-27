@@ -12,7 +12,10 @@ class RemoteApiHelper
     {
         $url = env('RMS_API_URL', 'https://ssl.slldm.com/insertMasterData.php');
         $districtCode = DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
-        $wardType = ($pole->ward_name ==="GP") ? 'GP' : 'W';
+        $wardType = ($pole->ward_name === 'GP') ? 'GP' : 'W';
+        $wardNumber = $wardType === 'GP'
+            ? null
+            : (preg_replace('/\D/', '', (string) ($pole->ward_name ?? '')) ?: null);
         $poleName = $wardType === 'GP' 
             ? (($digits = preg_replace('/\D/', '', $pole->complete_pole_number)) && strlen($digits) >= 2 
                 ? substr($digits, -2) 
@@ -30,7 +33,7 @@ class RemoteApiHelper
             'panchayat' => $streetlight->panchayat,
             'panchayatCode' => $streetlight->panchayat_code,
             'ward_type' => $wardType,
-            'ward_number' => $wardType==='GP'?null:$pole->ward_name,
+            'ward_number' => $wardNumber,
             'BattSno' => $pole->battery_qr,
             'PvSno' => $pole->panel_qr,
             'simNo' => $pole->sim_number,

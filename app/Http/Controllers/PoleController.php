@@ -2,22 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pole;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
-use App\Services\Inventory\InventoryService;
+use App\Models\Pole;
 use App\Services\Inventory\InventoryHistoryService;
-//TODO: Add StreetlightTask and User model also to modify vendor(installer name, billing status etc)
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use App\Services\Inventory\InventoryService;
+// TODO: Add StreetlightTask and User model also to modify vendor(installer name, billing status etc)
 use App\Services\Logging\ActivityLogger;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class PoleController extends Controller
 {
     protected InventoryService $inventoryService;
+
     protected InventoryHistoryService $historyService;
+
     protected ActivityLogger $activityLogger;
 
     public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService, ActivityLogger $activityLogger)
@@ -26,6 +28,7 @@ class PoleController extends Controller
         $this->historyService = $historyService;
         $this->activityLogger = $activityLogger;
     }
+
     public function edit($id)
     {
         $pole = Pole::with(['task', 'task.streetlight'])->findOrFail($id);
@@ -95,7 +98,7 @@ class PoleController extends Controller
 
             // Return inventory if any QR changed
             foreach (['luminary_qr', 'panel_qr', 'battery_qr'] as $field) {
-                if (!empty($validated[$field]) && $validated[$field] !== $pole->$field) {
+                if (! empty($validated[$field]) && $validated[$field] !== $pole->$field) {
                     // Validate new serial exists and district matches
                     $newDispatch = InventoryDispatch::where('serial_number', $validated[$field])
                         ->where('isDispatched', true)
@@ -105,9 +108,10 @@ class PoleController extends Controller
                     if ($newDispatch && $poleDistrict) {
                         // Check district match
                         $projectDistricts = $this->inventoryService->getProjectDistricts($newDispatch->project_id);
-                        if (!in_array($poleDistrict, $projectDistricts)) {
+                        if (! in_array($poleDistrict, $projectDistricts)) {
                             DB::rollBack();
                             $project = \App\Models\Project::find($newDispatch->project_id);
+
                             return redirect()->back()
                                 ->withErrors([$field => "Inventory from {$project->project_name} cannot be used in district {$poleDistrict}"])
                                 ->withInput();
@@ -117,8 +121,6 @@ class PoleController extends Controller
                     $this->replaceSerialManually($pole, $field, $validated[$field], $poleDistrict);
                 }
             }
-
-
 
             // Handle image uploads
             $updateData = [
@@ -140,10 +142,10 @@ class PoleController extends Controller
             // Process survey images - handle deletions and new uploads
             $existingSurveyImages = $request->input('existing_survey_images', []);
             $deletedSurveyImages = $request->input('deleted_survey_images', []);
-            
+
             // Remove deleted images from existing list
             $remainingSurveyImages = array_diff($existingSurveyImages, $deletedSurveyImages);
-            
+
             // Add new survey images
             if ($request->hasFile('survey_image')) {
                 $newSurveyImages = collect($request->file('survey_image'))->map(function ($file) use ($pole) {
@@ -151,7 +153,7 @@ class PoleController extends Controller
                 })->toArray();
                 $remainingSurveyImages = array_merge($remainingSurveyImages, $newSurveyImages);
             }
-            
+
             // Handle replace survey images
             if ($request->hasFile('replace_survey_image')) {
                 $replaceImages = $request->file('replace_survey_image');
@@ -167,16 +169,16 @@ class PoleController extends Controller
                     }
                 }
             }
-            
-            $updateData['survey_image'] = !empty($remainingSurveyImages) ? json_encode(array_values($remainingSurveyImages)) : null;
+
+            $updateData['survey_image'] = ! empty($remainingSurveyImages) ? json_encode(array_values($remainingSurveyImages)) : null;
 
             // Process submission/installation images - handle deletions and new uploads
             $existingSubmissionImages = $request->input('existing_submission_images', []);
             $deletedSubmissionImages = $request->input('deleted_submission_images', []);
-            
+
             // Remove deleted images from existing list
             $remainingSubmissionImages = array_diff($existingSubmissionImages, $deletedSubmissionImages);
-            
+
             // Add new submission images
             if ($request->hasFile('submission_image')) {
                 $newSubmissionImages = collect($request->file('submission_image'))->map(function ($file) use ($pole) {
@@ -184,7 +186,7 @@ class PoleController extends Controller
                 })->toArray();
                 $remainingSubmissionImages = array_merge($remainingSubmissionImages, $newSubmissionImages);
             }
-            
+
             // Handle replace submission images
             if ($request->hasFile('replace_submission_image')) {
                 $replaceImages = $request->file('replace_submission_image');
@@ -200,8 +202,8 @@ class PoleController extends Controller
                     }
                 }
             }
-            
-            $updateData['submission_image'] = !empty($remainingSubmissionImages) ? json_encode(array_values($remainingSubmissionImages)) : null;
+
+            $updateData['submission_image'] = ! empty($remainingSubmissionImages) ? json_encode(array_values($remainingSubmissionImages)) : null;
 
             // Capture diff before update for logging
             $beforeAfter = $this->activityLogger->diff($pole);
@@ -216,10 +218,10 @@ class PoleController extends Controller
                 $validated['battery_qr'] ?? null,
             ]);
 
-            if (!empty($newSerials)) {
+            if (! empty($newSerials)) {
                 // Validate district for new serials before consuming
                 $poleDistrict = $pole->task && $pole->task->streetlight ? $pole->task->streetlight->district : null;
-                
+
                 if ($poleDistrict) {
                     $dispatches = InventoryDispatch::whereIn('serial_number', $newSerials)
                         ->whereNull('streetlight_pole_id')
@@ -227,9 +229,10 @@ class PoleController extends Controller
 
                     foreach ($dispatches as $dispatch) {
                         $projectDistricts = $this->inventoryService->getProjectDistricts($dispatch->project_id);
-                        if (!in_array($poleDistrict, $projectDistricts)) {
+                        if (! in_array($poleDistrict, $projectDistricts)) {
                             DB::rollBack();
                             $project = \App\Models\Project::find($dispatch->project_id);
+
                             return redirect()->back()
                                 ->withErrors(['error' => "Inventory from {$project->project_name} cannot be used in district {$poleDistrict}"])
                                 ->withInput();
@@ -267,49 +270,63 @@ class PoleController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Failed to update pole', ['error' => $e->getMessage()]);
+
             return redirect()->back()
-                ->with('error', 'Failed to update pole details: ' . $e->getMessage())
+                ->with('error', 'Failed to update pole details: '.$e->getMessage())
                 ->withInput();
         }
     }
 
     public function destroy($id)
-{
-    try {
-        $pole = Pole::findOrFail($id);
+    {
+        try {
+            $pole = Pole::findOrFail($id);
 
-        // Count poles with same pole number
-        $samePolesCount = Pole::where('complete_pole_number', $pole->pole_number)->count();
+            // Count poles with same pole number
+            $samePolesCount = Pole::where('complete_pole_number', $pole->pole_number)->count();
 
-        // Get associated streetlight
-        $streetlight = $pole->task->streetlight ?? null;
+            // Get associated streetlight
+            $streetlight = $pole->task->streetlight ?? null;
 
-        // Check inventory usage
-        $inventoryFields = ['luminary_qr', 'panel_qr', 'battery_qr'];
-        $isInventoryUsed = false;
+            // Check inventory usage
+            $inventoryFields = ['luminary_qr', 'panel_qr', 'battery_qr'];
+            $isInventoryUsed = false;
 
-        foreach ($inventoryFields as $field) {
-            if (!empty($pole->$field)) {
-                $dispatch = InventoryDispatch::where('serial_number', $pole->$field)
-                    ->where('streetlight_pole_id', '!=', $pole->id)
-                    ->first();
+            foreach ($inventoryFields as $field) {
+                if (! empty($pole->$field)) {
+                    $dispatch = InventoryDispatch::where('serial_number', $pole->$field)
+                        ->where('streetlight_pole_id', '!=', $pole->id)
+                        ->first();
 
-                if ($dispatch) {
-                    $isInventoryUsed = true;
-                    break;
+                    if ($dispatch) {
+                        $isInventoryUsed = true;
+                        break;
+                    }
                 }
             }
-        }
 
-        // If multiple poles exist with same pole number
-        if ($samePolesCount > 1) {
-            if ($isInventoryUsed) {
-                // Inventory used in other pole → directly delete
-                $pole->delete();
+            // If multiple poles exist with same pole number
+            if ($samePolesCount > 1) {
+                if ($isInventoryUsed) {
+                    // Inventory used in other pole → directly delete
+                    $pole->delete();
+                } else {
+                    // Inventory not used elsewhere → return inventory + delete
+                    foreach ($inventoryFields as $field) {
+                        if (! empty($pole->$field)) {
+                            $this->returnInventoryItem($pole->$field);
+                        }
+                    }
+                    $pole->delete();
+
+                    if ($streetlight) {
+                        $streetlight->decrement('polecount', 1);
+                    }
+                }
             } else {
-                // Inventory not used elsewhere → return inventory + delete
+                // Only one pole with that number → always return inventory + delete
                 foreach ($inventoryFields as $field) {
-                    if (!empty($pole->$field)) {
+                    if (! empty($pole->$field)) {
                         $this->returnInventoryItem($pole->$field);
                     }
                 }
@@ -319,28 +336,16 @@ class PoleController extends Controller
                     $streetlight->decrement('polecount', 1);
                 }
             }
-        } else {
-            // Only one pole with that number → always return inventory + delete
-            foreach ($inventoryFields as $field) {
-                if (!empty($pole->$field)) {
-                    $this->returnInventoryItem($pole->$field);
-                }
-            }
-            $pole->delete();
 
-            if ($streetlight) {
-                $streetlight->decrement('polecount', 1);
-            }
+            return redirect()->route('poles.index')
+                ->with('success', 'Pole deleted successfully.');
+        } catch (\Exception $e) {
+            Log::error('Failed to delete pole', ['error' => $e->getMessage()]);
+
+            return redirect()->back()
+                ->with('error', 'Failed to delete pole.');
         }
-
-        return redirect()->route('poles.index')
-            ->with('success', 'Pole deleted successfully.');
-    } catch (\Exception $e) {
-        Log::error('Failed to delete pole', ['error' => $e->getMessage()]);
-        return redirect()->back()
-            ->with('error', 'Failed to delete pole.');
     }
-}
 
     private function returnInventoryItem($serialNumber)
     {
@@ -368,7 +373,7 @@ class PoleController extends Controller
         } catch (\Exception $e) {
             Log::error('Failed to return inventory item', [
                 'serial_number' => $serialNumber,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ]);
         }
     }
@@ -379,11 +384,13 @@ class PoleController extends Controller
 
         // Step 1: Get old dispatch record
         $oldDispatch = InventoryDispatch::where('serial_number', $oldSerial)->first();
-        if (!$oldDispatch) return;
+        if (! $oldDispatch) {
+            return;
+        }
 
         // Step 2: Validate new serial exists in inventory
         $newInventoryItem = InventroyStreetLightModel::where('serial_number', $newSerial)->first();
-        if (!$newInventoryItem) {
+        if (! $newInventoryItem) {
             throw new \Exception("Serial number {$newSerial} not found in inventory");
         }
 
@@ -401,7 +408,7 @@ class PoleController extends Controller
             ->where('is_consumed', false)
             ->first();
 
-        if (!$newDispatch) {
+        if (! $newDispatch) {
             $newDispatch = $oldDispatch->replicate();
             $newDispatch->serial_number = $newSerial;
             $newDispatch->is_consumed = false;
@@ -411,7 +418,7 @@ class PoleController extends Controller
             // Validate district if pole district is available
             if ($poleDistrict) {
                 $projectDistricts = $this->inventoryService->getProjectDistricts($newDispatch->project_id);
-                if (!in_array($poleDistrict, $projectDistricts)) {
+                if (! in_array($poleDistrict, $projectDistricts)) {
                     $project = \App\Models\Project::find($newDispatch->project_id);
                     throw new \Exception("Inventory from {$project->project_name} cannot be used in district {$poleDistrict}");
                 }
@@ -427,7 +434,7 @@ class PoleController extends Controller
                 'project_id',
                 'isDispatched',
                 'is_consumed',
-                'streetlight_pole_id'
+                'streetlight_pole_id',
             ]));
             $newDispatch->save();
         }
@@ -457,7 +464,7 @@ class PoleController extends Controller
         // Step 7: Log history for replacement
         $project = \App\Models\Project::find($oldDispatch->project_id);
         $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
-        
+
         if (isset($oldStreet) && isset($newStreet)) {
             $this->historyService->logReplaced(
                 $oldStreet,
@@ -489,7 +496,7 @@ class PoleController extends Controller
                 if ($pole) {
                     // Return inventory
                     foreach (['luminary_qr', 'panel_qr', 'battery_qr'] as $field) {
-                        if (!empty($pole->$field)) {
+                        if (! empty($pole->$field)) {
                             $this->returnInventoryItem($pole->$field);
                         }
                     }
@@ -499,6 +506,7 @@ class PoleController extends Controller
             }
 
             DB::commit();
+
             return response()->json([
                 'message' => "Successfully deleted {$deletedCount} pole(s).",
                 'deleted_count' => $deletedCount,
@@ -506,8 +514,9 @@ class PoleController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Bulk delete failed', ['error' => $e->getMessage()]);
+
             return response()->json([
-                'message' => 'Failed to delete poles: ' . $e->getMessage(),
+                'message' => 'Failed to delete poles: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -533,11 +542,11 @@ class PoleController extends Controller
                     $task = $pole->task;
                     $streetlight = $task ? $task->streetlight : null;
 
-                    if (!$task || !$streetlight || !$task->engineer) {
+                    if (! $task || ! $streetlight || ! $task->engineer) {
                         throw new \Exception('Missing related task, streetlight, or engineer data.');
                     }
 
-                    $approved_by = $task->engineer->firstName . ' ' . $task->engineer->lastName;
+                    $approved_by = $task->engineer->firstName.' '.$task->engineer->lastName;
                     $apiResponse = \App\Helpers\RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
                     $status = 'error';
@@ -545,6 +554,7 @@ class PoleController extends Controller
 
                     if ($apiResponse && $apiResponse->successful()) {
                         $responseData = $apiResponse->json();
+                        Log::info("finally sending data to rms");
                         Log::info($responseData);
                         if (isset($responseData['status']) && $responseData['status'] === 'success') {
                             $status = 'success';
@@ -579,7 +589,7 @@ class PoleController extends Controller
                     ];
                 } catch (\Exception $e) {
                     $errorCount++;
-                    Log::error("Failed to push pole to RMS", [
+                    Log::error('Failed to push pole to RMS', [
                         'pole_id' => $pole->id,
                         'error' => $e->getMessage(),
                     ]);
@@ -611,8 +621,9 @@ class PoleController extends Controller
             ]);
         } catch (\Exception $e) {
             Log::error('Bulk push to RMS failed', ['error' => $e->getMessage()]);
+
             return response()->json([
-                'message' => 'Failed to push poles to RMS: ' . $e->getMessage(),
+                'message' => 'Failed to push poles to RMS: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -624,8 +635,9 @@ class PoleController extends Controller
     {
         try {
             if ($file instanceof \Illuminate\Http\UploadedFile) {
-                $fileName = time() . '_' . uniqid() . '_' . $file->getClientOriginalName();
+                $fileName = time().'_'.uniqid().'_'.$file->getClientOriginalName();
                 $filePath = $file->storeAs($path, $fileName, 's3');
+
                 return Storage::disk('s3')->url($filePath);
             } else {
                 throw new \Exception('Invalid file format. Expected UploadedFile.');
@@ -649,7 +661,7 @@ class PoleController extends Controller
 
         $imagesArray = json_decode($json, true);
 
-        if (!is_array($imagesArray)) {
+        if (! is_array($imagesArray)) {
             return $imageUrls;
         }
 
@@ -660,7 +672,7 @@ class PoleController extends Controller
         }
 
         foreach ($imagesArray as $image) {
-            if (!empty($image)) {
+            if (! empty($image)) {
                 try {
                     // If it's already a full URL, use it directly, otherwise generate S3 URL
                     if (filter_var($image, FILTER_VALIDATE_URL)) {
