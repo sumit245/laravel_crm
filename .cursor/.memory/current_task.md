@@ -503,6 +503,56 @@ This file tracks all pending and in-progress tasks across the Laravel CRM projec
 
 ---
 
+---
+
+## Future Refactoring Scope
+
+### refactor-livewire-migration
+
+-   **Status**: future
+-   **Priority**: Medium (time-consuming, deferred for now)
+-   **Description**: Migrate complex forms with heavy JavaScript to Laravel Livewire components for better security, maintainability, and architecture
+-   **Rationale**: 
+    - Current approach exposes business logic in frontend JavaScript (security risk)
+    - Large monolithic Blade files (1000+ LOC) are hard to maintain
+    - Not leveraging Laravel's MVC pattern properly
+    - Heavy jQuery/vanilla JS instead of server-side components
+-   **Target Files**:
+    - `resources/views/projects/project_task_streetlight.blade.php` (1733 LOC)
+    - `resources/views/projects/project_task_rooftop.blade.php`
+    - Other forms with heavy inline JavaScript
+-   **Proposed Structure**:
+    ```
+    app/Livewire/
+      ├── TargetAllotmentForm.php
+      ├── DistrictBlockPanchayatSelector.php
+      └── TargetTable.php
+    
+    resources/views/livewire/
+      ├── target-allotment-form.blade.php (~50-100 LOC)
+      ├── district-block-panchayat-selector.blade.php (~30-50 LOC)
+      └── target-table.blade.php (~50-100 LOC)
+    ```
+-   **Benefits**:
+    - ✅ Server-side rendering - no exposed business logic
+    - ✅ Component-based architecture
+    - ✅ Automatic CSRF protection
+    - ✅ Real-time updates without writing JavaScript
+    - ✅ Leverages Laravel's full MVC pattern
+    - ✅ Smaller, maintainable components (~200 LOC total vs 1733 LOC)
+-   **Migration Strategy**:
+    1. Install Livewire package: `composer require livewire/livewire`
+    2. Create Livewire components for target allotment forms
+    3. Move business logic from JavaScript to PHP component classes
+    4. Move validation to FormRequest classes (already done)
+    5. Progressive enhancement - migrate one feature at a time
+    6. Maintain backward compatibility during migration
+-   **Estimated Effort**: High (time-consuming task, requires careful planning)
+-   **Deferred Until**: After current feature development is complete
+-   **Related Documentation**: See `FRONTEND_ARCHITECTURE.md` (to be created) for detailed analysis
+
+---
+
 ## Notes
 
 -   All tasks should follow `.cursorrules` requirements:

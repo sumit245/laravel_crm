@@ -91,24 +91,66 @@ class TasksController extends Controller
      */
     public function store(StoreTaskRequest $request)
     {
-        $project = Project::findOrFail($request->project_id);
+        try {
+            $project = Project::findOrFail($request->project_id);
 
-        $this->taskService->createBulkTasks(
-            $request->project_id,
-            $request->sites,
-            $request->validated(),
-            auth()->id()
-        );
+            $this->taskService->createBulkTasks(
+                $request->project_id,
+                $request->sites,
+                $request->validated(),
+                auth()->id()
+            );
 
-        $this->activityLogger->log('task', 'created', $project, [
-            'description' => 'Targets created.',
-            'extra' => [
-                'site_ids' => $request->sites,
-            ],
-        ]);
+            $this->activityLogger->log('task', 'created', $project, [
+                'description' => 'Targets created.',
+                'extra' => [
+                    'site_ids' => $request->sites,
+                ],
+            ]);
 
-        return redirect()->route('projects.show', $request->project_id)
-            ->with('success', 'Targets successfully added.');
+            // If AJAX request, return JSON response
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Targets successfully added.',
+                    'redirect_url' => route('projects.show', $request->project_id) . '#tasks'
+                ], 200);
+            }
+
+            return redirect()->route('projects.show', $request->project_id)
+                ->with('success', 'Targets successfully added.');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // If AJAX request, return validation errors as JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Validation failed. Please check your input.',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            throw $e;
+        } catch (\Exception $e) {
+            // Log the error for debugging
+            \Log::error('Error creating targets', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
+
+            // If AJAX request, return error as JSON
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'An error occurred while creating targets.',
+                    'error' => $e->getMessage(),
+                    'code' => $e->getCode() ?: 500
+                ], 500);
+            }
+
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'An error occurred: ' . $e->getMessage());
+        }
     }
 
     /**

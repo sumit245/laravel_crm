@@ -1,7 +1,7 @@
 <footer class="footer">
   <div class="d-sm-flex justify-content-center justify-content-sm-between">
     <span class="text-muted text-sm-left d-block d-sm-inline-block text-center">
-      Powered by <a href="https://dashandots.tech" target="_blank">Dashandots Technology Pvt Ltd</a>
+      Powered by <a href="https://dashandots.com" target="_blank">Dashandots Technology Pvt Ltd</a>
     </span>
     <span class="float-sm-right d-block mt-sm-0 float-none mt-1 text-center">
       Copyright &copy; {{ now()->year }}. All rights reserved.
