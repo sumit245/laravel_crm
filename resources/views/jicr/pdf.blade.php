@@ -1,8 +1,221 @@
-<div class="container p-5">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JICR Report</title>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 15px;
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+        }
+
+        .mt-4 {
+            margin-top: 0rem !important;
+            font-size: 10px;
+        }
+
+        .mt-5 {
+            margin-top: 0rem !important;
+        }
+
+        .annexure_table table td {
+            font-size: 4px;
+        }
+
+        .form-container {
+            position: relative;
+            margin-top: 0;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+
+        .form-header {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        .intro-text {
+            text-align: justify;
+            margin-bottom: 15px;
+            font-size: 10px;
+        }
+
+        .details-line {
+            margin-bottom: 10px;
+            font-size: 10px;
+        }
+
+        /* DomPDF does not support text-decoration-style:dotted; use border-bottom instead */
+        .details-line span,
+        .dotted-underline {
+            border-bottom: 1px dotted #000;
+            text-decoration: none;
+        }
+
+        .table {
+            width: 100%;
+            border: 1px solid #000;
+            table-layout: fixed;
+            word-wrap: break-word;
+            border-collapse: collapse;
+            font-size: 8px;
+        }
+
+        .table th,
+        .table td {
+            border: 1px solid #000;
+            padding: 6px;
+            vertical-align: top;
+            word-wrap: break-word;
+            font-size: 8px;
+        }
+
+        /* Use table for signature row - dompdf flexbox is unreliable, table guarantees single row */
+        .signature-section {
+            margin-top: 30px;
+            width: 100%;
+            font-size: 10px;
+            border: none;
+            border-collapse: collapse;
+        }
+
+        .signature-section td {
+            width: 50%;
+            vertical-align: top;
+            padding: 0 20px 0 0;
+            border: none;
+        }
+
+        .signature-section td:first-child {
+            text-align: left;
+        }
+
+        .signature-section td:last-child {
+            padding: 0 0 0 20px;
+            text-align: right;
+        }
+
+        .signature-box {
+            text-align: center;
+            display: inline-block;
+            max-width: 240px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #000;
+            margin-top: 50px;
+        }
+
+        .page-number {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 10px;
+        }
+
+        .annexure_table {
+            margin-top: 5vh;
+            page-break-before: always;
+        }
+
+        .annexure_table table {
+            font-size: 8px;
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 15px;
+        }
+
+        .annexure_table table th,
+        .annexure_table table td {
+            border: 1px solid #000;
+            padding: 2px;
+            vertical-align: top;
+            word-wrap: break-word;
+            font-size: 8px;
+        }
+
+        @media print {
+            .form-container {
+                border: none !important;
+                margin-top: 0;
+                padding: 15px;
+                width: 100%;
+                max-width: 100%;
+                overflow: visible;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+
+            .table {
+                border-collapse: collapse !important;
+            }
+
+            .table,
+            .table th,
+            .table td {
+                border: 1px solid #000 !important;
+                border-collapse: collapse !important;
+                word-wrap: break-word;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                font-size: 8px !important;
+            }
+
+            .signature-line {
+                border-top: 1px solid #000 !important;
+            }
+
+            .page-break {
+                page-break-before: always;
+            }
+
+            .annexure_table {
+                page-break-before: always !important;
+            }
+
+            .annexure_table table {
+                page-break-inside: avoid;
+                border-collapse: collapse !important;
+                font-size: 8px !important;
+            }
+
+            .annexure_table table th,
+            .annexure_table table td {
+                padding: 2px;
+                border: 1px solid #000 !important;
+                border-collapse: collapse !important;
+                font-size: 8px !important;
+            }
+
+            .signature-section {
+                margin-bottom: 20px;
+            }
+
+            .signature-section td {
+                width: 50% !important;
+                border: none !important;
+            }
+
+            .details-line span,
+            .dotted-underline {
+                border-bottom: 1px dotted #000 !important;
+                text-decoration: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
     <div class="form-container">
-        <a href="{{ route('jicr.generate', array_merge(request()->all(), ['download' => 'pdf'])) }}" class="btn btn-primary print-btn" target="_blank">
-            <i class="bi bi-printer"></i> Print
-        </a>
 
         <div class="form-header">
             Format 12<br>
@@ -17,17 +230,16 @@
         </div>
 
         <div class="details-line">Name of District/ Block/ Panchayat
-            <span style="text-decoration-line: underline; text-decoration-style: dotted;"> {{ $data['district'] ?? '' }}
+            <span class="dotted-underline"> {{ $data['district'] ?? '' }}
                 /
                 {{ $data['block'] ?? '' }} /
                 {{ $data['panchayat'] ?? '' }}</span>
         </div>
         <div class="details-line">Name of Executing Agency
-            <span style="text-decoration-line: underline; text-decoration-style: dotted;"> Sugs Lloyd Limited
+            <span class="dotted-underline"> Sugs Lloyd Limited
             </span>
         </div>
-        <div class="details-line">Work order no. and date<span
-                style="text-decoration-line: underline;text-decoration-style: dotted;font-size:0.96rem;">
+        <div class="details-line">Work order no. and date<span class="dotted-underline">
                 {{ $data['work_order_number'] }}
                 {{ $data['project_start_date'] }}</span></div>
 
@@ -281,22 +493,28 @@
             </tbody>
         </table>
 
-        <div class="mt-4">
+        <div class="mt-4" style="font-size: 10px;">
             It is Certified that the system is installed as per technical specifications laid down in the agreement, if
             any
             shortcoming is found in future, will be repaired/replaced/rectify immediately.
         </div>
 
-        <div class="signature-section mt-5">
-            <div class="signature-box">
-                <div class="signature-line"></div>
-                <div>Signature of Agency with Seal</div>
-            </div>
-            <div class="signature-box">
-                <div class="signature-line"></div>
-                <div>Signature of PRD Representative</div>
-            </div>
-        </div>
+        <table class="signature-section mt-5" cellpadding="0" cellspacing="0" style="width:100%; border:none;">
+            <tr>
+                <td style="width:50%; vertical-align:top; border:none; padding-right:20px;">
+                    <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <div>Signature of Agency with Seal</div>
+                    </div>
+                </td>
+                <td style="width:50%; vertical-align:top; border:none; padding-left:20px;">
+                    <div class="signature-box">
+                        <div class="signature-line"></div>
+                        <div>Signature of PRD Representative</div>
+                    </div>
+                </td>
+            </tr>
+        </table>
         <div class="annexure_table">
             <table>
                 <thead>
@@ -341,212 +559,5 @@
         </div>
 
     </div>
-</div>
-
-@push('styles')
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <style>
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-
-        .container {
-            max-width: 100%;
-            overflow-x: auto;
-            position: relative;
-        }
-
-        .mt-4 {
-            margin-top: 0rem !important;
-        }
-
-        .mt-5 {
-            margin-top: 0rem !important;
-        }
-
-        .annexure_table table td {
-            font-size: 6px;
-        }
-
-        .form-container {
-            /* border: 1px solid #000; */
-            /* padding: 20px; */
-            position: relative;
-            margin-top: 50px;
-            max-width: 100%;
-            overflow-x: auto;
-            overflow-y: visible;
-            padding-top: 50px;
-        }
-
-        .print-btn {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            z-index: 1000;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-            background-color: #007bff !important;
-            color: white !important;
-            display: inline-block !important;
-            visibility: visible !important;
-            opacity: 1 !important;
-        }
-
-        .form-header {
-            text-align: center;
-            font-weight: bold;
-            margin-bottom: 15px;
-            font-size: 1rem;
-        }
-
-        .intro-text {
-            text-align: justify;
-            margin-bottom: 15px;
-        }
-
-        .details-line {
-            margin-bottom: 10px;
-        }
-
-        .table {
-            width: 100%;
-            border: 1px solid #000;
-            table-layout: fixed;
-            word-wrap: break-word;
-        }
-
-        .table th,
-        .table td {
-            border: 1px solid #000;
-            padding: 8px;
-            vertical-align: top;
-            word-wrap: break-word;
-        }
-
-        .signature-section {
-            margin-top: 30px;
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-
-        .signature-box {
-            text-align: center;
-            width: 200px;
-        }
-
-        .signature-line {
-            border-top: 1px solid #000;
-            margin-top: 50px;
-        }
-
-        .page-number {
-            text-align: center;
-            margin-top: 20px;
-            font-size: 12px;
-        }
-
-        @media screen and (max-width: 768px) {
-            .print-btn {
-                position: absolute;
-                top: 10px;
-                right: 10px;
-                padding: 8px 12px;
-                font-size: 0.875rem;
-                z-index: 1000;
-            }
-
-            .form-container {
-                padding: 15px;
-            }
-
-            .table,
-            .table th,
-            .table td {
-                font-size: 0.85rem;
-            }
-
-            .signature-section {
-                flex-direction: column;
-                align-items: center;
-            }
-
-            .signature-box {
-                width: 100%;
-            }
-        }
-
-        @media print {
-            .print-btn {
-                display: none !important;
-            }
-
-            .form-container {
-                border: none !important;
-                margin-top: 0;
-                padding: 15px;
-                width: 100%;
-                max-width: 100%;
-                overflow: visible;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .table,
-            .table th,
-            .table td {
-                border: 1px solid #000 !important;
-                word-wrap: break-word;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-            }
-
-            .signature-line {
-                border-top: 1px solid #000 !important;
-            }
-
-            .page-break {
-                page-break-before: always;
-            }
-        }
-
-        .annexure_table {
-            margin-top: 5vh;
-        }
-
-        .annexure_table table {
-            font-size: 10px;
-            border-collapse: collapse;
-            width: 100%;
-            margin-top: 15px;
-        }
-
-        .annexure_table table th,
-        .annexure_table table td {
-            border: 1px solid #000;
-            padding: 2px;
-            vertical-align: top;
-            word-wrap: break-word;
-        }
-
-        @media print {
-            .annexure_table table {
-                page-break-inside: avoid;
-                font-size: 9px;
-            }
-
-            .annexure_table table th,
-            .annexure_table table td {
-                padding: 2px;
-                border: 0.5px solid #000 !important;
-            }
-
-            .signature-section {
-                margin-bottom: 20px;
-            }
-        }
-    </style>
-@endpush
+</body>
+</html>

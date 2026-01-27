@@ -6,6 +6,35 @@
 
 ---
 
+## CRITICAL DEBUGGING PRINCIPLE
+
+**ALWAYS CHECK SYNTAX ERRORS FIRST** before attempting any other fixes or debugging.
+
+**Example**: When debugging why blocks weren't populating on district selection in `project_task_streetlight.blade.php`, the root cause was an extra closing `})` around line 1191-1195. This syntax error prevented JavaScript from executing, making it appear as if AJAX calls weren't working.
+
+**Lesson**: Syntax errors can cause silent failures that mask the real issue. Always validate syntax (check browser console, linters) before debugging logic.
+
+See `DEBUGGING_METHODOLOGY.md` for detailed debugging checklist.
+
+---
+
+## FRONTEND ARCHITECTURE REFACTORING SCOPE
+
+**Status**: Future Refactor (Deferred - Time Consuming)
+
+**Issue Identified**: Current frontend architecture has security and maintainability concerns:
+- Business logic exposed in JavaScript (security risk)
+- Large monolithic Blade files (1000+ LOC)
+- Not leveraging Laravel MVC properly
+
+**Proposed Solution**: Migrate to Laravel Livewire for complex forms.
+
+**See**: `current_task.md` → "Future Refactoring Scope" → `refactor-livewire-migration` for details.
+
+**Action**: Skip for now, focus on current feature development.
+
+---
+
 ## Table Relationship Chain
 
 ```

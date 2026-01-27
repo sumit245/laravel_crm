@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
+use App\Models\Pole;
 use App\Models\Task;
 use DB;
 use Illuminate\Http\Request;
@@ -174,17 +175,79 @@ class StreetlightController extends Controller
     public function search(Request $request)
     {
         $search = $request->input('search');
-        $usedSiteIds = StreetlightTask::pluck('site_id'); // IDs already used in tasks
-        $sites = Streetlight::where('panchayat', 'LIKE', "%{$search}%")
-            ->whereNotIn('id', $usedSiteIds) // Exclude already used sites
-            ->limit(10) // Limit results to improve performance
-            ->get(['id', 'panchayat']);
-        return response()->json($sites->map(function ($site) {
-            return [
-                'id' => $site->id,
-                'text' => $site->panchayat
-            ];
-        }));
+        $district = $request->input('district');
+        $block = $request->input('block');
+        $projectId = $request->input('project_id');
+        
+        $query = Streetlight::where('panchayat', 'LIKE', "%{$search}%");
+        
+        // Filter by district if provided
+        if ($district) {
+            $query->where('district', $district);
+        }
+        
+        // Filter by block if provided
+        if ($block) {
+            $query->where('block', $block);
+        }
+        
+        // Filter by project if provided
+        if ($projectId) {
+            $query->where('project_id', $projectId);
+        }
+        
+        // Get sites that are either never allotted or partially allotted
+        $usedSiteIds = StreetlightTask::pluck('site_id')->toArray();
+        $sites = $query->get();
+        
+        // Filter panchayats that are either:
+        // 1. Never allotted (no StreetlightTask exists), OR
+        // 2. Partially allotted (some wards allotted but not all)
+        $availablePanchayats = [];
+        
+        foreach ($sites as $site) {
+            $task = StreetlightTask::where('site_id', $site->id)->first();
+            
+            if (!$task) {
+                // Never allotted - include it
+                $availablePanchayats[] = [
+                    'id' => $site->id,
+                    'text' => $site->panchayat
+                ];
+            } else {
+                // Check if partially allotted
+                $siteWards = $site->ward ? array_map('trim', explode(',', $site->ward)) : [];
+                $allottedWards = Pole::where('task_id', $task->id)
+                    ->whereNotNull('ward_name')
+                    ->distinct()
+                    ->pluck('ward_name')
+                    ->map(function($ward) {
+                        return trim($ward);
+                    })
+                    ->toArray();
+                
+                // Check if all wards are allotted
+                $allWardsAllotted = !empty($siteWards) && 
+                    count($siteWards) === count(array_intersect($siteWards, $allottedWards));
+                
+                if (!$allWardsAllotted) {
+                    // Partially allotted - include it
+                    $availablePanchayats[] = [
+                        'id' => $site->id,
+                        'text' => $site->panchayat . ' (Partially Allotted)'
+                    ];
+                }
+            }
+        }
+        
+        // Remove duplicates by panchayat name and limit results
+        $uniquePanchayats = collect($availablePanchayats)
+            ->unique('text')
+            ->take(10)
+            ->values()
+            ->toArray();
+        
+        return response()->json($uniquePanchayats);
     }
 
     /**
@@ -224,22 +287,142 @@ class StreetlightController extends Controller
 
         return response()->json(['message' => 'Task submitted successfully']);
     }
-    public function getBlocksByDistrict($district)
+    public function getBlocksByDistrict($district, Request $request)
     {
-        $blocks = Streetlight::where('district', $district)
-            ->distinct()
-            ->pluck('block');
+        try {
+            $projectId = $request->input('project_id');
+            
+            // URL decode the district name in case it's encoded
+            $district = urldecode($district);
+            
+            // First try with project_id filter
+            $query = Streetlight::where('district', $district);
+            
+            if ($projectId) {
+                $query->where('project_id', $projectId);
+            }
+            
+            $blocks = $query->select('block')
+                ->distinct()
+                ->get()
+                ->map(function($item) {
+                    return ['block' => $item->block];
+                })
+                ->filter(function($item) {
+                    return !empty($item['block']) && trim($item['block']) !== '';
+                })
+                ->values();
+            
+            // If no blocks found with project filter, try without project filter
+            // (This handles cases where districts exist but no streetlights for that project yet)
+            if ($blocks->isEmpty() && $projectId) {
+                $blocks = Streetlight::where('district', $district)
+                    ->select('block')
+                    ->distinct()
+                    ->get()
+                    ->map(function($item) {
+                        return ['block' => $item->block];
+                    })
+                    ->filter(function($item) {
+                        return !empty($item['block']) && trim($item['block']) !== '';
+                    })
+                    ->values();
+            }
 
-        return response()->json($blocks);
+            $blocksArray = $blocks->toArray();
+
+            \Log::info('Blocks for district', [
+                'district' => $district,
+                'project_id' => $projectId,
+                'blocks_count' => count($blocksArray),
+                'blocks' => $blocksArray
+            ]);
+
+            return response()->json($blocksArray);
+        } catch (\Exception $e) {
+            \Log::error('Error fetching blocks', [
+                'district' => $district ?? null,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'error' => 'Failed to fetch blocks',
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 
-    public function getPanchayatsByBlock($block)
+    public function getPanchayatsByBlock($block, Request $request)
     {
-        $assignedSiteIds = DB::table('streetlight_tasks')->pluck('site_id')->toArray();
-        $panchayats = Streetlight::where('block', $block)
-        ->whereNotIn('id', $assignedSiteIds)
-            ->distinct()->get();
-        return response()->json($panchayats);
+        $projectId = $request->input('project_id');
+        
+        // Get all streetlight sites for this block
+        $query = Streetlight::where('block', $block);
+        
+        if ($projectId) {
+            $query->where('project_id', $projectId);
+        }
+        
+        $sites = $query->get();
+        
+        // Filter panchayats that are either:
+        // 1. Never allotted (no StreetlightTask exists), OR
+        // 2. Partially allotted (some wards allotted but not all)
+        $availablePanchayats = [];
+        
+        foreach ($sites as $site) {
+            $task = StreetlightTask::where('site_id', $site->id)->first();
+            
+            if (!$task) {
+                // Never allotted - include it
+                $availablePanchayats[] = [
+                    'id' => $site->id,
+                    'panchayat' => $site->panchayat,
+                    'district' => $site->district,
+                    'block' => $site->block,
+                    'ward' => $site->ward,
+                    'status' => 'unallotted'
+                ];
+            } else {
+                // Check if partially allotted
+                $siteWards = $site->ward ? array_map('trim', explode(',', $site->ward)) : [];
+                $allottedWards = Pole::where('task_id', $task->id)
+                    ->whereNotNull('ward_name')
+                    ->distinct()
+                    ->pluck('ward_name')
+                    ->map(function($ward) {
+                        return trim($ward);
+                    })
+                    ->toArray();
+                
+                // Check if all wards are allotted
+                $allWardsAllotted = !empty($siteWards) && 
+                    count($siteWards) === count(array_intersect($siteWards, $allottedWards));
+                
+                if (!$allWardsAllotted) {
+                    // Partially allotted - include it
+                    $availablePanchayats[] = [
+                        'id' => $site->id,
+                        'panchayat' => $site->panchayat,
+                        'district' => $site->district,
+                        'block' => $site->block,
+                        'ward' => $site->ward,
+                        'status' => 'partially_allotted',
+                        'allotted_wards' => $allottedWards,
+                        'total_wards' => $siteWards
+                    ];
+                }
+            }
+        }
+        
+        // Remove duplicates by panchayat name (in case multiple sites have same panchayat)
+        $uniquePanchayats = collect($availablePanchayats)
+            ->unique('panchayat')
+            ->values()
+            ->toArray();
+        
+        return response()->json($uniquePanchayats);
     }
 
     public function getWardsBySite($siteId)
@@ -250,9 +433,31 @@ class StreetlightController extends Controller
             return response()->json([]);
         }
 
-        $wards = array_map('trim', explode(',', $streetlight->ward));
-        $wardArray = array_filter($wards); // Remove empty values
-
-        return response()->json($wardArray);
+        $allWards = array_map('trim', explode(',', $streetlight->ward));
+        $allWards = array_filter($allWards); // Remove empty values
+        
+        // Check if there's an existing task for this site
+        $task = StreetlightTask::where('site_id', $siteId)->first();
+        
+        if ($task) {
+            // Get already allotted wards from poles
+            $allottedWards = Pole::where('task_id', $task->id)
+                ->whereNotNull('ward_name')
+                ->distinct()
+                ->pluck('ward_name')
+                ->map(function($ward) {
+                    return trim($ward);
+                })
+                ->toArray();
+            
+            // Filter out already allotted wards
+            $availableWards = array_diff($allWards, $allottedWards);
+            
+            // Return only unallotted wards
+            return response()->json(array_values($availableWards));
+        }
+        
+        // No task exists, return all wards
+        return response()->json(array_values($allWards));
     }
 }

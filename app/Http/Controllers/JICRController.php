@@ -174,7 +174,7 @@ class JICRController extends Controller
 
             // If it's a download request, generate PDF
             if ($request->has('download') && $request->download == 'pdf') {
-                $pdf = Pdf::loadView('jicr.show', $data);
+                $pdf = Pdf::loadView('jicr.pdf', ['data' => $data]);
                 // Note: PDF download response is a file download, which itself indicates success
                 return $pdf->download('jicr_report.pdf');
             }
