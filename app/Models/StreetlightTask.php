@@ -18,7 +18,6 @@ class StreetlightTask extends Model
         'start_date',
         'end_date',
         'materials_consumed',
-        'description',
         'approved_by',
         'billed',
     ];

@@ -145,7 +145,6 @@ class StreetlightTaskStrategy implements TaskTypeStrategyInterface
             'vendor_id' => $data['vendor_id'] ?? null,
             'manager_id' => $data['manager_id'] ?? null,
             'activity' => $data['activity'] ?? 'Survey',
-            'description' => $data['description'] ?? null,
             'status' => $data['status'] ?? TaskStatus::PENDING->value,
             'start_date' => $data['start_date'] ?? now(),
             'end_date' => $data['end_date'] ?? null,
