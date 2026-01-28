@@ -52,7 +52,7 @@
                         });
                     </script>
                 @endif
-                @if ($projectId == 11)
+                @if (isset($streetlight))
                     <form action="{{ route('sites.update', $streetlight->id) }}" method="POST" id="streetlightSiteForm">
                         @csrf
                         @method('PUT')
