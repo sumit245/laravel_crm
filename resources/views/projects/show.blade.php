@@ -5,8 +5,8 @@
         @if (session('success') || session('warning') || session('error') || $errors->any())
             @php
                 $alertClass = 'alert-success';
-                $alertMessage = session('success') ?? session('warning') ?? session('error') ?? $errors->first();
-                
+                $alertMessage = session('success') ?? (session('warning') ?? (session('error') ?? $errors->first()));
+
                 if (session('error')) {
                     $alertClass = 'alert-danger';
                 } elseif (session('warning')) {
@@ -39,7 +39,8 @@
             </div>
             <div class="col-3 col-sm">
                 <label class="font-10 text-uppercase mg-b-10 fw-bold">Project Type</label>
-                <p class="mg-b-0">{{ $project->project_type == 0 ? 'Rooftop Installation' : 'Streetlight Installation' }}</p>
+                <p class="mg-b-0">{{ $project->project_type == 0 ? 'Rooftop Installation' : 'Streetlight Installation' }}
+                </p>
             </div>
             <div class="col-3 col-sm">
                 <label class="font-10 text-uppercase mg-b-10 fw-bold">Work Order Number</label>
@@ -55,11 +56,15 @@
 
             <div class="col-3 col-sm">
                 <label class="font-10 text-uppercase mg-b-10 fw-bold">Start Date</label>
-                <p class="mg-b-0">{{ $project->start_date }}</p>
+                <p class="mg-b-0">
+                    {{ $project->start_date ? \Carbon\Carbon::parse($project->start_date)->format('d-M-Y') : '' }}
+                </p>
             </div>
             <div class="col-3 col-sm">
                 <label class="font-10 text-uppercase mg-b-10 fw-bold">End Date</label>
-                <p class="mg-b-0">{{ $project->end_date }}</p>
+                <p class="mg-b-0">
+                    {{ $project->end_date ? \Carbon\Carbon::parse($project->end_date)->format('d-M-Y') : '' }}
+                </p>
             </div>
             <!-- Project Details -->
         </div>
@@ -81,7 +86,7 @@
                 <p class="mg-b-0">{{ $project->description }}</p>
             </div>
         </div>
-        
+
         <!-- Tabs list begin -->
         <div class="row my-2">
             <div class="col-12">
@@ -134,7 +139,7 @@
                         </li>
                     </ul>
                     <!-- Sites Tab -->
-                    <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab" >
+                    <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
                         @include('projects.project_site', [
                             'sites' => $project->project_type == 1 ? $sites : $project->sites,
                         ])
@@ -177,40 +182,40 @@
 @endsection
 
 @push('scripts')
-<script>
-    $(document).ready(function() {
-        // Handle hash-based tab navigation
-        function activateTabFromHash() {
-            const hash = window.location.hash;
-            if (hash) {
-                // Remove the # symbol
-                const tabId = hash.substring(1);
-                // Find the tab button that targets this tab
-                const tabButton = document.querySelector(`button[data-bs-target="#${tabId}"]`);
-                if (tabButton) {
-                    // Use Bootstrap's tab API to show the tab
-                    const tab = new bootstrap.Tab(tabButton);
-                    tab.show();
+    <script>
+        $(document).ready(function() {
+            // Handle hash-based tab navigation
+            function activateTabFromHash() {
+                const hash = window.location.hash;
+                if (hash) {
+                    // Remove the # symbol
+                    const tabId = hash.substring(1);
+                    // Find the tab button that targets this tab
+                    const tabButton = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+                    if (tabButton) {
+                        // Use Bootstrap's tab API to show the tab
+                        const tab = new bootstrap.Tab(tabButton);
+                        tab.show();
+                    }
                 }
             }
-        }
-        
-        // Delay tab activation to ensure all scripts (including datatable components) are loaded
-        // This prevents datatable initialization issues when page loads with #tasks hash
-        setTimeout(function() {
-            activateTabFromHash();
-        }, 300);
-        
-        // Also handle hash changes (when user clicks browser back/forward)
-        window.addEventListener('hashchange', activateTabFromHash);
-        
-        // Update hash when tabs are clicked
-        $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
-            const target = $(e.target).data('bs-target');
-            if (target) {
-                window.location.hash = target.substring(1); // Remove the # from target
-            }
+
+            // Delay tab activation to ensure all scripts (including datatable components) are loaded
+            // This prevents datatable initialization issues when page loads with #tasks hash
+            setTimeout(function() {
+                activateTabFromHash();
+            }, 300);
+
+            // Also handle hash changes (when user clicks browser back/forward)
+            window.addEventListener('hashchange', activateTabFromHash);
+
+            // Update hash when tabs are clicked
+            $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
+                const target = $(e.target).data('bs-target');
+                if (target) {
+                    window.location.hash = target.substring(1); // Remove the # from target
+                }
+            });
         });
-    });
-</script>
+    </script>
 @endpush
