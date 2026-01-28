@@ -460,7 +460,7 @@
     <script>
         $(document).ready(function() {
             // Streetlight form ward chip functionality
-            @if ($projectId == 11)
+            @if (isset($streetlight))
                 let wardChips = [];
                 const wardInput = document.getElementById('ward_input');
                 const wardChipsContainer = document.getElementById('ward_chips_container');
