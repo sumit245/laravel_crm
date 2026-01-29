@@ -27,6 +27,7 @@ not working properly:
 
 16. JICR creation by panchayat only -Done
 > JICR creation successful. Print format is not accurate as it is overlapping texts and table. need to fix.
+done and verified
 
 17. Add GP in import site -Done 
 > Adding "GP" is currently possible with import only. Editing or manually adding site doesn't allow "GP" as ward.

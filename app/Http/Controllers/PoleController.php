@@ -523,6 +523,7 @@ class PoleController extends Controller
 
     public function bulkPushRms(Request $request)
     {
+        Log::info('Controller: bulkPushRms');
         $request->validate([
             'pole_ids' => 'required|array',
             'pole_ids.*' => 'exists:streelight_poles,id',
@@ -571,6 +572,7 @@ class PoleController extends Controller
                         'pole_id' => $pole->id,
                         'message' => $message,
                         'response_data' => $responseData,
+                        'status' => $status,
                         'district' => $streetlight->district ?? null,
                         'block' => $streetlight->block ?? null,
                         'panchayat' => $streetlight->panchayat ?? null,

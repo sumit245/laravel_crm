@@ -3,23 +3,22 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\RemoteApiHelper;
-use App\Http\Controllers\Controller;
 use App\Models\Pole;
 use App\Models\Project;
 use App\Models\RmsPushLog;
 use App\Models\Streetlight;
 use App\Models\StreetlightTask;
+use App\Services\Logging\ActivityLogger;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Services\Logging\ActivityLogger;
 
 class RMSController extends Controller
 {
     public function __construct(
         protected ActivityLogger $activityLogger
-    ) {
-    }
+    ) {}
+
     public function index(Request $request)
     {
         // Validate incoming filter data
@@ -39,7 +38,7 @@ class RMSController extends Controller
         ];
 
         // Fetch blocks if a district is selected
-        if (!empty($validated['district'])) {
+        if (! empty($validated['district'])) {
             $data['blocks'] = Streetlight::select('block')
                 ->where('district', $validated['district'])
                 ->distinct()
@@ -47,7 +46,7 @@ class RMSController extends Controller
         }
 
         // Fetch panchayats if a block is selected
-        if (!empty($validated['block'])) {
+        if (! empty($validated['block'])) {
             $data['panchayats'] = Streetlight::select('panchayat')
                 ->where('block', $validated['block'])
                 ->distinct()
@@ -55,7 +54,7 @@ class RMSController extends Controller
         }
 
         // Fetch wards if a panchayat is selected
-        if (!empty($validated['panchayat'])) {
+        if (! empty($validated['panchayat'])) {
             $data['wards'] = Streetlight::select('ward')
                 ->where('panchayat', $validated['panchayat'])
                 ->distinct()
@@ -67,6 +66,7 @@ class RMSController extends Controller
 
     public function sendPanchayatToRMS(Request $request)
     {
+        Log::info('Controller: sendPanchayatToRMS');
         // 1. Validate the incoming request to ensure we have the location.
         $validated = $request->validate([
             'district' => 'required|string',
@@ -116,11 +116,11 @@ class RMSController extends Controller
                     $streetlight = $task ? $streetlightMap->get($task->site_id) : null;
 
                     // Ensure all required data exists before proceeding.
-                    if (!$task || !$streetlight || !$task->engineer) {
+                    if (! $task || ! $streetlight || ! $task->engineer) {
                         throw new Exception('Missing related task, streetlight, or engineer data.');
                     }
 
-                    $approved_by = $task->engineer->firstName . ' ' . $task->engineer->lastName;
+                    $approved_by = $task->engineer->firstName.' '.$task->engineer->lastName;
 
                     // Call your helper to send the data.
                     $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
@@ -143,6 +143,7 @@ class RMSController extends Controller
                         'pole_id' => $pole->id,
                         'message' => $message,
                         'response_data' => $responseData,
+                        'status' => $status,
                         'district' => $streetlight->district ?? null,
                         'block' => $streetlight->block ?? null,
                         'panchayat' => $streetlight->panchayat ?? null,
@@ -152,7 +153,7 @@ class RMSController extends Controller
 
                     $responses[] = ['pole_id' => $pole->id, 'status' => $status, 'message' => $message];
                 } catch (Exception $e) {
-                    Log::error("Failed to send pole data to RMS", [
+                    Log::error('Failed to send pole data to RMS', [
                         'pole_id' => $pole->id,
                         'error' => $e->getMessage(),
                     ]);
@@ -190,7 +191,7 @@ class RMSController extends Controller
             ]);
 
             return response()->json([
-                'message' => 'Pole data sync process completed for ' . $validated['panchayat'] . '.',
+                'message' => 'Pole data sync process completed for '.$validated['panchayat'].'.',
                 'result' => $responses,
                 'success_count' => $successCount,
                 'error_count' => $errorCount,
@@ -201,7 +202,8 @@ class RMSController extends Controller
                 'filters' => $validated,
                 'error' => $e->getMessage(),
             ]);
-            return response()->json(['message' => 'A critical error occurred: ' . $e->getMessage()], 500);
+
+            return response()->json(['message' => 'A critical error occurred: '.$e->getMessage()], 500);
         }
     }
 
@@ -238,11 +240,12 @@ class RMSController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
+
             return view('rms.export', [
                 'logs' => collect(),
                 'successLogs' => collect(),
                 'errorLogs' => collect(),
-                'error' => 'Error loading RMS export data: ' . $e->getMessage(),
+                'error' => 'Error loading RMS export data: '.$e->getMessage(),
             ]);
         }
     }
