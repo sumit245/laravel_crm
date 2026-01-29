@@ -13,23 +13,25 @@ use App\Models\InventroyStreetLightModel;
 use App\Models\Project;
 use App\Models\Stores;
 use App\Models\User;
+use App\Services\Inventory\InventoryHistoryService;
+use App\Services\Logging\ActivityLogger;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
-use App\Services\Inventory\InventoryHistoryService;
-use App\Services\Logging\ActivityLogger;
+
 class InventoryController extends Controller
 {
     public function __construct(
         protected InventoryServiceInterface $inventoryService,
         protected InventoryHistoryService $historyService,
         protected ActivityLogger $activityLogger
-    ) {
-    }
+    ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -38,10 +40,10 @@ class InventoryController extends Controller
         $user = auth()->user();
         $projectId = $request->query('project_id');
 
-        if (!$projectId && $user->project_id) {
+        if (! $projectId && $user->project_id) {
             $projectId = $user->project_id;
         }
-        if (!$projectId) {
+        if (! $projectId) {
             $project = Project::when($user->role !== \App\Enums\UserRole::ADMIN->value, function ($query) use ($user) {
                 $query->whereHas('users', function ($q) use ($user) {
                     $q->where('users.id', $user->id);
@@ -50,7 +52,7 @@ class InventoryController extends Controller
             $projectId = $project ? $project->id : null;
         }
 
-        if (!$projectId) {
+        if (! $projectId) {
             return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project to view inventory.');
         }
 
@@ -61,7 +63,7 @@ class InventoryController extends Controller
                 ->where('user_id', $user->id)
                 ->exists();
 
-            if (!$isAssigned) {
+            if (! $isAssigned) {
                 return redirect()->route('projects.index')->with('error', 'You do not have access to this project.');
             }
         }
@@ -134,11 +136,11 @@ class InventoryController extends Controller
             $importedCount = $import->getImportedCount();
             $errorFileUrl = null;
 
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 // Build a downloadable errors.txt file
                 $lines = [];
-                $lines[] = 'Inventory Import Errors - ' . now()->toDateTimeString();
-                $lines[] = 'Project ID: ' . $projectId . ', Store ID: ' . $storeId;
+                $lines[] = 'Inventory Import Errors - '.now()->toDateTimeString();
+                $lines[] = 'Project ID: '.$projectId.', Store ID: '.$storeId;
                 $lines[] = str_repeat('=', 80);
 
                 foreach ($errors as $err) {
@@ -158,16 +160,16 @@ class InventoryController extends Controller
                     $lines[] = str_repeat('-', 40);
                 }
 
-                $content = implode(PHP_EOL, $lines) . PHP_EOL;
+                $content = implode(PHP_EOL, $lines).PHP_EOL;
 
                 // Use the public disk so URL generation is reliable
                 $disk = Storage::disk('public');
-                if (!$disk->exists('import_errors')) {
+                if (! $disk->exists('import_errors')) {
                     $disk->makeDirectory('import_errors');
                 }
 
-                $fileName = 'inventory_errors_project_' . $projectId . '_store_' . $storeId . '_' . time() . '.txt';
-                $relativePath = 'import_errors/' . $fileName;
+                $fileName = 'inventory_errors_project_'.$projectId.'_store_'.$storeId.'_'.time().'.txt';
+                $relativePath = 'import_errors/'.$fileName;
                 $disk->put($relativePath, $content);
 
                 // Public URL (requires `php artisan storage:link` once)
@@ -185,19 +187,19 @@ class InventoryController extends Controller
                 ],
             ]);
 
-            $redirect = redirect()->to(route('store.show', $storeId) . '#view')
+            $redirect = redirect()->to(route('store.show', $storeId).'#view')
                 ->with('import_errors_url', $errorFileUrl)
                 ->with('import_errors_count', count($errors));
 
             if ($importedCount > 0) {
                 $message = "Inventory imported successfully! Imported rows: {$importedCount}";
-                if (!empty($errors)) {
-                    $message .= ', Skipped rows: ' . count($errors);
+                if (! empty($errors)) {
+                    $message .= ', Skipped rows: '.count($errors);
                 }
                 $redirect->with('success', $message);
             } else {
                 // No new rows imported - treat as warning/error
-                $message = 'No new inventory imported. Skipped rows: ' . count($errors);
+                $message = 'No new inventory imported. Skipped rows: '.count($errors);
                 $redirect->withErrors(['error' => $message]);
             }
 
@@ -206,7 +208,6 @@ class InventoryController extends Controller
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
     }
-
 
     /**
      * Show the form for creating a new resource.
@@ -230,7 +231,7 @@ class InventoryController extends Controller
             // Validate streetlight item code restrictions
             if ($projectType == 1) {
                 $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
-                if (!in_array($itemCode, $validItemCodes)) {
+                if (! in_array($itemCode, $validItemCodes)) {
                     return redirect()->back()
                         ->withErrors(['code' => 'Invalid item code for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).'])
                         ->withInput();
@@ -271,7 +272,7 @@ class InventoryController extends Controller
             $storeId = $request->input('store_id');
             if ($storeId) {
                 return redirect()
-                    ->to(route('store.show', $storeId) . '#view')
+                    ->to(route('store.show', $storeId).'#view')
                     ->with('success', 'Inventory added successfully.');
             }
 
@@ -281,7 +282,8 @@ class InventoryController extends Controller
                 'store_id' => $storeId,
             ])->with('success', 'Inventory added successfully.');
         } catch (\Exception $e) {
-            Log::error('Error creating inventory: ' . $e->getMessage());
+            Log::error('Error creating inventory: '.$e->getMessage());
+
             return redirect()->back()
                 ->withErrors(['error' => $e->getMessage()])
                 ->withInput();
@@ -297,7 +299,7 @@ class InventoryController extends Controller
             $projectType = (int) $request->input('project_type', 1);
             $serialNumber = $request->input('serialnumber') ?? $request->input('serial_number');
 
-            if (!$serialNumber) {
+            if (! $serialNumber) {
                 return response()->json([
                     'exists' => false,
                     'message' => 'Serial number is required.',
@@ -330,7 +332,8 @@ class InventoryController extends Controller
                 'message' => 'Serial number is available.',
             ]);
         } catch (\Exception $e) {
-            Log::error('Error checking serial number: ' . $e->getMessage());
+            Log::error('Error checking serial number: '.$e->getMessage());
+
             return response()->json([
                 'exists' => false,
                 'message' => 'Unable to validate serial number.',
@@ -338,17 +341,15 @@ class InventoryController extends Controller
         }
     }
 
-
     /**
      * Display the specified resource.
      */
-
-
     public function distinctInventoryStreetlight()
     {
         $distinctItems = InventroyStreetlightModel::select('item_code', 'item', 'total_quantity', 'rate', 'make', 'model')
             ->groupBy('item_code')
             ->get();
+
         return view('projects.project_inventory', compact('distinctItems'));
     }
 
@@ -359,6 +360,7 @@ class InventoryController extends Controller
     {
         //
         $item = Inventory::findOrFail($id);
+
         return view('inventory.edit', compact('item'));
     }
 
@@ -368,6 +370,7 @@ class InventoryController extends Controller
     public function editInventory($id)
     {
         $inventoryItem = Inventory::findOrFail($id);
+
         return view('inventory.editInventory', compact('inventoryItem'));
     }
 
@@ -399,8 +402,6 @@ class InventoryController extends Controller
         }
     }
 
-
-
     /**
      * Update the specified resource in storage.
      */
@@ -421,6 +422,7 @@ class InventoryController extends Controller
         try {
 
             $item->update($validated);
+
             return redirect()->route('inventory.show', compact('item'))
                 ->with('success', 'Inventory updated successfully.');
         } catch (\Exception $e) {
@@ -440,10 +442,11 @@ class InventoryController extends Controller
         try {
             // Try to find in both inventory models
             $item = InventroyStreetLightModel::find($id);
-            if (!$item) {
+            if (! $item) {
                 $item = Inventory::findOrFail($id);
             }
             $item->delete();
+
             return response()->json(['success' => true, 'message' => 'Item deleted successfully.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to delete Item'], 500);
@@ -458,7 +461,7 @@ class InventoryController extends Controller
             $store = Stores::findOrFail($storeId);
             $storeName = $store->store_name;
             $storeIncharge = User::findOrFail($store->store_incharge_id);
-            $inchargeName = $storeIncharge->firstName . ' ' . $storeIncharge->lastName;
+            $inchargeName = $storeIncharge->firstName.' '.$storeIncharge->lastName;
 
             $project = Project::findOrFail($projectId);
             $projectType = $project->project_type;
@@ -499,7 +502,7 @@ class InventoryController extends Controller
                     $dispatchId = $dispatch->id;
                     $dispatchDate = $dispatch->dispatch_date;
                     $vendorId = $dispatch->vendor_id;
-                    $vendorName = $dispatch->vendor ? ($dispatch->vendor->firstName . ' ' . $dispatch->vendor->lastName) : null;
+                    $vendorName = $dispatch->vendor ? ($dispatch->vendor->firstName.' '.$dispatch->vendor->lastName) : null;
 
                     if ($dispatch->is_consumed == 1) {
                         $availability = 'Consumed';
@@ -580,8 +583,6 @@ class InventoryController extends Controller
             $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
             $dispatchAmountModule = number_format($dispatchAmountModule, 2);
 
-
-
             // Get distinct item codes for filter
             $itemCodes = $allInventory->pluck('item_code')->unique()->sort()->values();
 
@@ -636,7 +637,7 @@ class InventoryController extends Controller
                 'total_quantity' => 'required|integer|min:1',
                 'total_value' => 'required|numeric',
                 'serial_numbers' => 'required|array',
-                'serial_numbers.*' => 'required|string'
+                'serial_numbers.*' => 'required|string',
             ]);
 
             $project = Project::findOrFail($request->project_id);
@@ -652,7 +653,17 @@ class InventoryController extends Controller
             // Check if we have enough inventory
             $availableQuantity = $inventoryItems->sum('quantity');
             if ($availableQuantity < $request->total_quantity) {
-                return redirect()->back()->with('error', "Not enough stock for {$request->item}. Available: {$availableQuantity}");
+                $errorMessage = "Not enough stock for {$request->item}. Available: {$availableQuantity}";
+                $this->logDispatchError($request, $errorMessage, 'insufficient_stock');
+                
+                if ($request->ajax()) {
+                    return response()->json([
+                        'status' => 'error',
+                        'message' => $errorMessage,
+                    ], 422);
+                }
+                
+                return redirect()->back()->with('error', $errorMessage);
             }
 
             foreach ($request->serial_numbers as $serialNumber) {
@@ -663,8 +674,18 @@ class InventoryController extends Controller
                     ->where('quantity', '>', 0)
                     ->first();
 
-                if (!$inventoryItem) {
-                    return redirect()->back()->with('error', "Item with serial number {$serialNumber} not found or already dispatched");
+                if (! $inventoryItem) {
+                    $errorMessage = "Item with serial number {$serialNumber} not found or already dispatched";
+                    $this->logDispatchError($request, $errorMessage, 'serial_not_found');
+                    
+                    if ($request->ajax()) {
+                        return response()->json([
+                            'status' => 'error',
+                            'message' => $errorMessage,
+                        ], 422);
+                    }
+                    
+                    return redirect()->back()->with('error', $errorMessage);
                 }
                 $dispatch = InventoryDispatch::create([
                     'vendor_id' => $request->vendor_id,
@@ -676,11 +697,11 @@ class InventoryController extends Controller
                     'rate' => $request->rate,
                     'make' => $request->make,
                     'model' => $request->model,
-                    'total_quantity' => "1",
+                    'total_quantity' => '1',
                     'total_value' => $request->rate,
                     'serial_number' => $serialNumber,
                     'dispatch_date' => Carbon::now(),
-                    "isDispatched" => true
+                    'isDispatched' => true,
                 ]);
                 $inventoryItem->decrement('quantity', 1);
 
@@ -693,14 +714,77 @@ class InventoryController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'Inventory dispatched successfully'
+                    'message' => 'Inventory dispatched successfully',
                 ]);
             }
+
             return redirect()->back()->with('success', 'Inventory dispatched successfully');
+        } catch (ValidationException $e) {
+            $errorMessage = $e->validator->errors()->first();
+            $this->logDispatchError($request, $errorMessage, 'validation');
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $errorMessage,
+                    'errors' => $e->errors(),
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            $errorMessage = $e->getMessage();
+            $this->logDispatchError($request, $errorMessage, 'exception');
+            
+            if ($request->ajax()) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => $errorMessage,
+                ], 500);
+            }
+            
             return redirect()->back()->with('error', 'Inventory dispatched Failed');
         }
+    }
+
+    /**
+     * Log dispatch error in human-readable format for client support
+     */
+    private function logDispatchError(Request $request, string $errorMessage, string $errorType = 'error'): void
+    {
+        $storeId = $request->store_id;
+        $projectId = $request->project_id;
+        $vendorId = $request->vendor_id;
+        $itemCode = $request->item_code ?? 'N/A';
+        $serialNumbers = $request->serial_numbers ?? [];
+        $serialNumbersStr = is_array($serialNumbers) ? implode(', ', $serialNumbers) : (string) $serialNumbers;
+        
+        // Load store and project names if IDs are available
+        $storeName = 'N/A';
+        if ($storeId) {
+            $store = Stores::find($storeId);
+            $storeName = $store ? $store->store_name : "ID: {$storeId}";
+        }
+        
+        $projectName = 'N/A';
+        if ($projectId) {
+            $project = Project::find($projectId);
+            $projectName = $project ? $project->project_name : "ID: {$projectId}";
+        }
+        
+        $logMessage = sprintf(
+            'Issue Material Failed | Store: %s (ID: %s) | Project: %s (ID: %s) | Vendor ID: %s | Item: %s | Serials: %s | Error: %s',
+            $storeName,
+            $storeId ?? 'N/A',
+            $projectName,
+            $projectId ?? 'N/A',
+            $vendorId ?? 'N/A',
+            $itemCode,
+            $serialNumbersStr ?: 'N/A',
+            $errorMessage
+        );
+        
+        Log::error($logMessage);
     }
 
     /**
@@ -712,7 +796,7 @@ class InventoryController extends Controller
             // Increase execution time for large file processing
             set_time_limit(600); // 10 minutes
             ini_set('max_execution_time', '600');
-            
+
             $request->validate([
                 'file' => 'required|mimes:xlsx,xls,csv|max:2048',
                 'vendor_id' => 'required|exists:users,id',
@@ -732,7 +816,7 @@ class InventoryController extends Controller
             $alreadyDispatched = [];
             $duplicateSerials = [];
             $nonExisting = [];
-            
+
             // Track serial numbers seen in uploaded file for duplicate detection
             $seenSerials = [];
             $allSerialNumbers = [];
@@ -757,16 +841,16 @@ class InventoryController extends Controller
 
             // Optimize: Load all inventory items at once to reduce database queries
             $inventoryItems = collect();
-            if (!empty($allSerialNumbers)) {
+            if (! empty($allSerialNumbers)) {
                 $inventoryItems = $inventoryModel::whereIn('serial_number', $allSerialNumbers)
                     ->where('project_id', $request->project_id)
                     ->where('store_id', $request->store_id)
                     ->get()
-                    ->keyBy(function($item) {
-                        return $item->serial_number . '_' . $item->item_code;
+                    ->keyBy(function ($item) {
+                        return $item->serial_number.'_'.$item->item_code;
                     });
             }
-            
+
             // Optimize: Load all existing dispatches at once
             $existingDispatches = InventoryDispatch::whereIn('serial_number', $allSerialNumbers)
                 ->where('isDispatched', true)
@@ -781,14 +865,15 @@ class InventoryController extends Controller
                 $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
                 $simNumber = ($itemCode === 'SL02') ? ($row['sim_number'] ?? $row['SIM_NUMBER'] ?? null) : null;
 
-                if (!$itemCode || !$itemName || !$serialNumber) {
+                if (! $itemCode || ! $itemName || ! $serialNumber) {
                     $nonExisting[] = [
                         'item_code' => $itemCode ?? 'N/A',
                         'item' => $itemName ?? 'N/A',
                         'serial_number' => $serialNumber ?? 'N/A',
                         'sim_number' => $simNumber,
-                        'reason' => 'Missing required fields: item_code, item, or serial_number'
+                        'reason' => 'Missing required fields: item_code, item, or serial_number',
                     ];
+
                     continue;
                 }
 
@@ -800,20 +885,22 @@ class InventoryController extends Controller
                         'serial_number' => $serialNumber,
                         'sim_number' => $simNumber,
                     ];
+
                     continue;
                 }
 
                 // Check if serial number exists in inventory (from pre-loaded collection)
-                $inventoryItem = $inventoryItems->get($serialNumber . '_' . $itemCode);
+                $inventoryItem = $inventoryItems->get($serialNumber.'_'.$itemCode);
 
-                if (!$inventoryItem) {
+                if (! $inventoryItem) {
                     $nonExisting[] = [
                         'item_code' => $itemCode,
                         'item' => $itemName,
                         'serial_number' => $serialNumber,
                         'sim_number' => $simNumber,
-                        'reason' => "Serial number {$serialNumber} not found in inventory"
+                        'reason' => "Serial number {$serialNumber} not found in inventory",
                     ];
+
                     continue;
                 }
 
@@ -824,8 +911,9 @@ class InventoryController extends Controller
                         'item' => $itemName,
                         'serial_number' => $serialNumber,
                         'sim_number' => $simNumber,
-                        'reason' => "Serial number {$serialNumber} has quantity {$inventoryItem->quantity}, expected 1"
+                        'reason' => "Serial number {$serialNumber} has quantity {$inventoryItem->quantity}, expected 1",
                     ];
+
                     continue;
                 }
 
@@ -837,6 +925,7 @@ class InventoryController extends Controller
                         'serial_number' => $serialNumber,
                         'sim_number' => $simNumber,
                     ];
+
                     continue;
                 }
 
@@ -853,8 +942,9 @@ class InventoryController extends Controller
                             'item' => $itemName,
                             'serial_number' => $serialNumber,
                             'sim_number' => $simNumber,
-                            'reason' => "SIM number {$simNumber} already exists for another luminary item"
+                            'reason' => "SIM number {$simNumber} already exists for another luminary item",
                         ];
+
                         continue;
                     }
                 }
@@ -882,10 +972,11 @@ class InventoryController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Bulk dispatch error: ' . $e->getMessage());
+            $this->logDispatchError($request, 'Failed to process bulk dispatch: '.$e->getMessage(), 'bulk_dispatch_exception');
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to process bulk dispatch: ' . $e->getMessage()
+                'message' => 'Failed to process bulk dispatch: '.$e->getMessage(),
             ], 500);
         }
     }
@@ -899,7 +990,7 @@ class InventoryController extends Controller
             // Increase execution time for bulk dispatch processing
             set_time_limit(600); // 10 minutes
             ini_set('max_execution_time', '600');
-            
+
             $request->validate([
                 'vendor_id' => 'required|exists:users,id',
                 'project_id' => 'required|exists:projects,id',
@@ -926,7 +1017,7 @@ class InventoryController extends Controller
                     ->where('quantity', '>', 0)
                     ->get()
                     ->keyBy('serial_number');
-                
+
                 // Check for already dispatched items in bulk
                 $existingDispatches = InventoryDispatch::whereIn('serial_number', $serialNumbers)
                     ->where('isDispatched', true)
@@ -938,11 +1029,12 @@ class InventoryController extends Controller
                     // Find the inventory item from pre-loaded collection
                     $inventoryItem = $inventoryItems->get($serialNumber);
 
-                    if (!$inventoryItem) {
+                    if (! $inventoryItem) {
                         $failedItems[] = [
                             'serial_number' => $serialNumber,
-                            'error' => 'Item not found or out of stock'
+                            'error' => 'Item not found or out of stock',
                         ];
+
                         continue;
                     }
 
@@ -950,11 +1042,12 @@ class InventoryController extends Controller
                     if (isset($existingDispatchesSet[$serialNumber])) {
                         $failedItems[] = [
                             'serial_number' => $serialNumber,
-                            'error' => 'Item already dispatched'
+                            'error' => 'Item already dispatched',
                         ];
+
                         continue;
                     }
-                    
+
                     // Double-check with a fresh query for race condition protection
                     $existingDispatch = InventoryDispatch::where('serial_number', $serialNumber)
                         ->where('isDispatched', true)
@@ -963,8 +1056,9 @@ class InventoryController extends Controller
                     if ($existingDispatch) {
                         $failedItems[] = [
                             'serial_number' => $serialNumber,
-                            'error' => 'Item already dispatched'
+                            'error' => 'Item already dispatched',
                         ];
+
                         continue;
                     }
 
@@ -998,9 +1092,9 @@ class InventoryController extends Controller
 
                 DB::commit();
 
-                $message = "Successfully dispatched " . count($dispatchedItems) . " item(s)";
+                $message = 'Successfully dispatched '.count($dispatchedItems).' item(s)';
                 if (count($failedItems) > 0) {
-                    $message .= ". " . count($failedItems) . " item(s) failed to dispatch.";
+                    $message .= '. '.count($failedItems).' item(s) failed to dispatch.';
                 }
 
                 return response()->json([
@@ -1016,16 +1110,18 @@ class InventoryController extends Controller
             }
 
         } catch (\Exception $e) {
-            Log::error('Confirm bulk dispatch error: ' . $e->getMessage());
+            $this->logDispatchError($request, 'Failed to confirm bulk dispatch: '.$e->getMessage(), 'bulk_confirm_exception');
+
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to confirm bulk dispatch: ' . $e->getMessage()
+                'message' => 'Failed to confirm bulk dispatch: '.$e->getMessage(),
             ], 500);
         }
     }
 
     public function viewVendorInventory($vendorId)
     {
+        Log::info('viewVendorInventory', ['vendorId' => $vendorId]);
         try {
             $todayDate = now()->toDateString();
             $inventory = InventoryDispatch::where('vendor_id', $vendorId)
@@ -1034,9 +1130,10 @@ class InventoryController extends Controller
 
             if ($inventory->isEmpty()) {
                 Log::warning("No inventory found for vendor_id: {$vendorId}");
+
                 return response()->json([
                     'message' => 'No inventory found for this vendor.',
-                    'vendor_id' => $vendorId
+                    'vendor_id' => $vendorId,
                 ], 404);
             }
 
@@ -1089,9 +1186,10 @@ class InventoryController extends Controller
             return response()->json($response);
         } catch (Exception $e) {
             Log::error($e->getMessage());
+
             return response()->json([
                 'message' => 'Something went wrong!',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -1102,6 +1200,7 @@ class InventoryController extends Controller
     private function formatInventoryItem($items)
     {
         $firstItem = $items->first();
+
         return [
             'item_code' => $firstItem->item_code,
             'item' => $firstItem->item,
@@ -1114,11 +1213,10 @@ class InventoryController extends Controller
             'dispatch_date' => $firstItem->dispatch_date,
             'serial_number' => $items->pluck('serial_number')->flatten()->filter()->values()->all(),
             'store_name' => optional($firstItem->store)->store_name,
-            'store_incharge' => optional($firstItem->storeIncharge)->firstName . ' ' .
+            'store_incharge' => optional($firstItem->storeIncharge)->firstName.' '.
                 optional($firstItem->storeIncharge)->lastName,
         ];
     }
-
 
     public function checkQR(Request $request)
     {
@@ -1128,11 +1226,13 @@ class InventoryController extends Controller
                 ->where('item_code', $request->item_code)
                 ->where('quantity', '>', 0)
                 ->exists();
+
             return response()->json(['exists' => $exists]);
         } catch (Exception $e) {
             return response()->json(['error' => $e->getMessage()], 422);
         }
     }
+
     public function showDispatchInventory(Request $request)
     {
         $itemCode = $request->item_code;
@@ -1145,6 +1245,7 @@ class InventoryController extends Controller
                 ->where('store_id', $storeid)->get();
             $availableQuantity = 0;
             $title = $itemCode;
+
             return view('inventory.dispatchedStock', compact('specificDispatch', 'availableQuantity', 'title'));
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
@@ -1157,8 +1258,9 @@ class InventoryController extends Controller
         try {
             $inventory = InventroyStreetLightModel::where('serial_number', $serial_number)->first();
             $dispatch = InventoryDispatch::where('serial_number', $serial_number)->whereNull('streetlight_pole_id')->first();
-            if (!$inventory) {
+            if (! $inventory) {
                 Log::warning('Inventory not found for serial_number', ['serial_number' => $serial_number]);
+
                 return redirect()->back()->with('error', 'Inventory item not found.');
             }
             $quantityBefore = $inventory->quantity;
@@ -1183,6 +1285,7 @@ class InventoryController extends Controller
             return redirect()->back()->with('success', 'Inventory item returned successfully');
         } catch (\Exception $e) {
             Log::error('Failed to return inventory item', ['error' => $e->getMessage()]);
+
             return redirect()->back()->with('error', 'Failed to return inventory item');
         }
     }
@@ -1210,7 +1313,7 @@ class InventoryController extends Controller
             // ---------- Step 1: Handle inventory_dispatch ----------
             $newDispatch = InventoryDispatch::where('serial_number', $newSerial)->first();
 
-            if (!$newDispatch) {
+            if (! $newDispatch) {
                 // Clone from old
                 $newDispatch = $oldDispatch->replicate();
                 $newDispatch->serial_number = $newSerial;
@@ -1228,7 +1331,7 @@ class InventoryController extends Controller
                     'isDispatched',
                     'is_consumed',
                     'project_id',
-                    'streetlight_pole_id'
+                    'streetlight_pole_id',
                 ]));
                 $newDispatch->save();
             }
@@ -1288,10 +1391,12 @@ class InventoryController extends Controller
                 $pole->save();
             }
             DB::commit();
+
             return back()->with('success', 'Item replaced successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
-            return back()->withInput()->with('replace_error', 'Failed to replace item: ' . $e->getMessage());
+
+            return back()->withInput()->with('replace_error', 'Failed to replace item: '.$e->getMessage());
         }
     }
 
@@ -1299,15 +1404,15 @@ class InventoryController extends Controller
     {
         try {
             $ids = $request->input('ids', []);
-            
+
             // Handle both array and JSON string formats
             if (is_string($ids)) {
                 $ids = json_decode($ids, true);
             }
-            
-            if (!is_array($ids) || empty($ids)) {
+
+            if (! is_array($ids) || empty($ids)) {
                 return response()->json([
-                    'message' => 'No valid items selected for deletion.'
+                    'message' => 'No valid items selected for deletion.',
                 ], 400);
             }
 
@@ -1318,17 +1423,18 @@ class InventoryController extends Controller
 
             if ($deletedCount > 0) {
                 return response()->json([
-                    'message' => "{$deletedCount} item(s) deleted successfully."
+                    'message' => "{$deletedCount} item(s) deleted successfully.",
                 ]);
             } else {
                 return response()->json([
-                    'message' => 'No items were deleted. Please check if the selected items exist.'
+                    'message' => 'No items were deleted. Please check if the selected items exist.',
                 ], 400);
             }
         } catch (\Throwable $th) {
-            Log::error('Bulk delete error: ' . $th->getMessage());
+            Log::error('Bulk delete error: '.$th->getMessage());
+
             return response()->json([
-                'message' => 'An error occurred while deleting inventory items: ' . $th->getMessage()
+                'message' => 'An error occurred while deleting inventory items: '.$th->getMessage(),
             ], 500);
         }
     }
@@ -1337,11 +1443,11 @@ class InventoryController extends Controller
     {
         try {
             $serialNumbers = $request->input('serial_numbers', []);
-            
-            if (!is_array($serialNumbers) || empty($serialNumbers)) {
+
+            if (! is_array($serialNumbers) || empty($serialNumbers)) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No valid items selected for return.'
+                    'message' => 'No valid items selected for return.',
                 ], 400);
             }
 
@@ -1353,9 +1459,10 @@ class InventoryController extends Controller
             foreach ($serialNumbers as $serialNumber) {
                 try {
                     $inventory = InventroyStreetLightModel::where('serial_number', $serialNumber)->first();
-                    
-                    if (!$inventory) {
+
+                    if (! $inventory) {
                         $errors[] = "Inventory item not found for serial number: {$serialNumber}";
+
                         continue;
                     }
 
@@ -1365,8 +1472,9 @@ class InventoryController extends Controller
                         ->where('isDispatched', true)
                         ->first();
 
-                    if (!$dispatch) {
+                    if (! $dispatch) {
                         $errors[] = "Item with serial number {$serialNumber} is not dispatched or is already consumed.";
+
                         continue;
                     }
 
@@ -1391,9 +1499,9 @@ class InventoryController extends Controller
                 } catch (\Exception $e) {
                     Log::error('Failed to return inventory item', [
                         'serial_number' => $serialNumber,
-                        'error' => $e->getMessage()
+                        'error' => $e->getMessage(),
                     ]);
-                    $errors[] = "Failed to return item {$serialNumber}: " . $e->getMessage();
+                    $errors[] = "Failed to return item {$serialNumber}: ".$e->getMessage();
                 }
             }
 
@@ -1401,27 +1509,29 @@ class InventoryController extends Controller
 
             if ($returnedCount > 0) {
                 $message = "{$returnedCount} item(s) returned successfully.";
-                if (!empty($errors)) {
-                    $message .= " " . count($errors) . " item(s) failed: " . implode(', ', array_slice($errors, 0, 3));
+                if (! empty($errors)) {
+                    $message .= ' '.count($errors).' item(s) failed: '.implode(', ', array_slice($errors, 0, 3));
                 }
+
                 return response()->json([
                     'success' => true,
                     'message' => $message,
                     'returned_count' => $returnedCount,
-                    'errors' => $errors
+                    'errors' => $errors,
                 ]);
             } else {
                 return response()->json([
                     'success' => false,
-                    'message' => 'No items were returned. ' . implode(', ', array_slice($errors, 0, 3))
+                    'message' => 'No items were returned. '.implode(', ', array_slice($errors, 0, 3)),
                 ], 400);
             }
         } catch (\Throwable $th) {
             DB::rollBack();
             Log::error('Bulk return failed', ['error' => $th->getMessage()]);
+
             return response()->json([
                 'success' => false,
-                'message' => 'An error occurred while returning inventory items: ' . $th->getMessage()
+                'message' => 'An error occurred while returning inventory items: '.$th->getMessage(),
             ], 500);
         }
     }
@@ -1435,16 +1545,16 @@ class InventoryController extends Controller
             $project = Project::findOrFail($projectId);
             $projectType = $project->project_type;
 
-            $filename = 'inventory_import_format_' . ($projectType == 1 ? 'streetlight' : 'rooftop') . '_' . date('Y-m-d') . '.xlsx';
+            $filename = 'inventory_import_format_'.($projectType == 1 ? 'streetlight' : 'rooftop').'_'.date('Y-m-d').'.xlsx';
 
             return Excel::download(
                 new InventoryImportFormatExport($projectType),
                 $filename
             );
         } catch (\Exception $e) {
-            Log::error('Error downloading inventory import format: ' . $e->getMessage());
+            Log::error('Error downloading inventory import format: '.$e->getMessage());
+
             return redirect()->back()->with('error', 'Failed to download import format template.');
         }
     }
-
 }

@@ -5,24 +5,25 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ExcelHelper;
 use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
-use App\Services\Inventory\InventoryService;
-use App\Services\Inventory\InventoryHistoryService;
 use App\Models\InventoryDispatch;
+use App\Models\Pole;
 use App\Models\Site;
 use App\Models\Streetlight;
-use App\Models\Pole;
 use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
+use App\Services\Inventory\InventoryHistoryService;
+use App\Services\Inventory\InventoryService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class TaskController extends Controller
 {
     protected InventoryService $inventoryService;
+
     protected InventoryHistoryService $historyService;
 
     public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService)
@@ -30,6 +31,7 @@ class TaskController extends Controller
         $this->inventoryService = $inventoryService;
         $this->historyService = $historyService;
     }
+
     /**
      * Display a listing of the resource.
      */
@@ -53,6 +55,7 @@ class TaskController extends Controller
             ]);
 
             $task = Task::create($validated);
+
             return response()->json([
                 'message' => 'Task created successfully',
                 'task' => $task,
@@ -99,6 +102,7 @@ class TaskController extends Controller
 
         // Add the full URLs to the image key
         $task->image = $fullUrls;
+
         // Include full URLs in the response
         return response()->json([
             'task' => $task,
@@ -126,7 +130,7 @@ class TaskController extends Controller
                     foreach ($images as $file) {
                         if ($file->isValid()) {
                             // Upload each image to S3
-                            $uploadedFiles[] = $this->uploadToS3($file, 'tasks/' . $task->id);
+                            $uploadedFiles[] = $this->uploadToS3($file, 'tasks/'.$task->id);
                         } else {
                             return response()->json(['error' => 'Invalid image format.'], 400);
                         }
@@ -136,7 +140,7 @@ class TaskController extends Controller
                     $extension = $images->getClientOriginalExtension();
 
                     if (in_array($extension, ['pdf', 'jpg', 'jpeg', 'png'])) {
-                        $uploadedFiles[] = $this->uploadToS3($images, 'tasks/' . $task->id);
+                        $uploadedFiles[] = $this->uploadToS3($images, 'tasks/'.$task->id);
                     } else {
                         return response()->json(['error' => 'Invalid file type. Only PDF or images are allowed.'], 400);
                     }
@@ -168,11 +172,10 @@ class TaskController extends Controller
                     $siteUpdateData['actual_longitude'] = $request->input('long');
                 }
 
-                if (!empty($siteUpdateData)) {
+                if (! empty($siteUpdateData)) {
                     $site->update($siteUpdateData);
                 }
             }
-
 
             // Save task and return success response
             return response()->json([
@@ -198,16 +201,16 @@ class TaskController extends Controller
             if (is_array($file) && isset($file['uri'], $file['name'])) {
                 // Decode the file URI and extract the file contents
                 $fileContents = file_get_contents($file['uri']);
-                $fileName = time() . '_' . $file['name'];
+                $fileName = time().'_'.$file['name'];
 
                 // Upload to S3 using the file contents
-                Storage::disk('s3')->put($path . '/' . $fileName, $fileContents);
+                Storage::disk('s3')->put($path.'/'.$fileName, $fileContents);
 
                 // Return the S3 file path
-                return Storage::disk('s3')->url($path . '/' . $fileName);
+                return Storage::disk('s3')->url($path.'/'.$fileName);
             } elseif ($file instanceof \Illuminate\Http\UploadedFile) {
                 // Handle standard UploadedFile objects
-                $fileName = time() . '_' . $file->getClientOriginalName();
+                $fileName = time().'_'.$file->getClientOriginalName();
 
                 // Store file in S3
                 return $file->storeAs($path, $fileName, 's3');
@@ -230,6 +233,7 @@ class TaskController extends Controller
     {
         $task = Task::findOrFail($id);
         $task->delete();
+
         return response()->json(['message' => 'Task deleted']);
     }
 
@@ -245,13 +249,14 @@ class TaskController extends Controller
                     $parts = explode('/', $poleNumber);
                     $count = count($parts);
 
-                    if ($count < 2)
-                        return null; // Ensure the format is valid
-    
+                    if ($count < 2) {
+                        return null;
+                    } // Ensure the format is valid
+
                     // Extract ward and pole number
                     $poleWard = (int) $parts[$count - 2]; // Second last part is ward
                     $poleNumber = (int) $parts[$count - 1]; // Last part is pole number
-    
+
                     return $poleWard === (int) $ward ? $poleNumber : null;
                 })
                 ->filter() // Remove null values
@@ -264,12 +269,12 @@ class TaskController extends Controller
 
             // Step 4: Return response
             return response()->json([
-                'installable_poles' => $installablePoles
+                'installable_poles' => $installablePoles,
             ]);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'Something went wrong!',
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
             ], 500);
         }
     }
@@ -294,51 +299,84 @@ class TaskController extends Controller
     public function approveTask($id)
     {
         $task = Task::find($id);
-        if (!$task) {
+        if (! $task) {
             return response()->json(['message' => 'Task not found'], 404);
         }
 
         $task->update(['status' => 'Completed']);
+
         return response()->json([
             'message' => 'Task approved successfully',
-            'task' => $task
+            'task' => $task,
         ]);
     }
 
     // Update poles survey or install
     public function submitStreetlightTasks(Request $request)
     {
-        // ✅ Step 1: Validation
-        $validated = $request->validate([
-            'task_id' => 'required|exists:streetlight_tasks,id',
-            'complete_pole_number' => 'required|string|max:255',
-            'ward_name' => 'nullable|string|max:255',
-            'survey_image' => 'nullable|array',
-            'isSurveyDone' => 'nullable|string|in:true,false',
-            'isNetworkAvailable' => 'nullable|string|in:true,false',
-            'isInstallationDone' => 'nullable|string|in:true,false',
-            'beneficiary' => 'nullable|string|max:255',
-            'beneficiary_contact' => 'nullable|string|max:20',
-            'remarks' => 'nullable|string',
-            'luminary_qr' => 'nullable|string|max:255',
-            'sim_number' => 'nullable|string|max:200',
-            'panel_qr' => 'nullable|string|max:255',
-            'battery_qr' => 'nullable|string|max:255',
-            'submission_image' => 'nullable|array',
-            'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric',
-        ]);
+        try {
+            // ✅ Step 1: Validation
+            $validated = $request->validate([
+                'task_id' => 'required|exists:streetlights,id',
+                'complete_pole_number' => 'required|string|max:255',
+                'ward_name' => 'nullable|string|max:255',
+                'survey_image' => 'nullable|array',
+                'isSurveyDone' => 'nullable|string|in:true,false',
+                'isNetworkAvailable' => 'nullable|string|in:true,false',
+                'isInstallationDone' => 'nullable|string|in:true,false',
+                'beneficiary' => 'nullable|string|max:255',
+                'beneficiary_contact' => 'nullable|string|max:20',
+                'remarks' => 'nullable|string',
+                'luminary_qr' => 'nullable|string|max:255',
+                'sim_number' => 'nullable|string|max:200',
+                'panel_qr' => 'nullable|string|max:255',
+                'battery_qr' => 'nullable|string|max:255',
+                'submission_image' => 'nullable|array',
+                'lat' => 'nullable|numeric',
+                'lng' => 'nullable|numeric',
+            ]);
 
-        // ✅ Step 2: Fetch task & site
-        $task = StreetlightTask::findOrFail($validated['task_id']);
-        $approved_by = $task->engineer->firstName . " " . $task->engineer->lastName;
-        $streetlight = Streetlight::findOrFail($task->site_id);
+            // ✅ Step 2: Fetch task & site
+            $task = StreetlightTask::find($validated['task_id']);
+            if (! $task) {
+                $this->logTaskSubmissionError($request, "Streetlight task with ID {$validated['task_id']} not found", 'task_not_found');
+                
+                return response()->json([
+                    'message' => "Streetlight task with ID {$validated['task_id']} not found",
+                    'error' => 'task_not_found',
+                    'task_id' => $validated['task_id'],
+                ], 404);
+            }
+
+            if (! $task->engineer) {
+                $this->logTaskSubmissionError($request, "Task ID {$validated['task_id']} has no assigned engineer", 'no_engineer');
+                
+                return response()->json([
+                    'message' => "Task ID {$validated['task_id']} has no assigned engineer",
+                    'error' => 'no_engineer',
+                    'task_id' => $validated['task_id'],
+                ], 400);
+            }
+
+            $approved_by = $task->engineer->firstName.' '.$task->engineer->lastName;
+            
+            $streetlight = Streetlight::find($task->site_id);
+            if (! $streetlight) {
+                $this->logTaskSubmissionError($request, "Streetlight site with ID {$task->site_id} not found for task {$validated['task_id']}", 'site_not_found');
+                
+                return response()->json([
+                    'message' => "Streetlight site with ID {$task->site_id} not found",
+                    'error' => 'site_not_found',
+                    'task_id' => $validated['task_id'],
+                    'site_id' => $task->site_id,
+                ], 404);
+            }
 
         // ✅ Step 3: Create or get pole
         $pole = Pole::firstOrCreate(
             [
                 'task_id' => $validated['task_id'],
-                'complete_pole_number' => $validated['complete_pole_number']
+                'complete_pole_number' => $validated['complete_pole_number'],
             ],
             [
                 'ward_name' => $validated['ward_name'] ?? null,
@@ -360,15 +398,14 @@ class TaskController extends Controller
         foreach (['survey_image' => 'survey', 'submission_image' => 'installation'] as $field => $folder) {
             if ($request->hasFile($field)) {
                 $images = collect($request->file($field))->map(
-                    fn($img) =>
-                    $this->uploadToS3($img, "streetlights/{$folder}/{$pole->id}")
+                    fn ($img) => $this->uploadToS3($img, "streetlights/{$folder}/{$pole->id}")
                 );
                 $pole->update([$field => json_encode($images)]);
             }
         }
 
         // ✅ Step 5: Update survey data
-        if ($request->isSurveyDone && !$pole->isSurveyDone) {
+        if ($request->isSurveyDone && ! $pole->isSurveyDone) {
             $pole->update([
                 'isSurveyDone' => true,
                 'beneficiary' => $validated['beneficiary'] ?? null,
@@ -379,7 +416,7 @@ class TaskController extends Controller
         }
 
         // ✅ Step 6: Update installation data
-        if ($request->isInstallationDone && !$pole->isInstallationDone) {
+        if ($request->isInstallationDone && ! $pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
                 'vendor_id' => $task->vendor_id, // Set vendor_id from task when pole is installed
@@ -398,7 +435,7 @@ class TaskController extends Controller
                 $validated['battery_qr'] ?? null,
             ]);
 
-            if (!empty($serials)) {
+            if (! empty($serials)) {
                 // Get pole's district
                 $poleDistrict = $streetlight->district;
 
@@ -413,8 +450,9 @@ class TaskController extends Controller
                     $projectDistricts = $this->inventoryService->getProjectDistricts($dispatch->project_id);
 
                     // Check if pole's district is in project's districts
-                    if (!in_array($poleDistrict, $projectDistricts)) {
+                    if (! in_array($poleDistrict, $projectDistricts)) {
                         $project = \App\Models\Project::find($dispatch->project_id);
+
                         return response()->json([
                             'message' => "Inventory dispatched for {$project->project_name} cannot be used in district {$poleDistrict}",
                             'error' => 'district_mismatch',
@@ -426,7 +464,7 @@ class TaskController extends Controller
 
                 // All validations passed, mark as consumed
                 $dispatches = InventoryDispatch::whereIn('serial_number', $serials)->get();
-                
+
                 foreach ($dispatches as $dispatch) {
                     $dispatch->update([
                         'is_consumed' => true,
@@ -439,7 +477,6 @@ class TaskController extends Controller
                     $this->historyService->logConsumed($dispatch, $inventoryType, $pole);
                 }
             }
-            $site = Streetlight::findOrFail($task->site_id);
             RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
         }
 
@@ -450,6 +487,67 @@ class TaskController extends Controller
             'pole' => $pole,
             'task' => $task,
         ]);
+        } catch (ModelNotFoundException $e) {
+            $this->logTaskSubmissionError($request, $e->getMessage(), 'model_not_found');
+            
+            return response()->json([
+                'message' => 'The requested resource was not found',
+                'error' => 'not_found',
+                'details' => $e->getMessage(),
+            ], 404);
+        } catch (\Exception $e) {
+            $this->logTaskSubmissionError($request, $e->getMessage(), 'exception');
+            
+            Log::error('Error submitting streetlight task data: '.$e->getMessage(), [
+                'exception' => get_class($e),
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            
+            return response()->json([
+                'message' => 'An error occurred while submitting the task data',
+                'error' => 'server_error',
+            ], 500);
+        }
+    }
+
+    /**
+     * Log task submission error in human-readable format for client support
+     */
+    private function logTaskSubmissionError(Request $request, string $errorMessage, string $errorType = 'error'): void
+    {
+        $taskId = $request->task_id ?? 'N/A';
+        $poleNumber = $request->complete_pole_number ?? 'N/A';
+        $wardName = $request->ward_name ?? 'N/A';
+        $userId = Auth::id() ?? 'N/A';
+        $userName = Auth::user() ? (Auth::user()->firstName.' '.Auth::user()->lastName) : 'N/A';
+        
+        // Try to get task details if available
+        $taskInfo = 'N/A';
+        if ($taskId !== 'N/A') {
+            try {
+                $task = StreetlightTask::find($taskId);
+                if ($task) {
+                    $siteInfo = $task->site ? "{$task->site->panchayat}, {$task->site->district}" : 'N/A';
+                    $taskInfo = "Task ID: {$taskId} | Site: {$siteInfo}";
+                }
+            } catch (\Exception $e) {
+                // Ignore errors when fetching task info for logging
+            }
+        }
+        
+        $logMessage = sprintf(
+            'Streetlight Task Submission Failed | %s | User: %s (ID: %s) | Pole Number: %s | Ward: %s | Error: %s',
+            $taskInfo,
+            $userName,
+            $userId,
+            $poleNumber,
+            $wardName,
+            $errorMessage
+        );
+        
+        Log::error($logMessage);
     }
 
     // Controller to get details of pole by Id
@@ -457,13 +555,14 @@ class TaskController extends Controller
     {
         $id = $request->pole_id;
         $pole = Pole::findOrFail($id);
-        if (!$pole) {
+        if (! $pole) {
             return response()->json([
-                'message' => 'No poles associated with this id'
+                'message' => 'No poles associated with this id',
             ], 404);
         }
+
         return response()->json([
-            'pole' => $pole
+            'pole' => $pole,
         ], 200);
     }
 
@@ -485,7 +584,7 @@ class TaskController extends Controller
         return response()->json([
             'message' => 'Installed poles for Site Engineer',
             'surveyed_poles' => $surveyed_poles,
-            'installed_poles' => $installed_poles
+            'installed_poles' => $installed_poles,
         ], 200);
     }
 
@@ -512,23 +611,22 @@ class TaskController extends Controller
                 'state' => $pole->task->site->state ?? null,
                 'beneficiary' => $pole->beneficiary,
                 'beneficiary_contact' => $pole->beneficiary_contact,
-                "isSurveyed" => true,
-                "isInstalled" => false,
+                'isSurveyed' => true,
+                'isInstalled' => false,
                 'installed_location' => [
                     'lat' => $pole->lat,
                     'lng' => $pole->lng,
                 ],
                 'remarks' => $pole->remarks,
-                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
+                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray(),
+                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
                 'assigned_date' => $pole->created_at,
                 'submission_date' => $pole->updated_at,
-                'status' => $pole->status
+                'status' => $pole->status,
             ];
         });
-
 
         $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
             $query->where('vendor_id', $vendor_id);
@@ -546,8 +644,8 @@ class TaskController extends Controller
                 'battery_qr' => $pole->battery_qr,
                 'panel_qr' => $pole->panel_qr,
                 'beneficiary_contact' => $pole->beneficiary_contact,
-                "isSurveyed" => true,
-                "isInstalled" => true,
+                'isSurveyed' => true,
+                'isInstalled' => true,
                 'sim_number' => $pole->sim_number,
                 'panchayat' => $pole->task->site->panchayat ?? null,
                 'block' => $pole->task->site->block ?? null,
@@ -559,18 +657,18 @@ class TaskController extends Controller
                     'lng' => $pole->lng,
                 ],
                 'remarks' => $pole->remarks,
-                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
+                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray(),
+                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray(),
                 'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
                 'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
-                'status' => $pole->status
+                'status' => $pole->status,
             ];
         });
 
         return response()->json([
             'message' => 'Installed poles for Vendor',
             'surveyed_poles' => $transformed_poles,
-            'installed_poles' => $transformed__installed_poles
+            'installed_poles' => $transformed__installed_poles,
         ], 200);
     }
 
@@ -594,13 +692,14 @@ class TaskController extends Controller
         return response()->json([
             'message' => 'Installed poles for Project Manager',
             'surveyed_poles' => $surveyed_poles,
-            'installed_poles' => $installed_poles
+            'installed_poles' => $installed_poles,
         ], 200);
     }
+
     // Fetch Surveyed Poles based on user role
     public function getSurveyedPoles(Request $request)
     {
-        if (!auth()->check()) {
+        if (! auth()->check()) {
             return redirect()->route('login')->with('error', 'Please log in first.');
         }
 
@@ -610,7 +709,7 @@ class TaskController extends Controller
 
         // Apply filters based on request parameters
         if ($request->filled('search')) {
-            $query->where('complete_pole_number', 'like', '%' . $request->search . '%');
+            $query->where('complete_pole_number', 'like', '%'.$request->search.'%');
         }
 
         // Filter by project_id through streetlight relationship
@@ -668,15 +767,15 @@ class TaskController extends Controller
         }
 
         $poles = $query->with(['task.streetlight', 'task.engineer', 'task.vendor', 'task.manager'])->get();
-        
+
         // Eager load RMS logs for all poles to avoid N+1 queries
         $poleIds = $poles->pluck('id');
         $rmsLogs = \App\Models\RmsPushLog::whereIn('pole_id', $poleIds)->get()->groupBy('pole_id');
-        $poles->each(function($pole) use ($rmsLogs) {
+        $poles->each(function ($pole) use ($rmsLogs) {
             $pole->rmsLogs = $rmsLogs->get($pole->id, collect());
         });
         $totalSurveyed = $poles->count();
-        
+
         // Get unique values for filters and convert to arrays
         $districtOptions = ['' => 'All'];
         foreach ($poles->pluck('task.streetlight.district')->filter()->unique()->sort()->values() as $district) {
@@ -684,28 +783,28 @@ class TaskController extends Controller
                 $districtOptions[$district] = $district;
             }
         }
-        
+
         $blockOptions = ['' => 'All'];
         foreach ($poles->pluck('task.streetlight.block')->filter()->unique()->sort()->values() as $block) {
             if ($block) {
                 $blockOptions[$block] = $block;
             }
         }
-        
+
         $panchayatOptions = ['' => 'All'];
         foreach ($poles->pluck('task.streetlight.panchayat')->filter()->unique()->sort()->values() as $panchayat) {
             if ($panchayat) {
                 $panchayatOptions[$panchayat] = $panchayat;
             }
         }
-        
+
         $wardOptions = ['' => 'All'];
         foreach ($poles->pluck('task.streetlight.ward')->filter()->unique()->sort()->values() as $ward) {
             if ($ward) {
                 $wardOptions[$ward] = $ward;
             }
         }
-        
+
         // Get unique project managers, site engineers, and vendors for filters
         $projectManagerOptions = ['' => 'All'];
         foreach ($poles->pluck('task.manager')->filter()->unique('id') as $manager) {
@@ -713,14 +812,14 @@ class TaskController extends Controller
                 $projectManagerOptions[$manager->id] = $manager->name ?? 'N/A';
             }
         }
-        
+
         $siteEngineerOptions = ['' => 'All'];
         foreach ($poles->pluck('task.engineer')->filter()->unique('id') as $engineer) {
             if ($engineer && $engineer->id) {
                 $siteEngineerOptions[$engineer->id] = $engineer->name ?? 'N/A';
             }
         }
-        
+
         return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districtOptions', 'blockOptions', 'panchayatOptions', 'wardOptions', 'projectManagerOptions', 'siteEngineerOptions'));
     }
 
@@ -796,11 +895,11 @@ class TaskController extends Controller
         }
 
         $poles = $query->orderBy('complete_pole_number', 'asc')->get();
-        
+
         // Eager load RMS logs for all poles to avoid N+1 queries
         $poleIds = $poles->pluck('id');
         $rmsLogs = \App\Models\RmsPushLog::whereIn('pole_id', $poleIds)->get()->groupBy('pole_id');
-        $poles->each(function($pole) use ($rmsLogs) {
+        $poles->each(function ($pole) use ($rmsLogs) {
             $pole->rmsLogs = $rmsLogs->get($pole->id, collect());
         });
 
@@ -976,15 +1075,15 @@ class TaskController extends Controller
         if (isset($columns[$orderColumn])) {
             if (in_array($columns[$orderColumn], ['block', 'panchayat'])) {
                 // Join for ordering by streetlight fields
-                $poleTable = (new Pole())->getTable();
-                $query->join('streetlight_tasks', $poleTable . '.task_id', '=', 'streetlight_tasks.id')
+                $poleTable = (new Pole)->getTable();
+                $query->join('streetlight_tasks', $poleTable.'.task_id', '=', 'streetlight_tasks.id')
                     ->join('streetlights', 'streetlight_tasks.site_id', '=', 'streetlights.id')
-                    ->groupBy($poleTable . '.id') // Prevent duplicates from join
-                    ->orderBy('streetlights.' . $columns[$orderColumn], $orderDirection)
-                    ->select($poleTable . '.*');
+                    ->groupBy($poleTable.'.id') // Prevent duplicates from join
+                    ->orderBy('streetlights.'.$columns[$orderColumn], $orderDirection)
+                    ->select($poleTable.'.*');
             } else {
-                $poleTable = (new Pole())->getTable();
-                $query->orderBy($poleTable . '.' . $columns[$orderColumn], $orderDirection);
+                $poleTable = (new Pole)->getTable();
+                $query->orderBy($poleTable.'.'.$columns[$orderColumn], $orderDirection);
             }
         }
 
@@ -1005,11 +1104,11 @@ class TaskController extends Controller
         // shape data to match DataTables columns config
         $data = $poles->map(function ($pole) {
             return [
-                'checkbox' => '<input type="checkbox" class="pole-checkbox" value="' . $pole->id . '" />',
+                'checkbox' => '<input type="checkbox" class="pole-checkbox" value="'.$pole->id.'" />',
                 'district' => $pole->task?->streetlight?->district ?? 'N/A',
                 'block' => $pole->task?->streetlight?->block ?? 'N/A',
                 'panchayat' => $pole->task?->streetlight?->panchayat ?? 'N/A',
-                'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . $pole->lat . ', ' . $pole->lng . ')">' . ($pole->complete_pole_number ?? 'N/A') . '</span>',
+                'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap('.$pole->lat.', '.$pole->lng.')">'.($pole->complete_pole_number ?? 'N/A').'</span>',
                 'imei' => $pole->luminary_qr ?? 'N/A',
                 'sim_number' => $pole->sim_number ?? 'N/A',
                 'battery' => $pole->battery_qr ?? 'N/A',
@@ -1017,16 +1116,16 @@ class TaskController extends Controller
                 'bill_raised' => '0',
                 'rms' => $pole->rms_status ?? 'N/A',
                 'actions' => '
-                <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                <a href="'.route('poles.show', $pole->id).'" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
                     <i class="mdi mdi-eye"></i>
                 </a>
-                <a href="' . route('poles.edit', $pole->id) . '" class="btn btn-icon btn-warning">
+                <a href="'.route('poles.edit', $pole->id).'" class="btn btn-icon btn-warning">
                     <i class="mdi mdi-pencil"></i>
                 </a>
                 <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
-                    title="Delete Pole" data-id="' . $pole->id . '"
-                    data-name="' . ($pole->complete_pole_number ?? 'this pole') . '"
-                    data-url="' . route('poles.destroy', $pole->id) . '">
+                    title="Delete Pole" data-id="'.$pole->id.'"
+                    data-name="'.($pole->complete_pole_number ?? 'this pole').'"
+                    data-url="'.route('poles.destroy', $pole->id).'">
                     <i class="mdi mdi-delete"></i>
                 </button>
             ',
@@ -1113,7 +1212,7 @@ class TaskController extends Controller
 
         $imagesArray = json_decode($json, true);
 
-        if (!is_array($imagesArray)) {
+        if (! is_array($imagesArray)) {
             return $imageUrls;
         }
 
@@ -1124,7 +1223,7 @@ class TaskController extends Controller
         }
 
         foreach ($imagesArray as $image) {
-            if (!empty($image)) {
+            if (! empty($image)) {
                 try {
                     $imageUrls[] = Storage::disk('s3')->url($image);
                 } catch (\Exception $e) {
@@ -1135,7 +1234,6 @@ class TaskController extends Controller
 
         return $imageUrls;
     }
-
 
     // Api to export poles in excel in vendor/staff app
     public function exportPoles($vendor_id)
@@ -1164,8 +1262,8 @@ class TaskController extends Controller
                 'Latitude' => $pole->lat,
                 'Longitude' => $pole->lng,
                 'Remarks' => $pole->remarks,
-                'Survey Image URLs' => implode(", ", collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
-                'Submission Image URLs' => implode(", ", collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Survey Image URLs' => implode(', ', collect(json_decode($pole->survey_image, true) ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Submission Image URLs' => implode(', ', collect($pole->submission_image ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray()),
                 'Site Engineer' => $pole->task->engineer->first_name ?? null,
                 'Project Manager' => $pole->task->manager->name ?? null,
                 'Assigned Date' => $pole->created_at,
@@ -1193,8 +1291,8 @@ class TaskController extends Controller
                 'Latitude' => $pole->lat,
                 'Longitude' => $pole->lng,
                 'Remarks' => $pole->remarks,
-                'Survey Image URLs' => implode(", ", collect($pole->survey_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
-                'Submission Image URLs' => implode(", ", collect($pole->submission_image ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Survey Image URLs' => implode(', ', collect($pole->survey_image ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray()),
+                'Submission Image URLs' => implode(', ', collect($pole->submission_image ?? [])->map(fn ($image) => Storage::disk('s3')->url($image))->toArray()),
                 'Site Engineer' => $pole->task->engineer->name ?? null,
                 'Project Manager' => $pole->task->manager->name ?? null,
             ];
@@ -1244,8 +1342,8 @@ class TaskController extends Controller
                 $task = StreetlightTask::findOrFail($pole->task_id);
                 $streetlight = Streetlight::findOrFail($task->site_id);
                 $engineer = $task->engineer;
-                $approved_by = $engineer->firstName . ' ' . $engineer->lastName;
-                Log::info("Sending data now");
+                $approved_by = $engineer->firstName.' '.$engineer->lastName;
+                Log::info('Sending data now');
                 RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
 
                 $responses[] = [
@@ -1253,7 +1351,7 @@ class TaskController extends Controller
                     'status' => 'success',
                 ];
             } catch (\Exception $e) {
-                Log::error("Failed to send pole data to RMS", [
+                Log::error('Failed to send pole data to RMS', [
                     'pole_id' => $pole->id,
                     'error' => $e->getMessage(),
                 ]);
@@ -1276,6 +1374,7 @@ class TaskController extends Controller
     {
         // Return view to update pole
         $data = $request->all();
+
         return view('poles.edit', compact('data'));
     }
 

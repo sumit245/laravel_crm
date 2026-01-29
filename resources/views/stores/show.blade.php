@@ -172,8 +172,8 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="view-tab" data-bs-toggle="tab" data-bs-target="#view" type="button"
-                            role="tab" aria-controls="view" aria-selected="false">
+                        <button class="nav-link" id="view-tab" data-bs-toggle="tab" data-bs-target="#view"
+                            type="button" role="tab" aria-controls="view" aria-selected="false">
                             View Inventory
                         </button>
                     </li>
@@ -457,9 +457,8 @@
                 {{-- Use datatable component with server-side processing --}}
                 <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)"
                     ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray" :bulkDeleteEnabled="$isAdmin"
-                    :bulkDeleteRoute="route('inventory.bulkDelete')" :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')"
-                    :exportEnabled="true" :importEnabled="false" pageLength="50" searchPlaceholder="Search inventory..."
-                    :deferLoading="$inventoryTotal ?? null" :filters="[
+                    :bulkDeleteRoute="route('inventory.bulkDelete')" :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')" :exportEnabled="true" :importEnabled="false"
+                    pageLength="50" searchPlaceholder="Search inventory..." :deferLoading="$inventoryTotal ?? null" :filters="[
                         [
                             'type' => 'select',
                             'name' => 'availability',
@@ -1336,21 +1335,25 @@
                             },
                             success: function(response) {
                                 if (response.success) {
-                                    Swal.fire('Deleted!', response.message || 'Item deleted successfully', 'success')
+                                    Swal.fire('Deleted!', response.message ||
+                                            'Item deleted successfully', 'success')
                                         .then(() => {
                                             // Reload the table if it exists, otherwise reload page
-                                            if (typeof table !== 'undefined' && table) {
+                                            if (typeof table !== 'undefined' &&
+                                                table) {
                                                 table.ajax.reload();
                                             } else {
                                                 location.reload();
                                             }
                                         });
                                 } else {
-                                    Swal.fire('Error!', response.message || 'Failed to delete item', 'error');
+                                    Swal.fire('Error!', response.message ||
+                                        'Failed to delete item', 'error');
                                 }
                             },
                             error: function(xhr) {
-                                const errorMsg = xhr.responseJSON?.message || 'Failed to delete item';
+                                const errorMsg = xhr.responseJSON?.message ||
+                                    'Failed to delete item';
                                 Swal.fire('Error!', errorMsg, 'error');
                             }
                         });
@@ -1381,7 +1384,9 @@
                         data: {
                             labels: ['In Store', 'Dispatched'],
                             datasets: [{
-                                data: [{{ $inStoreStockQuantity ?? 0 }}, {{ $dispatchedStockQuantity ?? 0 }}],
+                                data: [{{ $inStoreStockQuantity ?? 0 }},
+                                    {{ $dispatchedStockQuantity ?? 0 }}
+                                ],
                                 backgroundColor: ['#28a745', '#ffc107'],
                             }]
                         },
@@ -1785,20 +1790,20 @@
                             </div>
 
                             ${itemsData.length > 0 ? `
-                                                                                                                                <div class="section-title">Items Ready to Dispatch</div>
-                                                                                                                                <table>
-                                                                                                                                  <thead>
-                                                                                                                                    <tr>
-                                                                                                                                      <th>Item Code</th>
-                                                                                                                                      <th>Item Name</th>
-                                                                                                                                      <th>Quantity</th>
-                                                                                                                                      <th>Rate</th>
-                                                                                                                                      <th>Make/Model</th>
-                                                                                                                                      <th>Serial Numbers</th>
-                                                                                                                                    </tr>
-                                                                                                                                  </thead>
-                                                                                                                                  <tbody>
-                                                                                                                                    ${itemsData.map(item => `
+                                                                                                                                    <div class="section-title">Items Ready to Dispatch</div>
+                                                                                                                                    <table>
+                                                                                                                                      <thead>
+                                                                                                                                        <tr>
+                                                                                                                                          <th>Item Code</th>
+                                                                                                                                          <th>Item Name</th>
+                                                                                                                                          <th>Quantity</th>
+                                                                                                                                          <th>Rate</th>
+                                                                                                                                          <th>Make/Model</th>
+                                                                                                                                          <th>Serial Numbers</th>
+                                                                                                                                        </tr>
+                                                                                                                                      </thead>
+                                                                                                                                      <tbody>
+                                                                                                                                        ${itemsData.map(item => `
                                   <tr>
                                     <td>${item.code}</td>
                                     <td>${item.name}</td>
@@ -1808,23 +1813,23 @@
                                     <td class="serial-list">${item.serials.join(', ')}</td>
                                   </tr>
                                 `).join('')}
-                                                                                                                                  </tbody>
-                                                                                                                                </table>
-                                                                                                                                ` : ''}
+                                                                                                                                      </tbody>
+                                                                                                                                    </table>
+                                                                                                                                    ` : ''}
 
                             ${nonDispatchableItems.length > 0 ? `
-                                                                                                                                <div class="section-title">Items Could not be Dispatched</div>
-                                                                                                                                <table>
-                                                                                                                                  <thead>
-                                                                                                                                    <tr>
-                                                                                                                                      <th>Item Code</th>
-                                                                                                                                      <th>Item Name</th>
-                                                                                                                                      <th>Serial Number</th>
-                                                                                                                                      <th>Error/Reason</th>
-                                                                                                                                    </tr>
-                                                                                                                                  </thead>
-                                                                                                                                  <tbody>
-                                                                                                                                    ${nonDispatchableItems.map(item => `
+                                                                                                                                    <div class="section-title">Items Could not be Dispatched</div>
+                                                                                                                                    <table>
+                                                                                                                                      <thead>
+                                                                                                                                        <tr>
+                                                                                                                                          <th>Item Code</th>
+                                                                                                                                          <th>Item Name</th>
+                                                                                                                                          <th>Serial Number</th>
+                                                                                                                                          <th>Error/Reason</th>
+                                                                                                                                        </tr>
+                                                                                                                                      </thead>
+                                                                                                                                      <tbody>
+                                                                                                                                        ${nonDispatchableItems.map(item => `
                                   <tr class="error-row">
                                     <td>${item.code}</td>
                                     <td>${item.name}</td>
@@ -1832,9 +1837,9 @@
                                     <td class="error-cell">${item.error}</td>
                                   </tr>
                                 `).join('')}
-                                                                                                                                  </tbody>
-                                                                                                                                </table>
-                                                                                                                                ` : ''}
+                                                                                                                                      </tbody>
+                                                                                                                                    </table>
+                                                                                                                                    ` : ''}
 
                             <script>
                               window.onload = function() {
@@ -1877,7 +1882,7 @@
                         const originalText = button.innerHTML;
                         const bulkDispatchOverlay = document.getElementById('bulkDispatchOverlay');
                         const bulkDispatchStatus = document.getElementById('bulkDispatchStatus');
-                        
+
                         button.disabled = true;
                         button.innerHTML = `
                             <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
@@ -1901,13 +1906,15 @@
                         if (bulkDispatchOverlay) {
                             bulkDispatchOverlay.classList.remove('d-none');
                             if (bulkDispatchStatus) {
-                                bulkDispatchStatus.textContent = `Dispatching ${serialNumbers.length} item(s). Please wait...`;
+                                bulkDispatchStatus.textContent =
+                                    `Dispatching ${serialNumbers.length} item(s). Please wait...`;
                             }
                         }
 
                         // Create AbortController for timeout handling
                         const confirmAbortController = new AbortController();
-                        const confirmTimeoutId = setTimeout(() => confirmAbortController.abort(), 300000); // 5 minutes timeout
+                        const confirmTimeoutId = setTimeout(() => confirmAbortController.abort(),
+                        300000); // 5 minutes timeout
 
                         fetch("{{ route('inventory.confirm-bulk-dispatch') }}", {
                                 method: "POST",
@@ -1938,7 +1945,7 @@
                                 if (bulkDispatchOverlay) {
                                     bulkDispatchOverlay.classList.add('d-none');
                                 }
-                                
+
                                 button.disabled = false;
                                 button.innerHTML = originalText;
                                 if (data.status === 'success') {
@@ -1962,22 +1969,26 @@
                             .catch(error => {
                                 clearTimeout(confirmTimeoutId); // Clear timeout on error
                                 console.error(error);
-                                
+
                                 // Hide overlay on error
                                 if (bulkDispatchOverlay) {
                                     bulkDispatchOverlay.classList.add('d-none');
                                 }
-                                
+
                                 button.disabled = false;
                                 button.innerHTML = originalText;
-                                
+
                                 let errorMessage = 'Something went wrong. Please try again.';
-                                if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.name === 'AbortController') {
-                                    errorMessage = 'Request timed out after 5 minutes. Processing too many items may take longer. Please try with fewer items or contact support.';
-                                } else if (error.message && (error.message.includes('gateway') || error.message.includes('timeout'))) {
-                                    errorMessage = 'Gateway timeout error. The server took too long to respond. Please try again with fewer items or contact support.';
+                                if (error.name === 'TimeoutError' || error.name === 'AbortError' ||
+                                    error.name === 'AbortController') {
+                                    errorMessage =
+                                        'Request timed out after 5 minutes. Processing too many items may take longer. Please try with fewer items or contact support.';
+                                } else if (error.message && (error.message.includes('gateway') || error
+                                        .message.includes('timeout'))) {
+                                    errorMessage =
+                                        'Gateway timeout error. The server took too long to respond. Please try again with fewer items or contact support.';
                                 }
-                                
+
                                 Swal.fire({
                                     title: 'Error!',
                                     text: errorMessage,
@@ -2007,11 +2018,19 @@
                                 },
                                 body: formData
                             })
-                            .then(response => response.json())
-                            .then(data => {
+                            .then(async response => {
+                                const text = await response.text();
+                                let data;
+                                try {
+                                    data = JSON.parse(text);
+                                } catch (e) {
+                                    throw new Error('Invalid response');
+                                }
+
                                 loadingIssue = false;
                                 button.disabled = false;
                                 button.innerHTML = originalText;
+
                                 if (data.status === 'success') {
                                     Swal.fire({
                                         title: 'Success!',
@@ -2025,7 +2044,7 @@
                                 } else {
                                     Swal.fire({
                                         title: 'Error!',
-                                        text: data.message,
+                                        text: data.message || 'Something went wrong.',
                                         icon: 'error',
                                         confirmButtonText: 'OK'
                                     }).then(() => {
@@ -2037,15 +2056,21 @@
                             })
                             .catch(error => {
                                 console.error(error);
+                                loadingIssue = false;
+                                button.disabled = false;
+                                button.innerHTML = originalText;
+
+                                let errorMessage = 'Something went wrong. Please try again.';
+                                if (error.message === 'Invalid response') {
+                                    errorMessage =
+                                        'Server returned an invalid response. Please try again.';
+                                }
+
                                 Swal.fire({
                                     title: 'Error!',
-                                    text: 'Something went wrong. Please try again.',
+                                    text: errorMessage,
                                     icon: 'error',
                                     confirmButtonText: 'OK'
-                                }).then(() => {
-                                    loadingIssue = false;
-                                    button.disabled = false;
-                                    button.innerHTML = originalText;
                                 });
                             });
                     }
@@ -2118,10 +2143,10 @@
                     const originalText = btn.innerHTML;
                     const bulkDispatchOverlay = document.getElementById('bulkDispatchOverlay');
                     const bulkDispatchStatus = document.getElementById('bulkDispatchStatus');
-                    
+
                     btn.disabled = true;
                     btn.innerHTML = '<i class="mdi mdi-loading mdi-spin"></i> Processing...';
-                    
+
                     // Show persistent overlay
                     if (bulkDispatchOverlay) {
                         bulkDispatchOverlay.classList.remove('d-none');
@@ -2132,7 +2157,8 @@
 
                     // Create AbortController for timeout handling
                     const abortController = new AbortController();
-                    const timeoutId = setTimeout(() => abortController.abort(), 300000); // 5 minutes timeout
+                    const timeoutId = setTimeout(() => abortController.abort(),
+                    300000); // 5 minutes timeout
 
                     fetch('{{ route('inventory.bulk-dispatch') }}', {
                             method: 'POST',
@@ -2151,7 +2177,7 @@
                             if (bulkDispatchOverlay) {
                                 bulkDispatchOverlay.classList.add('d-none');
                             }
-                            
+
                             btn.disabled = false;
                             btn.innerHTML = originalText;
 
@@ -2197,22 +2223,26 @@
                         .catch(error => {
                             clearTimeout(timeoutId); // Clear timeout on error
                             console.error(error);
-                            
+
                             // Hide overlay on error
                             if (bulkDispatchOverlay) {
                                 bulkDispatchOverlay.classList.add('d-none');
                             }
-                            
+
                             btn.disabled = false;
                             btn.innerHTML = originalText;
-                            
+
                             let errorMessage = 'Something went wrong. Please try again.';
-                            if (error.name === 'TimeoutError' || error.name === 'AbortError' || error.name === 'AbortController') {
-                                errorMessage = 'Request timed out after 5 minutes. The file may be too large. Please try with a smaller file or contact support.';
-                            } else if (error.message && (error.message.includes('gateway') || error.message.includes('timeout'))) {
-                                errorMessage = 'Gateway timeout error. The server took too long to respond. Please try again with a smaller file or contact support.';
+                            if (error.name === 'TimeoutError' || error.name === 'AbortError' || error
+                                .name === 'AbortController') {
+                                errorMessage =
+                                    'Request timed out after 5 minutes. The file may be too large. Please try with a smaller file or contact support.';
+                            } else if (error.message && (error.message.includes('gateway') || error
+                                    .message.includes('timeout'))) {
+                                errorMessage =
+                                    'Gateway timeout error. The server took too long to respond. Please try again with a smaller file or contact support.';
                             }
-                            
+
                             Swal.fire({
                                 title: 'Error',
                                 text: errorMessage,

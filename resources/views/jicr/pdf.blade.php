@@ -29,7 +29,7 @@
         }
 
         .annexure_table table td {
-            font-size: 4px;
+            font-size: 6px;
         }
 
         .form-container {
@@ -130,7 +130,7 @@
         }
 
         .annexure_table table {
-            font-size: 8px;
+            font-size: 6px;
             border-collapse: collapse;
             width: 100%;
             margin-top: 15px;
@@ -142,7 +142,7 @@
             padding: 2px;
             vertical-align: top;
             word-wrap: break-word;
-            font-size: 8px;
+            font-size: 6px;
         }
 
         @media print {
@@ -187,7 +187,7 @@
             .annexure_table table {
                 page-break-inside: avoid;
                 border-collapse: collapse !important;
-                font-size: 8px !important;
+                font-size: 6px !important;
             }
 
             .annexure_table table th,
@@ -195,7 +195,7 @@
                 padding: 2px;
                 border: 1px solid #000 !important;
                 border-collapse: collapse !important;
-                font-size: 8px !important;
+                font-size: 6px !important;
             }
 
             .signature-section {

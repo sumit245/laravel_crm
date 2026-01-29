@@ -516,11 +516,19 @@
                         },
                         body: formData
                     })
-                    .then(response => response.json())
-                    .then(data => {
+                    .then(async response => {
+                        const text = await response.text();
+                        let data;
+                        try {
+                            data = JSON.parse(text);
+                        } catch (e) {
+                            throw new Error('Invalid response');
+                        }
+
                         loadingIssue = false;
                         button.disabled = false;
                         button.innerHTML = originalText;
+
                         if (data.status === 'success') {
                             Swal.fire({
                                 title: 'Success!',
@@ -534,7 +542,7 @@
                         } else {
                             Swal.fire({
                                 title: 'Error!',
-                                text: data.message,
+                                text: data.message || 'Something went wrong.',
                                 icon: 'error',
                                 confirmButtonText: 'OK'
                             }).then(() => {
@@ -546,16 +554,21 @@
                     })
                     .catch(error => {
                         console.error(error);
+                        loadingIssue = false;
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+
+                        let errorMessage = 'Something went wrong. Please try again.';
+                        if (error.message === 'Invalid response') {
+                            errorMessage = 'Server returned an invalid response. Please try again.';
+                        }
+
                         Swal.fire({
                             title: 'Error!',
-                            text: 'Something went wrong. Please try again.',
+                            text: errorMessage,
                             icon: 'error',
                             confirmButtonText: 'OK'
-                        }).then(() => {
-                            loadingIssue = false;
-                            button.disabled = false;
-                            button.innerHTML = originalText;
-                        });;
+                        });
                     });
             });
         }

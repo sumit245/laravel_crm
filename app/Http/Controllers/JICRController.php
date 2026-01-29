@@ -143,6 +143,17 @@ class JICRController extends Controller
                     ->whereBetween('updated_at', [$request->from_date, $request->to_date])
                     ->get()
                     ->map(function ($pole) use ($streetlight) {
+                        $latitude = $pole->lat;
+                        $longitude = $pole->lng;
+
+                        $formattedLatitude = is_numeric($latitude)
+                            ? number_format((float) $latitude, 3, '.', '')
+                            : ($latitude ?? '');
+
+                        $formattedLongitude = is_numeric($longitude)
+                            ? number_format((float) $longitude, 3, '.', '')
+                            : ($longitude ?? '');
+
                         return [
                             'district' => $streetlight->district ?? '',
                             'block' => $streetlight->block ?? '',
@@ -154,8 +165,8 @@ class JICRController extends Controller
                             'complete_pole_number' => $pole->complete_pole_number ?? '',
                             'ward_no' => $pole->ward_name ?? '',
                             'beneficiary' => $pole->beneficiary ?? '',
-                            'latitude' => $pole->lat ?? '',
-                            'longitude' => $pole->lng ?? '',
+                            'latitude' => $formattedLatitude,
+                            'longitude' => $formattedLongitude,
                             'date_of_installation' => Carbon::parse($pole->updated_at)->format('d-m-Y'),
                         ];
                     })
