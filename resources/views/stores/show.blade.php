@@ -443,14 +443,17 @@
                         ['title' => 'Item Code'],
                         ['title' => 'Item'],
                         ['title' => 'Serial Number'],
+                        ['title' => 'SIM Number'],
                         ['title' => 'Availability'],
                         ['title' => 'Vendor'],
                         ['title' => 'Dispatch Date'],
                         ['title' => 'In Date'],
                     ];
 
-                    // Calculate order array for DataTables
-                    $orderColumn = $isAdmin ? 7 : 6;
+                    // Calculate order array for DataTables (created_at column index)
+                    // Admin: 0=chk, 1-4=code,item,serial,sim, 5=avail, 6=vendor, 7=disp_date, 8=in_date, 9=act
+                    // User:  0-3=code,item,serial,sim, 4=avail, 5=vendor, 6=disp_date, 7=in_date, 8=act
+                    $orderColumn = $isAdmin ? 8 : 7;
                     $orderArray = [[$orderColumn, 'desc']];
                 @endphp
 
@@ -458,12 +461,13 @@
                 <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)"
                     ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray" :bulkDeleteEnabled="$isAdmin"
                     :bulkDeleteRoute="route('inventory.bulkDelete')" :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')" :exportEnabled="true" :importEnabled="false"
+                    :availabilityColumnIndex="5" :vendorColumnIndex="6" :serialColumnIndex="3"
                     pageLength="50" searchPlaceholder="Search inventory..." :deferLoading="$inventoryTotal ?? null" :filters="[
                         [
                             'type' => 'select',
                             'name' => 'availability',
                             'label' => 'Availability',
-                            'column' => 4,
+                            'column' => 5,
                             'width' => 3,
                             'options' => [
                                 'In Stock' => 'In Stock',
@@ -475,7 +479,7 @@
                             'type' => 'select',
                             'name' => 'vendor',
                             'label' => 'Vendor',
-                            'column' => 5,
+                            'column' => 6,
                             'width' => 3,
                             'select2' => true,
                             'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
@@ -499,12 +503,12 @@
                     @foreach ($unifiedInventory as $item)
                         @php
                             $availability = 'In Stock';
-                            if (($item->quantity ?? 0) > 0) {
-                                $availability = 'In Stock';
-                            } elseif (($item->is_consumed ?? 0) == 1) {
+                            if (!empty($item->streetlight_pole_id)) {
                                 $availability = 'Consumed';
                             } elseif (!empty($item->dispatch_id)) {
                                 $availability = 'Dispatched';
+                            } elseif (($item->quantity ?? 0) > 0) {
+                                $availability = 'In Stock';
                             }
                             $vendorName = trim($item->vendor_name ?? '') ?: '-';
                             $dispatchDate = $item->dispatch_date
@@ -515,13 +519,25 @@
                                 : ($item->created_at
                                     ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y')
                                     : '-');
+                            $simNumber = (($item->item_code ?? '') === 'SL02' && trim((string)($item->sim_number ?? '')) !== '') ? $item->sim_number : '-';
                         @endphp
                         <tr>
                             <td><input type="checkbox" class="row-checkbox" value="{{ $item->id }}"
-                                    data-id="{{ $item->id }}"></td>
+                                    data-id="{{ $item->id }}"
+                                    data-serial-number="{{ $item->serial_number }}"
+                                    data-availability="{{ $availability }}"
+                                    data-item-code="{{ $item->item_code }}"
+                                    data-vendor-name="{{ $vendorName }}"></td>
                             <td>{{ $item->item_code }}</td>
                             <td>{{ $item->item }}</td>
-                            <td>{{ $item->serial_number }}</td>
+                            <td>
+                                @if ($availability === 'Consumed' && !empty($item->streetlight_pole_id))
+                                    <a href="{{ route('poles.show', $item->streetlight_pole_id) }}" class="text-primary" style="text-decoration:none">{{ $item->serial_number }}</a>
+                                @else
+                                    {{ $item->serial_number }}
+                                @endif
+                            </td>
+                            <td>{{ $simNumber }}</td>
                             <td><span
                                     class="badge bg-{{ $availability === 'In Stock' ? 'success' : ($availability === 'Dispatched' ? 'warning' : 'danger') }}">{{ $availability }}</span>
                             </td>

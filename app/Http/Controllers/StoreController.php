@@ -109,32 +109,52 @@ class StoreController extends Controller
             ->count();
         Log::info('Inventory Total: ' . $inventoryTotal);
 
+        // Subquery: one dispatch per (serial_number, store, project) - prefer consumed, else most recent
+        $dispSubInit = DB::table('inventory_dispatch')
+            ->select(
+                'serial_number',
+                'store_id',
+                'project_id',
+                DB::raw('CAST(SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY (streetlight_pole_id IS NOT NULL) DESC, id DESC), ",", 1) AS UNSIGNED) as best_disp_id')
+            )
+            ->where('isDispatched', true)
+            ->where('store_id', $store->id)
+            ->where('project_id', $project->id)
+            ->groupBy('serial_number', 'store_id', 'project_id');
+
         // OPTIMIZATION 2: Initial Data Load (Fast) - Only load exactly paginated rows
-        // This matches your pageLength=paginated. The page loads instantly because we don't
-        // process 1M rows, just the first paginated.
         // Note: SL04 (Structure) items are excluded from the table as they are mapped to SL03 (Battery)
         $unifiedInventory = DB::table($inventoryTableName . ' as inv')
-            ->leftJoin('inventory_dispatch as disp', function ($join) {
-                $join->on('inv.serial_number', '=', 'disp.serial_number')
-                    ->where('disp.isDispatched', '=', true);
+            ->leftJoinSub($dispSubInit, 'disp_best', function ($join) {
+                $join->on('inv.serial_number', '=', 'disp_best.serial_number')
+                    ->on('inv.store_id', '=', 'disp_best.store_id')
+                    ->on('inv.project_id', '=', 'disp_best.project_id');
             })
+            ->leftJoin('inventory_dispatch as disp', 'disp.id', '=', 'disp_best.best_disp_id')
+            ->leftJoin('streelight_poles as pole', 'disp.streetlight_pole_id', '=', 'pole.id')
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
             ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from table display
-            ->select(
-                'inv.id',
-                'inv.item_code',
-                'inv.item',
-                'inv.serial_number',
-                DB::raw('COALESCE(inv.quantity, 0) as quantity'),
-                'inv.created_at',
-                'inv.received_date',
-                'disp.id as dispatch_id',
-                'disp.is_consumed',
-                'disp.dispatch_date',
-                DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name')
-            )
+            ->select(array_merge(
+                [
+                    'inv.id',
+                    'inv.item_code',
+                    'inv.item',
+                    'inv.serial_number',
+                    DB::raw('COALESCE(inv.quantity, 0) as quantity'),
+                    'inv.created_at',
+                    'inv.received_date',
+                    'disp.id as dispatch_id',
+                    'disp.is_consumed',
+                    'disp.streetlight_pole_id',
+                    'disp.dispatch_date',
+                    DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name'),
+                ],
+                $inventoryTableName === 'inventory_streetlight'
+                    ? [DB::raw('CASE WHEN inv.item_code = "SL02" THEN COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) ELSE NULL END as sim_number')]
+                    : [DB::raw('NULL as sim_number')]
+            ))
             ->orderBy('inv.created_at', 'desc')
             // ->limit(2000)
             ->get();
@@ -309,30 +329,52 @@ class StoreController extends Controller
 
         $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
 
-        // 1. Base Query Structure
+        // Subquery: one dispatch per (serial_number, store, project) - prefer consumed, else most recent
+        $dispSub = DB::table('inventory_dispatch')
+            ->select(
+                'serial_number',
+                'store_id',
+                'project_id',
+                DB::raw('CAST(SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY (streetlight_pole_id IS NOT NULL) DESC, id DESC), ",", 1) AS UNSIGNED) as best_disp_id')
+            )
+            ->where('isDispatched', true)
+            ->where('store_id', $store->id)
+            ->where('project_id', $project->id)
+            ->groupBy('serial_number', 'store_id', 'project_id');
+
+        // 1. Base Query Structure - join to single dispatch per inv to prevent duplicate rows on sort
         // Note: SL04 (Structure) items are excluded from the table as they are mapped to SL03 (Battery)
         $query = DB::table($inventoryTable . ' as inv')
-            ->leftJoin('inventory_dispatch as disp', function ($join) {
-                $join->on('inv.serial_number', '=', 'disp.serial_number')
-                    ->where('disp.isDispatched', '=', true);
+            ->leftJoinSub($dispSub, 'disp_best', function ($join) {
+                $join->on('inv.serial_number', '=', 'disp_best.serial_number')
+                    ->on('inv.store_id', '=', 'disp_best.store_id')
+                    ->on('inv.project_id', '=', 'disp_best.project_id');
             })
+            ->leftJoin('inventory_dispatch as disp', 'disp.id', '=', 'disp_best.best_disp_id')
+            ->leftJoin('streelight_poles as pole', 'disp.streetlight_pole_id', '=', 'pole.id')
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
             ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from table display
-            ->select(
-                'inv.id',
-                'inv.item_code',
-                'inv.item',
-                'inv.serial_number',
-                DB::raw('COALESCE(inv.quantity, 0) as quantity'),
-                'inv.created_at',
-                'inv.received_date',
-                'disp.id as dispatch_id',
-                'disp.is_consumed',
-                'disp.dispatch_date',
-                DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name')
-            );
+            ->select(array_merge(
+                [
+                    'inv.id',
+                    'inv.item_code',
+                    'inv.item',
+                    'inv.serial_number',
+                    DB::raw('COALESCE(inv.quantity, 0) as quantity'),
+                    'inv.created_at',
+                    'inv.received_date',
+                    'disp.id as dispatch_id',
+                    'disp.is_consumed',
+                    'disp.streetlight_pole_id',
+                    'disp.dispatch_date',
+                    DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name'),
+                ],
+                $inventoryTable === 'inventory_streetlight'
+                    ? [DB::raw('CASE WHEN inv.item_code = "SL02" THEN COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) ELSE NULL END as sim_number')]
+                    : [DB::raw('NULL as sim_number')]
+            ));
 
         // 2. Count Total (Fastest way - No Joins for total count)
         // Note: Exclude SL04 from count as it's not shown in table
@@ -361,9 +403,15 @@ class StoreController extends Controller
         if ($request->filled('availability')) {
             $isFiltered = true;
             $avail = $request->input('availability');
-            if ($avail === 'In Stock') $query->where('inv.quantity', '>', 0);
-            elseif ($avail === 'Dispatched') $query->whereNotNull('disp.id')->where('disp.is_consumed', '!=', 1);
-            elseif ($avail === 'Consumed') $query->where('disp.is_consumed', '=', 1);
+            if ($avail === 'In Stock') {
+                $query->where('inv.quantity', '>', 0)->whereNull('disp.id');
+            } elseif ($avail === 'Dispatched') {
+                $query->whereNotNull('disp.id')
+                    ->whereRaw('COALESCE(inv.quantity, 0) <= 0')
+                    ->whereNull('disp.streetlight_pole_id');
+            } elseif ($avail === 'Consumed') {
+                $query->whereNotNull('disp.streetlight_pole_id');
+            }
         }
 
         if ($request->filled('item_code')) {
@@ -380,20 +428,22 @@ class StoreController extends Controller
         $recordsFiltered = $isFiltered ? $query->count() : $recordsTotal;
 
         // 5. Ordering
-        $orderColumnIndex = $request->input('order.0.column', $isAdmin ? 7 : 6); // Default 'created_at' index
+        // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:sim, 5:avail, 6:vendor, 7:disp_date, 8:in_date, 9:act]
+        // User:  [0:code, 1:item, 2:serial, 3:sim, 4:avail, 5:vendor, 6:disp_date, 7:in_date, 8:act]
+        $orderColumnIndex = $request->input('order.0.column', $isAdmin ? 8 : 7); // Default 'created_at' index
         $orderDir = $request->input('order.0.dir', 'desc');
 
         // Map dataTable column index to DB columns
-        // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:avail, 5:vendor, 6:disp_date, 7:in_date, 8:act]
-        // User:  [0:code, 1:item, 2:serial, 3:avail, 4:vendor, 5:disp_date, 6:in_date, 7:act]
+        // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:sim, 5:avail, 6:vendor, 7:disp_date, 8:in_date, 9:act]
+        // User:  [0:code, 1:item, 2:serial, 3:sim, 4:avail, 5:vendor, 6:disp_date, 7:in_date, 8:act]
 
         $columnsAdmin = [
-            1 => 'item_code', 2 => 'item', 3 => 'serial_number',
-            4 => 'availability', 5 => 'vendor_name', 6 => 'dispatch_date', 7 => 'created_at'
+            1 => 'item_code', 2 => 'item', 3 => 'serial_number', 4 => 'sim_number',
+            5 => 'availability', 6 => 'vendor_name', 7 => 'dispatch_date', 8 => 'created_at'
         ];
         $columnsUser = [
-            0 => 'item_code', 1 => 'item', 2 => 'serial_number',
-            3 => 'availability', 4 => 'vendor_name', 5 => 'dispatch_date', 6 => 'created_at'
+            0 => 'item_code', 1 => 'item', 2 => 'serial_number', 3 => 'sim_number',
+            4 => 'availability', 5 => 'vendor_name', 6 => 'dispatch_date', 7 => 'created_at'
         ];
 
         $colMap = $isAdmin ? $columnsAdmin : $columnsUser;
@@ -404,13 +454,15 @@ class StoreController extends Controller
             $query->orderBy(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), $orderDir);
         } elseif ($sortCol === 'availability') {
              $query->orderBy(DB::raw('CASE
-                WHEN COALESCE(inv.quantity, 0) > 0 THEN "In Stock"
-                WHEN disp.is_consumed = 1 THEN "Consumed"
+                WHEN disp.streetlight_pole_id IS NOT NULL THEN "Consumed"
                 WHEN disp.id IS NOT NULL THEN "Dispatched"
+                WHEN COALESCE(inv.quantity, 0) > 0 THEN "In Stock"
                 ELSE "In Stock"
             END'), $orderDir);
         } elseif ($sortCol === 'dispatch_date') {
             $query->orderBy('disp.dispatch_date', $orderDir);
+        } elseif ($sortCol === 'sim_number' && $inventoryTable === 'inventory_streetlight') {
+            $query->orderBy('inv.sim_number', $orderDir);
         } else {
             $query->orderBy('inv.' . $sortCol, $orderDir);
         }
@@ -427,16 +479,32 @@ class StoreController extends Controller
 
         // 7. Formatting
         $data = $items->map(function ($item) use ($isAdmin) {
+            // Availability: dispatch status takes precedence over quantity
+            // Consumed = installed on pole | Dispatched = with vendor | In Stock = neither
             $availability = 'In Stock';
-            if ($item->quantity > 0) $availability = 'In Stock';
-            elseif ($item->is_consumed == 1) $availability = 'Consumed';
-            elseif ($item->dispatch_id) $availability = 'Dispatched';
+            if (!empty($item->streetlight_pole_id)) {
+                $availability = 'Consumed';
+            } elseif ($item->dispatch_id) {
+                $availability = 'Dispatched';
+            } elseif (($item->quantity ?? 0) > 0) {
+                $availability = 'In Stock';
+            }
 
             $vendorName = trim($item->vendor_name ?? '') ?: '-';
             $dispatchDate = $item->dispatch_date ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y') : '-';
             $receivedDate = $item->received_date
                 ? \Carbon\Carbon::parse($item->received_date)->format('d/m/Y')
                 : ($item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y') : '-');
+
+            $serialCell = $item->serial_number;
+            if ($availability === 'Consumed' && !empty($item->streetlight_pole_id)) {
+                $serialCell = '<a href="' . route('poles.show', $item->streetlight_pole_id) . '" class="text-primary" style="text-decoration:none">' . htmlspecialchars($item->serial_number) . '</a>';
+            }
+
+            // SIM number only for SL02 (Luminary); SL01/SL03/SL04 always show "-"
+            $simCell = (($item->item_code ?? '') === 'SL02' && trim((string)($item->sim_number ?? '')) !== '')
+                ? htmlspecialchars($item->sim_number)
+                : '-';
 
             $row = [];
 
@@ -446,7 +514,8 @@ class StoreController extends Controller
 
             $row[] = $item->item_code;
             $row[] = $item->item;
-            $row[] = $item->serial_number;
+            $row[] = $serialCell;
+            $row[] = $simCell;
             $row[] = '<span class="badge bg-' . ($availability === 'In Stock' ? 'success' : ($availability === 'Dispatched' ? 'warning' : 'danger')) . '">' . $availability . '</span>';
             $row[] = $vendorName;
             $row[] = $dispatchDate;
@@ -487,28 +556,49 @@ class StoreController extends Controller
 
         $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
 
+        $dispSubExport = DB::table('inventory_dispatch')
+            ->select(
+                'serial_number',
+                'store_id',
+                'project_id',
+                DB::raw('CAST(SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY (streetlight_pole_id IS NOT NULL) DESC, id DESC), ",", 1) AS UNSIGNED) as best_disp_id')
+            )
+            ->where('isDispatched', true)
+            ->where('store_id', $store->id)
+            ->where('project_id', $project->id)
+            ->groupBy('serial_number', 'store_id', 'project_id');
+
         // Note: SL04 (Structure) items are excluded from export as they are mapped to SL03 (Battery)
         $query = DB::table($inventoryTable . ' as inv')
-            ->leftJoin('inventory_dispatch as disp', function ($join) {
-                $join->on('inv.serial_number', '=', 'disp.serial_number')
-                    ->where('disp.isDispatched', '=', true);
+            ->leftJoinSub($dispSubExport, 'disp_best', function ($join) {
+                $join->on('inv.serial_number', '=', 'disp_best.serial_number')
+                    ->on('inv.store_id', '=', 'disp_best.store_id')
+                    ->on('inv.project_id', '=', 'disp_best.project_id');
             })
+            ->leftJoin('inventory_dispatch as disp', 'disp.id', '=', 'disp_best.best_disp_id')
+            ->leftJoin('streelight_poles as pole', 'disp.streetlight_pole_id', '=', 'pole.id')
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
             ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from export
-            ->select(
-                'inv.item_code',
-                'inv.item',
-                'inv.serial_number',
-                DB::raw('COALESCE(inv.quantity, 0) as quantity'),
-                'inv.created_at',
-                'inv.received_date',
-                'disp.id as dispatch_id',
-                'disp.is_consumed',
-                'disp.dispatch_date',
-                DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name')
-            );
+            ->select(array_merge(
+                [
+                    'inv.item_code',
+                    'inv.item',
+                    'inv.serial_number',
+                    DB::raw('COALESCE(inv.quantity, 0) as quantity'),
+                    'inv.created_at',
+                    'inv.received_date',
+                    'disp.id as dispatch_id',
+                    'disp.is_consumed',
+                    'disp.streetlight_pole_id',
+                    'disp.dispatch_date',
+                    DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name'),
+                ],
+                $inventoryTable === 'inventory_streetlight'
+                    ? [DB::raw('CASE WHEN inv.item_code = "SL02" THEN COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) ELSE NULL END as sim_number')]
+                    : [DB::raw('NULL as sim_number')]
+            ));
 
         // Apply filters (same as inventoryData)
         if ($request->filled('search')) {
@@ -523,9 +613,15 @@ class StoreController extends Controller
 
         if ($request->filled('availability')) {
             $avail = $request->input('availability');
-            if ($avail === 'In Stock') $query->where('inv.quantity', '>', 0);
-            elseif ($avail === 'Dispatched') $query->whereNotNull('disp.id')->where('disp.is_consumed', '!=', 1);
-            elseif ($avail === 'Consumed') $query->where('disp.is_consumed', '=', 1);
+            if ($avail === 'In Stock') {
+                $query->where('inv.quantity', '>', 0)->whereNull('disp.id');
+            } elseif ($avail === 'Dispatched') {
+                $query->whereNotNull('disp.id')
+                    ->whereRaw('COALESCE(inv.quantity, 0) <= 0')
+                    ->whereNull('disp.streetlight_pole_id');
+            } elseif ($avail === 'Consumed') {
+                $query->whereNotNull('disp.streetlight_pole_id');
+            }
         }
 
         if ($request->filled('item_code')) {
@@ -542,18 +638,24 @@ class StoreController extends Controller
 
         $exportData = $items->map(function ($item) {
             $availability = 'In Stock';
-            if ($item->quantity > 0) $availability = 'In Stock';
-            elseif ($item->is_consumed == 1) $availability = 'Consumed';
-            elseif ($item->dispatch_id) $availability = 'Dispatched';
+            if (!empty($item->streetlight_pole_id)) {
+                $availability = 'Consumed';
+            } elseif ($item->dispatch_id) {
+                $availability = 'Dispatched';
+            } elseif (($item->quantity ?? 0) > 0) {
+                $availability = 'In Stock';
+            }
 
             $vendorName = trim($item->vendor_name ?? '') ?: '-';
             $dispatchDate = $item->dispatch_date ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y') : '-';
             $receivedDate = $item->received_date ? \Carbon\Carbon::parse($item->received_date)->format('d/m/Y') : ($item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y') : '-');
+            $simNumber = (($item->item_code ?? '') === 'SL02' && trim((string)($item->sim_number ?? '')) !== '') ? $item->sim_number : '-';
 
             return [
                 'Item Code' => $item->item_code,
                 'Item' => $item->item,
                 'Serial Number' => $item->serial_number,
+                'SIM Number' => $simNumber,
                 'Availability' => $availability,
                 'Vendor' => $vendorName,
                 'Dispatch Date' => $dispatchDate,

@@ -100,6 +100,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
     Route::post('/staff/{id}/upload-avatar', [StaffController::class, 'uploadAvatar'])->name('staff.uploadAvatar');
+    Route::get('/staff/{staffId}/projects/{projectId}/export', [StaffController::class, 'exportStreetlightExcel'])->name('staff.exportStreetlight');
     Route::post('/import-staff', action: [StaffController::class, 'import'])->name('import.staff');
 
     // Performance

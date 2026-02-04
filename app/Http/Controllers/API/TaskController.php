@@ -336,46 +336,46 @@ class TaskController extends Controller
                 'lng' => 'nullable|numeric',
             ]);
 
-            // ✅ Step 2: Fetch task & site
-            $task = StreetlightTask::find($validated['task_id']);
-            if (! $task) {
-                $this->logTaskSubmissionError($request, "Streetlight task with ID {$validated['task_id']} not found", 'task_not_found');
-                
+            // ✅ Step 2: Resolve StreetlightTask from site_id (mobile sends task_id = streetlights.id)
+            $streetlight = Streetlight::find($validated['task_id']);
+            if (! $streetlight) {
+                $this->logTaskSubmissionError($request, "Streetlight site with ID {$validated['task_id']} not found", 'site_not_found');
+
                 return response()->json([
-                    'message' => "Streetlight task with ID {$validated['task_id']} not found",
+                    'message' => "Streetlight site with ID {$validated['task_id']} not found",
+                    'error' => 'site_not_found',
+                    'task_id' => $validated['task_id'],
+                ], 404);
+            }
+
+            // Find the StreetlightTask for this site (site_id = streetlights.id)
+            $task = StreetlightTask::where('site_id', $validated['task_id'])->first();
+            if (! $task) {
+                $this->logTaskSubmissionError($request, "No streetlight task found for site ID {$validated['task_id']}", 'task_not_found');
+
+                return response()->json([
+                    'message' => "No streetlight task found for site ID {$validated['task_id']}",
                     'error' => 'task_not_found',
                     'task_id' => $validated['task_id'],
                 ], 404);
             }
 
             if (! $task->engineer) {
-                $this->logTaskSubmissionError($request, "Task ID {$validated['task_id']} has no assigned engineer", 'no_engineer');
-                
+                $this->logTaskSubmissionError($request, "Task ID {$task->id} has no assigned engineer", 'no_engineer');
+
                 return response()->json([
-                    'message' => "Task ID {$validated['task_id']} has no assigned engineer",
+                    'message' => "Task ID {$task->id} has no assigned engineer",
                     'error' => 'no_engineer',
                     'task_id' => $validated['task_id'],
                 ], 400);
             }
 
             $approved_by = $task->engineer->firstName.' '.$task->engineer->lastName;
-            
-            $streetlight = Streetlight::find($task->site_id);
-            if (! $streetlight) {
-                $this->logTaskSubmissionError($request, "Streetlight site with ID {$task->site_id} not found for task {$validated['task_id']}", 'site_not_found');
-                
-                return response()->json([
-                    'message' => "Streetlight site with ID {$task->site_id} not found",
-                    'error' => 'site_not_found',
-                    'task_id' => $validated['task_id'],
-                    'site_id' => $task->site_id,
-                ], 404);
-            }
 
-        // ✅ Step 3: Create or get pole
+        // ✅ Step 3: Create or get pole (use $task->id = streetlight_tasks.id, NOT streetlights.id)
         $pole = Pole::firstOrCreate(
             [
-                'task_id' => $validated['task_id'],
+                'task_id' => $task->id,
                 'complete_pole_number' => $validated['complete_pole_number'],
             ],
             [

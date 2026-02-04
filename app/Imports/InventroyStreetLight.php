@@ -130,7 +130,7 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
         }
 
         // Handle SIM number for luminary items (SL02)
-        $sim = $row['sim_number'] ?? null;
+        $sim = $row['sim_number'] ?? $row['SIM_NUMBER'] ?? null;
         if ($itemCodeNormalized === 'SL02' && !empty($sim)) {
             // Skip duplicates within the same file
             if (in_array($sim, $this->seenSimNumbers, true)) {

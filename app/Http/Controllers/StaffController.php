@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
+use App\Helpers\ExcelHelper;
 use App\Helpers\WhatsappHelper;
 use App\Imports\StaffImport;
 use App\Models\DiscussionPoint;
@@ -1124,6 +1125,132 @@ class StaffController extends Controller
                 'success' => false,
                 'message' => 'Failed to push panchayat to RMS: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Export streetlight project data to Excel with multiple sheets
+     * 
+     * @param int $staffId
+     * @param int $projectId
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse
+     */
+    public function exportStreetlightExcel($staffId, $projectId)
+    {
+        try {
+            // Get staff and project
+            $staff = User::findOrFail($staffId);
+            $project = Project::findOrFail($projectId);
+
+            // Validate project is streetlight type
+            if ($project->project_type != 1) {
+                return back()->with('error', 'This export is only available for streetlight projects.');
+            }
+
+            // Get tasks where staff is engineer, manager, or vendor
+            $projectTasks = StreetlightTask::where('project_id', $project->id)
+                ->where(function($query) use ($staffId) {
+                    $query->where('engineer_id', $staffId)
+                        ->orWhere('manager_id', $staffId)
+                        ->orWhere('vendor_id', $staffId);
+                })
+                ->with('site')
+                ->get();
+            
+            $projectTaskIds = $projectTasks->pluck('id');
+            $siteIds = $projectTasks->pluck('site_id')->filter()->unique();
+            
+            // Get sites from tasks
+            $sites = Streetlight::whereIn('id', $siteIds)->get();
+            
+            // Build Sheet 1: Summary Data (same as displayed in table)
+            $sheet1Data = [];
+            $sheet1Headings = ['#', 'State', 'District', 'Block', 'Panchayat', 'Ward', 'Total Poles', 'Surveyed', 'Installed'];
+            
+            foreach ($sites as $index => $site) {
+                // Get tasks for this site
+                $siteTasks = $projectTasks->where('site_id', $site->id);
+                $siteTaskIds = $siteTasks->pluck('id');
+                
+                // Get poles for these tasks
+                $poles = Pole::whereIn('task_id', $siteTaskIds)->get();
+                
+                // Format ward (remove HTML links, just get ward numbers)
+                $wardText = $site->ward ?? '-';
+                if ($wardText && $wardText !== '-') {
+                    // Extract ward numbers from comma-separated string
+                    $wards = array_filter(array_map('trim', explode(',', $wardText)));
+                    $wardText = implode(', ', $wards);
+                }
+                
+                $sheet1Data[] = [
+                    '#' => $index + 1,
+                    'State' => $site->state ?? '-',
+                    'District' => $site->district ?? '-',
+                    'Block' => $site->block ?? '-',
+                    'Panchayat' => $site->panchayat ?? '-',
+                    'Ward' => $wardText,
+                    'Total Poles' => $site->total_poles ?? 0,
+                    'Surveyed' => $poles->where('isSurveyDone', 1)->count(),
+                    'Installed' => $poles->where('isInstallationDone', 1)->count(),
+                ];
+            }
+
+            // Build Sheet 2: Pole-level Detailed Data
+            $sheet2Data = [];
+            $sheet2Headings = ['District', 'Block', 'Panchayat', 'Ward', 'Pole Number', 'Beneficiary', 'Beneficiary Contact', 'IMEI', 'SIM Number', 'Battery', 'Panel'];
+            
+            // Get all installed poles for this project and staff
+            $poles = Pole::whereIn('task_id', $projectTaskIds)
+                ->where('isInstallationDone', 1)
+                ->with(['task.site'])
+                ->get();
+            
+            foreach ($poles as $pole) {
+                $site = $pole->task->site ?? null;
+                
+                // Get ward from pole's ward_name field (not from site)
+                $wardText = $pole->ward_name ?? '-';
+                
+                $sheet2Data[] = [
+                    'District' => $site->district ?? '-',
+                    'Block' => $site->block ?? '-',
+                    'Panchayat' => $site->panchayat ?? '-',
+                    'Ward' => $wardText,
+                    'Pole Number' => $pole->complete_pole_number ?? '-',
+                    'Beneficiary' => $pole->beneficiary ?? '-',
+                    'Beneficiary Contact' => $pole->beneficiary_contact ?? '-',
+                    'IMEI' => $pole->luminary_qr ?? '-',
+                    'SIM Number' => $pole->sim_number ?? '-',
+                    'Battery' => $pole->battery_qr ?? '-',
+                    'Panel' => $pole->panel_qr ?? '-',
+                ];
+            }
+
+            // Prepare sheets data
+            $sheets = [
+                'Summary' => $sheet1Data,
+                'Pole Details' => $sheet2Data,
+            ];
+
+            // Generate filename: staff_name_project_name_date.xlsx
+            $staffName = \Illuminate\Support\Str::slug($staff->name);
+            $projectName = \Illuminate\Support\Str::slug($project->project_name);
+            $date = now()->format('Y-m-d');
+            $filename = "{$staffName}_{$projectName}_{$date}.xlsx";
+
+            // Export using ExcelHelper
+            return ExcelHelper::exportMultipleSheets($sheets, $filename);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to export streetlight Excel', [
+                'staff_id' => $staffId,
+                'project_id' => $projectId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return back()->with('error', 'Failed to export Excel: ' . $e->getMessage());
         }
     }
 }

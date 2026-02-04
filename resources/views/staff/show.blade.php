@@ -297,11 +297,11 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <ul class="nav nav-tabs mb-3" id="projectTabs" role="tablist">
+                    <ul class="nav nav-tabs mb-3 flex-row" id="projectTabs" role="tablist">
                         @foreach ($assignedProjects as $index => $project)
                         <li class="nav-item">
                             <a class="nav-link {{ $index === 0 ? 'active' : '' }}" id="project-{{ $project->id }}-tab" 
-                               data-toggle="tab" href="#project-{{ $project->id }}" role="tab" aria-controls="project-{{ $project->id }}">
+                               data-bs-toggle="tab" href="#project-{{ $project->id }}" role="tab" aria-controls="project-{{ $project->id }}">
                                 {{ $project->project_name }}
                                 <span class="badge badge-info ml-1">{{ $project->project_type == 1 ? 'Streetlight' : 'Rooftop' }}</span>
                             </a>
@@ -653,14 +653,21 @@
         background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
     }
     
-    .nav-tabs {
+    /* Override template's .nav (position:fixed, max-width:220px) - ensure horizontal layout */
+    #projectTabs.nav.nav-tabs {
+        position: static !important;
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: wrap !important;
+        max-width: none !important;
+        width: 100% !important;
         border-bottom: 2px solid #dee2e6;
         margin-bottom: 1.5rem;
-        position: relative;
     }
     
-    .nav-tabs .nav-item {
+    #projectTabs.nav.nav-tabs .nav-item {
         margin-bottom: -2px;
+        flex-shrink: 0;
     }
     
     .nav-tabs .nav-link {
@@ -932,6 +939,25 @@
                 }
             });
         }, 1000);
+
+        // Intercept Excel export for streetlight tables - redirect to custom export endpoint
+        @foreach ($assignedProjects as $project)
+            @if ($project->project_type == 1)
+                $(document).ready(function() {
+                    // Wait for DataTables to initialize
+                    setTimeout(function() {
+                        const excelButtonId = '#streetlightTable-{{ $project->id }}_excel';
+                        $(excelButtonId).off('click').on('click', function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            // Redirect to custom export endpoint
+                            window.location.href = '{{ route("staff.exportStreetlight", ["staffId" => $staff->id, "projectId" => $project->id]) }}';
+                        });
+                    }, 1500);
+                });
+            @endif
+        @endforeach
 
         // Delete Panchayat handler
         $(document).on('click', '.delete-panchayat-btn', function(e) {

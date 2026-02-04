@@ -28,8 +28,16 @@
     'ajaxUrl' => null,
     'ajaxData' => null,
     'processing' => true,
+    'availabilityColumnIndex' => null,
+    'vendorColumnIndex' => null,
+    'serialColumnIndex' => null,
 ])
 
+@php
+    $availColIdx = $availabilityColumnIndex ?? ($bulkDeleteEnabled ? 4 : 3);
+    $vendorColIdx = $vendorColumnIndex ?? ($bulkDeleteEnabled ? 5 : 4);
+    $serialColIdx = $serialColumnIndex ?? ($bulkDeleteEnabled ? 3 : 2);
+@endphp
 @php
     // CRITICAL: Sanitize ID for use in JavaScript variable names
     // Replace hyphens, dots, and spaces with underscores to create valid JavaScript identifiers
@@ -863,8 +871,8 @@
                             
                             $(tableId + ' tbody .row-checkbox:checked').each(function() {
                                 const $checkbox = $(this);
-                                const availability = $checkbox.data('availability') || $checkbox.closest('tr').find('td').eq({{ $bulkDeleteEnabled ? 4 : 3 }}).text().trim();
-                                const vendorName = $checkbox.data('vendor-name') || $checkbox.closest('tr').find('td').eq({{ $bulkDeleteEnabled ? 5 : 4 }}).text().trim();
+                                const availability = $checkbox.data('availability') || $checkbox.closest('tr').find('td').eq({{ $availColIdx }}).text().trim();
+                                const vendorName = $checkbox.data('vendor-name') || $checkbox.closest('tr').find('td').eq({{ $vendorColIdx }}).text().trim();
                                 
                                 if (availability === 'In Stock' || availability === 'Consumed') {
                                     allDispatched = false;
@@ -1508,9 +1516,9 @@
                         $(tableId + ' tbody .row-checkbox:checked').each(function() {
                             const $checkbox = $(this);
                             const $row = $checkbox.closest('tr');
-                            const availability = $checkbox.data('availability') || $row.find('td').eq({{ $bulkDeleteEnabled ? 4 : 3 }}).text().trim();
-                            const vendorName = $checkbox.data('vendor-name') || $row.find('td').eq({{ $bulkDeleteEnabled ? 5 : 4 }}).text().trim();
-                            const serialNumber = $checkbox.data('serial-number') || $row.find('td').eq({{ $bulkDeleteEnabled ? 3 : 2 }}).text().trim();
+                            const availability = $checkbox.data('availability') || $row.find('td').eq({{ $availColIdx }}).text().trim();
+                            const vendorName = $checkbox.data('vendor-name') || $row.find('td').eq({{ $vendorColIdx }}).text().trim();
+                            const serialNumber = $checkbox.data('serial-number') || $row.find('td').eq({{ $serialColIdx }}).text().trim();
                             
                             if (availability !== 'Dispatched') {
                                 allDispatched = false;
