@@ -80,6 +80,8 @@ class HomeController extends Controller
             ];
         }
 
+
+
         try {
             $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
         } catch (\Exception $e) {
@@ -430,6 +432,7 @@ class HomeController extends Controller
 
             // Get all analytics data
             $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
+
             $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
             $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
 
@@ -464,7 +467,7 @@ class HomeController extends Controller
             // Top Performers Sheet
             if (!empty($performanceAnalytics['top_performers'])) {
                 $topPerformersData = [];
-                
+
                 // Engineers
                 if (!empty($performanceAnalytics['top_performers']['engineers'])) {
                     foreach ($performanceAnalytics['top_performers']['engineers'] as $index => $engineer) {
@@ -478,7 +481,7 @@ class HomeController extends Controller
                         ];
                     }
                 }
-                
+
                 // Vendors
                 if (!empty($performanceAnalytics['top_performers']['vendors'])) {
                     foreach ($performanceAnalytics['top_performers']['vendors'] as $index => $vendor) {
@@ -492,7 +495,7 @@ class HomeController extends Controller
                         ];
                     }
                 }
-                
+
                 if (!empty($topPerformersData)) {
                     $sheets['Top Performers'] = $topPerformersData;
                 }
@@ -501,7 +504,7 @@ class HomeController extends Controller
             // Meeting Analytics Sheet
             if (!empty($meetingAnalytics)) {
                 $meetingData = [];
-                
+
                 // Overview
                 if (!empty($meetingAnalytics['overview'])) {
                     $meetingData[] = [
@@ -517,7 +520,7 @@ class HomeController extends Controller
                         'Value' => $meetingAnalytics['overview']['discussions_this_month'] ?? 0,
                     ];
                 }
-                
+
                 // Discussion Points
                 if (!empty($meetingAnalytics['discussion_points'])) {
                     $meetingData[] = [
@@ -533,7 +536,7 @@ class HomeController extends Controller
                         'Value' => $meetingAnalytics['discussion_points']['pending'] ?? 0,
                     ];
                 }
-                
+
                 if (!empty($meetingData)) {
                     $sheets['Meeting Analytics'] = $meetingData;
                 }
@@ -542,7 +545,7 @@ class HomeController extends Controller
             // TA/DA Analytics Sheet
             if (!empty($tadaAnalytics)) {
                 $tadaData = [];
-                
+
                 // Financial Overview
                 if (!empty($tadaAnalytics['financial_overview'])) {
                     $fo = $tadaAnalytics['financial_overview'];
@@ -571,7 +574,7 @@ class HomeController extends Controller
                         'Value' => number_format($fo['avg_per_km'] ?? 0, 2),
                     ];
                 }
-                
+
                 // Top Travellers
                 if (!empty($tadaAnalytics['top_travellers'])) {
                     $travellersData = [];
@@ -588,7 +591,7 @@ class HomeController extends Controller
                         $sheets['Top Travellers'] = $travellersData;
                     }
                 }
-                
+
                 if (!empty($tadaData)) {
                     $sheets['TA/DA Financial'] = $tadaData;
                 }
@@ -616,7 +619,7 @@ class HomeController extends Controller
             }
 
             return \App\Helpers\ExcelHelper::exportMultipleSheets($validSheets, $filename);
-            
+
         } catch (\Exception $e) {
             Log::error('Dashboard export error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
@@ -637,13 +640,14 @@ class HomeController extends Controller
         try {
             $user = auth()->user();
             $filters = [
-                'project_id' => $request->input('project_id') ? (int)$request->input('project_id') : null,
+                'project_id' => $request->input('project_id') ? (int) $request->input('project_id') : null,
                 'date_filter' => $request->input('date_filter', 'this_month'),
                 'start_date' => $request->input('start_date'),
                 'end_date' => $request->input('end_date'),
             ];
 
             $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
+
             $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
             $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
 
@@ -665,4 +669,5 @@ class HomeController extends Controller
             ], 500);
         }
     }
+
 }

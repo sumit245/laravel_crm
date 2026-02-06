@@ -276,7 +276,7 @@ class ProjectsController extends Controller
             ->get();
 
         $assignedEngineersMessage = $assignedEngineers->isEmpty() ? "No engineers assigned." : null;
-        
+
         // Get engineers for reassignment: All engineers for Admin, filtered by manager_id for Project Managers
         $reassignEngineersQuery = User::whereIn('role', [
             UserRole::SITE_ENGINEER->value,
@@ -411,6 +411,8 @@ class ProjectsController extends Controller
                 ->with('site', 'engineer')
                 ->get();
         }
+
+
 
         return view('projects.show', $data);
     }
@@ -739,7 +741,7 @@ class ProjectsController extends Controller
         try {
             $deletionService = app(TargetDeletionService::class);
             $task = StreetlightTask::with('poles')->findOrFail($id);
-            
+
             // Count total poles to determine if we should process synchronously
             $totalPoles = $task->poles->count();
             $syncThreshold = config('target_deletion.sync_threshold', 100);
@@ -747,7 +749,7 @@ class ProjectsController extends Controller
             if ($totalPoles < $syncThreshold) {
                 // Small deletion - process synchronously
                 $result = $deletionService->deleteTargets([$id]);
-                
+
                 $message = 'Target deleted successfully. ';
                 $message .= $result['poles_deleted'] . ' pole(s) deleted. ';
                 $message .= $result['inventory_items_returned'] . ' inventory item(s) returned to stock.';
@@ -771,7 +773,7 @@ class ProjectsController extends Controller
             ]);
 
             $message = 'Failed to delete target: ' . $e->getMessage();
-            
+
             if ($request->expectsJson()) {
                 return response()->json([
                     'success' => false,
@@ -786,7 +788,7 @@ class ProjectsController extends Controller
     public function bulkDeleteTargets(Request $request)
     {
         // #region agent log
-        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:724','message'=>'bulkDeleteTargets called','data'=>['ids_count'=>count($request->ids ?? []),'user_id'=>auth()->id()],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'ProjectsController.php:724', 'message' => 'bulkDeleteTargets called', 'data' => ['ids_count' => count($request->ids ?? []), 'user_id' => auth()->id()], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
         // #endregion
         $request->validate([
             'ids' => 'required|array',
@@ -800,24 +802,24 @@ class ProjectsController extends Controller
             $syncThreshold = config('target_deletion.sync_threshold', 100);
             $isBulkDeletion = count($request->ids) > 1;
             // #region agent log
-            file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:736','message'=>'Pole count calculated','data'=>['total_poles'=>$totalPoles,'is_bulk'=>$isBulkDeletion,'sync_threshold'=>$syncThreshold],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+            file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'ProjectsController.php:736', 'message' => 'Pole count calculated', 'data' => ['total_poles' => $totalPoles, 'is_bulk' => $isBulkDeletion, 'sync_threshold' => $syncThreshold], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
             // #endregion
 
             // Use async processing for bulk deletions OR large single deletions
             // Always use async for bulk deletions (more than 1 item) regardless of pole count
             if ($isBulkDeletion || $totalPoles >= $syncThreshold) {
                 // #region agent log
-                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:742','message'=>'Using async deletion path','data'=>['reason'=>$isBulkDeletion?'bulk_deletion':'large_pole_count'],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'ProjectsController.php:742', 'message' => 'Using async deletion path', 'data' => ['reason' => $isBulkDeletion ? 'bulk_deletion' : 'large_pole_count'], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
                 // #endregion
                 // Large or bulk deletion - use async processing
                 return $this->initiateAsyncDeletion($request->ids, $request);
             } else {
                 // #region agent log
-                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'B','location'=>'ProjectsController.php:747','message'=>'Using sync deletion path','data'=>[],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+                file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'B', 'location' => 'ProjectsController.php:747', 'message' => 'Using sync deletion path', 'data' => [], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
                 // #endregion
                 // Small single deletion - process synchronously
                 $result = $deletionService->deleteTargets($request->ids);
-                
+
                 $message = count($request->ids) . ' target(s) deleted successfully. ';
                 $message .= $result['poles_deleted'] . ' pole(s) deleted. ';
                 $message .= $result['inventory_items_returned'] . ' inventory item(s) returned to stock.';
@@ -848,7 +850,7 @@ class ProjectsController extends Controller
     protected function initiateAsyncDeletion(array $taskIds, ?Request $request = null)
     {
         // #region agent log
-        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:776','message'=>'initiateAsyncDeletion started','data'=>['task_ids_count'=>count($taskIds)],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'ProjectsController.php:776', 'message' => 'initiateAsyncDeletion started', 'data' => ['task_ids_count' => count($taskIds)], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
         // #endregion
         // Count total poles
         $totalPoles = Pole::whereIn('task_id', $taskIds)->count();
@@ -865,7 +867,7 @@ class ProjectsController extends Controller
             'status' => 'pending',
         ]);
         // #region agent log
-        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:791','message'=>'TargetDeletionJob created','data'=>['job_id'=>$job->job_id,'total_poles'=>$totalPoles,'queue_connection'=>config('queue.default')],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'ProjectsController.php:791', 'message' => 'TargetDeletionJob created', 'data' => ['job_id' => $job->job_id, 'total_poles' => $totalPoles, 'queue_connection' => config('queue.default')], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
         // #endregion
 
         // Queue first chunk
@@ -875,13 +877,13 @@ class ProjectsController extends Controller
             ->onConnection(config('queue.default'))
             ->onQueue('default');
         // #region agent log
-        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId'=>'debug-session','runId'=>'run1','hypothesisId'=>'A','location'=>'ProjectsController.php:798','message'=>'ProcessTargetDeletionChunk dispatched','data'=>['job_id'=>$job->job_id,'chunk_size'=>$chunkSize],'timestamp'=>time()*1000])."\n",FILE_APPEND);
+        file_put_contents(base_path('.cursor/debug.log'), json_encode(['sessionId' => 'debug-session', 'runId' => 'run1', 'hypothesisId' => 'A', 'location' => 'ProjectsController.php:798', 'message' => 'ProcessTargetDeletionChunk dispatched', 'data' => ['job_id' => $job->job_id, 'chunk_size' => $chunkSize], 'timestamp' => time() * 1000]) . "\n", FILE_APPEND);
         // #endregion
 
         // Always return JSON for bulk delete operations (they're always AJAX)
         // Check if it's a bulk delete by checking if request has 'ids' array
         $isBulkDelete = $request && $request->has('ids') && is_array($request->ids) && count($request->ids) > 0;
-        
+
         // For bulk delete endpoint, always return JSON
         if ($isBulkDelete || ($request && ($request->expectsJson() || $request->ajax() || $request->wantsJson()))) {
             return response()->json([
@@ -915,12 +917,12 @@ class ProjectsController extends Controller
             $allTaskIds = $job->task_ids ?? [];
             $processedTaskIds = $job->processed_task_ids ?? [];
             $remainingTaskIds = array_diff($allTaskIds, $processedTaskIds);
-            
+
             // Only re-dispatch if there are remaining tasks
             if (!empty($remainingTaskIds)) {
                 try {
                     $queueConnection = config('queue.default');
-                    
+
                     // Check if job is already in queue to avoid duplicates
                     $jobsInQueue = 0;
                     if ($queueConnection === 'database') {
@@ -928,7 +930,7 @@ class ProjectsController extends Controller
                             ->where('payload', 'like', '%' . $job->job_id . '%')
                             ->count();
                     }
-                    
+
                     // If jobs are stuck in queue (older than 30 seconds), process synchronously as fallback
                     $shouldProcessSync = false;
                     if ($queueConnection === 'database' && $jobsInQueue > 0) {
@@ -937,7 +939,7 @@ class ProjectsController extends Controller
                             ->where('available_at', '<', time() - 30)
                             ->whereNull('reserved_at')
                             ->count();
-                        
+
                         if ($stuckJobs > 0 && $job->created_at->diffInSeconds(now()) > 60) {
                             $shouldProcessSync = true;
                             Log::warning('Jobs stuck in queue, processing synchronously as fallback', [
@@ -947,12 +949,12 @@ class ProjectsController extends Controller
                             ]);
                         }
                     }
-                    
+
                     if ($shouldProcessSync) {
                         // Process first chunk synchronously
                         $deletionService = app(\App\Services\Task\TargetDeletionService::class);
                         $chunk = array_slice($remainingTaskIds, 0, min($chunkSize, 10)); // Process max 10 at a time
-                        
+
                         foreach ($chunk as $taskId) {
                             try {
                                 $result = $deletionService->deleteTargets([$taskId], $job->job_id);
@@ -968,7 +970,7 @@ class ProjectsController extends Controller
                                 $job->addProcessedTaskId($taskId);
                             }
                         }
-                        
+
                         // Queue next chunk if more remain
                         $job->refresh();
                         $remainingAfterChunk = array_diff($job->task_ids, $job->processed_task_ids);
@@ -984,7 +986,7 @@ class ProjectsController extends Controller
                             $dispatchedJob = ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize)
                                 ->onConnection($queueConnection)
                                 ->onQueue('default');
-                            
+
                             Log::info('Dispatched deletion job', [
                                 'job_id' => $jobId,
                                 'queue_connection' => $queueConnection
@@ -1047,7 +1049,7 @@ class ProjectsController extends Controller
             ->whereIn('status', ['pending', 'processing'])
             ->orderBy('created_at', 'desc')
             ->get();
-        
+
         // Re-dispatch any pending jobs that haven't been processed
         foreach ($jobs as $job) {
             if ($job->status === 'pending') {
@@ -1055,7 +1057,7 @@ class ProjectsController extends Controller
                 $allTaskIds = $job->task_ids ?? [];
                 $processedTaskIds = $job->processed_task_ids ?? [];
                 $remainingTaskIds = array_diff($allTaskIds, $processedTaskIds);
-                
+
                 if (!empty($remainingTaskIds)) {
                     try {
                         ProcessTargetDeletionChunk::dispatch($job->job_id, $chunkSize)
@@ -1071,7 +1073,7 @@ class ProjectsController extends Controller
                 }
             }
         }
-        
+
         return response()->json([
             'jobs' => $jobs->map(function ($job) {
                 return [
@@ -1349,4 +1351,6 @@ class ProjectsController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
+
+
 }
