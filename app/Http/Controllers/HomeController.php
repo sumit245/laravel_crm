@@ -80,8 +80,6 @@ class HomeController extends Controller
             ];
         }
 
-
-
         try {
             $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
         } catch (\Exception $e) {
@@ -432,7 +430,6 @@ class HomeController extends Controller
 
             // Get all analytics data
             $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
-
             $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
             $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
 
@@ -647,7 +644,6 @@ class HomeController extends Controller
             ];
 
             $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
-
             $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
             $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
 
@@ -669,5 +665,4 @@ class HomeController extends Controller
             ], 500);
         }
     }
-
 }

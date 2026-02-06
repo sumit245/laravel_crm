@@ -412,8 +412,6 @@ class ProjectsController extends Controller
                 ->get();
         }
 
-
-
         return view('projects.show', $data);
     }
 
@@ -1351,6 +1349,4 @@ class ProjectsController extends Controller
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
-
-
 }
