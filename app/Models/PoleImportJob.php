@@ -20,6 +20,7 @@ class PoleImportJob extends Model
         'status',
         'error_file_path',
         'user_id',
+        'project_id',
         'started_at',
         'completed_at',
     ];

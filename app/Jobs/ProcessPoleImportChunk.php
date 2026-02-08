@@ -58,8 +58,8 @@ class ProcessPoleImportChunk implements ShouldQueue
             $filePath = Storage::disk('local')->path($job->file_path);
 
             // Create import instance - it will handle chunking internally
-            $import = new StreetlightPoleImport($this->jobId, $job);
-            
+            $import = new StreetlightPoleImport($this->jobId, $job, $job->project_id);
+
             // Import the file - this will process in chunks
             // The import instance will be modified during import, so we can access methods after
             Excel::import($import, $filePath);
@@ -146,7 +146,7 @@ class ProcessPoleImportChunk implements ShouldQueue
     public function failed(\Throwable $exception): void
     {
         $job = PoleImportJob::where('job_id', $this->jobId)->first();
-        
+
         if ($job && $job->status !== 'completed') {
             $job->markAsFailed($exception->getMessage());
         }

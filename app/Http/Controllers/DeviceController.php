@@ -20,7 +20,8 @@ class DeviceController extends Controller
         $districts = Streetlight::select('district')->distinct()->get();
         $projectId = env('JICR_DEFAULT_PROJECT_ID', null);
         $project = $projectId ? Project::find($projectId) : Project::first();
-        return view('poles.index', compact('districts', 'project'));
+        $projects = Project::select('id', 'project_name')->get();
+        return view('poles.index', compact('districts', 'project', 'projects'));
     }
 
     /**
@@ -44,6 +45,7 @@ class DeviceController extends Controller
     {
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+            'project_id' => 'required|exists:projects,id',
         ]);
 
         try {
@@ -51,12 +53,14 @@ class DeviceController extends Controller
             $fileSize = $file->getSize();
             $threshold = 1024 * 1024; // 1MB - files larger than this will be queued
 
+            $projectId = $request->input('project_id');
+
             // For small files, process synchronously
             if ($fileSize < $threshold) {
-                return $this->processSyncImport($file);
+                return $this->processSyncImport($file, $projectId);
             } else {
                 // For large files, queue the import
-                return $this->processQueuedImport($file);
+                return $this->processQueuedImport($file, $projectId);
             }
         } catch (\Exception $e) {
             Log::error('Error importing file: ' . $e->getMessage());
@@ -67,10 +71,10 @@ class DeviceController extends Controller
     /**
      * Process import synchronously (for small files)
      */
-    protected function processSyncImport($file)
+    protected function processSyncImport($file, $projectId)
     {
         try {
-            $import = new StreetlightPoleImport();
+            $import = new StreetlightPoleImport(null, null, $projectId);
             Excel::import($import, $file);
 
             $errors = $import->getErrors();
@@ -84,13 +88,13 @@ class DeviceController extends Controller
             }
 
             $redirect = back();
-            
+
             // Always show error file link if there are errors
             if ($errorFileUrl) {
                 $redirect->with('import_errors_url', $errorFileUrl)
-                         ->with('import_errors_count', $errorCount);
+                    ->with('import_errors_count', $errorCount);
             }
-            
+
             if ($successCount > 0) {
                 // Show success message if there are successful imports
                 $message = "Pole data imported successfully! Imported: {$successCount}";
@@ -111,7 +115,7 @@ class DeviceController extends Controller
     /**
      * Process import asynchronously (for large files)
      */
-    protected function processQueuedImport($file)
+    protected function processQueuedImport($file, $projectId)
     {
         try {
             // Store file temporarily
@@ -128,7 +132,7 @@ class DeviceController extends Controller
             } catch (\Exception $e) {
                 Log::warning('Could not count rows for import', ['error' => $e->getMessage()]);
                 // Estimate based on file size (rough estimate: 1KB per row)
-                $totalRows = max(1000, (int)($file->getSize() / 1024));
+                $totalRows = max(1000, (int) ($file->getSize() / 1024));
             }
 
             // Create job record
@@ -137,6 +141,7 @@ class DeviceController extends Controller
                 'total_rows' => $totalRows,
                 'status' => 'pending',
                 'user_id' => auth()->id(),
+                'project_id' => $projectId,
             ]);
 
             // Dispatch job

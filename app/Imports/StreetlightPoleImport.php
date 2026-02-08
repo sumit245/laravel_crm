@@ -29,10 +29,13 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
     protected int $errorCount = 0;
 
-    public function __construct(?string $jobId = null, ?PoleImportJob $job = null)
+    protected ?int $projectId;
+
+    public function __construct(?string $jobId = null, ?PoleImportJob $job = null, ?int $projectId = null)
     {
         $this->jobId = $jobId;
         $this->job = $job;
+        $this->projectId = $projectId;
         $this->importService = app(PoleImportService::class);
     }
 
@@ -49,7 +52,7 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
                 $this->errors[] = [
                     'row' => $rowNumber,
                     'complete_pole_number' => $rowArray['complete_pole_number'] ?? 'Unknown',
-                    'reason' => 'Unexpected error: '.$e->getMessage(),
+                    'reason' => 'Unexpected error: ' . $e->getMessage(),
                     'details' => $e->getTraceAsString(),
                 ];
                 Log::error('Error processing pole import row', [
@@ -89,7 +92,18 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
                 ];
                 return;
             }
-            
+
+            // Check if existing pole belongs to the selected project (if project is selected)
+            if ($this->projectId && $task->project_id != $this->projectId) {
+                $this->errorCount++;
+                $this->errors[] = [
+                    'row' => $rowNumber,
+                    'complete_pole_number' => $completePoleNumber,
+                    'reason' => 'Existing pole belongs to a different project',
+                ];
+                return;
+            }
+
             $updateResult = $this->importService->updateExistingPoleWithInventory($existingPole, $row, $task);
             if ($updateResult['status'] === 'error') {
                 $this->errorCount++;
@@ -136,18 +150,31 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
             return;
         }
 
-        $streetlight = Streetlight::where([
+        $query = Streetlight::where([
             ['district', $district],
             ['block', $block],
             ['panchayat', $panchayat],
-        ])->first();
+        ]);
 
-        if (! $streetlight) {
+        // If we have a project ID, we should try to filter the streetlight site by project as well
+        // BUT, Streetlight model has project_id too.
+        if ($this->projectId) {
+            $query->where('project_id', $this->projectId);
+        }
+
+        $streetlight = $query->first();
+
+        if (!$streetlight) {
+            $reason = "Streetlight site not found for: {$district}, {$block}, {$panchayat}";
+            if ($this->projectId) {
+                $reason .= " in the selected project";
+            }
+
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => "Streetlight site not found for: {$district}, {$block}, {$panchayat}",
+                'reason' => $reason,
             ];
 
             return;
@@ -155,7 +182,16 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
         // Find task
         $task = StreetlightTask::where('site_id', $streetlight->id)->first();
-        if (! $task) {
+
+        // Although we filtered Streetlight by project_id, StreetlightTask also has project_id and it should match.
+        // It's safer to rely on the Streetlight->project_id filter above, but let's be explicit if needed.
+        // Since we found the streetlight site for THIS project, the task associated with it should be the correct one (1-to-1 usually per site per project? No, site belongs to project).
+        // Checks:
+        // Streetlight belongs to Project.
+        // Task belongs to Site (Streetlight).
+        // So validation is already done by finding the site.
+
+        if (!$task) {
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $rowNumber,
@@ -172,13 +208,13 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         $panelQr = trim($row['panel_qr'] ?? '');
 
         $itemsToValidate = [];
-        if (! empty($batteryQr)) {
+        if (!empty($batteryQr)) {
             $itemsToValidate['battery_qr'] = $batteryQr;
         }
-        if (! empty($luminaryQr)) {
+        if (!empty($luminaryQr)) {
             $itemsToValidate['luminary_qr'] = $luminaryQr;
         }
-        if (! empty($panelQr)) {
+        if (!empty($panelQr)) {
             $itemsToValidate['panel_qr'] = $panelQr;
         }
 
@@ -197,7 +233,7 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         }
 
         // If any validation errors, skip this row
-        if (! empty($validationErrors)) {
+        if (!empty($validationErrors)) {
             $this->errorCount++;
             $this->errors[] = [
                 'row' => $rowNumber,
@@ -215,20 +251,20 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
                 'task_id' => $task->id,
                 'complete_pole_number' => $completePoleNumber,
                 'isSurveyDone' => true,
-                'beneficiary' => ! empty($row['beneficiary']) ? trim($row['beneficiary']) : null,
-                'beneficiary_contact' => ! empty($row['beneficiary_contact']) ? trim($row['beneficiary_contact']) : null,
-                'ward_name' => ! empty($row['ward_name']) ? trim($row['ward_name']) : null,
+                'beneficiary' => !empty($row['beneficiary']) ? trim($row['beneficiary']) : null,
+                'beneficiary_contact' => !empty($row['beneficiary_contact']) ? trim($row['beneficiary_contact']) : null,
+                'ward_name' => !empty($row['ward_name']) ? trim($row['ward_name']) : null,
                 'isNetworkAvailable' => true,
                 'isInstallationDone' => true,
-                'luminary_qr' => ! empty($luminaryQr) ? $luminaryQr : null,
-                'sim_number' => ! empty($row['sim_number']) ? trim($row['sim_number']) : null,
-                'battery_qr' => ! empty($batteryQr) ? $batteryQr : null,
-                'panel_qr' => ! empty($panelQr) ? $panelQr : null,
-                'lat' => ! empty($row['lat']) ? $row['lat'] : null,
-                'lng' => ! empty($row['long']) ? $row['long'] : null,
+                'luminary_qr' => !empty($luminaryQr) ? $luminaryQr : null,
+                'sim_number' => !empty($row['sim_number']) ? trim($row['sim_number']) : null,
+                'battery_qr' => !empty($batteryQr) ? $batteryQr : null,
+                'panel_qr' => !empty($panelQr) ? $panelQr : null,
+                'lat' => !empty($row['lat']) ? $row['lat'] : null,
+                'lng' => !empty($row['long']) ? $row['long'] : null,
             ];
 
-            if (! empty($row['date_of_installation'])) {
+            if (!empty($row['date_of_installation'])) {
                 try {
                     $poleData['updated_at'] = Carbon::parse($row['date_of_installation']);
                 } catch (\Exception $e) {
@@ -241,7 +277,7 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
             // Consume inventory for this pole
             $serialNumbers = array_filter(array_values($itemsToValidate));
-            if (! empty($serialNumbers)) {
+            if (!empty($serialNumbers)) {
                 $this->importService->consumeInventoryForPole($newPole, $serialNumbers);
             }
 
@@ -265,7 +301,7 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
             $this->errors[] = [
                 'row' => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'reason' => 'Error creating pole: '.$e->getMessage(),
+                'reason' => 'Error creating pole: ' . $e->getMessage(),
             ];
             Log::error('Error creating pole', [
                 'complete_pole_number' => $completePoleNumber,
