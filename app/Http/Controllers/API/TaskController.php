@@ -318,7 +318,7 @@ class TaskController extends Controller
             Log::info('Survyed tasks is ' . $request->task_id);
             // ✅ Step 1: Validation
             $validated = $request->validate([
-                'task_id' => 'required|exists:streetlights,id',
+                'task_id' => 'required|exists:streetlight_tasks,id',
                 'complete_pole_number' => 'required|string|max:255',
                 'ward_name' => 'nullable|string|max:255',
                 'survey_image' => 'nullable|array',
@@ -337,27 +337,29 @@ class TaskController extends Controller
                 'lng' => 'nullable|numeric',
             ]);
 
-            // ✅ Step 2: Resolve StreetlightTask from site_id (mobile sends task_id = streetlights.id)
-            $streetlight = Streetlight::find($validated['task_id']);
-            if (!$streetlight) {
-                $this->logTaskSubmissionError($request, "Streetlight site with ID {$validated['task_id']} not found", 'site_not_found');
+            // ✅ Step 2: Resolve StreetlightTask ID directly
+            $task = StreetlightTask::with('site')->find($validated['task_id']);
+
+            if (!$task) {
+                $this->logTaskSubmissionError($request, "Streetlight Task with ID {$validated['task_id']} not found", 'task_not_found');
 
                 return response()->json([
-                    'message' => "Streetlight site with ID {$validated['task_id']} not found",
-                    'error' => 'site_not_found',
+                    'message' => "Streetlight Task within ID {$validated['task_id']} not found",
+                    'error' => 'task_not_found',
                     'task_id' => $validated['task_id'],
                 ], 404);
             }
 
-            // Find the StreetlightTask for this site (site_id = streetlights.id)
-            $task = StreetlightTask::where('site_id', $validated['task_id'])->first();
-            if (!$task) {
-                $this->logTaskSubmissionError($request, "No streetlight task found for site ID {$validated['task_id']}", 'task_not_found');
+            // Resolve Streetlight (Site) from the task
+            $streetlight = $task->site;
+
+            if (!$streetlight) {
+                $this->logTaskSubmissionError($request, "Streetlight site for Task ID {$task->id} not found", 'site_not_found');
 
                 return response()->json([
-                    'message' => "No streetlight task found for site ID {$validated['task_id']}",
-                    'error' => 'task_not_found',
-                    'task_id' => $validated['task_id'],
+                    'message' => "Streetlight site for Task ID {$task->id} not found",
+                    'error' => 'site_not_found',
+                    'task_id' => $task->id,
                 ], 404);
             }
 
@@ -373,16 +375,32 @@ class TaskController extends Controller
 
             $approved_by = $task->engineer->firstName . ' ' . $task->engineer->lastName;
 
-            // Modify complete_pole_number format: SUG2 + DIS(3) + BLO(3) + PANCHAYAT(NoSpace) + WARD + PoleNumber
+            // Modify complete_pole_number format
+            // Normal: SUG2/DIS(3)/BLO(3)/PANCHAYAT/W{WardNo}/PoleNo
+            // GP: SUG/DIS(3)/BLO(3)/PANCHAYAT/GP{PoleNo}
+
             $poleNumberParts = explode('/', $validated['complete_pole_number']);
-            $poleNumber = end($poleNumberParts);
+            $rawPoleNumber = end($poleNumberParts);
+            $poleNumber = str_pad(preg_replace('/[^0-9]/', '', $rawPoleNumber), 2, '0', STR_PAD_LEFT);
 
             $districtPrefix = strtoupper(substr($streetlight->district, 0, 3));
             $blockPrefix = strtoupper(substr($streetlight->block, 0, 3));
             $panchayatFormatted = strtoupper(str_replace(' ', '', $streetlight->panchayat));
-            $wardFormatted = strtoupper(str_replace(' ', '', $validated['ward_name'] ?? ''));
+            $wardName = strtoupper($validated['ward_name'] ?? '');
 
-            $validated['complete_pole_number'] = "SUG2/{$districtPrefix}/{$blockPrefix}/{$panchayatFormatted}/{$wardFormatted}/{$poleNumber}";
+            if (str_contains($wardName, 'GP')) {
+                // GP Ward Format
+                $validated['complete_pole_number'] = "SUG/{$districtPrefix}/{$blockPrefix}/{$panchayatFormatted}/GP{$poleNumber}";
+            } else {
+                // Normal Ward Format
+                $wardNum = preg_replace('/[^0-9]/', '', $wardName);
+                if ($wardNum === '') {
+                    $wardNum = '00';
+                }
+                $wardNum = str_pad($wardNum, 2, '0', STR_PAD_LEFT);
+
+                $validated['complete_pole_number'] = "SUG2/{$districtPrefix}/{$blockPrefix}/{$panchayatFormatted}/W{$wardNum}/{$poleNumber}";
+            }
 
             Log::info('Complete Pole Number: ' . $validated['complete_pole_number']);
 
