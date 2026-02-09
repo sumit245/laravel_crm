@@ -315,6 +315,7 @@ class TaskController extends Controller
     public function submitStreetlightTasks(Request $request)
     {
         try {
+            Log::info('Survyed tasks is ' . $request->task_id);
             // ✅ Step 1: Validation
             $validated = $request->validate([
                 'task_id' => 'required|exists:streetlights,id',
