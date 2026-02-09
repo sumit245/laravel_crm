@@ -19,3 +19,10 @@ composer.lock
 /.fleet
 /.idea
 /.vscode
+/.cursor/*
+TA_DA_Sheet.xlsx
+sugs_lloyds.pem
+deploy.sh
+deploy.bat
+.cursorrules
+routes/test_report.md
