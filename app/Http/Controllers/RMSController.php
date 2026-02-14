@@ -17,48 +17,84 @@ class RMSController extends Controller
 {
     public function __construct(
         protected ActivityLogger $activityLogger
-    ) {}
+    ) {
+    }
 
     public function index(Request $request)
     {
+        // 1. Fetch all street light projects for the dropdown
+        $projects = Project::where('project_type', 1)->get(); // 1 = Streetlight
+
         // Validate incoming filter data
         $validated = $request->validate([
             'district' => 'sometimes|string|max:255',
             'block' => 'sometimes|string|max:255',
             'panchayat' => 'sometimes|string|max:255',
+            'project_id' => 'sometimes|integer|exists:projects,id',
         ]);
+
+        $projectId = $request->input('project_id');
+
+        // Base query for fetching districts
+        $districtQuery = Streetlight::select('district')->distinct();
+
+        if ($projectId) {
+            $districtQuery->where('project_id', $projectId);
+            $districts = $districtQuery->get();
+        } else {
+            // New Requirement: "If I select a project then only such districts... will appear"
+            // So initially, keep empty to force project selection.
+            $districts = collect([]);
+        }
 
         // Prepare data to pass to the view
         $data = [
-            'districts' => Streetlight::select('district')->distinct()->get(),
+            'projects' => $projects,
+            'districts' => $districts,
             'blocks' => null,
             'panchayats' => null,
             'wards' => null,
             'selected' => $validated, // Pass all validated inputs
+            'project_id' => $projectId,
         ];
 
         // Fetch blocks if a district is selected
-        if (! empty($validated['district'])) {
-            $data['blocks'] = Streetlight::select('block')
+        if (!empty($validated['district']) && $projectId) {
+            $blockQuery = Streetlight::select('block')
                 ->where('district', $validated['district'])
-                ->distinct()
-                ->get();
+                ->distinct();
+
+            if ($projectId) {
+                $blockQuery->where('project_id', $projectId);
+            }
+
+            $data['blocks'] = $blockQuery->get();
         }
 
         // Fetch panchayats if a block is selected
-        if (! empty($validated['block'])) {
-            $data['panchayats'] = Streetlight::select('panchayat')
+        if (!empty($validated['block']) && $projectId) {
+            $panchayatQuery = Streetlight::select('panchayat')
                 ->where('block', $validated['block'])
-                ->distinct()
-                ->get();
+                ->distinct();
+
+            if ($projectId) {
+                $panchayatQuery->where('project_id', $projectId);
+            }
+
+            $data['panchayats'] = $panchayatQuery->get();
         }
 
         // Fetch wards if a panchayat is selected
-        if (! empty($validated['panchayat'])) {
-            $data['wards'] = Streetlight::select('ward')
+        if (!empty($validated['panchayat']) && $projectId) {
+            $wardQuery = Streetlight::select('ward')
                 ->where('panchayat', $validated['panchayat'])
-                ->distinct()
-                ->get();
+                ->distinct();
+
+            if ($projectId) {
+                $wardQuery->where('project_id', $projectId);
+            }
+
+            $data['wards'] = $wardQuery->get();
         }
 
         return view('rms.index', $data);
@@ -67,21 +103,50 @@ class RMSController extends Controller
     public function sendPanchayatToRMS(Request $request)
     {
         Log::info('Controller: sendPanchayatToRMS');
-        // 1. Validate the incoming request to ensure we have the location.
+        // 1. Validate the incoming request to ensure we have the location and optional codes.
         $validated = $request->validate([
             'district' => 'required|string',
             'block' => 'required|string',
             'panchayat' => 'required|string',
+            'project_id' => 'required|integer|exists:projects,id',
+            'district_code' => 'sometimes|nullable|string',
+            'block_code' => 'sometimes|nullable|string',
+            'panchayat_code' => 'sometimes|nullable|string',
         ]);
 
         try {
-            // 2. Efficiently fetch all necessary data in bulk to prevent N+1 query issues.
+            // Fetch project details
+            $project = Project::find($validated['project_id']);
+            $projectName = $project ? $project->project_name : 'SUGS'; // Default or fallback
 
-            // Get all streetlights (sites) for the selected panchayat.
-            $streetlights = Streetlight::where('district', $validated['district'])
+            // 2. Update codes if provided (Transactions for data integrity)
+            if (!empty($validated['district_code']) || !empty($validated['block_code']) || !empty($validated['panchayat_code'])) {
+                $updateData = [];
+                if (!empty($validated['district_code']))
+                    $updateData['district_code'] = $validated['district_code'];
+                if (!empty($validated['block_code']))
+                    $updateData['block_code'] = $validated['block_code'];
+                if (!empty($validated['panchayat_code']))
+                    $updateData['panchayat_code'] = $validated['panchayat_code'];
+
+                if (!empty($updateData)) {
+                    Streetlight::where('district', $validated['district'])
+                        ->where('block', $validated['block'])
+                        ->where('panchayat', $validated['panchayat'])
+                        ->where('project_id', $validated['project_id'])
+                        ->update($updateData);
+
+                    Log::info('Updated location codes', $updateData);
+                }
+            }
+
+            // 3. Fetch Data for RMS Push
+            $query = Streetlight::where('district', $validated['district'])
                 ->where('block', $validated['block'])
                 ->where('panchayat', $validated['panchayat'])
-                ->get();
+                ->where('project_id', $validated['project_id']);
+
+            $streetlights = $query->get();
 
             if ($streetlights->isEmpty()) {
                 return response()->json(['message' => 'No streetlights found for the selected panchayat.'], 404);
@@ -107,8 +172,9 @@ class RMSController extends Controller
                 return response()->json(['message' => 'No poles found for the selected tasks in this panchayat.'], 404);
             }
 
-            // 3. Process each pole and send its data, similar to your old method.
+            // 4. Process each pole and send its data
             $responses = [];
+
             foreach ($poles as $pole) {
                 try {
                     // Look up the related data from our pre-fetched maps.
@@ -116,14 +182,14 @@ class RMSController extends Controller
                     $streetlight = $task ? $streetlightMap->get($task->site_id) : null;
 
                     // Ensure all required data exists before proceeding.
-                    if (! $task || ! $streetlight || ! $task->engineer) {
+                    if (!$task || !$streetlight || !$task->engineer) {
                         throw new Exception('Missing related task, streetlight, or engineer data.');
                     }
 
-                    $approved_by = $task->engineer->firstName.' '.$task->engineer->lastName;
+                    $approved_by = $task->engineer->firstName . ' ' . $task->engineer->lastName;
 
-                    // Call your helper to send the data.
-                    $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
+                    // Call your helper to send the data, passing the dynamic project name
+                    $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by, $projectName);
 
                     $responseData = $apiResponse ? $apiResponse->json() : null;
                     $status = 'error';
@@ -134,7 +200,7 @@ class RMSController extends Controller
                         $message = $responseData['detail'] ?? $responseData['details'] ?? 'Successfully pushed to RMS';
                     } else {
                         $message = $responseData['detail'] ?? $responseData['details'] ?? ($apiResponse ? $apiResponse->body() : 'No response from RMS API');
-                        if (! $responseData || ! isset($responseData['status'])) {
+                        if (!$responseData || !isset($responseData['status'])) {
                             $responseData = ['status' => 'ERR', 'detail' => $message];
                         }
                     }
@@ -161,6 +227,7 @@ class RMSController extends Controller
                         'pole_id' => $pole->id,
                         'message' => $e->getMessage(),
                         'response_data' => ['status' => 'ERR', 'detail' => $e->getMessage()],
+                        'status' => 'error',
                         'district' => $validated['district'] ?? null,
                         'block' => $validated['block'] ?? null,
                         'panchayat' => $validated['panchayat'] ?? null,
@@ -185,13 +252,14 @@ class RMSController extends Controller
                     'district' => $validated['district'],
                     'block' => $validated['block'],
                     'panchayat' => $validated['panchayat'],
+                    'project_id' => $validated['project_id'] ?? null,
                     'success_count' => $successCount,
                     'error_count' => $errorCount,
                 ],
             ]);
 
             return response()->json([
-                'message' => 'Pole data sync process completed for '.$validated['panchayat'].'.',
+                'message' => 'Pole data sync process completed for ' . $validated['panchayat'] . '.',
                 'result' => $responses,
                 'success_count' => $successCount,
                 'error_count' => $errorCount,
@@ -203,7 +271,7 @@ class RMSController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
-            return response()->json(['message' => 'A critical error occurred: '.$e->getMessage()], 500);
+            return response()->json(['message' => 'A critical error occurred: ' . $e->getMessage()], 500);
         }
     }
 
@@ -231,8 +299,8 @@ class RMSController extends Controller
 
             $logs = $query->orderBy('pushed_at', 'desc')->get();
 
-            $successLogs = $logs->filter(fn ($log) => strtoupper((string) ($log->response_data['status'] ?? '')) === 'OK');
-            $errorLogs = $logs->filter(fn ($log) => strtoupper((string) ($log->response_data['status'] ?? '')) !== 'OK');
+            $successLogs = $logs->filter(fn($log) => strtoupper((string) ($log->response_data['status'] ?? '')) === 'OK');
+            $errorLogs = $logs->filter(fn($log) => strtoupper((string) ($log->response_data['status'] ?? '')) !== 'OK');
 
             return view('rms.export', compact('logs', 'successLogs', 'errorLogs'));
         } catch (\Exception $e) {
@@ -245,7 +313,7 @@ class RMSController extends Controller
                 'logs' => collect(),
                 'successLogs' => collect(),
                 'errorLogs' => collect(),
-                'error' => 'Error loading RMS export data: '.$e->getMessage(),
+                'error' => 'Error loading RMS export data: ' . $e->getMessage(),
             ]);
         }
     }

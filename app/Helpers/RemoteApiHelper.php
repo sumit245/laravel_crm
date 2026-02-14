@@ -8,24 +8,28 @@ use Illuminate\Support\Facades\Log;
 
 class RemoteApiHelper
 {
-    public static function sendPoleDataToRemoteServer($pole, $streetlight, $approver)
+    public static function sendPoleDataToRemoteServer($pole, $streetlight, $approver, $projectName = "SUGS")
     {
         $url = env('RMS_API_URL', 'https://ssl.slldm.com/insertMasterData.php');
-        $districtCode = DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
+
+        // Prioritize the code from the streetlight record (which might have been just updated by user input)
+        // Fallback to the lookup table if not present.
+        $districtCode = $streetlight->district_code ?: DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
+
         $wardType = ($pole->ward_name === 'GP') ? 'GP' : 'W';
         $wardNumber = $wardType === 'GP'
             ? null
             : (preg_replace('/\D/', '', (string) ($pole->ward_name ?? '')) ?: null);
-        $poleName = $wardType === 'GP' 
-            ? (($digits = preg_replace('/\D/', '', $pole->complete_pole_number)) && strlen($digits) >= 2 
-                ? substr($digits, -2) 
+        $poleName = $wardType === 'GP'
+            ? (($digits = preg_replace('/\D/', '', $pole->complete_pole_number)) && strlen($digits) >= 2
+                ? substr($digits, -2)
                 : substr($pole->complete_pole_number, strrpos($pole->complete_pole_number, '/') + 1))
             : substr($pole->complete_pole_number, strrpos($pole->complete_pole_number, '/') + 1);
         $payload = [
             'devId' => $pole->luminary_qr,
             'MfId' => "4",
             'poleName' => $poleName,
-            'project'=>"SUGS",
+            'project' => $projectName,
             'district' => $streetlight->district,
             'districtCode' => (string) $districtCode,
             'block' => $streetlight->block,
@@ -43,14 +47,14 @@ class RemoteApiHelper
             'updated_by' => $approver,
             'dateTime' => now()->format('Y-m-d H:i:s'),
         ];
-        Log::info($payload);
+        Log::info('Payload for RMS:', $payload);
         try {
             $response = Http::asForm()->post($url, $payload);
-            Log::info($response->json());
+            Log::info('RMS Response:', $response->json() ?? []);
             if ($response->successful()) {
-               Log::info("Remote API success", ['response' => $response->body()]);
+                Log::info("Remote API success", ['response' => $response->body()]);
             } else {
-               Log::error("Remote API failed", ['status' => $response->status(), 'body' => $response->body()]);
+                Log::error("Remote API failed", ['status' => $response->status(), 'body' => $response->body()]);
             }
             return $response;
         } catch (\Exception $e) {

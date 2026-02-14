@@ -79,8 +79,7 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link js-partial-link {{ sidebar_active(['rms.index']) }}"
-                    href="{{ route('rms.index', ['project_id' => $selectedProjectId]) }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['rms.index']) }}" href="{{ route('rms.index') }}">
                     <i class="menu-icon mdi mdi-file-excel"></i>
                     <span class="menu-title">Push to RMS</span>
                 </a>
@@ -90,23 +89,22 @@
             {{-- @endif --}}
 
             {{-- <li class="nav-item">
-      <a class="nav-link disabled" href="{{ route("sites.index") }}">
-        <i class="menu-icon mdi mdi-map-marker-outline"></i>
-        <span class="menu-title">Sites Management</span>
-      </a>
-    </li> --}}
+                <a class="nav-link disabled" href="{{ route(" sites.index") }}">
+                    <i class="menu-icon mdi mdi-map-marker-outline"></i>
+                    <span class="menu-title">Sites Management</span>
+                </a>
+            </li> --}}
             {{-- <li class="nav-item">
-      <a class="nav-link disabled" href="{{ route("tasks.index") }}">
-        <i class="menu-icon mdi mdi-checkbox-marked"></i>
-        <span class="menu-title">Target Management</span>
-      </a>
-    </li> --}}
+                <a class="nav-link disabled" href="{{ route(" tasks.index") }}">
+                    <i class="menu-icon mdi mdi-checkbox-marked"></i>
+                    <span class="menu-title">Target Management</span>
+                </a>
+            </li> --}}
 
             <li class="nav-item nav-category">Users</li>
             @if (auth()->user()->role == 0)
                 <li class="nav-item">
-                    <a class="nav-link js-partial-link {{ sidebar_active(['staff.*']) }}"
-                        href="{{ route('staff.index') }}">
+                    <a class="nav-link js-partial-link {{ sidebar_active(['staff.*']) }}" href="{{ route('staff.index') }}">
                         <i class="menu-icon mdi mdi-account-multiple-outline"></i>
                         <span class="menu-title">Staffs Management</span>
                     </a>

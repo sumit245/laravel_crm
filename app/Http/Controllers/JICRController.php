@@ -21,23 +21,76 @@ class JICRController extends Controller
         $project = $projectId ? Project::find($projectId) : Project::first();
         return view('jicr.index', compact('districts', 'project'));
     }
-    public function getBlocks($district)
+    public function getBlocks(Request $request, $district)
     {
         // Fetch blocks based on the selected district
-        $blocks = Streetlight::where('district', $district)->select('block')->distinct()->get();
-        return response()->json($blocks);
+        $query = Streetlight::where('district', $district)->select('block')->distinct();
+
+        if ($request->has('project_id')) {
+            $query->where('project_id', $request->input('project_id'));
+        }
+
+        $blocks = $query->get();
+
+        // Fetch district code
+        $districtCodeQuery = Streetlight::where('district', $district);
+        if ($request->has('project_id')) {
+            $districtCodeQuery->where('project_id', $request->input('project_id'));
+        }
+        // Prefer non-null codes if available, otherwise take first
+        $districtCode = $districtCodeQuery->whereNotNull('district_code')
+            ->where('district_code', '!=', '')
+            ->value('district_code');
+
+        // If still null, check if any record exists even without code
+        if (!$districtCode) {
+            $districtCode = $districtCodeQuery->value('district_code');
+        }
+
+        return response()->json([
+            'blocks' => $blocks,
+            'district_code' => $districtCode
+        ]);
     }
-    public function getPanchayats($block)
+
+    public function getPanchayats(Request $request, $block)
     {
         // Fetch panchayats based on the selected block
-        $panchayats = Streetlight::where('block', $block)->select('panchayat')->distinct()->get();
-        return response()->json($panchayats);
+        $query = Streetlight::where('block', $block)->select('panchayat')->distinct();
+
+        if ($request->has('project_id')) {
+            $query->where('project_id', $request->input('project_id'));
+        }
+
+        $panchayats = $query->get();
+
+        // Fetch block code
+        $blockCodeQuery = Streetlight::where('block', $block);
+        if ($request->has('project_id')) {
+            $blockCodeQuery->where('project_id', $request->input('project_id'));
+        }
+        $blockCode = $blockCodeQuery->whereNotNull('block_code')
+            ->where('block_code', '!=', '')
+            ->value('block_code');
+
+        if (!$blockCode) {
+            $blockCode = $blockCodeQuery->value('block_code');
+        }
+
+        return response()->json([
+            'panchayats' => $panchayats,
+            'block_code' => $blockCode
+        ]);
     }
-    public function getWards($panchayat)
+    public function getWards(Request $request, $panchayat)
     {
-        $wardString = Streetlight::where('panchayat', $panchayat)
-            ->pluck('ward')
-            ->first(); // Assuming one row per panchayat
+        $query = Streetlight::where('panchayat', $panchayat);
+
+        if ($request->has('project_id')) {
+            $query->where('project_id', $request->input('project_id'));
+        }
+
+        $wardString = $query->pluck('ward')->first(); // Assuming one row per panchayat
 
         Log::info("Raw ward string: " . $wardString);
 
@@ -50,9 +103,23 @@ class JICRController extends Controller
             }
         }
 
-        Log::info($wardArray);
+        // Fetch panchayat code
+        $panchayatCodeQuery = clone $query;
+        $panchayatCode = $panchayatCodeQuery->whereNotNull('panchayat_code')
+            ->where('panchayat_code', '!=', '')
+            ->value('panchayat_code');
 
-        return response()->json($wardArray);
+        if (!$panchayatCode) {
+            // If explicit non-empty code not found, try any value even if null/empty just in case
+            $panchayatCode = $query->value('panchayat_code');
+        }
+
+        Log::info("Wards for $panchayat", ['wards' => $wardArray]);
+
+        return response()->json([
+            'wards' => $wardArray,
+            'panchayat_code' => $panchayatCode
+        ]);
     }
 
     public function generatePDF(Request $request)
