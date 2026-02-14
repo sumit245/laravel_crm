@@ -41,7 +41,7 @@ Route::get('apply-now/{id}', [PreviewController::class, 'applyNow'])->name('appl
 Route::post('/apply/store', [PreviewController::class, 'storeAndPreview'])->name('hrm.store');
 Route::get('/apply/preview', [PreviewController::class, 'preview'])->name('hrm.preview');
 Route::post('/apply/submit', [PreviewController::class, 'submitFinal'])->name('hrm.submit');
-Route::get('/apply/success', fn () => view('hrm.success'))->name('hrm.success');
+Route::get('/apply/success', fn() => view('hrm.success'))->name('hrm.success');
 
 Route::get('/candidates', [CandidateController::class, 'index'])->name('candidates.index');
 Route::post('/candidates/import', [CandidateController::class, 'importCandidates'])->name('candidates.import');
@@ -49,8 +49,8 @@ Route::post('/candidates/send-emails', [CandidateController::class, 'sendEmails'
 Route::get('/candidates/{id}/upload', [CandidateController::class, 'showUploadForm'])->name('candidates.upload-form');
 Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocuments'])->name('candidates.upload');
 
-Route::get('privacy-policy', fn () => view('privacy'));
-Route::get('terms-and-conditions', fn () => view('terms'));
+Route::get('privacy-policy', fn() => view('privacy'));
+Route::get('terms-and-conditions', fn() => view('terms'));
 Route::get('/queue/process', [QueueProcessorController::class, 'process'])->name('queue.process');
 Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
 Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
@@ -151,11 +151,11 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
                     break;
                 }
                 $data[] = [
-                    'IT'.$index,
-                    'Item '.$index,
-                    'SERI'.$index,
+                    'IT' . $index,
+                    'Item ' . $index,
+                    'SERI' . $index,
                     '<span class="badge bg-success">In Stock</span>',
-                    'Vendor '.$index,
+                    'Vendor ' . $index,
                     date('d/m/Y'),
                     date('d/m/Y'),
                     '',
@@ -203,6 +203,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::prefix('sites')->group(function () {
         Route::get('search', [SiteController::class, 'search'])->name('sites.search');
         Route::post('import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
+        Route::get('import-format/{projectId}', [SiteController::class, 'downloadImportFormat'])->name('sites.importFormat');
         Route::post('ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
         Route::post('bulk-delete', [SiteController::class, 'bulkDelete'])->name('sites.bulkDelete');
         Route::post('{siteId}/poles/import', [SiteController::class, 'importPoles'])->name('sites.poles.import');

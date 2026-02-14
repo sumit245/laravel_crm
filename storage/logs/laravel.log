@@ -2976,3 +2976,7 @@ Stack trace:
 "} 
 [2026-02-14 06:30:33] local.INFO: Raw ward string: 1,2,3,4,5,6,7,8,9,10,11  
 [2026-02-14 06:30:33] local.INFO: Wards for Billauri {"wards":[{"ward":"1"},{"ward":"2"},{"ward":"3"},{"ward":"4"},{"ward":"5"},{"ward":"6"},{"ward":"7"},{"ward":"8"},{"ward":"9"},{"ward":"10"},{"ward":"11"}]} 
+[2026-02-14 06:37:03] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 

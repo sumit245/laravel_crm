@@ -63,10 +63,10 @@ class StreetlightImport implements ToCollection, WithHeadingRow
 
                 if ($existingSite) {
                     // Parse wards
-                    $existingWards = !empty($existingSite->ward) 
+                    $existingWards = !empty($existingSite->ward)
                         ? array_map('intval', explode(',', $existingSite->ward))
                         : [];
-                    $newWards = !empty($ward) 
+                    $newWards = !empty($ward)
                         ? array_map('intval', explode(',', $ward))
                         : [];
 
@@ -100,6 +100,9 @@ class StreetlightImport implements ToCollection, WithHeadingRow
                             'ward' => $mergedWardsString,
                             'total_poles' => $newTotalPoles,
                             'mukhiya_contact' => !empty($mukhiyaContact) ? $mukhiyaContact : $existingSite->mukhiya_contact,
+                            'district_code' => isset($row['district_code']) ? trim($row['district_code']) : $existingSite->district_code,
+                            'block_code' => isset($row['block_code']) ? trim($row['block_code']) : $existingSite->block_code,
+                            'panchayat_code' => isset($row['panchayat_code']) ? trim($row['panchayat_code']) : $existingSite->panchayat_code,
                         ]);
 
                         $this->updatedCount++;

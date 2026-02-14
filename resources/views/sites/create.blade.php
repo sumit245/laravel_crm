@@ -59,37 +59,62 @@
                         <div class="form-group row mt-5">
                             <div class="col-md-6">
                                 <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('state') is-invalid @enderror" id="state" name="state"
-                                    placeholder="Enter state" value="{{ old('state') }}" required>
+                                <input type="text" class="form-control @error('state') is-invalid @enderror" id="state"
+                                    name="state" placeholder="Enter state" value="{{ old('state') }}" required>
                                 @error('state')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
+                            </div>
                             <div class="col-md-6">
                                 <label for="district" class="form-label">District: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('district') is-invalid @enderror" id="district" name="district"
-                                    placeholder="Enter district" value="{{ old('district') }}" required>
+                                <input type="text" class="form-control @error('district') is-invalid @enderror" id="district"
+                                    name="district" placeholder="Enter district" value="{{ old('district') }}" required>
                                 @error('district')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="mt-2">
+                                    <label for="district_code" class="form-label text-muted small">District Code:</label>
+                                    <input type="text" class="form-control form-control-sm @error('district_code') is-invalid @enderror" id="district_code"
+                                        name="district_code" placeholder="Prioritized for RMS Push" value="{{ old('district_code') }}">
+                                    @error('district_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-md-6">
                                 <label for="block" class="form-label">Block: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('block') is-invalid @enderror" id="block" name="block"
-                                    placeholder="Enter block" value="{{ old('block') }}" required>
+                                <input type="text" class="form-control @error('block') is-invalid @enderror" id="block"
+                                    name="block" placeholder="Enter block" value="{{ old('block') }}" required>
                                 @error('block')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="mt-2">
+                                    <label for="block_code" class="form-label text-muted small">Block Code:</label>
+                                    <input type="text" class="form-control form-control-sm @error('block_code') is-invalid @enderror" id="block"
+                                        name="block_code" placeholder="Prioritized for RMS Push" value="{{ old('block_code') }}">
+                                     @error('block_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                             <div class="col-md-6">
                                 <label for="panchayat" class="form-label">Panchayat: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('panchayat') is-invalid @enderror" id="panchayat" name="panchayat"
-                                    placeholder="Enter panchayat" value="{{ old('panchayat') }}" required>
+                                <input type="text" class="form-control @error('panchayat') is-invalid @enderror" id="panchayat"
+                                    name="panchayat" placeholder="Enter panchayat" value="{{ old('panchayat') }}" required>
                                 @error('panchayat')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="mt-2">
+                                    <label for="panchayat_code" class="form-label text-muted small">Panchayat Code:</label>
+                                    <input type="text" class="form-control form-control-sm @error('panchayat_code') is-invalid @enderror" id="panchayat_code"
+                                        name="panchayat_code" placeholder="Prioritized for RMS Push" value="{{ old('panchayat_code') }}">
+                                    @error('panchayat_code')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -99,25 +124,26 @@
                                     <div class="ward-chips-container mb-2" id="ward_chips_container">
                                         <!-- Chips will be added here dynamically -->
                                     </div>
-                                    <input type="text" class="form-control" id="ward_input" 
-                                        placeholder="Enter ward number and press Space/Tab/Enter" 
-                                        autocomplete="off">
-                                    <small class="form-text text-muted">Enter ward numbers one at a time. Press Space, Tab, or Enter to add.</small>
+                                    <input type="text" class="form-control" id="ward_input"
+                                        placeholder="Enter ward number and press Space/Tab/Enter" autocomplete="off">
+                                    <small class="form-text text-muted">Enter ward numbers one at a time. Press Space, Tab, or
+                                        Enter to add.</small>
                                 </div>
                             </div>
                             <div class="col-md-6">
                                 <label for="total_poles" class="form-label">Total Poles:</label>
                                 <input type="number" class="form-control" id="total_poles" name="total_poles"
-                                    placeholder="Auto-calculated (10 per ward)" value="{{ old('total_poles') }}" 
-                                    min="0">
-                                <small class="form-text text-muted">Automatically calculated as 10 poles per ward. You can edit if the actual count differs.</small>
+                                    placeholder="Auto-calculated (10 per ward)" value="{{ old('total_poles') }}" min="0">
+                                <small class="form-text text-muted">Automatically calculated as 10 poles per ward. You can edit
+                                    if the actual count differs.</small>
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-md-6">
                                 <label for="mukhiya_contact" class="form-label">Mukhiya Contact:</label>
-                                <input type="text" class="form-control @error('mukhiya_contact') is-invalid @enderror" id="mukhiya_contact" name="mukhiya_contact"
-                                    placeholder="Enter mukhiya contact (optional)" value="{{ old('mukhiya_contact') }}">
+                                <input type="text" class="form-control @error('mukhiya_contact') is-invalid @enderror"
+                                    id="mukhiya_contact" name="mukhiya_contact" placeholder="Enter mukhiya contact (optional)"
+                                    value="{{ old('mukhiya_contact') }}">
                                 @error('mukhiya_contact')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -125,7 +151,8 @@
                         </div>
 
                         <button type="submit" class="btn btn-primary" id="submitBtn">
-                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true" id="submitSpinner"></span>
+                            <span class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"
+                                id="submitSpinner"></span>
                             <span id="submitText">Add Streetlight Site</span>
                         </button>
                     </form>
@@ -162,12 +189,10 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="project_id" class="form-label">Project Name:</label>
-                                <select class="form-select" id="project_id" name="project_id"
-                                    {{ isset($project) && $project ? 'disabled' : '' }}>
+                                <select class="form-select" id="project_id" name="project_id" {{ isset($project) && $project ? 'disabled' : '' }}>
                                     <option value="">Select Project</option>
                                     @foreach ($projects as $proj)
-                                        <option value="{{ $proj->id }}"
-                                            {{ (isset($project) && $project && $project->id == $proj->id) || old('project_id') == $proj->id ? 'selected' : '' }}>
+                                        <option value="{{ $proj->id }}" {{ (isset($project) && $project && $project->id == $proj->id) || old('project_id') == $proj->id ? 'selected' : '' }}>
                                             {{ $proj->project_name }}
                                         </option>
                                     @endforeach
@@ -203,9 +228,8 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="contact" class="form-label">Contact No:</label>
-                                <input type="text" class="form-control" id="contact"
-                                    placeholder="Enter contact number" name="contact_no"
-                                    value="{{ old('contact_no') }}">
+                                <input type="text" class="form-control" id="contact" placeholder="Enter contact number"
+                                    name="contact_no" value="{{ old('contact_no') }}">
                             </div>
                         </div>
 
@@ -216,15 +240,13 @@
                         <div class="form-group row mt-5">
                             <div class="col-md-4">
                                 <label for="meterNumber" class="form-label">Meter Number:</label>
-                                <input type="text" class="form-control" id="meterNumber"
-                                    placeholder="Enter meter number" name="meter_number"
-                                    value="{{ old('meter_number') }}">
+                                <input type="text" class="form-control" id="meterNumber" placeholder="Enter meter number"
+                                    name="meter_number" value="{{ old('meter_number') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="netMeterSI" class="form-label">Net Meter SI. No:</label>
-                                <input type="text" class="form-control" id="netMeterSI"
-                                    placeholder="Enter net meter SI number" name="net_meter_sr_no"
-                                    value="{{ old('net_meter_sr_no') }}">
+                                <input type="text" class="form-control" id="netMeterSI" placeholder="Enter net meter SI number"
+                                    name="net_meter_sr_no" value="{{ old('net_meter_sr_no') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="solarMeterSI" class="form-label">Solar Meter SI No:</label>
@@ -236,9 +258,8 @@
                         <div class="form-group row">
                             <div class="col-md-4">
                                 <label for="capacity" class="form-label">Project Capacity:</label>
-                                <input type="text" class="form-control" id="capacity"
-                                    placeholder="Enter project capacity" name="project_capacity"
-                                    value="{{ old('project_capacity') }}">
+                                <input type="text" class="form-control" id="capacity" placeholder="Enter project capacity"
+                                    name="project_capacity" value="{{ old('project_capacity') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="caNumber" class="form-label">CA Number:</label>
@@ -247,9 +268,8 @@
                             </div>
                             <div class="col-md-4">
                                 <label for="load" class="form-label">Sanction Load:</label>
-                                <input type="text" class="form-control" id="load"
-                                    placeholder="Enter sanction load" name="sanction_load"
-                                    value="{{ old('sanction_load') }}">
+                                <input type="text" class="form-control" id="load" placeholder="Enter sanction load"
+                                    name="sanction_load" value="{{ old('sanction_load') }}">
                             </div>
                         </div>
 
@@ -263,8 +283,8 @@
                                 <label for="loadStatus" class="form-label">Load Enhancement Status:</label>
                                 <select class="form-select" id="loadStatus" name="load_enhancement_status">
                                     <option value="">-- Select Status --</option>
-                                    <option value="Yes"
-                                        {{ old('load_enhancement_status') == 'Yes' ? 'selected' : '' }}>Yes</option>
+                                    <option value="Yes" {{ old('load_enhancement_status') == 'Yes' ? 'selected' : '' }}>Yes
+                                    </option>
                                     <option value="No" {{ old('load_enhancement_status') == 'No' ? 'selected' : '' }}>
                                         No</option>
                                 </select>
@@ -272,17 +292,16 @@
 
                             <div class="col-md-6">
                                 <label for="siteSurvey" class="form-label">Site Survey Status:</label>
-                                <input type="text" class="form-control" id="siteSurvey"
-                                    placeholder="Enter site survey status" name="site_survey_status"
-                                    value="{{ old('site_survey_status') }}">
+                                <input type="text" class="form-control" id="siteSurvey" placeholder="Enter site survey status"
+                                    name="site_survey_status" value="{{ old('site_survey_status') }}">
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-md-4">
                                 <label for="inspectionDate" class="form-label">Material Inspection Date:</label>
                                 <input onclick="document.getElementById('inspectionDate').showPicker()" type="date"
-                                    class="form-control navbar-date-picker" id="inspectionDate"
-                                    name="material_inspection_date" value="{{ old('material_inspection_date') }}">
+                                    class="form-control navbar-date-picker" id="inspectionDate" name="material_inspection_date"
+                                    value="{{ old('material_inspection_date') }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="installationDate" class="form-label">SPP Installation Date:</label>
@@ -302,8 +321,8 @@
 
                         <div class="form-group">
                             <label for="remarks" class="form-label">Remarks:</label>
-                            <textarea class="form-control" style="height:80px;" id="remarks" placeholder="Enter remarks" name="remarks"
-                                rows="16" cols="50">{{ old('remarks') }}</textarea>
+                            <textarea class="form-control" style="height:80px;" id="remarks" placeholder="Enter remarks"
+                                name="remarks" rows="16" cols="50">{{ old('remarks') }}</textarea>
                         </div>
 
                         <button type="submit" class="btn btn-primary">Add Site</button>
@@ -322,7 +341,7 @@
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
                 border: 1px solid #e3e3e3;
             }
-            
+
             /* Ward Chip Styles */
             .ward-input-container {
                 position: relative;
@@ -411,15 +430,33 @@
             }
 
             @keyframes chipSuccess {
-                0% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-                100% { transform: scale(1); }
+                0% {
+                    transform: scale(1);
+                }
+
+                50% {
+                    transform: scale(1.1);
+                }
+
+                100% {
+                    transform: scale(1);
+                }
             }
 
             @keyframes chipError {
-                0%, 100% { transform: translateX(0); }
-                25% { transform: translateX(-5px); }
-                75% { transform: translateX(5px); }
+
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+
+                25% {
+                    transform: translateX(-5px);
+                }
+
+                75% {
+                    transform: translateX(5px);
+                }
             }
 
             .ward-input-container .form-control.is-invalid {
@@ -449,9 +486,9 @@
 
     @push('scripts')
         <script>
-            $(document).ready(function() {
+            $(document).ready(function () {
                 // Rooftop form state/city dropdown
-                $('#state').on('change', function() {
+                $('#state').on('change', function () {
                     var idState = this.value;
                     $("#district").html('');
                     $.ajax({
@@ -462,9 +499,9 @@
                             _token: '{{ csrf_token() }}'
                         },
                         dataType: 'json',
-                        success: function(res) {
+                        success: function (res) {
                             $('#district').html('<option value="">-- Select City --</option>');
-                            $.each(res.cities, function(key, value) {
+                            $.each(res.cities, function (key, value) {
                                 $("#district").append('<option value="' + value.id + '">' +
                                     value.name + '</option>');
                             });
@@ -474,301 +511,301 @@
 
                 // Streetlight form ward chip functionality
                 @if (isset($projectType) && $projectType == 1)
-                let wardChips = [];
-                const wardInput = document.getElementById('ward_input');
-                const wardChipsContainer = document.getElementById('ward_chips_container');
-                const wardHiddenInput = document.getElementById('ward_hidden');
-                const totalPolesInput = document.getElementById('total_poles');
+                    let wardChips = [];
+                    const wardInput = document.getElementById('ward_input');
+                    const wardChipsContainer = document.getElementById('ward_chips_container');
+                    const wardHiddenInput = document.getElementById('ward_hidden');
+                    const totalPolesInput = document.getElementById('total_poles');
 
-                // Initialize from old input if exists
-                @if (old('ward'))
-                    const oldWards = '{{ old('ward') }}'.split(',').map(w => w.trim()).filter(w => w);
-                    oldWards.forEach(ward => {
-                        if (ward && !isNaN(ward)) {
-                            addWardChip(parseInt(ward));
-                        }
-                    });
-                @endif
-
-                // Update hidden input and total poles
-                function updateWardData() {
-                    const wardString = wardChips.sort((a, b) => a - b).join(',');
-                    wardHiddenInput.value = wardString;
-                    totalPolesInput.value = wardChips.length * 10;
-                }
-
-                // Show toast notification
-                function showToast(icon, message) {
-                    Swal.fire({
-                        toast: true,
-                        position: 'top-end',
-                        icon: icon,
-                        title: message,
-                        showConfirmButton: false,
-                        timer: 3000,
-                        timerProgressBar: true,
-                        didOpen: (toast) => {
-                            toast.addEventListener('mouseenter', Swal.stopTimer);
-                            toast.addEventListener('mouseleave', Swal.resumeTimer);
-                        }
-                    });
-                }
-
-                // Add ward chip
-                function addWardChip(wardNumber) {
-                    if (isNaN(wardNumber) || wardNumber <= 0) {
-                        showToast('error', 'Please enter a valid ward number');
-                        wardInput.classList.add('is-invalid');
-                        setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
-                        return false;
-                    }
-                    if (wardChips.includes(wardNumber)) {
-                        showToast('warning', `Ward ${wardNumber} already exists`);
-                        wardInput.classList.add('is-invalid');
-                        setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
-                        return false; // Duplicate
-                    }
-                    wardChips.push(wardNumber);
-                    renderChips();
-                    updateWardData();
-                    
-                    // Show success feedback
-                    const chipElement = wardChipsContainer.querySelector(`[data-ward="${wardNumber}"]`);
-                    if (chipElement) {
-                        chipElement.classList.add('success');
-                        setTimeout(() => chipElement.classList.remove('success'), 1000);
-                    }
-                    
-                    showToast('success', `Ward ${wardNumber} added successfully`);
-                    wardInput.classList.add('is-valid');
-                    setTimeout(() => wardInput.classList.remove('is-valid'), 2000);
-                    return true;
-                }
-
-                // Remove ward chip
-                function removeWardChip(wardNumber) {
-                    wardChips = wardChips.filter(w => w !== wardNumber);
-                    renderChips();
-                    updateWardData();
-                    showToast('info', `Ward ${wardNumber} removed`);
-                }
-
-                // Edit ward chip
-                function editWardChip(oldValue, chipElement) {
-                    const chipValue = chipElement.querySelector('.ward-chip-value');
-                    const chipActions = chipElement.querySelector('.ward-chip-actions');
-                    const input = document.createElement('input');
-                    input.type = 'text';
-                    input.className = 'ward-chip-input';
-                    input.value = oldValue;
-                    input.maxLength = 10;
-                    
-                    // Only allow numbers in edit input
-                    input.addEventListener('input', function(e) {
-                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    });
-                    
-                    chipElement.classList.add('editing');
-                    chipValue.style.display = 'none';
-                    chipActions.style.display = 'none';
-                    chipElement.appendChild(input);
-                    input.focus();
-                    input.select();
-
-                    const saveEdit = () => {
-                        const newValue = parseInt(input.value);
-                        if (!isNaN(newValue) && newValue > 0) {
-                            if (newValue === oldValue) {
-                                // No change, just re-render
-                                renderChips();
-                            } else if (!wardChips.includes(newValue)) {
-                                // Valid new value, update
-                                wardChips = wardChips.map(w => w === oldValue ? newValue : w);
-                                renderChips();
-                                updateWardData();
-                                
-                                // Show success feedback
-                                const chipElement = wardChipsContainer.querySelector(`[data-ward="${newValue}"]`);
-                                if (chipElement) {
-                                    chipElement.classList.add('success');
-                                    setTimeout(() => chipElement.classList.remove('success'), 1000);
-                                }
-                                
-                                showToast('success', `Ward updated from ${oldValue} to ${newValue}`);
-                            } else {
-                                // Duplicate value, remove the old one (new value already exists)
-                                showToast('warning', `Ward ${newValue} already exists. Removing duplicate.`);
-                                removeWardChip(oldValue);
+                    // Initialize from old input if exists
+                    @if (old('ward'))
+                        const oldWards = '{{ old('ward') }}'.split(',').map(w => w.trim()).filter(w => w);
+                        oldWards.forEach(ward => {
+                            if (ward && !isNaN(ward)) {
+                                addWardChip(parseInt(ward));
                             }
-                        } else {
-                            // Invalid value, cancel edit and restore original
-                            showToast('error', 'Invalid ward number. Edit cancelled.');
-                            renderChips();
+                        });
+                    @endif
+
+                        // Update hidden input and total poles
+                        function updateWardData() {
+                            const wardString = wardChips.sort((a, b) => a - b).join(',');
+                            wardHiddenInput.value = wardString;
+                            totalPolesInput.value = wardChips.length * 10;
                         }
-                    };
 
-                    input.addEventListener('blur', saveEdit);
-                    input.addEventListener('keydown', function(e) {
-                        if (e.key === 'Enter') {
-                            e.preventDefault();
-                            saveEdit();
-                        } else if (e.key === 'Escape') {
-                            e.preventDefault();
-                            renderChips();
-                        }
-                    });
-                }
-
-                // Render all chips
-                function renderChips() {
-                    wardChipsContainer.innerHTML = '';
-                    wardChips.sort((a, b) => a - b).forEach(ward => {
-                        const chip = document.createElement('div');
-                        chip.className = 'ward-chip';
-                        chip.dataset.ward = ward;
-                        chip.innerHTML = `
-                            <span class="ward-chip-value">${ward}</span>
-                            <div class="ward-chip-actions">
-                                <button type="button" class="ward-chip-btn edit-btn" 
-                                    data-action="edit" 
-                                    title="Edit">✎</button>
-                                <button type="button" class="ward-chip-btn delete-btn" 
-                                    data-action="delete" 
-                                    title="Delete">×</button>
-                            </div>
-                        `;
-                        wardChipsContainer.appendChild(chip);
-                    });
-                }
-
-                // Event delegation for chip actions
-                wardChipsContainer.addEventListener('click', function(e) {
-                    const button = e.target.closest('.ward-chip-btn');
-                    if (!button) return;
-                    
-                    const chip = button.closest('.ward-chip');
-                    const wardNumber = parseInt(chip.dataset.ward);
-                    const action = button.dataset.action;
-
-                    if (action === 'edit') {
-                        editWardChip(wardNumber, chip);
-                    } else if (action === 'delete') {
-                        removeWardChip(wardNumber);
-                    }
-                });
-
-                // Handle input events
-                wardInput.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ') {
-                        e.preventDefault();
-                        const value = wardInput.value.trim();
-                        if (value && !isNaN(value) && parseInt(value) > 0) {
-                            if (addWardChip(parseInt(value))) {
-                                wardInput.value = '';
-                                wardInput.classList.remove('is-invalid');
+                    // Show toast notification
+                    function showToast(icon, message) {
+                        Swal.fire({
+                            toast: true,
+                            position: 'top-end',
+                            icon: icon,
+                            title: message,
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true,
+                            didOpen: (toast) => {
+                                toast.addEventListener('mouseenter', Swal.stopTimer);
+                                toast.addEventListener('mouseleave', Swal.resumeTimer);
                             }
-                        } else if (value) {
-                            wardInput.classList.add('is-invalid');
+                        });
+                    }
+
+                    // Add ward chip
+                    function addWardChip(wardNumber) {
+                        if (isNaN(wardNumber) || wardNumber <= 0) {
                             showToast('error', 'Please enter a valid ward number');
-                        }
-                    }
-                });
-
-                // Real-time validation for all required fields
-                const requiredFields = ['state', 'district', 'block', 'panchayat'];
-                requiredFields.forEach(fieldId => {
-                    const field = document.getElementById(fieldId);
-                    if (field) {
-                        field.addEventListener('blur', function() {
-                            if (this.value.trim()) {
-                                this.classList.remove('is-invalid');
-                                this.classList.add('is-valid');
-                            } else {
-                                this.classList.remove('is-valid');
-                                this.classList.add('is-invalid');
-                            }
-                        });
-                        
-                        field.addEventListener('input', function() {
-                            if (this.value.trim()) {
-                                this.classList.remove('is-invalid');
-                            }
-                        });
-                    }
-                });
-
-                // Form validation on submit
-                const streetlightForm = document.getElementById('streetlightSiteForm');
-                if (streetlightForm) {
-                    streetlightForm.addEventListener('submit', function(e) {
-                        const submitBtn = document.getElementById('submitBtn');
-                        const submitSpinner = document.getElementById('submitSpinner');
-                        const submitText = document.getElementById('submitText');
-                        
-                        // Basic validation
-                        let isValid = true;
-                        const requiredFields = ['state', 'district', 'block', 'panchayat'];
-                        
-                        requiredFields.forEach(fieldId => {
-                            const field = document.getElementById(fieldId);
-                            if (!field.value.trim()) {
-                                field.classList.add('is-invalid');
-                                isValid = false;
-                            } else {
-                                field.classList.remove('is-invalid');
-                                field.classList.add('is-valid');
-                            }
-                        });
-
-                        if (!isValid) {
-                            e.preventDefault();
-                            showToast('error', 'Please fill in all required fields');
+                            wardInput.classList.add('is-invalid');
+                            setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
                             return false;
                         }
+                        if (wardChips.includes(wardNumber)) {
+                            showToast('warning', `Ward ${wardNumber} already exists`);
+                            wardInput.classList.add('is-invalid');
+                            setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
+                            return false; // Duplicate
+                        }
+                        wardChips.push(wardNumber);
+                        renderChips();
+                        updateWardData();
 
-                        // Show loading state
-                        submitBtn.disabled = true;
-                        submitSpinner.classList.remove('d-none');
-                        submitText.textContent = 'Adding Site...';
+                        // Show success feedback
+                        const chipElement = wardChipsContainer.querySelector(`[data-ward="${wardNumber}"]`);
+                        if (chipElement) {
+                            chipElement.classList.add('success');
+                            setTimeout(() => chipElement.classList.remove('success'), 1000);
+                        }
+
+                        showToast('success', `Ward ${wardNumber} added successfully`);
+                        wardInput.classList.add('is-valid');
+                        setTimeout(() => wardInput.classList.remove('is-valid'), 2000);
+                        return true;
+                    }
+
+                    // Remove ward chip
+                    function removeWardChip(wardNumber) {
+                        wardChips = wardChips.filter(w => w !== wardNumber);
+                        renderChips();
+                        updateWardData();
+                        showToast('info', `Ward ${wardNumber} removed`);
+                    }
+
+                    // Edit ward chip
+                    function editWardChip(oldValue, chipElement) {
+                        const chipValue = chipElement.querySelector('.ward-chip-value');
+                        const chipActions = chipElement.querySelector('.ward-chip-actions');
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.className = 'ward-chip-input';
+                        input.value = oldValue;
+                        input.maxLength = 10;
+
+                        // Only allow numbers in edit input
+                        input.addEventListener('input', function (e) {
+                            e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                        });
+
+                        chipElement.classList.add('editing');
+                        chipValue.style.display = 'none';
+                        chipActions.style.display = 'none';
+                        chipElement.appendChild(input);
+                        input.focus();
+                        input.select();
+
+                        const saveEdit = () => {
+                            const newValue = parseInt(input.value);
+                            if (!isNaN(newValue) && newValue > 0) {
+                                if (newValue === oldValue) {
+                                    // No change, just re-render
+                                    renderChips();
+                                } else if (!wardChips.includes(newValue)) {
+                                    // Valid new value, update
+                                    wardChips = wardChips.map(w => w === oldValue ? newValue : w);
+                                    renderChips();
+                                    updateWardData();
+
+                                    // Show success feedback
+                                    const chipElement = wardChipsContainer.querySelector(`[data-ward="${newValue}"]`);
+                                    if (chipElement) {
+                                        chipElement.classList.add('success');
+                                        setTimeout(() => chipElement.classList.remove('success'), 1000);
+                                    }
+
+                                    showToast('success', `Ward updated from ${oldValue} to ${newValue}`);
+                                } else {
+                                    // Duplicate value, remove the old one (new value already exists)
+                                    showToast('warning', `Ward ${newValue} already exists. Removing duplicate.`);
+                                    removeWardChip(oldValue);
+                                }
+                            } else {
+                                // Invalid value, cancel edit and restore original
+                                showToast('error', 'Invalid ward number. Edit cancelled.');
+                                renderChips();
+                            }
+                        };
+
+                        input.addEventListener('blur', saveEdit);
+                        input.addEventListener('keydown', function (e) {
+                            if (e.key === 'Enter') {
+                                e.preventDefault();
+                                saveEdit();
+                            } else if (e.key === 'Escape') {
+                                e.preventDefault();
+                                renderChips();
+                            }
+                        });
+                    }
+
+                    // Render all chips
+                    function renderChips() {
+                        wardChipsContainer.innerHTML = '';
+                        wardChips.sort((a, b) => a - b).forEach(ward => {
+                            const chip = document.createElement('div');
+                            chip.className = 'ward-chip';
+                            chip.dataset.ward = ward;
+                            chip.innerHTML = `
+                                        <span class="ward-chip-value">${ward}</span>
+                                        <div class="ward-chip-actions">
+                                            <button type="button" class="ward-chip-btn edit-btn" 
+                                                data-action="edit" 
+                                                title="Edit">✎</button>
+                                            <button type="button" class="ward-chip-btn delete-btn" 
+                                                data-action="delete" 
+                                                title="Delete">×</button>
+                                        </div>
+                                    `;
+                            wardChipsContainer.appendChild(chip);
+                        });
+                    }
+
+                    // Event delegation for chip actions
+                    wardChipsContainer.addEventListener('click', function (e) {
+                        const button = e.target.closest('.ward-chip-btn');
+                        if (!button) return;
+
+                        const chip = button.closest('.ward-chip');
+                        const wardNumber = parseInt(chip.dataset.ward);
+                        const action = button.dataset.action;
+
+                        if (action === 'edit') {
+                            editWardChip(wardNumber, chip);
+                        } else if (action === 'delete') {
+                            removeWardChip(wardNumber);
+                        }
                     });
-                }
 
-                // Only allow numbers and filter non-numeric characters
-                wardInput.addEventListener('input', function(e) {
-                    // Filter non-numeric characters
-                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
-                    
-                    // Real-time validation
-                    const value = e.target.value.trim();
-                    if (value && !isNaN(value) && parseInt(value) > 0) {
-                        e.target.classList.remove('is-invalid');
-                        e.target.classList.add('is-valid');
-                    } else if (value) {
-                        e.target.classList.remove('is-valid');
-                        e.target.classList.add('is-invalid');
-                    } else {
-                        e.target.classList.remove('is-valid', 'is-invalid');
+                    // Handle input events
+                    wardInput.addEventListener('keydown', function (e) {
+                        if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ') {
+                            e.preventDefault();
+                            const value = wardInput.value.trim();
+                            if (value && !isNaN(value) && parseInt(value) > 0) {
+                                if (addWardChip(parseInt(value))) {
+                                    wardInput.value = '';
+                                    wardInput.classList.remove('is-invalid');
+                                }
+                            } else if (value) {
+                                wardInput.classList.add('is-invalid');
+                                showToast('error', 'Please enter a valid ward number');
+                            }
+                        }
+                    });
+
+                    // Real-time validation for all required fields
+                    const requiredFields = ['state', 'district', 'block', 'panchayat'];
+                    requiredFields.forEach(fieldId => {
+                        const field = document.getElementById(fieldId);
+                        if (field) {
+                            field.addEventListener('blur', function () {
+                                if (this.value.trim()) {
+                                    this.classList.remove('is-invalid');
+                                    this.classList.add('is-valid');
+                                } else {
+                                    this.classList.remove('is-valid');
+                                    this.classList.add('is-invalid');
+                                }
+                            });
+
+                            field.addEventListener('input', function () {
+                                if (this.value.trim()) {
+                                    this.classList.remove('is-invalid');
+                                }
+                            });
+                        }
+                    });
+
+                    // Form validation on submit
+                    const streetlightForm = document.getElementById('streetlightSiteForm');
+                    if (streetlightForm) {
+                        streetlightForm.addEventListener('submit', function (e) {
+                            const submitBtn = document.getElementById('submitBtn');
+                            const submitSpinner = document.getElementById('submitSpinner');
+                            const submitText = document.getElementById('submitText');
+
+                            // Basic validation
+                            let isValid = true;
+                            const requiredFields = ['state', 'district', 'block', 'panchayat'];
+
+                            requiredFields.forEach(fieldId => {
+                                const field = document.getElementById(fieldId);
+                                if (!field.value.trim()) {
+                                    field.classList.add('is-invalid');
+                                    isValid = false;
+                                } else {
+                                    field.classList.remove('is-invalid');
+                                    field.classList.add('is-valid');
+                                }
+                            });
+
+                            if (!isValid) {
+                                e.preventDefault();
+                                showToast('error', 'Please fill in all required fields');
+                                return false;
+                            }
+
+                            // Show loading state
+                            submitBtn.disabled = true;
+                            submitSpinner.classList.remove('d-none');
+                            submitText.textContent = 'Adding Site...';
+                        });
                     }
-                });
 
-                // Prevent paste of non-numeric content
-                wardInput.addEventListener('paste', function(e) {
-                    e.preventDefault();
-                    const paste = (e.clipboardData || window.clipboardData).getData('text');
-                    const numbers = paste.replace(/[^0-9]/g, '');
-                    if (numbers) {
-                        e.target.value = numbers;
-                        // Trigger input event for validation
-                        e.target.dispatchEvent(new Event('input'));
-                    }
-                });
+                    // Only allow numbers and filter non-numeric characters
+                    wardInput.addEventListener('input', function (e) {
+                        // Filter non-numeric characters
+                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
 
-                // Initialize total poles if no old value
-                @if (!old('total_poles'))
-                    updateWardData();
+                        // Real-time validation
+                        const value = e.target.value.trim();
+                        if (value && !isNaN(value) && parseInt(value) > 0) {
+                            e.target.classList.remove('is-invalid');
+                            e.target.classList.add('is-valid');
+                        } else if (value) {
+                            e.target.classList.remove('is-valid');
+                            e.target.classList.add('is-invalid');
+                        } else {
+                            e.target.classList.remove('is-valid', 'is-invalid');
+                        }
+                    });
+
+                    // Prevent paste of non-numeric content
+                    wardInput.addEventListener('paste', function (e) {
+                        e.preventDefault();
+                        const paste = (e.clipboardData || window.clipboardData).getData('text');
+                        const numbers = paste.replace(/[^0-9]/g, '');
+                        if (numbers) {
+                            e.target.value = numbers;
+                            // Trigger input event for validation
+                            e.target.dispatchEvent(new Event('input'));
+                        }
+                    });
+
+                    // Initialize total poles if no old value
+                    @if (!old('total_poles'))
+                        updateWardData();
+                    @endif
                 @endif
-                @endif
-            });
+                    });
         </script>
     @endpush
 @endsection

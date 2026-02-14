@@ -57,50 +57,77 @@
                         @csrf
                         @method('PUT')
                         <input type="hidden" name="project_id" value="{{ $projectId }}">
-                        <input type="hidden" name="ward" id="ward_hidden"
-                            value="{{ old('ward', $streetlight->ward ?? '') }}">
+                        <input type="hidden" name="ward" id="ward_hidden" value="{{ old('ward', $streetlight->ward ?? '') }}">
 
                         <h6 class="card-subtitle text-bold text-info">Streetlight Site Details</h6>
                         <div class="form-group row mt-5">
                             <div class="col-md-6">
                                 <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('state') is-invalid @enderror"
-                                    id="state" name="state" placeholder="Enter state"
-                                    value="{{ old('state', $streetlight->state ?? '') }}" required>
+                                <input type="text" class="form-control @error('state') is-invalid @enderror" id="state"
+                                    name="state" placeholder="Enter state" value="{{ old('state', $streetlight->state ?? '') }}"
+                                    required>
                                 @error('state')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
                             <div class="col-md-6">
-                                <label for="district" class="form-label">District: <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('district') is-invalid @enderror"
-                                    id="district" name="district" placeholder="Enter district"
+                                <label for="district" class="form-label">District: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('district') is-invalid @enderror" id="district"
+                                    name="district" placeholder="Enter district"
                                     value="{{ old('district', $streetlight->district ?? '') }}" required>
                                 @error('district')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
+                                <div class="mt-2">
+                                    <label for="district_code" class="form-label text-muted small">District Code:</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm @error('district_code') is-invalid @enderror"
+                                        id="district_code" name="district_code" placeholder="Prioritized for RMS Push"
+                                        value="{{ old('district_code', $streetlight->district_code ?? '') }}">
+                                    @error('district_code')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-md-6">
                                 <label for="block" class="form-label">Block: <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('block') is-invalid @enderror"
-                                    id="block" name="block" placeholder="Enter block"
-                                    value="{{ old('block', $streetlight->block ?? '') }}" required>
+                                <input type="text" class="form-control @error('block') is-invalid @enderror" id="block"
+                                    name="block" placeholder="Enter block" value="{{ old('block', $streetlight->block ?? '') }}"
+                                    required>
                                 @error('block')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
+                                <div class="mt-2">
+                                    <label for="block_code" class="form-label text-muted small">Block Code:</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm @error('block_code') is-invalid @enderror"
+                                        id="block_code" name="block_code" placeholder="Prioritized for RMS Push"
+                                        value="{{ old('block_code', $streetlight->block_code ?? '') }}">
+                                    @error('block_code')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                             <div class="col-md-6">
-                                <label for="panchayat" class="form-label">Panchayat: <span
-                                        class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('panchayat') is-invalid @enderror"
-                                    id="panchayat" name="panchayat" placeholder="Enter panchayat"
+                                <label for="panchayat" class="form-label">Panchayat: <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('panchayat') is-invalid @enderror" id="panchayat"
+                                    name="panchayat" placeholder="Enter panchayat"
                                     value="{{ old('panchayat', $streetlight->panchayat ?? '') }}" required>
                                 @error('panchayat')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
+                                <div class="mt-2">
+                                    <label for="panchayat_code" class="form-label text-muted small">Panchayat Code:</label>
+                                    <input type="text"
+                                        class="form-control form-control-sm @error('panchayat_code') is-invalid @enderror"
+                                        id="panchayat_code" name="panchayat_code" placeholder="Prioritized for RMS Push"
+                                        value="{{ old('panchayat_code', $streetlight->panchayat_code ?? '') }}">
+                                    @error('panchayat_code')
+                                        <div class="invalid-feedback d-block">{{ $message }}</div>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -129,8 +156,7 @@
                             <div class="col-md-6">
                                 <label for="mukhiya_contact" class="form-label">Mukhiya Contact:</label>
                                 <input type="text" class="form-control @error('mukhiya_contact') is-invalid @enderror"
-                                    id="mukhiya_contact" name="mukhiya_contact"
-                                    placeholder="Enter mukhiya contact (optional)"
+                                    id="mukhiya_contact" name="mukhiya_contact" placeholder="Enter mukhiya contact (optional)"
                                     value="{{ old('mukhiya_contact', $streetlight->mukhiya_contact ?? '') }}">
                                 @error('mukhiya_contact')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -252,8 +278,7 @@
                         <div class="form-group row mt-5">
                             <div class="col-md-6">
                                 <label for="loadStatus">Load Enhancement Status:</label>
-                                <input type="text" class="form-control" id="loadStatus"
-                                    name="load_enhancement_status"
+                                <input type="text" class="form-control" id="loadStatus" name="load_enhancement_status"
                                     value="{{ old('loadStatus', $site->load_enhancement_status) }}">
                             </div>
                             <div class="col-md-6">
@@ -265,20 +290,17 @@
                         <div class="form-group row">
                             <div class="col-md-4">
                                 <label for="inspectionDate">Material Inspection Date:</label>
-                                <input type="date" class="form-control" id="inspectionDate"
-                                    name="material_inspection_date"
+                                <input type="date" class="form-control" id="inspectionDate" name="material_inspection_date"
                                     value="{{ old('inspectionDate', $site->material_inspection_date) }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="installationDate">SPP Installation Date:</label>
-                                <input type="date" class="form-control" id="installationDate"
-                                    name="spp_installation_date"
+                                <input type="date" class="form-control" id="installationDate" name="spp_installation_date"
                                     value="{{ old('installationDate', $site->spp_installation_date) }}">
                             </div>
                             <div class="col-md-4">
                                 <label for="commissioningDate">Commissioning Date:</label>
-                                <input type="date" class="form-control" id="commissioningDate"
-                                    name="commissioning_date"
+                                <input type="date" class="form-control" id="commissioningDate" name="commissioning_date"
                                     value="{{ old('commissioningDate', $site->commissioning_date) }}">
                             </div>
                         </div>
@@ -287,7 +309,8 @@
 
                         <div class="form-group">
                             <label for="remarks">Remarks:</label>
-                            <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks" rows="4">{{ old('remarks', $site->remarks) }}</textarea>
+                            <textarea class="form-control @error('remarks') is-invalid @enderror" id="remarks" name="remarks"
+                                rows="4">{{ old('remarks', $site->remarks) }}</textarea>
                             @error('remarks')
                                 <div class="invalid-feedback d-block">{{ $message }}</div>
                             @enderror
@@ -458,7 +481,7 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Streetlight form ward chip functionality
             @if (isset($streetlight))
                 let wardChips = [];
@@ -499,36 +522,36 @@
                     });
                 @endif
 
-                // Initialize from old input if exists (after validation errors)
-                @if (old('ward'))
-                    const oldWards = '{{ old('ward') }}'.split(',').map(w => w.trim()).filter(w => w);
-                    wardChips = [];
-                    oldWards.forEach(ward => {
-                        const normalized = normalizeWardValue(ward);
-                        if (normalized && !wardChips.includes(normalized)) {
-                            wardChips.push(normalized);
-                        }
-                    });
-                @endif
+                    // Initialize from old input if exists (after validation errors)
+                    @if (old('ward'))
+                        const oldWards = '{{ old('ward') }}'.split(',').map(w => w.trim()).filter(w => w);
+                        wardChips = [];
+                        oldWards.forEach(ward => {
+                            const normalized = normalizeWardValue(ward);
+                            if (normalized && !wardChips.includes(normalized)) {
+                                wardChips.push(normalized);
+                            }
+                        });
+                    @endif
 
-                // Update hidden input and total poles
-                function updateWardData() {
-                    // Sort for display: numeric wards ascending, then non-numeric (like GP)
-                    const sorted = [...wardChips].sort((a, b) => {
-                        const aIsNum = /^\d+$/.test(a);
-                        const bIsNum = /^\d+$/.test(b);
-                        if (aIsNum && bIsNum) {
-                            return parseInt(a, 10) - parseInt(b, 10);
-                        }
-                        if (aIsNum && !bIsNum) return -1;
-                        if (!aIsNum && bIsNum) return 1;
-                        return a.localeCompare(b);
-                    });
+                    // Update hidden input and total poles
+                    function updateWardData() {
+                        // Sort for display: numeric wards ascending, then non-numeric (like GP)
+                        const sorted = [...wardChips].sort((a, b) => {
+                            const aIsNum = /^\d+$/.test(a);
+                            const bIsNum = /^\d+$/.test(b);
+                            if (aIsNum && bIsNum) {
+                                return parseInt(a, 10) - parseInt(b, 10);
+                            }
+                            if (aIsNum && !bIsNum) return -1;
+                            if (!aIsNum && bIsNum) return 1;
+                            return a.localeCompare(b);
+                        });
 
-                    wardHiddenInput.value = sorted.join(',');
-                    // Each ward entry (numeric or GP) contributes 10 poles by default
-                    totalPolesInput.value = wardChips.length * 10;
-                }
+                        wardHiddenInput.value = sorted.join(',');
+                        // Each ward entry (numeric or GP) contributes 10 poles by default
+                        totalPolesInput.value = wardChips.length * 10;
+                    }
 
                 // Show toast notification
                 function showToast(icon, message) {
@@ -596,7 +619,7 @@
                     input.value = oldValue;
                     input.maxLength = 10;
 
-                    input.addEventListener('input', function(e) {
+                    input.addEventListener('input', function (e) {
                         // Allow only alphanumeric and convert to uppercase (for "GP" or numbers)
                         e.target.value = e.target.value.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
                     });
@@ -638,7 +661,7 @@
                     };
 
                     input.addEventListener('blur', saveEdit);
-                    input.addEventListener('keydown', function(e) {
+                    input.addEventListener('keydown', function (e) {
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             saveEdit();
@@ -658,22 +681,22 @@
                         chip.className = 'ward-chip';
                         chip.dataset.ward = ward;
                         chip.innerHTML = `
-                  <span class="ward-chip-value">${ward}</span>
-                  <div class="ward-chip-actions">
-                      <button type="button" class="ward-chip-btn edit-btn" 
-                          data-action="edit" 
-                          title="Edit">✎</button>
-                      <button type="button" class="ward-chip-btn delete-btn" 
-                          data-action="delete" 
-                          title="Delete">×</button>
-                  </div>
-              `;
+                                  <span class="ward-chip-value">${ward}</span>
+                                  <div class="ward-chip-actions">
+                                      <button type="button" class="ward-chip-btn edit-btn" 
+                                          data-action="edit" 
+                                          title="Edit">✎</button>
+                                      <button type="button" class="ward-chip-btn delete-btn" 
+                                          data-action="delete" 
+                                          title="Delete">×</button>
+                                  </div>
+                              `;
                         wardChipsContainer.appendChild(chip);
                     });
                 }
 
                 // Event delegation for chip actions
-                wardChipsContainer.addEventListener('click', function(e) {
+                wardChipsContainer.addEventListener('click', function (e) {
                     const button = e.target.closest('.ward-chip-btn');
                     if (!button) return;
 
@@ -689,7 +712,7 @@
                 });
 
                 // Handle input events
-                wardInput.addEventListener('keydown', function(e) {
+                wardInput.addEventListener('keydown', function (e) {
                     if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ') {
                         e.preventDefault();
                         const value = wardInput.value.trim();
@@ -711,7 +734,7 @@
                 requiredFields.forEach(fieldId => {
                     const field = document.getElementById(fieldId);
                     if (field) {
-                        field.addEventListener('blur', function() {
+                        field.addEventListener('blur', function () {
                             if (this.value.trim()) {
                                 this.classList.remove('is-invalid');
                                 this.classList.add('is-valid');
@@ -721,7 +744,7 @@
                             }
                         });
 
-                        field.addEventListener('input', function() {
+                        field.addEventListener('input', function () {
                             if (this.value.trim()) {
                                 this.classList.remove('is-invalid');
                             }
@@ -732,7 +755,7 @@
                 // Form validation on submit
                 const streetlightForm = document.getElementById('streetlightSiteForm');
                 if (streetlightForm) {
-                    streetlightForm.addEventListener('submit', function(e) {
+                    streetlightForm.addEventListener('submit', function (e) {
                         const submitBtn = document.getElementById('submitBtn');
                         const submitSpinner = document.getElementById('submitSpinner');
                         const submitText = document.getElementById('submitText');
@@ -764,7 +787,7 @@
                 }
 
                 // Allow numbers and special code "GP" and filter invalid characters
-                wardInput.addEventListener('input', function(e) {
+                wardInput.addEventListener('input', function (e) {
                     // Allow digits and letters for special ward "GP"
                     e.target.value = e.target.value.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
 
@@ -782,7 +805,7 @@
                 });
 
                 // Prevent paste of invalid content
-                wardInput.addEventListener('paste', function(e) {
+                wardInput.addEventListener('paste', function (e) {
                     e.preventDefault();
                     const paste = (e.clipboardData || window.clipboardData).getData('text');
                     const cleaned = paste.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
@@ -796,6 +819,6 @@
                 renderChips();
                 updateWardData();
             @endif
-        });
+                });
     </script>
 @endpush

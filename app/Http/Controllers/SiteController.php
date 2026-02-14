@@ -215,6 +215,9 @@ class SiteController extends Controller
                     'ward' => 'nullable|string|max:255',
                     'total_poles' => 'nullable|integer|min:0',
                     'mukhiya_contact' => 'nullable|string|max:255',
+                    'district_code' => 'nullable|string|max:255',
+                    'block_code' => 'nullable|string|max:255',
+                    'panchayat_code' => 'nullable|string|max:255',
                 ]);
 
                 // Check for existing site with same District->Block->Panchayat
@@ -226,10 +229,10 @@ class SiteController extends Controller
 
                 if ($existingSite) {
                     // Parse wards
-                    $existingWards = !empty($existingSite->ward) 
+                    $existingWards = !empty($existingSite->ward)
                         ? array_map('intval', explode(',', $existingSite->ward))
                         : [];
-                    $newWards = !empty($validatedData['ward']) 
+                    $newWards = !empty($validatedData['ward'])
                         ? array_map('intval', explode(',', $validatedData['ward']))
                         : [];
 
@@ -255,9 +258,12 @@ class SiteController extends Controller
                         $existingSite->update([
                             'ward' => $mergedWardsString,
                             'total_poles' => $newTotalPoles,
-                            'mukhiya_contact' => !empty($validatedData['mukhiya_contact']) 
-                                ? $validatedData['mukhiya_contact'] 
+                            'mukhiya_contact' => !empty($validatedData['mukhiya_contact'])
+                                ? $validatedData['mukhiya_contact']
                                 : $existingSite->mukhiya_contact,
+                            'district_code' => $validatedData['district_code'] ?? $existingSite->district_code,
+                            'block_code' => $validatedData['block_code'] ?? $existingSite->block_code,
+                            'panchayat_code' => $validatedData['panchayat_code'] ?? $existingSite->panchayat_code,
                         ]);
 
                         return redirect()->route('projects.show', $projectId)
@@ -267,13 +273,13 @@ class SiteController extends Controller
 
                 // No duplicate found -> Create new site
                 $validatedData['task_id'] = $this->generateTaskId($validatedData['district']);
-                
+
                 // Calculate total_poles if not provided (10 per ward)
                 if (empty($validatedData['total_poles']) && !empty($validatedData['ward'])) {
                     $wardCount = count(array_map('intval', explode(',', $validatedData['ward'])));
                     $validatedData['total_poles'] = $wardCount * 10;
                 }
-                
+
                 $streetlight = Streetlight::create($validatedData);
 
                 return redirect()->route('projects.show', $projectId)
@@ -469,7 +475,7 @@ class SiteController extends Controller
     {
         try {
             $site = Streetlight::findOrFail($siteId);
-            
+
             $data = [
                 [
                     'complete_pole_number' => 'LAK/SWRAMOHA/WARD 10/1',
@@ -558,7 +564,10 @@ class SiteController extends Controller
                         'panchayat',
                         'ward',
                         'mukhiya_contact',
-                        'total_poles'
+                        'total_poles',
+                        'district_code',
+                        'block_code',
+                        'panchayat_code'
                     ]));
                     return redirect()->route('projects.show', $projectId)
                         ->with('success', 'Streetlight site updated successfully.');
@@ -644,6 +653,39 @@ class SiteController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()
                 ->with('error', 'Failed to delete site: ' . $e->getMessage());
+        }
+    }
+
+    public function downloadImportFormat($projectId)
+    {
+        try {
+            $project = Project::findOrFail($projectId);
+
+            if ($project->project_type == 1) { // Streetlight
+                $data = [
+                    [
+                        'State' => 'Bihar',
+                        'District' => 'Patna',
+                        'Block' => 'Patna Sadar',
+                        'Panchayat' => 'Phulwarisharif',
+                        'Ward' => '1,2,3',
+                        'Ward Type' => 'Type A', // Optional
+                        'Total Poles' => '30',
+                        'Mukhiya Contact' => '9876543210',
+                        'District Code' => 'D001',
+                        'Block Code' => 'B001',
+                        'Panchayat Code' => 'P001'
+                    ]
+                ];
+
+                $filename = 'streetlight_sites_import_format.xlsx';
+                return ExcelHelper::exportToExcel($data, $filename);
+            }
+
+            // Fallback for other types
+            return redirect()->back()->with('error', 'Format not available for this project type.');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Failed to download format: ' . $e->getMessage());
         }
     }
 }
