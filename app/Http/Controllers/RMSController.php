@@ -117,7 +117,7 @@ class RMSController extends Controller
         try {
             // Fetch project details
             $project = Project::find($validated['project_id']);
-            $projectName = $project->project_id == 11 ? 'SUGS' : 'SUGS Phase 4'; // Default or fallback
+            $projectName = $project->id == 11 ? 'SUGS' : 'SUGS Phase 4'; // Default or fallback
 
             // 2. Update codes if provided (Transactions for data integrity)
             if (!empty($validated['district_code']) || !empty($validated['block_code']) || !empty($validated['panchayat_code'])) {

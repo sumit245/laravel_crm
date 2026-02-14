@@ -61,6 +61,9 @@ class JICRController extends Controller
         if ($request->has('project_id')) {
             $query->where('project_id', $request->input('project_id'));
         }
+        if ($request->has('district')) {
+            $query->where('district', $request->input('district'));
+        }
 
         $panchayats = $query->get();
 
@@ -68,6 +71,9 @@ class JICRController extends Controller
         $blockCodeQuery = Streetlight::where('block', $block);
         if ($request->has('project_id')) {
             $blockCodeQuery->where('project_id', $request->input('project_id'));
+        }
+        if ($request->has('district')) {
+            $blockCodeQuery->where('district', $request->input('district'));
         }
         $blockCode = $blockCodeQuery->whereNotNull('block_code')
             ->where('block_code', '!=', '')
@@ -88,6 +94,12 @@ class JICRController extends Controller
 
         if ($request->has('project_id')) {
             $query->where('project_id', $request->input('project_id'));
+        }
+        if ($request->has('district')) {
+            $query->where('district', $request->input('district'));
+        }
+        if ($request->has('block')) {
+            $query->where('block', $request->input('block'));
         }
 
         $wardString = $query->pluck('ward')->first(); // Assuming one row per panchayat

@@ -184,7 +184,10 @@
                 $('#districtCodeContainer').show();
 
                 if (block && projectId) {
-                    var url = '/jicr/panchayats/' + block + '?project_id=' + projectId;
+                    var district = $('#districtSelect').val(); // Get selected district
+                    var url = '/jicr/panchayats/' + encodeURIComponent(block) + 
+                              '?project_id=' + projectId + 
+                              '&district=' + encodeURIComponent(district);
 
                     $.ajax({
                         url: url,
@@ -210,12 +213,16 @@
             // 4. Panchayat Selection -> Fetch Code
             $('#panchayatSelect').on('change', function () {
                 var panchayat = $(this).val();
-                var projectId = $('#projectSelect').val();
+                var district = $('#districtSelect').val();
+                var block = $('#blockSelect').val();
 
                 $('#panchayatCodeContainer').hide();
 
                 if (panchayat && projectId) {
-                    var url = '/jicr/ward/' + panchayat + '?project_id=' + projectId;
+                    var url = '/jicr/ward/' + encodeURIComponent(panchayat) +
+                        '?project_id=' + projectId +
+                        '&district=' + encodeURIComponent(district) +
+                        '&block=' + encodeURIComponent(block);
 
                     $.ajax({
                         url: url,
@@ -295,10 +302,10 @@
                             icon: 'success',
                             title: 'Push Completed!',
                             html: `<strong>${response.message}</strong><br><br>
-                                               <div class="text-left">
-                                                   <p><strong>Success:</strong> ${response.success_count || 0} pole(s)</p>
-                                                   <p><strong>Errors:</strong> ${response.error_count || 0} pole(s)</p>
-                                               </div>`,
+                                                   <div class="text-left">
+                                                       <p><strong>Success:</strong> ${response.success_count || 0} pole(s)</p>
+                                                       <p><strong>Errors:</strong> ${response.error_count || 0} pole(s)</p>
+                                                   </div>`,
                             confirmButtonText: 'View Report',
                             showCancelButton: true,
                             cancelButtonText: 'Close'
