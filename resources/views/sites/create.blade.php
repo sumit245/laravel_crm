@@ -57,7 +57,7 @@
 
                         <h6 class="card-subtitle text-bold text-info">Streetlight Site Details</h6>
                         <div class="form-group row mt-5">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('state') is-invalid @enderror" id="state"
                                     name="state" placeholder="Enter state" value="{{ old('state') }}" required>
@@ -65,56 +65,60 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                             </div>
-                            </div>
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label for="district" class="form-label">District: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('district') is-invalid @enderror" id="district"
                                     name="district" placeholder="Enter district" value="{{ old('district') }}" required>
                                 @error('district')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-2">
-                                    <label for="district_code" class="form-label text-muted small">District Code:</label>
-                                    <input type="text" class="form-control form-control-sm @error('district_code') is-invalid @enderror" id="district_code"
-                                        name="district_code" placeholder="Prioritized for RMS Push" value="{{ old('district_code') }}">
-                                    @error('district_code')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="district_code" class="form-label text-muted small">District Code:</label>
+                                <input type="text"
+                                    class="form-control form-control-sm @error('district_code') is-invalid @enderror"
+                                    id="district_code" name="district_code" placeholder="e.g. 216"
+                                    value="{{ old('district_code') }}">
+                                @error('district_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="form-group row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="block" class="form-label">Block: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('block') is-invalid @enderror" id="block"
                                     name="block" placeholder="Enter block" value="{{ old('block') }}" required>
                                 @error('block')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-2">
-                                    <label for="block_code" class="form-label text-muted small">Block Code:</label>
-                                    <input type="text" class="form-control form-control-sm @error('block_code') is-invalid @enderror" id="block"
-                                        name="block_code" placeholder="Prioritized for RMS Push" value="{{ old('block_code') }}">
-                                     @error('block_code')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-2">
+                                <label for="block_code" class="form-label text-muted small">Block Code:</label>
+                                <input type="text"
+                                    class="form-control form-control-sm @error('block_code') is-invalid @enderror"
+                                    id="block_code" name="block_code" placeholder="e.g. 1207" value="{{ old('block_code') }}">
+                                @error('block_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-4">
                                 <label for="panchayat" class="form-label">Panchayat: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('panchayat') is-invalid @enderror" id="panchayat"
                                     name="panchayat" placeholder="Enter panchayat" value="{{ old('panchayat') }}" required>
                                 @error('panchayat')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-2">
-                                    <label for="panchayat_code" class="form-label text-muted small">Panchayat Code:</label>
-                                    <input type="text" class="form-control form-control-sm @error('panchayat_code') is-invalid @enderror" id="panchayat_code"
-                                        name="panchayat_code" placeholder="Prioritized for RMS Push" value="{{ old('panchayat_code') }}">
-                                    @error('panchayat_code')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="panchayat_code" class="form-label text-muted small">Panchayat Code:</label>
+                                <input type="text"
+                                    class="form-control form-control-sm @error('panchayat_code') is-invalid @enderror"
+                                    id="panchayat_code" name="panchayat_code" placeholder="e.g. 001"
+                                    value="{{ old('panchayat_code') }}">
+                                @error('panchayat_code')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="form-group row">
@@ -664,16 +668,16 @@
                             chip.className = 'ward-chip';
                             chip.dataset.ward = ward;
                             chip.innerHTML = `
-                                        <span class="ward-chip-value">${ward}</span>
-                                        <div class="ward-chip-actions">
-                                            <button type="button" class="ward-chip-btn edit-btn" 
-                                                data-action="edit" 
-                                                title="Edit">✎</button>
-                                            <button type="button" class="ward-chip-btn delete-btn" 
-                                                data-action="delete" 
-                                                title="Delete">×</button>
-                                        </div>
-                                    `;
+                                                    <span class="ward-chip-value">${ward}</span>
+                                                    <div class="ward-chip-actions">
+                                                        <button type="button" class="ward-chip-btn edit-btn" 
+                                                            data-action="edit" 
+                                                            title="Edit">✎</button>
+                                                        <button type="button" class="ward-chip-btn delete-btn" 
+                                                            data-action="delete" 
+                                                            title="Delete">×</button>
+                                                    </div>
+                                                `;
                             wardChipsContainer.appendChild(chip);
                         });
                     }
@@ -695,18 +699,21 @@
                     });
 
                     // Handle input events
+                    // Handle input events
                     wardInput.addEventListener('keydown', function (e) {
                         if (e.key === 'Enter' || e.key === 'Tab' || e.key === ' ') {
                             e.preventDefault();
                             const value = wardInput.value.trim();
-                            if (value && !isNaN(value) && parseInt(value) > 0) {
-                                if (addWardChip(parseInt(value))) {
+                            const normalized = normalizeWardValue(value);
+                            
+                            if (normalized) {
+                                if (addWardChip(normalized)) {
                                     wardInput.value = '';
                                     wardInput.classList.remove('is-invalid');
                                 }
                             } else if (value) {
                                 wardInput.classList.add('is-invalid');
-                                showToast('error', 'Please enter a valid ward number');
+                                showToast('error', 'Please enter a valid ward (number or GP)');
                             }
                         }
                     });
@@ -770,42 +777,101 @@
                         });
                     }
 
-                    // Only allow numbers and filter non-numeric characters
-                    wardInput.addEventListener('input', function (e) {
-                        // Filter non-numeric characters
-                        e.target.value = e.target.value.replace(/[^0-9]/g, '');
+                    // Normalize ward value: allow positive integers and "GP"
+                    function normalizeWardValue(rawValue) {
+                        if (!rawValue) return null;
+                        let value = String(rawValue).trim().toUpperCase();
 
-                        // Real-time validation
+                        // Allow special ward code "GP"
+                        if (value === 'GP') {
+                            return 'GP';
+                        }
+
+                        // Allow only positive integer ward numbers
+                        if (/^\d+$/.test(value)) {
+                            const num = parseInt(value, 10);
+                            if (num > 0) {
+                                return String(num);
+                            }
+                        }
+
+                        return null;
+                    }
+
+                    // Only allow numbers and special code "GP" and filter invalid characters
+                    wardInput.addEventListener('input', function (e) {
+                        // Allow digits and letters for special ward "GP"
+                        e.target.value = e.target.value.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+
                         const value = e.target.value.trim();
-                        if (value && !isNaN(value) && parseInt(value) > 0) {
+                        const normalized = value ? normalizeWardValue(value) : null;
+
+                        // Real-time validation visual feedback
+                        if (normalized) {
                             e.target.classList.remove('is-invalid');
                             e.target.classList.add('is-valid');
                         } else if (value) {
+                            // If there is a value but it's not valid (and not empty)
                             e.target.classList.remove('is-valid');
-                            e.target.classList.add('is-invalid');
+                            // We don't immediately mark invalid while typing partial "G", only on blur or if complete junk
+                            if (value.length >= 2 && value !== 'GP' && isNaN(value)) {
+                                e.target.classList.add('is-invalid');
+                            }
                         } else {
                             e.target.classList.remove('is-valid', 'is-invalid');
                         }
                     });
 
-                    // Prevent paste of non-numeric content
+                    // Prevent paste of invalid content
                     wardInput.addEventListener('paste', function (e) {
                         e.preventDefault();
                         const paste = (e.clipboardData || window.clipboardData).getData('text');
-                        const numbers = paste.replace(/[^0-9]/g, '');
-                        if (numbers) {
-                            e.target.value = numbers;
-                            // Trigger input event for validation
+                        const cleaned = paste.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+                        if (cleaned) {
+                            e.target.value = cleaned;
                             e.target.dispatchEvent(new Event('input'));
                         }
                     });
 
-                    // Initialize total poles if no old value
-                    @if (!old('total_poles'))
+                    // Update addWardChip to use normalization
+                    const originalAddWardChip = addWardChip;
+                    addWardChip = function (rawWardValue) {
+                        const wardValue = normalizeWardValue(rawWardValue);
+                        if (!wardValue) {
+                            showToast('error', 'Please enter a valid ward (number or GP)');
+                            wardInput.classList.add('is-invalid');
+                            setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
+                            return false;
+                        }
+
+                        if (wardChips.includes(wardValue)) {
+                            showToast('warning', `Ward ${wardValue} already exists`);
+                            wardInput.classList.add('is-invalid');
+                            setTimeout(() => wardInput.classList.remove('is-invalid'), 2000);
+                            return false;
+                        }
+
+                        wardChips.push(wardValue);
+                        renderChips();
                         updateWardData();
-                    @endif
+
+                        // Show success feedback
+                        const chipElement = wardChipsContainer.querySelector(`[data-ward="${wardValue}"]`);
+                        if (chipElement) {
+                            chipElement.classList.add('success');
+                            setTimeout(() => chipElement.classList.remove('success'), 1000);
+                        }
+
+                        showToast('success', `Ward ${wardValue} added successfully`);
+                        wardInput.classList.add('is-valid');
+                        setTimeout(() => wardInput.classList.remove('is-valid'), 2000);
+                        return true;
+                    };
+
+
+
                 @endif
-                    });
+                            });
         </script>
     @endpush
 @endsection

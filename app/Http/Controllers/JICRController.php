@@ -14,13 +14,27 @@ use Illuminate\Support\Facades\Log;
 class JICRController extends Controller
 {
 
-    public function index()
+    public function index(Request $request)
     {
-        $districts = Streetlight::select('district')->distinct()->get();
-        $projectId = env('JICR_DEFAULT_PROJECT_ID', null);
-        $project = $projectId ? Project::find($projectId) : Project::first();
-        return view('jicr.index', compact('districts', 'project'));
+        // 1. Fetch all street light projects for the dropdown
+        $projects = Project::where('project_type', 1)->get(); // 1 = Streetlight
+
+        $projectId = $request->input('project_id');
+
+        // Base query for fetching districts
+        $districtQuery = Streetlight::select('district')->distinct();
+
+        if ($projectId) {
+            $districtQuery->where('project_id', $projectId);
+            $districts = $districtQuery->get();
+        } else {
+            // New Requirement: strict filtering, so empty if no project selected
+            $districts = collect([]);
+        }
+
+        return view('jicr.index', compact('districts', 'projects', 'projectId'));
     }
+
     public function getBlocks(Request $request, $district)
     {
         // Fetch blocks based on the selected district
@@ -139,6 +153,7 @@ class JICRController extends Controller
         try {
             // Validate the request
             $validated = $request->validate([
+                'project_id' => 'required|integer',
                 'district' => 'required|string',
                 'block' => 'required|string',
                 'panchayat' => 'required|string',
@@ -148,15 +163,29 @@ class JICRController extends Controller
             $normalizedDistrict = strtolower(trim($request->district));
             $normalizedBlock = strtolower(trim($request->block));
             $normalizedPanchayat = strtolower(trim($request->panchayat));
+            $projectId = $request->project_id;
 
-            $streetlight = Streetlight::whereRaw("TRIM(LOWER(district)) = ?", [$normalizedDistrict])
+            $streetlight = Streetlight::where('project_id', $projectId)
+                ->whereRaw("TRIM(LOWER(district)) = ?", [$normalizedDistrict])
                 ->whereRaw("TRIM(LOWER(block)) = ?", [$normalizedBlock])
                 ->whereRaw("TRIM(LOWER(panchayat)) = ?", [$normalizedPanchayat])
                 ->first();
 
+            Log::info("DEBUG JICR: Project ID: $projectId, District: $normalizedDistrict, Block: $normalizedBlock, Panchayat: $normalizedPanchayat");
+
+            if (!$streetlight) {
+                Log::info("DEBUG JICR: No streetlight found. Trying loose search.");
+                // Fallback: try LIKE search if strict fails
+                $streetlight = Streetlight::where('project_id', $projectId)
+                    ->where('district', 'LIKE', "%$request->district%")
+                    ->where('block', 'LIKE', "%$request->block%")
+                    ->where('panchayat', 'LIKE', "%$request->panchayat%")
+                    ->first();
+            }
+
             // Check if streetlight exists
             if (!$streetlight) {
-                return back()->with('error', 'No streetlight data found for the selected panchayat.');
+                return back()->with('error', 'No streetlight data found for the selected criteria.');
             }
 
             Log::info($streetlight);
@@ -202,15 +231,15 @@ class JICRController extends Controller
             $data['project_manager_contact'] = '';
 
             if ($assignedTasks) {
-                $data['engineer_name'] = optional($assignedTasks->engineer)->firstName . ' ' . optional($assignedTasks->engineer)->lastName ?? '';
+                $data['engineer_name'] = (optional($assignedTasks->engineer)->firstName ?? '') . ' ' . (optional($assignedTasks->engineer)->lastName ?? '');
                 $data['engineer_image'] = optional($assignedTasks->engineer)->image ?? '';
                 $data['engineer_contact'] = optional($assignedTasks->engineer)->contactNo ?? '';
 
-                $data['vendor_name'] = optional($assignedTasks->vendor)->firstName . ' ' . optional($assignedTasks->vendor)->lastName ?? '';
+                $data['vendor_name'] = (optional($assignedTasks->vendor)->firstName ?? '') . ' ' . (optional($assignedTasks->vendor)->lastName ?? '');
                 $data['vendor_image'] = optional($assignedTasks->vendor)->image ?? '';
                 $data['vendor_contact'] = optional($assignedTasks->vendor)->contactNo ?? '';
 
-                $data['project_manager_name'] = optional($assignedTasks->manager)->firstName . ' ' . optional($assignedTasks->manager)->lastName ?? '';
+                $data['project_manager_name'] = (optional($assignedTasks->manager)->firstName ?? '') . ' ' . (optional($assignedTasks->manager)->lastName ?? '');
                 $data['project_manager_image'] = optional($assignedTasks->manager)->image ?? '';
                 $data['project_manager_contact'] = optional($assignedTasks->manager)->contactNo ?? '';
             }
@@ -272,10 +301,15 @@ class JICRController extends Controller
             $districts = Streetlight::select('district')->distinct()->get();
             $data['districts'] = $districts;
 
+            // Fetch projects for the dropdown
+            $projects = Project::where('project_type', 1)->get();
+
             return view('jicr.index', [
                 'districts' => $districts,
                 'showReport' => true,
                 'data' => $data, // Make sure this is either an object or associative array
+                'projects' => $projects,
+                'projectId' => $projectId,
             ])->with('success', $successMessage);
         } catch (\Exception $e) {
             Log::error('JICR Generation Error: ' . $e->getMessage());

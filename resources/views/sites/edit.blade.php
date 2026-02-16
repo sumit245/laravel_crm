@@ -61,7 +61,7 @@
 
                         <h6 class="card-subtitle text-bold text-info">Streetlight Site Details</h6>
                         <div class="form-group row mt-5">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="state" class="form-label">State: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('state') is-invalid @enderror" id="state"
                                     name="state" placeholder="Enter state" value="{{ old('state', $streetlight->state ?? '') }}"
@@ -70,7 +70,7 @@
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-5">
                                 <label for="district" class="form-label">District: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('district') is-invalid @enderror" id="district"
                                     name="district" placeholder="Enter district"
@@ -78,20 +78,20 @@
                                 @error('district')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-2">
-                                    <label for="district_code" class="form-label text-muted small">District Code:</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm @error('district_code') is-invalid @enderror"
-                                        id="district_code" name="district_code" placeholder="Prioritized for RMS Push"
-                                        value="{{ old('district_code', $streetlight->district_code ?? '') }}">
-                                    @error('district_code')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <label for="district_code" class="form-label text-muted small">District Code:</label>
+                                <input type="text"
+                                    class="form-control form-control-sm @error('district_code') is-invalid @enderror"
+                                    id="district_code" name="district_code" placeholder="e.g. 216"
+                                    value="{{ old('district_code', $streetlight->district_code ?? '') }}">
+                                @error('district_code')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="form-group row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <label for="block" class="form-label">Block: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('block') is-invalid @enderror" id="block"
                                     name="block" placeholder="Enter block" value="{{ old('block', $streetlight->block ?? '') }}"
@@ -99,18 +99,18 @@
                                 @error('block')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-2">
-                                    <label for="block_code" class="form-label text-muted small">Block Code:</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm @error('block_code') is-invalid @enderror"
-                                        id="block_code" name="block_code" placeholder="Prioritized for RMS Push"
-                                        value="{{ old('block_code', $streetlight->block_code ?? '') }}">
-                                    @error('block_code')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-2">
+                                <label for="block_code" class="form-label text-muted small">Block Code:</label>
+                                <input type="text"
+                                    class="form-control form-control-sm @error('block_code') is-invalid @enderror"
+                                    id="block_code" name="block_code" placeholder="e.g. 1207"
+                                    value="{{ old('block_code', $streetlight->block_code ?? '') }}">
+                                @error('block_code')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
+                            </div>
+                            <div class="col-md-4">
                                 <label for="panchayat" class="form-label">Panchayat: <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('panchayat') is-invalid @enderror" id="panchayat"
                                     name="panchayat" placeholder="Enter panchayat"
@@ -118,16 +118,16 @@
                                 @error('panchayat')
                                     <div class="invalid-feedback d-block">{{ $message }}</div>
                                 @enderror
-                                <div class="mt-2">
-                                    <label for="panchayat_code" class="form-label text-muted small">Panchayat Code:</label>
-                                    <input type="text"
-                                        class="form-control form-control-sm @error('panchayat_code') is-invalid @enderror"
-                                        id="panchayat_code" name="panchayat_code" placeholder="Prioritized for RMS Push"
-                                        value="{{ old('panchayat_code', $streetlight->panchayat_code ?? '') }}">
-                                    @error('panchayat_code')
-                                        <div class="invalid-feedback d-block">{{ $message }}</div>
-                                    @enderror
-                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <label for="panchayat_code" class="form-label text-muted small">Panchayat Code:</label>
+                                <input type="text"
+                                    class="form-control form-control-sm @error('panchayat_code') is-invalid @enderror"
+                                    id="panchayat_code" name="panchayat_code" placeholder="e.g. 001"
+                                    value="{{ old('panchayat_code', $streetlight->panchayat_code ?? '') }}">
+                                @error('panchayat_code')
+                                    <div class="invalid-feedback d-block">{{ $message }}</div>
+                                @enderror
                             </div>
                         </div>
                         <div class="form-group row">
@@ -681,16 +681,16 @@
                         chip.className = 'ward-chip';
                         chip.dataset.ward = ward;
                         chip.innerHTML = `
-                                  <span class="ward-chip-value">${ward}</span>
-                                  <div class="ward-chip-actions">
-                                      <button type="button" class="ward-chip-btn edit-btn" 
-                                          data-action="edit" 
-                                          title="Edit">✎</button>
-                                      <button type="button" class="ward-chip-btn delete-btn" 
-                                          data-action="delete" 
-                                          title="Delete">×</button>
-                                  </div>
-                              `;
+                                          <span class="ward-chip-value">${ward}</span>
+                                          <div class="ward-chip-actions">
+                                              <button type="button" class="ward-chip-btn edit-btn" 
+                                                  data-action="edit" 
+                                                  title="Edit">✎</button>
+                                              <button type="button" class="ward-chip-btn delete-btn" 
+                                                  data-action="delete" 
+                                                  title="Delete">×</button>
+                                          </div>
+                                      `;
                         wardChipsContainer.appendChild(chip);
                     });
                 }
@@ -819,6 +819,6 @@
                 renderChips();
                 updateWardData();
             @endif
-                });
+                    });
     </script>
 @endpush
