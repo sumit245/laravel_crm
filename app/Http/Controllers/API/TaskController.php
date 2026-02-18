@@ -388,6 +388,26 @@ class TaskController extends Controller
             $panchayatFormatted = strtoupper(str_replace(' ', '', $streetlight->panchayat));
             $wardName = strtoupper($validated['ward_name'] ?? '');
 
+            // Fallback: Extract ward from complete_pole_number if ward_name is missing
+            if (empty($wardName) && !empty($validated['complete_pole_number'])) {
+                $parts = explode('/', $validated['complete_pole_number']);
+                $count = count($parts);
+
+                // Check if 2nd last part looks like a ward (starts with W)
+                if ($count >= 2) {
+                    $potentialWard = $parts[$count - 2];
+                    if (str_starts_with(strtoupper($potentialWard), 'W')) {
+                        $wardName = $potentialWard;
+                    }
+                }
+
+                // Check for GP format (last part starts with GP)
+                $lastPart = end($parts);
+                if (str_starts_with(strtoupper($lastPart), 'GP')) {
+                    $wardName = 'GP';
+                }
+            }
+
             if (str_contains($wardName, 'GP')) {
                 // GP Ward Format
                 $validated['complete_pole_number'] = "SUG/{$districtPrefix}/{$blockPrefix}/{$panchayatFormatted}/GP{$poleNumber}";
