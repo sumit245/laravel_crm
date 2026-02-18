@@ -660,34 +660,9 @@ class StoreController extends Controller
 
         // Note: For very large datasets (100k+), standard export might fail due to memory.
         // Usually, chunking is recommended, but keeping existing structure as requested.
-        $items = $query->orderBy('inv.created_at', 'desc')->get();
-
-        $exportData = $items->map(function ($item) {
-            $availability = 'In Stock';
-            if (!empty($item->streetlight_pole_id)) {
-                $availability = 'Consumed';
-            } elseif ($item->dispatch_id) {
-                $availability = 'Dispatched';
-            } elseif (($item->quantity ?? 0) > 0) {
-                $availability = 'In Stock';
-            }
-
-            $vendorName = trim($item->vendor_name ?? '') ?: '-';
-            $dispatchDate = $item->dispatch_date ? \Carbon\Carbon::parse($item->dispatch_date)->format('d/m/Y') : '-';
-            $receivedDate = $item->received_date ? \Carbon\Carbon::parse($item->received_date)->format('d/m/Y') : ($item->created_at ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y') : '-');
-            $simNumber = (($item->item_code ?? '') === 'SL02' && trim((string) ($item->sim_number ?? '')) !== '') ? $item->sim_number : '-';
-
-            return [
-                'Item Code' => $item->item_code,
-                'Item' => $item->item,
-                'Serial Number' => $item->serial_number,
-                'SIM Number' => $simNumber,
-                'Availability' => $availability,
-                'Vendor' => $vendorName,
-                'Dispatch Date' => $dispatchDate,
-                'In Date' => $receivedDate,
-            ];
-        })->toArray();
+        // Note: For very large datasets (100k+), standard export might fail due to memory.
+        // Usually, chunking is recommended, but keeping existing structure as requested.
+        $query->orderBy('inv.created_at', 'desc');
 
         $date = now()->format('dmY');
         $hasFilters = $request->filled('availability') || $request->filled('item_code') || $request->filled('vendor_name');
@@ -723,7 +698,7 @@ class StoreController extends Controller
             $filename = 'Inventory_' . $storeName . '_' . $date . '.xlsx';
         }
 
-        return \App\Helpers\ExcelHelper::exportToExcel($exportData, $filename);
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\InventoryExport($query), $filename);
     }
 
     /**
