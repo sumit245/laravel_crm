@@ -9,6 +9,7 @@ use App\Models\StreetlightTask;
 use App\Repositories\BaseRepository;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Task Repository
@@ -43,7 +44,22 @@ class TaskRepository extends BaseRepository implements TaskRepositoryInterface
             ->with($relations)
             ->where('project_id', $projectId)
             ->orderBy('created_at', 'desc')
+            ->orderBy('created_at', 'desc')
             ->get();
+    }
+
+    /**
+     * Find tasks query by project
+     * 
+     * @param int $projectId
+     * @return Builder
+     */
+    public function findQueryByProject(int $projectId): Builder
+    {
+        return $this->model
+            ->with(['engineer', 'vendor', 'manager', 'project', 'site'])
+            ->where('project_id', $projectId)
+            ->orderBy('created_at', 'desc');
     }
 
     /**

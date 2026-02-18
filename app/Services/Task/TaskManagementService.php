@@ -16,6 +16,7 @@ use App\Services\BaseService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Task Management Service
@@ -498,12 +499,12 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
     }
 
     /**
-     * Get tasks by project
+     * Get tasks query by project for streaming export
      * 
      * @param int $projectId
-     * @return \Illuminate\Database\Eloquent\Collection
+     * @return Builder
      */
-    public function getTasksByProject(int $projectId)
+    public function getTasksQueryByProject(int $projectId)
     {
         $project = Project::findOrFail($projectId);
 
@@ -511,12 +512,22 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
             // Streetlight project
             return StreetlightTask::with(['engineer', 'vendor', 'manager', 'site'])
                 ->where('project_id', $projectId)
-                ->orderBy('created_at', 'desc')
-                ->get();
+                ->orderBy('created_at', 'desc');
         }
 
         // Rooftop project
-        return $this->repository->findByProject($projectId);
+        return $this->repository->findQueryByProject($projectId);
+    }
+
+    /**
+     * Get tasks by project
+     * 
+     * @param int $projectId
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getTasksByProject(int $projectId)
+    {
+        return $this->getTasksQueryByProject($projectId)->get();
     }
 
     /**

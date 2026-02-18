@@ -67,7 +67,7 @@ class TasksController extends Controller
     public function create(Request $request)
     {
         $projectId = $request->input('project_id');
-        
+
         if (!$projectId) {
             $user = auth()->user();
             $projectId = $this->getSelectedProject($request, $user);
@@ -209,7 +209,7 @@ class TasksController extends Controller
             if ($project && $project->project_type == 1) {
                 $task = \App\Models\StreetlightTask::with(['engineer', 'vendor', 'manager', 'site', 'poles'])
                     ->findOrFail($id);
-                
+
                 // Get ward information for conflict checking
                 if ($task->site) {
                     $wardInfo = [
@@ -220,7 +220,7 @@ class TasksController extends Controller
                         'panchayat' => $task->site->panchayat,
                     ];
                 }
-                
+
                 // Get inventory status for current vendor
                 if ($task->vendor_id) {
                     $pendingInventory = \App\Models\InventoryDispatch::where('vendor_id', $task->vendor_id)
@@ -228,7 +228,7 @@ class TasksController extends Controller
                         ->where('isDispatched', true)
                         ->where('is_consumed', false)
                         ->count();
-                    
+
                     $inventoryStatus = [
                         'pending_count' => $pendingInventory,
                         'has_pending' => $pendingInventory > 0,
@@ -252,10 +252,10 @@ class TasksController extends Controller
         $managers = $this->taskService->getAvailableManagers($projectId ?? $task->project_id ?? null);
 
         return view('tasks.edit', [
-            'tasks' => $task, 
+            'tasks' => $task,
             'projectId' => $projectId ?? $task->project_id ?? null,
             'project' => $project,
-            'engineers' => $engineers, 
+            'engineers' => $engineers,
             'vendors' => $vendors,
             'managers' => $managers,
             'wardInfo' => $wardInfo,
@@ -319,7 +319,7 @@ class TasksController extends Controller
                             'billed',
                             'extension_reason',
                         ]);
-                        
+
                         // Log date extension for completed tasks
                         if ($request->has('end_date') && $task->end_date && $request->end_date != $task->end_date) {
                             \Log::info('Date extension for completed task', [
@@ -378,7 +378,7 @@ class TasksController extends Controller
                                 'extension_reason' => $request->input('extension_reason'),
                                 'extended_by' => auth()->id()
                             ]);
-                            
+
                             // Add extension info to description if provided
                             if ($request->has('extension_reason') && !empty($request->extension_reason)) {
                                 $extensionNote = "\n\n[Date Extended on " . now()->format('Y-m-d H:i:s') . "]\n";
@@ -448,7 +448,7 @@ class TasksController extends Controller
 
             // Handle rooftop tasks (Task model)
             $task = $this->taskService->findById($id);
-            
+
             if ($task) {
                 // Prevent reassignment of completed tasks
                 if ($task->status === 'Completed') {
@@ -527,48 +527,12 @@ class TasksController extends Controller
         }
 
         $project = Project::findOrFail($projectId);
-        $tasks = $this->taskService->getTasksByProject($projectId);
 
-        if ($project->project_type == 1) {
-            // Streetlight tasks export
-            $exportData = $tasks->map(function ($task) {
-                return [
-                    'ID' => $task->id,
-                    'Panchayat' => $task->site->panchayat ?? 'N/A',
-                    'Block' => $task->site->block ?? 'N/A',
-                    'District' => $task->site->district ?? 'N/A',
-                    'Engineer' => $task->engineer ? ($task->engineer->firstName . ' ' . $task->engineer->lastName) : 'N/A',
-                    'Vendor' => $task->vendor ? $task->vendor->name : 'N/A',
-                    'Manager' => $task->manager ? ($task->manager->firstName . ' ' . $task->manager->lastName) : 'N/A',
-                    'Status' => $task->status ?? 'N/A',
-                    'Start Date' => $task->start_date ? $task->start_date->format('Y-m-d') : 'N/A',
-                    'End Date' => $task->end_date ? $task->end_date->format('Y-m-d') : 'N/A',
-                    'Billed' => $task->billed ? 'Yes' : 'No',
-                    'Description' => $task->description ?? 'N/A',
-                ];
-            })->toArray();
-        } else {
-            // Rooftop tasks export
-            $exportData = $tasks->map(function ($task) {
-                return [
-                    'ID' => $task->id,
-                    'Task Name' => $task->task_name ?? 'N/A',
-                    'Activity' => $task->activity ?? 'N/A',
-                    'Site Name' => $task->site->site_name ?? 'N/A',
-                    'Engineer' => $task->engineer ? ($task->engineer->firstName . ' ' . $task->engineer->lastName) : 'N/A',
-                    'Vendor' => $task->vendor ? $task->vendor->name : 'N/A',
-                    'Manager' => $task->manager ? ($task->manager->firstName . ' ' . $task->manager->lastName) : 'N/A',
-                    'Status' => $task->status ?? 'N/A',
-                    'Start Date' => $task->start_date ? $task->start_date->format('Y-m-d') : 'N/A',
-                    'End Date' => $task->end_date ? $task->end_date->format('Y-m-d') : 'N/A',
-                    'Approved By' => $task->approved_by ?? 'N/A',
-                    'Description' => $task->description ?? 'N/A',
-                ];
-            })->toArray();
-        }
-
+        // Get query builder for streaming export
+        $query = $this->taskService->getTasksQueryByProject($projectId);
         $filename = 'tasks_' . $project->project_name . '_' . date('Y-m-d') . '.xlsx';
-        return ExcelHelper::exportToExcel($exportData, $filename);
+
+        return \Maatwebsite\Excel\Facades\Excel::download(new \App\Exports\TasksExport($query, $project->project_type), $filename);
     }
 
     /**
@@ -639,7 +603,7 @@ class TasksController extends Controller
                 // Check each completed pole's ward against task wards
                 foreach ($completedPoles as $pole) {
                     $poleWard = $pole->ward_name ?? null;
-                    
+
                     // Check if pole ward matches any task ward
                     if ($poleWard && in_array($poleWard, $taskWards)) {
                         $hasConflict = true;
@@ -654,7 +618,7 @@ class TasksController extends Controller
             return response()->json([
                 'has_conflict' => $hasConflict,
                 'conflict_details' => $conflictDetails,
-                'message' => $hasConflict 
+                'message' => $hasConflict
                     ? 'Vendor has completed installations in the same wards'
                     : 'No ward conflicts found'
             ]);

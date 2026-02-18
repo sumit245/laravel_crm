@@ -5,6 +5,7 @@ namespace App\Contracts;
 use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 
 /**
  * Task Repository Interface
@@ -21,6 +22,14 @@ interface TaskRepositoryInterface extends RepositoryInterface
      * @return Collection
      */
     public function findByProject(int $projectId, array $with = []): Collection;
+
+    /**
+     * Find tasks query by project
+     * 
+     * @param int $projectId
+     * @return Builder
+     */
+    public function findQueryByProject(int $projectId): Builder;
 
     /**
      * Find tasks assigned to specific engineer

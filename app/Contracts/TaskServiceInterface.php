@@ -170,4 +170,12 @@ interface TaskServiceInterface extends ServiceInterface
      * @return \Illuminate\Database\Eloquent\Collection
      */
     public function getAvailableSites(int $projectId);
+
+    /**
+     * Get tasks query by project for streaming export
+     * 
+     * @param int $projectId
+     * @return mixed
+     */
+    public function getTasksQueryByProject(int $projectId);
 }
