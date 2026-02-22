@@ -7,6 +7,17 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Illuminate\Support\Collection;
 
+/**
+ * Generates a blank Excel template for pole data import. Provides pre-formatted headers
+ * (District, Block, Panchayat, Ward, Pole Number, Latitude, Longitude) for bulk pole data entry.
+ *
+ * Data Flow:
+ *   User requests template → Generate Excel with headers + format guidelines → Download
+ *   → Fill → Upload back
+ *
+ * @business-domain Field Operations
+ * @package App\Exports
+ */
 class StreetlightPoleImportFormatExport implements FromCollection, WithHeadings, ShouldAutoSize
 {
     /**

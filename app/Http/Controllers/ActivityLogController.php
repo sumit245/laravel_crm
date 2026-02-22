@@ -7,8 +7,29 @@ use App\Models\Project;
 use App\Models\User;
 use Illuminate\Http\Request;
 
+/**
+ * Audit Trail & Activity Logging — displays a chronological log of all important actions
+ * performed in the system (inventory imports, dispatches, task assignments, etc.). Provides
+ * accountability and traceability for operations.
+ *
+ * Data Flow:
+ *   System actions trigger ActivityLogger → ActivityLog records created → Controller
+ *   fetches paginated logs → Display in timeline view
+ *
+ * @depends-on ActivityLog, ActivityLogger
+ * @business-domain Audit & Compliance
+ * @package App\Http\Controllers
+ */
 class ActivityLogController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * Data flow: HTTP Request → Database Query → Blade View
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function index(Request $request)
     {
         $this->authorize('viewAny', ActivityLog::class);
@@ -60,6 +81,12 @@ class ActivityLogController extends Controller
         return view('activity_logs.index', compact('logs', 'modules', 'actions', 'users', 'projects'));
     }
 
+    /**
+     * Display the specified resource.
+     *
+     * @param  ActivityLog  $activityLog  The activity log record
+     * @return void  
+     */
     public function show(ActivityLog $activityLog)
     {
         $this->authorize('view', $activityLog);

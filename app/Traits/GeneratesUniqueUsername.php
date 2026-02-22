@@ -4,6 +4,11 @@ namespace App\Traits;
 
 use App\Models\User;
 
+/**
+ * Trait GeneratesUniqueUsername
+ *
+ * @package App\Traits
+ */
 trait GeneratesUniqueUsername
 {
     /**

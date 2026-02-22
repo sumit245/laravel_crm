@@ -11,6 +11,18 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Excel importer for bulk target/task creation. Parses site-to-staff assignments from Excel to
+ * create multiple tasks at once.
+ *
+ * Data Flow:
+ *   Excel upload → Parse assignments → Create StreetlightTask or Task records → Assign
+ *   staff
+ *
+ * @depends-on StreetlightTask, Task
+ * @business-domain Field Operations
+ * @package App\Imports
+ */
 class TargetImport implements ToCollection, WithHeadingRow
 {
     protected $projectId;
@@ -19,13 +31,24 @@ class TargetImport implements ToCollection, WithHeadingRow
     protected array $multipleMatches = []; // Track rows with multiple user matches
     protected int $importedCount = 0;
 
-    // Constructor to accept project ID and current user
+    /**
+     * Constructor to accept project ID and current user
+     *
+     * @param  mixed  $projectId  The project identifier
+     * @param  mixed  $currentUser  
+     */
     public function __construct($projectId, $currentUser = null)
     {
         $this->projectId = $projectId;
         $this->currentUser = $currentUser ?? auth()->user();
     }
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @param  Collection  $rows  
+     * @return void  
+     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $index => $row) {

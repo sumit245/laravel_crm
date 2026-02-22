@@ -48,9 +48,16 @@ use App\Models\Meet;
 use App\Models\Site;
 
 /**
- * Repository Service Provider
- * 
- * Binds repository and service interfaces to their implementations
+ * Dependency injection configuration that binds all interfaces to their concrete implementations.
+ * This is the architectural backbone that enables the Repository-Service pattern, allowing
+ * controllers to depend on interfaces rather than concrete classes.
+ *
+ * Data Flow:
+ *   Boot: Registers interface → implementation bindings → Laravel IoC container resolves
+ *   dependencies at runtime
+ *
+ * @business-domain Architecture
+ * @package App\Providers
  */
 class RepositoryServiceProvider extends ServiceProvider
 {

@@ -7,6 +7,17 @@ use Illuminate\Support\Facades\View;
 use App\Models\State;
 use Illuminate\Support\Facades\Cache;
 
+/**
+ * Core application service provider. Registers global application services, view composers, and
+ * model observers. Sets up default Eloquent behaviors and pagination configuration.
+ *
+ * Data Flow:
+ *   Application boots → AppServiceProvider registers services → Configures defaults →
+ *   Services available throughout lifecycle
+ *
+ * @business-domain Architecture
+ * @package App\Providers
+ */
 class AppServiceProvider extends ServiceProvider
 {
     /**

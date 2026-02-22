@@ -6,6 +6,17 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Http;
 
+/**
+ * WhatsApp messaging integration helper. Used for sending OTPs during mobile number changes,
+ * meeting notifications to attendees, and other automated messages via WhatsApp Business API.
+ *
+ * Data Flow:
+ *   Caller prepares message → WhatsappHelper formats payload → POST to WhatsApp API →
+ *   Return delivery status
+ *
+ * @business-domain Utility
+ * @package App\Helpers
+ */
 class WhatsappHelper
 {
     /**

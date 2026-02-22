@@ -12,10 +12,30 @@ use App\Services\Inventory\InventoryHistoryService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Handles bulk target (task) deletion with associated data cleanup. For streetlight projects,
+ * this includes deleting poles, returning consumed inventory to dispatched state, updating site
+ * counts, and processing in chunks to avoid timeouts.
+ *
+ * Data Flow:
+ *   Select targets → Dispatch async job → Process chunks → Delete poles + dispatch
+ *   records → Update site counts → Report progress
+ *
+ * @depends-on StreetlightTask, Pole, InventoryDispatch, Streetlight
+ * @business-domain Field Operations
+ * @package App\Services\Task
+ */
 class TargetDeletionService extends BaseService
 {
     protected InventoryHistoryService $historyService;
 
+    /**
+     * Create a new TargetDeletionService instance.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  InventoryHistoryService  $historyService  
+     */
     public function __construct(InventoryHistoryService $historyService)
     {
         $this->historyService = $historyService;

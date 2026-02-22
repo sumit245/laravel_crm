@@ -13,9 +13,17 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 
 /**
- * Dashboard Analytics Service
- * 
- * Handles all analytics calculations for the redesigned dashboard
+ * Analytics engine for the main dashboard. Computes district-wise performance metrics, top
+ * performer leaderboards, meeting summaries, and TA/DA financial overviews. Designed for
+ * efficiency with aggregate DB queries instead of loading full datasets.
+ *
+ * Data Flow:
+ *   Called by HomeController → Accepts user + filters → Runs optimized aggregate queries
+ *   → Returns structured analytics data
+ *
+ * @depends-on User, Project, Pole, Streetlight, StreetlightTask, Meet, Tada
+ * @business-domain Dashboard & Reporting
+ * @package App\Services\Dashboard
  */
 class DashboardAnalyticsService
 {

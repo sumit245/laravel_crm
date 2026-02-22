@@ -12,9 +12,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Task Repository
- * 
- * Handles all task data access operations for both Task and StreetlightTask models
+ * Data access layer for tasks/targets. Handles complex task queries involving staff assignments,
+ * site relationships, status filtering, and completion statistics.
+ *
+ * Data Flow:
+ *   TaskService → TaskRepository → Eloquent queries with multiple joins → Task data with
+ *   relationships + statistics
+ *
+ * @depends-on Task, StreetlightTask, User, Streetlight
+ * @business-domain Field Operations
+ * @package App\Repositories\Task
  */
 class TaskRepository extends BaseRepository implements TaskRepositoryInterface
 {

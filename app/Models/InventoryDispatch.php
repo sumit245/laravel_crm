@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Tracks the dispatch of an inventory item from a store to a vendor. Links serial number to
+ * vendor, records dispatch date and value. When the vendor installs the item on a pole, the
+ * streetlight_pole_id is set and is_consumed is marked true.
+ *
+ * Data Flow:
+ *   Create on dispatch → Link to vendor + store + project → Vendor installs → Link to
+ *   pole (streetlight_pole_id) → Mark consumed → Can be returned if defective
+ *
+ * @depends-on User, Stores, Project, Pole
+ * @business-domain Inventory & Warehouse
+ * @package App\Models
+ */
 class InventoryDispatch extends Model
 {
     use HasFactory;

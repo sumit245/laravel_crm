@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Audit trail for inventory lifecycle events. Records each inventory operation (created,
+ * dispatched, consumed, returned, replaced, locked, unlocked) with before/after quantities and
+ * metadata.
+ *
+ * Data Flow:
+ *   Inventory action occurs → InventoryHistoryService logs event → Record stored → Admin
+ *   reviews audit trail
+ *
+ * @depends-on Inventory, InventoryDispatch, User
+ * @business-domain Inventory & Warehouse
+ * @package App\Models
+ */
 class InventoryHistory extends Model
 {
     use HasFactory;

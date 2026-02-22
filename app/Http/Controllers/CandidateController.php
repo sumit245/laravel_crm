@@ -12,9 +12,29 @@ use App\Models\Candidate;
 use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser; // Install with: composer require smalot/pdfparser
 
+/**
+ * Recruitment & Candidate Management — manages job candidate records during hiring. Supports
+ * candidate registration, document uploads, interview scheduling, status tracking (Applied →
+ * Shortlisted → Interviewed → Hired/Rejected), and search/filter capabilities.
+ *
+ * Data Flow:
+ *   Create candidate → Upload documents → Schedule interview → Update status →
+ *   Filter/search candidates → Excel export
+ *
+ * @depends-on Candidate, Project, User
+ * @business-domain HR & Recruitment
+ * @package App\Http\Controllers
+ */
 class CandidateController extends Controller
 {
-    //
+    /**
+     * 
+     *
+     * Data flow: HTTP Request → Database Query → Blade View
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function index(Request $request)
     {
         $query = Candidate::query();
@@ -45,6 +65,14 @@ class CandidateController extends Controller
     }
 
 
+    /**
+     * Import candidates data from file.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function importCandidates(Request $request)
     {
         $request->validate(['file' => 'required|mimes:xlsx,csv']);
@@ -69,6 +97,11 @@ class CandidateController extends Controller
         }
     }
 
+    /**
+     * Send emails.
+     *
+     * @return void  
+     */
     public function sendEmails()
     {
         $candidates = Candidate::where('status', 'pending')->get();
@@ -81,11 +114,26 @@ class CandidateController extends Controller
         return redirect()->back()->with('success', 'Emails sent successfully.');
     }
 
+    /**
+     * Show upload form.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function showUploadForm($id)
     {
         $candidate = Candidate::findOrFail($id);
         return view('upload', compact('candidate'));
     }
+    /**
+     * Upload documents.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function uploadDocuments(Request $request, $id)
     {
         $candidate = Candidate::findOrFail($id);
@@ -128,6 +176,12 @@ class CandidateController extends Controller
         return redirect()->back()->with('success', 'Documents uploaded and details extracted successfully.');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function destroy($id)
     {
         $candidate = Candidate::findOrFail($id);

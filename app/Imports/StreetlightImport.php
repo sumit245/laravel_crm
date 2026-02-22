@@ -9,6 +9,18 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Excel importer for streetlight panchayat sites. Parses district, block, panchayat, ward, and
+ * target pole count. Creates Streetlight records under the project.
+ *
+ * Data Flow:
+ *   Excel upload → Parse district/panchayat/ward → Create Streetlight records → Set
+ *   target pole count
+ *
+ * @depends-on Streetlight
+ * @business-domain Site Management
+ * @package App\Imports
+ */
 class StreetlightImport implements ToCollection, WithHeadingRow
 {
     protected $projectId;
@@ -18,12 +30,22 @@ class StreetlightImport implements ToCollection, WithHeadingRow
     protected int $updatedCount = 0;
     protected int $skippedCount = 0;
 
-    // Constructor to accept project ID
+    /**
+     * Constructor to accept project ID
+     *
+     * @param  mixed  $projectId  The project identifier
+     */
     public function __construct($projectId)
     {
         $this->projectId = $projectId;
     }
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @param  Collection  $rows  
+     * @return void  
+     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $index => $row) {
@@ -167,21 +189,41 @@ class StreetlightImport implements ToCollection, WithHeadingRow
         }
     }
 
+    /**
+     * Get the errors.
+     *
+     * @return array  Result data array
+     */
     public function getErrors(): array
     {
         return $this->errors;
     }
 
+    /**
+     * Get the imported count.
+     *
+     * @return int  The resulting integer value
+     */
     public function getImportedCount(): int
     {
         return $this->importedCount;
     }
 
+    /**
+     * Get the updated count.
+     *
+     * @return int  The resulting integer value
+     */
     public function getUpdatedCount(): int
     {
         return $this->updatedCount;
     }
 
+    /**
+     * Get the skipped count.
+     *
+     * @return int  The resulting integer value
+     */
     public function getSkippedCount(): int
     {
         return $this->skippedCount;

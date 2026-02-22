@@ -6,6 +6,18 @@ use App\Enums\UserRole;
 use App\Models\ActivityLog;
 use App\Models\User;
 
+/**
+ * Authorization policy for activity log access. Only admins can view the full audit trail.
+ * Project managers can see logs related to their projects. Engineers and vendors have no access.
+ *
+ * Data Flow:
+ *   User tries to access activity logs → Policy checks role → Admin: full access → PM:
+ *   project-scoped → Others: denied
+ *
+ * @depends-on User, ActivityLog
+ * @business-domain Security
+ * @package App\Policies
+ */
 class ActivityLogPolicy
 {
     /**

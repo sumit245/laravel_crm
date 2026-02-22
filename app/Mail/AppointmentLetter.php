@@ -9,6 +9,19 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Appointment letter email for hired candidates. Generates a formal PDF appointment letter with
+ * joining date, designation, and salary details, then sends it as an email attachment to the
+ * candidate.
+ *
+ * Data Flow:
+ *   Candidate hired → Generate appointment letter PDF → Attach to email → Send to
+ *   candidate email address
+ *
+ * @depends-on Candidate
+ * @business-domain HR & Recruitment
+ * @package App\Mail
+ */
 class AppointmentLetter extends Mailable
 {
     use Queueable, SerializesModels;

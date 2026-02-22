@@ -11,6 +11,22 @@ use App\Models\Project;
 use Illuminate\Http\Request;
 use App\Services\Logging\ActivityLogger;
 
+/**
+ * Target / Task Assignment Management — manages work targets assigned to field staff. Targets
+ * are created in bulk by selecting sites/panchayats and assigning engineers, vendors, and project
+ * managers. Supports both streetlight and rooftop project types. Key business rules: completed
+ * tasks cannot be reassigned (historical data preservation), date extensions require reason
+ * logging, and vendor ward-conflict checking prevents duplicate work assignments.
+ *
+ * Data Flow:
+ *   Admin/PM selects project → Choose sites → Assign engineer + vendor + PM →
+ *   TaskService.createBulkTasks() → DB: StreetlightTask or Task record → Edit: Ward
+ *   conflict check (AJAX) → Update with audit logging → Excel export via TasksExport
+ *
+ * @depends-on TaskServiceInterface, ActivityLogger, Project, StreetlightTask, Task, Pole, StoreTaskRequest, UpdateTaskRequest
+ * @business-domain Field Operations
+ * @package App\Http\Controllers
+ */
 class TasksController extends Controller
 {
     public function __construct(
@@ -263,6 +279,12 @@ class TasksController extends Controller
         ]);
     }
 
+    /**
+     * Editrooftop.
+     *
+     * @param  string  $id  The resource identifier
+     * @return void  
+     */
     public function editrooftop(string $id)
     {
         $task = $this->taskService->findById($id);
@@ -516,6 +538,14 @@ class TasksController extends Controller
         }
     }
 
+    /**
+     * Export to excel data to file.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function exportToExcel(Request $request)
     {
         $user = auth()->user();

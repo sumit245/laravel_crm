@@ -3,10 +3,16 @@
 namespace App\Enums;
 
 /**
- * User Role Enumeration
- * 
- * Defines all user roles in the system with their corresponding values and labels.
- * Replaces magic numbers throughout the codebase for better maintainability.
+ * Defines the four user roles in the system: ADMIN (full access), PROJECT_MANAGER (manages a
+ * project's staff and operations), SITE_ENGINEER (performs field surveys and monitors
+ * installation), and VENDOR (performs physical equipment installation).
+ *
+ * Data Flow:
+ *   Used throughout to check permissions → Determines dashboard view → Controls data
+ *   access scope
+ *
+ * @business-domain Core Domain
+ * @package App\Enums
  */
 enum UserRole: int
 {

@@ -13,6 +13,17 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
+/**
+ * Excel importer for bulk vendor creation. Similar to StaffImport but specifically for vendor
+ * accounts with vendor-specific fields.
+ *
+ * Data Flow:
+ *   Excel upload → Parse vendor rows → Create User records with VENDOR role
+ *
+ * @depends-on User
+ * @business-domain Vendor Management
+ * @package App\Imports
+ */
 class VendorImport implements ToCollection, WithHeadingRow, WithCalculatedFormulas
 {
     public int $created = 0;
@@ -20,6 +31,12 @@ class VendorImport implements ToCollection, WithHeadingRow, WithCalculatedFormul
     public int $skipped = 0;
     public array $errors = [];
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @param  Collection  $rows  
+     * @return void  
+     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $index => $row) {
@@ -224,6 +241,11 @@ class VendorImport implements ToCollection, WithHeadingRow, WithCalculatedFormul
         return $user ? $user->id : null;
     }
 
+    /**
+     * Get the summary.
+     *
+     * @return array  Result data array
+     */
     public function getSummary(): array
     {
         return [

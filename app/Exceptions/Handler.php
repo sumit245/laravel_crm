@@ -5,6 +5,18 @@ namespace App\Exceptions;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
 
+/**
+ * Global exception handler for the application. Defines how errors are reported (logged to
+ * storage/logs) and rendered (JSON for API, HTML for web). Customizes error responses for 404,
+ * 403, 500, and validation errors.
+ *
+ * Data Flow:
+ *   Exception thrown → Handler catches → Report: Log to file/external service → Render:
+ *   JSON for API / Blade view for web → Return error response
+ *
+ * @business-domain System Administration
+ * @package App\Exceptions
+ */
 class Handler extends ExceptionHandler
 {
     /**

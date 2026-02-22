@@ -6,10 +6,14 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Repository Interface
- * 
- * Base contract for all repository implementations.
- * Provides standard CRUD operations and common query methods.
+ * Base interface for the Repository pattern. Defines standard CRUD methods (all, find, create,
+ * update, delete) that every repository must implement. Enables database abstraction.
+ *
+ * Data Flow:
+ *   Controller → Service → Repository.method() → Eloquent query → Database
+ *
+ * @business-domain Architecture
+ * @package App\Contracts
  */
 interface RepositoryInterface
 {

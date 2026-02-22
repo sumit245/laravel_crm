@@ -10,12 +10,24 @@ use Maatwebsite\Excel\Concerns\WithTitle;
 use Illuminate\Support\Collection;
 use Maatwebsite\Excel\Concerns\WithMultipleSheets;
 
+/**
+ * Class ExcelSheetExport
+ *
+ * @package App\Helpers
+ */
 class ExcelSheetExport implements FromCollection, WithHeadings, ShouldAutoSize, WithTitle
 {
     protected $data;
     protected $headings;
     protected $title;
 
+    /**
+     * Create a new ExcelSheetExport instance.
+     *
+     * @param  array  $data  The input data array
+     * @param  array  $headings  
+     * @param  string  $title  
+     */
     public function __construct(array $data, array $headings, string $title = 'Sheet')
     {
         $this->data = $data;
@@ -23,16 +35,31 @@ class ExcelSheetExport implements FromCollection, WithHeadings, ShouldAutoSize, 
         $this->title = $title;
     }
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @return void  
+     */
     public function collection()
     {
         return new Collection($this->data);
     }
 
+    /**
+     * Define the column headings for export.
+     *
+     * @return array  Result data array
+     */
     public function headings(): array
     {
         return $this->headings;
     }
 
+    /**
+     * Title.
+     *
+     * @return string  The resulting string value
+     */
     public function title(): string
     {
         return $this->title;
@@ -43,11 +70,21 @@ class MultiSheetExport implements WithMultipleSheets
 {
     protected $sheets;
 
+    /**
+     * Create a new ExcelSheetExport instance.
+     *
+     * @param  array  $sheets  
+     */
     public function __construct(array $sheets)
     {
         $this->sheets = $sheets;
     }
 
+    /**
+     * Sheets.
+     *
+     * @return array  Result data array
+     */
     public function sheets(): array
     {
         $sheetArray = [];

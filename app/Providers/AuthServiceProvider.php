@@ -14,6 +14,18 @@ use App\Policies\UserPolicy;
 use App\Models\ActivityLog;
 use App\Policies\ActivityLogPolicy;
 
+/**
+ * Authentication and authorization service provider. Registers Gate definitions, Policy mappings
+ * (e.g., Project → ProjectPolicy), and custom auth guards used across the application.
+ *
+ * Data Flow:
+ *   Application boots → Register policies → Map models to policies → Gate/Policy checks
+ *   available in controllers/views
+ *
+ * @depends-on ProjectPolicy, StorePolicy, UserPolicy, ActivityLogPolicy
+ * @business-domain Security
+ * @package App\Providers
+ */
 class AuthServiceProvider extends ServiceProvider
 {
     /**

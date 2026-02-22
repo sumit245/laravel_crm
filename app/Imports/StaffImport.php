@@ -14,6 +14,18 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 
+/**
+ * Excel importer for bulk staff creation. Parses employee details (name, role, mobile, email,
+ * project assignment) from Excel to onboard multiple staff members at once.
+ *
+ * Data Flow:
+ *   Excel upload → Parse staff rows → Validate uniqueness → Create User records →
+ *   Assign roles + projects
+ *
+ * @depends-on User
+ * @business-domain Staff & HR
+ * @package App\Imports
+ */
 class StaffImport implements ToCollection, WithHeadingRow, WithCalculatedFormulas
 {
     public int $created = 0;
@@ -21,6 +33,12 @@ class StaffImport implements ToCollection, WithHeadingRow, WithCalculatedFormula
     public int $skipped = 0;
     public array $errors = [];
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @param  Collection  $rows  
+     * @return void  
+     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $index => $row) {
@@ -287,6 +305,11 @@ class StaffImport implements ToCollection, WithHeadingRow, WithCalculatedFormula
         return $user ? $user->id : null;
     }
 
+    /**
+     * Get the summary.
+     *
+     * @return array  Result data array
+     */
     public function getSummary(): array
     {
         return [

@@ -24,6 +24,22 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Inventory Lifecycle Management — handles the full lifecycle of inventory items: receiving
+ * stock via Excel GRN imports (both rooftop and streetlight types), adding individual items with
+ * serial number & SIM uniqueness validation, dispatching items to field vendors (decrementing
+ * store quantity), tracking dispatch history, and supporting item return/replacement flows. Item
+ * codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).
+ *
+ * Data Flow:
+ *   GRN Excel Upload → Validation (serial/SIM uniqueness) → InventoryService → DB Insert
+ *   → Dispatch: Select serials → Validate stock → Create InventoryDispatch records →
+ *   Decrement quantity → Log history → Return/Replace: Reverse dispatch flow
+ *
+ * @depends-on InventoryServiceInterface, InventoryHistoryService, ActivityLogger, InventoryDispatch, InventroyStreetLightModel, Inventory, Project, Stores
+ * @business-domain Inventory & Warehouse
+ * @package App\Http\Controllers
+ */
 class InventoryController extends Controller
 {
     public function __construct(
@@ -97,6 +113,14 @@ class InventoryController extends Controller
         return view('inventory.index', compact('inventory', 'allProjects', 'selectedProject', 'stores', 'projectId', 'storeId'));
     }
 
+    /**
+     * Import data from file.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function import(Request $request)
     {
         $request->validate([
@@ -121,6 +145,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Import streetlight data from file.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function importStreetlight(Request $request)
     {
         $request->validate([
@@ -453,6 +485,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * View inventory.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function viewInventory(Request $request)
     {
         try {
@@ -620,7 +660,14 @@ class InventoryController extends Controller
         }
     }
 
-    // Dispatch Inventory to a vendor
+    /**
+     * Dispatch Inventory to a vendor
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function dispatchInventory(Request $request)
     {
         try {
@@ -1119,6 +1166,12 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * View vendor inventory.
+     *
+     * @param  mixed  $vendorId  The vendor identifier
+     * @return void  
+     */
     public function viewVendorInventory($vendorId)
     {
         Log::info('viewVendorInventory', ['vendorId' => $vendorId]);
@@ -1218,6 +1271,14 @@ class InventoryController extends Controller
         ];
     }
 
+    /**
+     * Check q r.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function checkQR(Request $request)
     {
         try {
@@ -1233,6 +1294,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Show dispatch inventory.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function showDispatchInventory(Request $request)
     {
         $itemCode = $request->item_code;
@@ -1252,6 +1321,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Return inventory.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function returnInventory(Request $request)
     {
         $serial_number = $request->input('serial_number');
@@ -1290,6 +1367,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Replace item.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function replaceItem(Request $request)
     {
         $request->validate([
@@ -1400,6 +1485,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Perform bulk delete operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkDelete(Request $request)
     {
         try {
@@ -1439,6 +1532,14 @@ class InventoryController extends Controller
         }
     }
 
+    /**
+     * Perform bulk return operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkReturn(Request $request)
     {
         try {

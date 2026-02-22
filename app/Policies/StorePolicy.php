@@ -7,6 +7,18 @@ use App\Models\User;
 use App\Enums\UserRole;
 use Illuminate\Auth\Access\Response;
 
+/**
+ * Authorization policy for store/warehouse operations. Controls who can create, view, and manage
+ * inventory stores. Admins and assigned PMs can manage stores; engineers can only view.
+ *
+ * Data Flow:
+ *   User tries store action → Policy checks role + project assignment → Admin: allow all
+ *   → PM: check project → Engineer: view only
+ *
+ * @depends-on User, Stores
+ * @business-domain Security
+ * @package App\Policies
+ */
 class StorePolicy
 {
     /**

@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * User Repository Interface
- * 
- * Defines contract for user data access operations
+ * Contract for user data access. Defines methods for querying users by role, project assignment,
+ * and performance aggregates.
+ *
+ * Data Flow:
+ *   UserService → UserRepository (implements this) → Eloquent queries → User data with
+ *   roles and assignments
+ *
+ * @business-domain Staff & HR
+ * @package App\Contracts
  */
 interface UserRepositoryInterface extends RepositoryInterface
 {

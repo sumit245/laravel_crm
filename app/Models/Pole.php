@@ -5,6 +5,20 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Individual streetlight pole record. Contains GPS coordinates (lat/lng), survey photos (before
+ * image, after image, serial photos), installation status, equipment serial numbers (panel,
+ * luminary, battery), SIM number, and RMS push status. Each pole belongs to a task and
+ * site/panchayat.
+ *
+ * Data Flow:
+ *   Field survey → Create record with GPS + photos → Link serial numbers from inventory
+ *   → Mark installed → Push to RMS → Track in reports
+ *
+ * @depends-on StreetlightTask, Streetlight, InventoryDispatch
+ * @business-domain Field Operations
+ * @package App\Models
+ */
 class Pole extends Model
 {
     use HasFactory;

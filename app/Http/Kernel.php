@@ -4,6 +4,19 @@ namespace App\Http;
 
 use Illuminate\Foundation\Http\Kernel as HttpKernel;
 
+/**
+ * Console kernel — defines the application's scheduled task list. Configures recurring jobs
+ * like database backups, cache clearing, and queue monitoring. Also registers custom Artisan
+ * commands.
+ *
+ * Data Flow:
+ *   Cron triggers → Laravel scheduler checks schedule → Due tasks execute → Log output
+ *   → Next check cycle
+ *
+ * @depends-on BackupDatabase, ReadExcelFile
+ * @business-domain System Administration
+ * @package App\Http
+ */
 class Kernel extends HttpKernel
 {
     /**

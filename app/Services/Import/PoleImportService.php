@@ -11,10 +11,29 @@ use App\Services\Inventory\InventoryHistoryService;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Handles bulk pole import from Excel files. Processes large datasets in chunks for memory
+ * efficiency, validates GPS coordinates and serial numbers, and creates pole records.
+ *
+ * Data Flow:
+ *   Excel upload → Parse in chunks → Validate coordinates + serials → Create Pole
+ *   records → Report success/errors
+ *
+ * @depends-on Pole, Streetlight, ProcessPoleImportChunk
+ * @business-domain Field Operations
+ * @package App\Services\Import
+ */
 class PoleImportService extends BaseService
 {
     protected InventoryHistoryService $historyService;
 
+    /**
+     * Create a new PoleImportService instance.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  InventoryHistoryService  $historyService  
+     */
     public function __construct(InventoryHistoryService $historyService)
     {
         $this->historyService = $historyService;
@@ -226,6 +245,16 @@ class PoleImportService extends BaseService
 
     // ... existing PoleImportService code ...
 
+    /**
+     * Update existing pole with inventory.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  mixed  $pole  
+     * @param  array  $row  The imported data row
+     * @param  mixed  $task  
+     * @return array  Result data array
+     */
     public function updateExistingPoleWithInventory($pole, array $row, $task): array
     {
         // Build new desired items from row

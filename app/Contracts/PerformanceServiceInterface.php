@@ -2,6 +2,17 @@
 
 namespace App\Contracts;
 
+/**
+ * Contract for performance calculation services. Defines methods for computing staff performance
+ * metrics, ranking, and leaderboard data.
+ *
+ * Data Flow:
+ *   PerformanceController → PerformanceService (implements this) → Calculate metrics →
+ *   Return ranked results
+ *
+ * @business-domain Dashboard & Reporting
+ * @package App\Contracts
+ */
 interface PerformanceServiceInterface
 {
     /**

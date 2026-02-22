@@ -7,6 +7,18 @@ use App\Models\{User, Task, Project, Pole, StreetlightTask};
 use Illuminate\Support\Facades\{Cache, DB};
 use Carbon\Carbon;
 
+/**
+ * Calculates staff performance metrics across projects. Computes survey/installation rates,
+ * completion percentages, and ranking scores for leaderboards.
+ *
+ * Data Flow:
+ *   Request with user + project + date range → Query poles/tasks → Calculate metrics →
+ *   Return ranked results
+ *
+ * @depends-on User, Pole, Task, StreetlightTask
+ * @business-domain Dashboard & Reporting
+ * @package App\Services\Performance
+ */
 class PerformanceService implements PerformanceServiceInterface
 {
     private const CACHE_TTL = 900; // 15 minutes

@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Job tracking model for bulk target deletion operations. Records deletion progress, total
+ * targets to delete, processed count, and error log. Supports progress polling from the UI.
+ *
+ * Data Flow:
+ *   Deletion started → Job record created → Chunks processed → Progress polled by UI →
+ *   Completion recorded
+ *
+ * @depends-on ProcessTargetDeletionChunk
+ * @business-domain System Administration
+ * @package App\Models
+ */
 class TargetDeletionJob extends Model
 {
     use HasFactory;

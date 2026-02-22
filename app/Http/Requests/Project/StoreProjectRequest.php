@@ -5,9 +5,17 @@ namespace App\Http\Requests\Project;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Store Project Request
- * 
- * Handles validation for project creation
+ * Validates input for creating a new project. Enforces required fields: project name, type
+ * (streetlight/rooftop), districts, and start date. Prevents creation of projects without
+ * essential configuration.
+ *
+ * Data Flow:
+ *   POST /projects → StoreProjectRequest validates → Pass: controller creates project →
+ *   Fail: redirect back with errors
+ *
+ * @depends-on Project
+ * @business-domain Project Management
+ * @package App\Http\Requests\Project
  */
 class StoreProjectRequest extends FormRequest
 {

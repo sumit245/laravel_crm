@@ -6,6 +6,17 @@ use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * General candidate communication email. Used to send interview invitations, status updates, and
+ * other HR communications to job candidates during the recruitment process.
+ *
+ * Data Flow:
+ *   HR action triggers → Prepare email content → Send to candidate → Track delivery
+ *
+ * @depends-on Candidate
+ * @business-domain HR & Recruitment
+ * @package App\Mail
+ */
 class CandidateMail extends Mailable
 {
     use Queueable, SerializesModels;

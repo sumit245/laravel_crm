@@ -9,10 +9,29 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Centralized logging service for audit trail. Called by controllers and services to record
+ * significant actions (inventory imports, dispatches, task changes, etc.) with context data.
+ *
+ * Data Flow:
+ *   Action occurs → Logger called with entity type + action + metadata → ActivityLog
+ *   record created → Available in audit view
+ *
+ * @depends-on ActivityLog
+ * @business-domain Audit & Compliance
+ * @package App\Services\Logging
+ */
 class ActivityLogger
 {
     private ?Request $request;
 
+    /**
+     * Create a new ActivityLogger instance.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  ?Request  $request  The incoming HTTP request
+     */
     public function __construct(?Request $request = null)
     {
         $this->request = $request ?? request();
@@ -82,6 +101,13 @@ class ActivityLogger
         ];
     }
 
+    /**
+     * Get the user.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @return ?Authenticatable  
+     */
     private function getUser(): ?Authenticatable
     {
         try {

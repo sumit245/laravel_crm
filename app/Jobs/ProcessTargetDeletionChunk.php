@@ -11,6 +11,18 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Background job that processes a chunk of target deletions. Handles cascade cleanup: deletes
+ * poles, returns consumed inventory, updates site counts, and removes task records.
+ *
+ * Data Flow:
+ *   ProjectsController dispatches chunks → Queue worker picks up → Delete poles +
+ *   inventory → Update site counts → Report progress
+ *
+ * @depends-on StreetlightTask, Pole, InventoryDispatch, Streetlight
+ * @business-domain System Administration
+ * @package App\Jobs
+ */
 class ProcessTargetDeletionChunk implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

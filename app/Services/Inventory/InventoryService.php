@@ -13,15 +13,29 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 /**
- * Inventory Management Service
- * 
- * Handles inventory operations using strategy pattern for different project types
+ * Core inventory operations service. Handles adding inventory items with proper model selection
+ * (rooftop vs streetlight), validation, and database operations.
+ *
+ * Data Flow:
+ *   Controller delegates → Service selects model type → Validates uniqueness → Creates
+ *   inventory record
+ *
+ * @depends-on Inventory, InventroyStreetLightModel
+ * @business-domain Inventory & Warehouse
+ * @package App\Services\Inventory
  */
 class InventoryService extends BaseService implements InventoryServiceInterface
 {
     protected InventoryStrategyInterface $strategy;
     protected InventoryHistoryService $historyService;
 
+    /**
+     * Create a new InventoryService instance.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  InventoryHistoryService  $historyService  
+     */
     public function __construct(InventoryHistoryService $historyService)
     {
         $this->historyService = $historyService;

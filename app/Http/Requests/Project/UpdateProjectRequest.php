@@ -6,9 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Update Project Request
- * 
- * Handles validation for project updates
+ * Validates input for updating an existing project. Similar rules to StoreProjectRequest but
+ * allows partial updates and validates against the existing project record to prevent conflicts.
+ *
+ * Data Flow:
+ *   PUT /projects/{id} → UpdateProjectRequest validates → Pass: controller updates project
+ *   → Fail: redirect back with errors
+ *
+ * @depends-on Project
+ * @business-domain Project Management
+ * @package App\Http\Requests\Project
  */
 class UpdateProjectRequest extends FormRequest
 {

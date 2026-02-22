@@ -5,6 +5,18 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\VerifiesEmails;
 
+/**
+ * Email Verification — handles email address verification flow. After registration, sends a
+ * verification email with a signed URL. Verifies the token on click.
+ *
+ * Data Flow:
+ *   User registers → Verification email sent → User clicks link → Token verified →
+ *   email_verified_at set → Access granted
+ *
+ * @depends-on User
+ * @business-domain Authentication
+ * @package App\Http\Controllers\Auth
+ */
 class VerificationController extends Controller
 {
     /*

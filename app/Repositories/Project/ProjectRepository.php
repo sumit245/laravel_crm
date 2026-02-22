@@ -10,9 +10,16 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Project Repository
- * 
- * Handles all data access operations for projects
+ * Data access layer for projects. Handles project queries with eager loading of staff, sites, and
+ * stores. Provides scoped queries based on user role and assignment.
+ *
+ * Data Flow:
+ *   ProjectService → ProjectRepository → Role-scoped Eloquent queries → Project data
+ *   with relationships
+ *
+ * @depends-on Project, User
+ * @business-domain Project Management
+ * @package App\Repositories\Project
  */
 class ProjectRepository extends BaseRepository implements ProjectRepositoryInterface
 {

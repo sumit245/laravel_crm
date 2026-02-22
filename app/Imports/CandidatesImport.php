@@ -7,6 +7,16 @@ use App\Models\Candidate;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
+/**
+ * Excel importer for bulk candidate registration during recruitment drives.
+ *
+ * Data Flow:
+ *   Excel upload → Parse candidate rows → Create Candidate records
+ *
+ * @depends-on Candidate
+ * @business-domain HR & Recruitment
+ * @package App\Imports
+ */
 class CandidatesImport implements ToModel, WithHeadingRow
 {
     /**
@@ -30,7 +40,12 @@ class CandidatesImport implements ToModel, WithHeadingRow
             // 'experience' => $row['experience'] ?? "N/A",
         ]);
     }
-    // Helper function to parse date
+    /**
+     * Helper function to parse date
+     *
+     * @param  mixed  $date  
+     * @return void  
+     */
     private function convertDate($date)
     {
         try {

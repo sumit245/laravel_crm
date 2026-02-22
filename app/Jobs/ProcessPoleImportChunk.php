@@ -13,6 +13,18 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Background job that processes a chunk of pole import data. Part of the chunked import system
+ * that handles large Excel files without hitting memory limits or timeout errors.
+ *
+ * Data Flow:
+ *   PoleImportService dispatches chunks → Queue worker picks up → Process rows → Create
+ *   Pole records → Update progress
+ *
+ * @depends-on Pole, Streetlight
+ * @business-domain System Administration
+ * @package App\Jobs
+ */
 class ProcessPoleImportChunk implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

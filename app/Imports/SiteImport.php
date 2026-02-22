@@ -8,11 +8,26 @@ use App\Models\State;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
+/**
+ * Excel importer for rooftop project sites. Parses site details (name, address, state, city,
+ * pincode) from Excel and creates Site records.
+ *
+ * Data Flow:
+ *   Excel upload → Parse rows → Validate → Create Site records under project
+ *
+ * @depends-on Site
+ * @business-domain Site Management
+ * @package App\Imports
+ */
 class SiteImport implements ToModel, WithHeadingRow
 {
     protected $projectId;
 
-    // Constructor to accept project ID
+    /**
+     * Constructor to accept project ID
+     *
+     * @param  mixed  $projectId  The project identifier
+     */
     public function __construct($projectId)
     {
         $this->projectId = $projectId;

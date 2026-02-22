@@ -7,9 +7,17 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Update Task Request
- * 
- * Validates data for updating an existing task
+ * Validates input for updating an existing task/target. Enforces business rule: completed tasks
+ * with installed poles cannot be reassigned to different staff (protects historical data
+ * integrity).
+ *
+ * Data Flow:
+ *   PUT /tasks/{id} → UpdateTaskRequest validates → Check completion status → Pass:
+ *   controller updates → Fail: redirect with errors
+ *
+ * @depends-on Task, StreetlightTask, User
+ * @business-domain Field Operations
+ * @package App\Http\Requests\Task
  */
 class UpdateTaskRequest extends FormRequest
 {

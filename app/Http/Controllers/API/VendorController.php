@@ -10,6 +10,18 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 
+/**
+ * Vendor Management — handles vendor-specific operations like viewing assigned inventory,
+ * tracking dispatched vs consumed items, and vendor performance summaries.
+ *
+ * Data Flow:
+ *   List vendors for project → View vendor inventory (dispatched items) → Track
+ *   consumption against poles
+ *
+ * @depends-on User, InventoryDispatch, Project
+ * @business-domain Vendor Management
+ * @package App\Http\Controllers\API
+ */
 class VendorController extends Controller
 {
     /**
@@ -35,6 +47,14 @@ class VendorController extends Controller
         ]);
     }
 
+    /**
+     * Show the form for creating a new resource.
+     *
+     * Data flow: HTTP Request → Database Query → Blade View
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function create(Request $request)
     {
         try {
@@ -184,6 +204,15 @@ class VendorController extends Controller
         ]);
     }
 
+    /**
+     * Upload avatar.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function uploadAvatar(Request $request, $id)
     {
         $request->validate([

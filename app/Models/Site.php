@@ -5,6 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Physical project site for rooftop projects. Contains location details (state, city, pincode),
+ * site type, and associated poles. Represents where rooftop solar installations happen.
+ *
+ * Data Flow:
+ *   Import from Excel / Manual create → Assign to task → Field work at site → Poles
+ *   installed → Mark complete
+ *
+ * @depends-on Project, Pole, Task
+ * @business-domain Site Management
+ * @package App\Models
+ */
 class Site extends Model
 {
     use HasFactory;
@@ -66,41 +78,81 @@ class Site extends Model
         'handover_status',
     ];
 
+    /**
+     * Project.
+     *
+     * @return void  
+     */
     public function project()
     {
         return $this->belongsTo(Project::class);
     }
 
+    /**
+     * Inventory.
+     *
+     * @return void  
+     */
     public function inventory()
     {
         return $this->hasMany(Inventory::class);
     }
 
+    /**
+     * Tasks.
+     *
+     * @return void  
+     */
     public function tasks()
     {
         return $this->hasMany(Task::class);
     }
 
+    /**
+     * State relation.
+     *
+     * @return void  
+     */
     public function stateRelation()
     {
         return $this->belongsTo(State::class, 'state', 'id');
     }
 
+    /**
+     * District relation.
+     *
+     * @return void  
+     */
     public function districtRelation()
     {
         return $this->belongsTo(City::class, 'district');
     }
 
+    /**
+     * Project relation.
+     *
+     * @return void  
+     */
     public function projectRelation()
     {
         return $this->belongsTo(Project::class, 'project_id');
     }
 
+    /**
+     * Vendor relation.
+     *
+     * @return void  
+     */
     public function vendorRelation()
     {
         return $this->belongsTo(User::class, 'ic_vendor_name');
     }
 
+    /**
+     * Engineer relation.
+     *
+     * @return void  
+     */
     public function engineerRelation()
     {
         return $this->belongsTo(User::class, 'site_engineer');

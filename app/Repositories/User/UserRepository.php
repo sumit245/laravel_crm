@@ -9,9 +9,16 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * User Repository
- * 
- * Handles all data access operations for users
+ * Data access layer for users/staff. Provides role-filtered queries, project-scoped user lists,
+ * and performance data aggregation queries.
+ *
+ * Data Flow:
+ *   UserService → UserRepository → Role-filtered Eloquent queries → User data with
+ *   assignments
+ *
+ * @depends-on User, Role
+ * @business-domain Staff & HR
+ * @package App\Repositories\User
  */
 class UserRepository extends BaseRepository implements UserRepositoryInterface
 {

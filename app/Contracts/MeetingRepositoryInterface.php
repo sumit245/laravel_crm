@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Meeting Repository Interface
- * 
- * Defines contract for meeting data access operations
+ * Contract for meeting data access. Defines methods for querying meetings with filters, fetching
+ * meetings with discussion points, and aggregating meeting statistics.
+ *
+ * Data Flow:
+ *   MeetingService → MeetingRepository (implements this) → Eloquent queries → Meet +
+ *   DiscussionPoint data
+ *
+ * @business-domain Meetings & Collaboration
+ * @package App\Contracts
  */
 interface MeetingRepositoryInterface extends RepositoryInterface
 {

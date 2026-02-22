@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Work assignment linking a panchayat/site to field staff (engineer + vendor + PM). Contains
+ * assignment dates, status (Pending/In Progress/Completed), and relationship to poles. This is
+ * how field work is assigned and tracked.
+ *
+ * Data Flow:
+ *   Admin assigns site → Create task record → Field app fetches tasks → Survey + Install
+ *   poles → Update status → Complete when all poles done
+ *
+ * @depends-on Streetlight, User, Pole, Project
+ * @business-domain Field Operations
+ * @package App\Models
+ */
 class StreetlightTask extends Model
 {
     use HasFactory;

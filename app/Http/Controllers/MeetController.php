@@ -19,8 +19,28 @@ use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Meeting Minutes & Discussion Tracking — manages formal meetings between project stakeholders
+ * (client, government officials, internal teams). Captures attendees, discussion points with
+ * status tracking (Open → In Progress → Resolved), follow-up scheduling, and discussion point
+ * updates over time. Supports PDF and Excel export of meeting minutes for formal record-keeping.
+ *
+ * Data Flow:
+ *   Create Meeting → Add attendees from staff → Add discussion points → Track status
+ *   changes → Schedule follow-ups → Export PDF/Excel minutes → WhatsApp notification to
+ *   attendees
+ *
+ * @depends-on Meet, DiscussionPoint, DiscussionPointUpdates, FollowUp, User, WhatsappHelper, DomPDF
+ * @business-domain Meetings & Collaboration
+ * @package App\Http\Controllers
+ */
 class MeetController extends Controller
 {
+    /**
+     * Dashboard.
+     *
+     * @return void  
+     */
     public function dashboard()
     {
         $totalMeetings = Meet::where('meet_date', '<=', now())->count();
@@ -156,6 +176,11 @@ class MeetController extends Controller
         ]);
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * @return void  
+     */
     public function index()
     {
         $meets = Meet::withCount('attendees')->latest()->get();
@@ -170,6 +195,11 @@ class MeetController extends Controller
         return view('review-meetings.index', compact('meets', 'usersByRole', 'projects'));
     }
 
+    /**
+     * Show the form for creating a new resource.
+     *
+     * @return void  
+     */
     public function create()
     {
         $meets = Meet::latest()->get();
@@ -178,6 +208,15 @@ class MeetController extends Controller
         return view('review-meetings.create', compact('meets', 'users', 'projects'));
     }
 
+    /**
+     * Details.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function details(Request $request, $id)
     {
         try {
@@ -248,6 +287,14 @@ class MeetController extends Controller
         }
     }
 
+    /**
+     * Store discussion point in the database.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function storeDiscussionPoint(Request $request)
     {
         $request->validate([
@@ -309,6 +356,15 @@ class MeetController extends Controller
             ->with('success', 'New discussion point added successfully!');
     }
 
+    /**
+     * Update discussion point status.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  DiscussionPoint  $point  The discussion point model instance
+     * @return void  
+     */
     public function updateDiscussionPointStatus(Request $request, DiscussionPoint $point)
     {
         $request->validate([
@@ -324,6 +380,14 @@ class MeetController extends Controller
     }
 
 
+    /**
+     * Store discussion point update in the database.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function storeDiscussionPointUpdate(Request $request)
     {
         $request->validate([
@@ -342,6 +406,14 @@ class MeetController extends Controller
             ->with('success', 'Note added successfully!');
     }
 
+    /**
+     * Store a newly created resource in storage.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function store(Request $request)
     {
 
@@ -513,11 +585,23 @@ class MeetController extends Controller
 
         return redirect()->route('meets.index')->with('success', 'Meeting created successfully!');
     }
+    /**
+     * Display the specified resource.
+     *
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function show(Meet $meet)
     {
         return view('review-meetings.show-details');
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function edit(Meet $meet)
     {
         $meet->load('attendees');
@@ -526,6 +610,15 @@ class MeetController extends Controller
         return view('review-meetings.edit', compact('meet', 'users', 'projects'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function update(Request $request, Meet $meet)
     {
 
@@ -647,12 +740,27 @@ class MeetController extends Controller
         return redirect()->route('meets.index')->with('success', 'Meeting updated successfully!');
     }
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function destroy(Meet $meet)
     {
         $meet->delete();
         return redirect()->route('meets.index')->with('success', 'Meeting deleted');
     }
 
+    /**
+     * Schedule follow up.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function scheduleFollowUp(Request $request, Meet $meet)
     {
         $validated = $request->validate([
@@ -692,6 +800,15 @@ class MeetController extends Controller
             ->with('success', 'Follow-up meeting scheduled successfully!');
     }
 
+    /**
+     * Delete discussion point.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  DiscussionPoint  $point  The discussion point model instance
+     * @return void  
+     */
     public function deleteDiscussionPoint(Request $request, DiscussionPoint $point)
     {
         // Check authorization: only admin or meeting creator can delete
@@ -710,6 +827,16 @@ class MeetController extends Controller
             ->with('success', 'Task deleted successfully!');
     }
 
+    /**
+     * Remove attendee.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  Meet  $meet  The meeting model instance
+     * @param  User  $user  The user model instance
+     * @return void  
+     */
     public function removeAttendee(Request $request, Meet $meet, User $user)
     {
         // Check authorization: only admin or meeting creator can remove attendees
@@ -726,6 +853,15 @@ class MeetController extends Controller
             ->with('success', 'Attendee removed successfully!');
     }
 
+    /**
+     * Delete follow up.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  FollowUp  $followUp  The follow-up model instance
+     * @return void  
+     */
     public function deleteFollowUp(Request $request, FollowUp $followUp)
     {
         // Check authorization: only admin or meeting creator can delete follow-ups
@@ -749,11 +885,26 @@ class MeetController extends Controller
             ->with('success', 'Follow-up meeting deleted successfully!');
     }
 
+    /**
+     * Notes.
+     *
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function notes(Meet $meet)
     {
         return view('review-meetings.notes', compact('meet'));
     }
 
+    /**
+     * Update notes.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function updateNotes(Request $request, Meet $meet)
     {
         $data = $request->validate([
@@ -784,6 +935,12 @@ class MeetController extends Controller
         return back()->with('success', 'Notes and whiteboard saved.');
     }
 
+    /**
+     * Export pdf data to file.
+     *
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function exportPdf(Meet $meet)
     {
         $whiteboardBase64 = null;
@@ -800,6 +957,12 @@ class MeetController extends Controller
         return $pdf->download('meeting_' . $meet->id . '.pdf');
     }
 
+    /**
+     * Export excel data to file.
+     *
+     * @param  Meet  $meet  The meeting model instance
+     * @return void  
+     */
     public function exportExcel(Meet $meet)
     {
         return Excel::download(new \App\Exports\MeetingNotesExport($meet), 'meeting_' . $meet->id . '.xlsx');

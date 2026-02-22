@@ -8,6 +8,18 @@ use Illuminate\Foundation\Auth\RegistersUsers;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
+/**
+ * User Registration — handles new user creation with role assignment. Admin-only operation for
+ * creating new staff accounts with appropriate role assignments.
+ *
+ * Data Flow:
+ *   Registration form → Validate input → Hash password → Create user record → Assign
+ *   role → Redirect to staff list
+ *
+ * @depends-on User, RegistersUsers
+ * @business-domain Authentication
+ * @package App\Http\Controllers\Auth
+ */
 class RegisterController extends Controller
 {
     /*

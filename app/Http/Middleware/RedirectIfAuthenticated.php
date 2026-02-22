@@ -8,6 +8,18 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Guest-only route guard. Redirects already-authenticated users away from guest-only pages
+ * (login, register) to the dashboard. Prevents logged-in users from seeing the login form again.
+ *
+ * Data Flow:
+ *   HTTP Request to guest route → Check auth status → Authenticated: redirect to /home →
+ *   Not authenticated: proceed
+ *
+ * @depends-on User
+ * @business-domain Security
+ * @package App\Http\Middleware
+ */
 class RedirectIfAuthenticated
 {
     /**

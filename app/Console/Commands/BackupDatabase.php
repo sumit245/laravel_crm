@@ -7,6 +7,18 @@ use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 
+/**
+ * Artisan console command for automated database backup. Creates a compressed SQL dump of the
+ * entire database and stores it in the configured backup location. Can be scheduled via Laravel's
+ * task scheduler for daily/weekly backups.
+ *
+ * Data Flow:
+ *   php artisan db:backup → Connect to MySQL → mysqldump → Compress → Store in backup
+ *   directory → Log success/failure
+ *
+ * @business-domain System Administration
+ * @package App\Console\Commands
+ */
 class BackupDatabase extends Command
 {
     /**

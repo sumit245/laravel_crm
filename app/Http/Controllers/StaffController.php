@@ -28,6 +28,24 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Employee & Field Staff Management — manages all staff roles: Admin, Project Managers, Site
+ * Engineers, and Vendors. Handles onboarding (create/import from Excel), profile management
+ * (avatar upload, password change, mobile number update via OTP), and performance views. The
+ * staff show page aggregates a staff member's assigned tasks, poles worked on, inventory
+ * dispatched, and panchayat-level progress. Supports bulk operations and WhatsApp OTP for secure
+ * mobile changes.
+ *
+ * Data Flow:
+ *   Admin creates/imports staff → Assign role + project → Staff profile: Show assigned
+ *   tasks, poles, inventory → OTP flow: Request → WhatsApp send → Verify → Update
+ *   mobile → Vendor/Engineer data: Aggregate panchayat-wise pole progress → Push to RMS /
+ *   Delete panchayat with inventory rollback
+ *
+ * @depends-on User, Project, Pole, StreetlightTask, InventoryDispatch, DiscussionPoint, WhatsappHelper, StaffImport, ActivityLogger
+ * @business-domain Staff & HR
+ * @package App\Http\Controllers
+ */
 class StaffController extends Controller
 {
     use GeneratesUniqueUsername;
@@ -61,6 +79,14 @@ class StaffController extends Controller
         return view('staff.index', compact('staff', 'projects', 'departments'));
     }
 
+    /**
+     * Import data from file.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function import(Request $request)
     {
         $request->validate([
@@ -543,6 +569,12 @@ class StaffController extends Controller
 
 
 
+    /**
+     * Update profile.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function updateProfile($id)
     {
         // Self-service: restrict to the logged-in user's own profile
@@ -555,6 +587,14 @@ class StaffController extends Controller
         return view('staff.profile', compact('user'));
     }
 
+    /**
+     * Update profile picture.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function updateProfilePicture(Request $request)
     {
         $request->validate([
@@ -680,6 +720,12 @@ class StaffController extends Controller
             ->back()
             ->with('success', 'Your mobile number has been updated successfully.');
     }
+    /**
+     * Change password.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function changePassword($id)
     {
         $authUser = Auth::user();
@@ -695,6 +741,15 @@ class StaffController extends Controller
         return view('staff.change-password', compact('staff'));
     }
 
+    /**
+     * Update password.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function updatePassword(Request $request, $id)
     {
         $authUser = Auth::user();
@@ -717,12 +772,23 @@ class StaffController extends Controller
             ->with('success', 'Password updated successfully.');
     }
 
+    /**
+     * Show surveyed poles.
+     *
+     * @return void  
+     */
     public function showSurveyedPoles()
     {
         $surveyedPoles = Pole::all();
         return view('staff.surveyedPoles', compact('surveyedPoles'));
     }
 
+    /**
+     * Vendor data.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function vendorData($id)
     {
         $managerid = $id;
@@ -810,6 +876,12 @@ class StaffController extends Controller
         return view('vendor', compact('vendorids', 'vendorPoleCounts', 'vendorPoleCountsToday'));
     }
 
+    /**
+     * Engineer data.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function engineerData($id)
     {
         $managerid = $id;

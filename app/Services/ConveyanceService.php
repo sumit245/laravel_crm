@@ -6,6 +6,18 @@ use App\Models\User;
 use App\Models\Vehicle;
 use App\Models\UserCategory;
 
+/**
+ * Service layer for conveyance/travel claim operations. Handles business rules for fare
+ * calculation, validation, and status management.
+ *
+ * Data Flow:
+ *   Controller delegates → Service applies business rules → Model operations → Return
+ *   result
+ *
+ * @depends-on Conveyance, Vehicle, User
+ * @business-domain Finance & Expense
+ * @package App\Services
+ */
 class ConveyanceService
 {
     /**

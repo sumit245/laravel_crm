@@ -6,6 +6,18 @@ use App\Models\InventoryHistory;
 use App\Services\BaseService;
 use Illuminate\Support\Facades\Auth;
 
+/**
+ * Tracks inventory movement history. Records when items are dispatched, consumed, returned, or
+ * replaced, creating a complete audit trail of inventory lifecycle events.
+ *
+ * Data Flow:
+ *   Dispatch → Log "dispatched" event → Consume → Log "consumed" event → Return →
+ *   Log "returned" event
+ *
+ * @depends-on InventoryHistory, InventoryDispatch
+ * @business-domain Inventory & Warehouse
+ * @package App\Services\Inventory
+ */
 class InventoryHistoryService extends BaseService
 {
     /**

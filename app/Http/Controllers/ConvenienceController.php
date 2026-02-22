@@ -17,6 +17,23 @@ use Illuminate\Http\Request;
 use Log;
 use App\Services\Logging\ActivityLogger;
 
+/**
+ * Travel Allowance & Expense (TA/DA) Management — manages travel conveyance claims submitted by
+ * field staff from the mobile app. Staff submit daily travel records with vehicle type, distance,
+ * and fare. Admins can accept/reject claims individually or in bulk. Also manages TA/DA settings:
+ * vehicle master (types with per-km rates), city categories (A/B/C tier for daily allowance
+ * rates), staff category assignments, and fare configuration.
+ *
+ * Data Flow:
+ *   Field staff submits travel → Conveyance record created → Admin reviews →
+ *   Accept/Reject (individually or bulk) → TADA aggregate view → Settings: Manage
+ *   vehicles, city categories, daily allowance rates, staff categories → View Bills for
+ *   disbursement
+ *
+ * @depends-on Conveyance, Tada, Vehicle, UserCategory, City, dailyfare, travelfare, Journey, HotelExpense, User, ActivityLogger
+ * @business-domain Finance & Expense
+ * @package App\Http\Controllers
+ */
 class ConvenienceController extends Controller
 {
     public function __construct(
@@ -31,6 +48,11 @@ class ConvenienceController extends Controller
         //
     }
 
+    /**
+     * Convenience.
+     *
+     * @return void  
+     */
     public function convenience()
     {
         //
@@ -43,6 +65,12 @@ class ConvenienceController extends Controller
         return view('billing.convenience', compact('cons', 'appliedAmount', 'disbursedAmount', 'rejectedAmount'));
     }
 
+    /**
+     * Showdetailsconveyance.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function showdetailsconveyance($id)
     {
 
@@ -54,6 +82,12 @@ class ConvenienceController extends Controller
         return view('billing.conveyanceDetails', compact('details', 'appliedAmount', 'disbursedAmount', 'rejectedAmount', 'dueclaimAmount'));
     }
 
+    /**
+     * Accept.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function accept($id)
     {
         $conveyance = Conveyance::findOrFail($id);
@@ -68,6 +102,12 @@ class ConvenienceController extends Controller
         return back()->with('success', 'Status updated to Accepted.');
     }
 
+    /**
+     * Reject.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function reject($id)
     {
         $conveyance = Conveyance::findOrFail($id);
@@ -83,6 +123,14 @@ class ConvenienceController extends Controller
         return back()->with('success', 'Status updated to Accepted.');
     }
 
+    /**
+     * Perform bulk action operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkAction(Request $request)
     {
         try {
@@ -114,7 +162,11 @@ class ConvenienceController extends Controller
         }
     }
 
-    // Tada view
+    /**
+     * Tada view
+     *
+     * @return void  
+     */
     public function tadaView()
     {
         $tadas = Tada::with(['user', 'journey', 'hotelExpense'])->get();
@@ -162,6 +214,12 @@ class ConvenienceController extends Controller
 
 
 
+    /**
+     * Viewtada details.
+     *
+     * @param  String  $id  The resource identifier
+     * @return void  
+     */
     public function viewtadaDetails(String $id)
     {
         $tadas = Tada::with('journey', 'hotelExpense', 'user')->where('id', $id)->first();
@@ -206,6 +264,14 @@ class ConvenienceController extends Controller
     //     }
     // }
 
+    /**
+     * Perform bulk update status operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkUpdateStatus(Request $request)
 {
     $validated = $request->validate([
@@ -219,6 +285,11 @@ class ConvenienceController extends Controller
 }
 
 
+    /**
+     * Set thetings.
+     *
+     * @return void  
+     */
     public function settings()
     {
         $vehicles = Vehicle::get();
@@ -232,7 +303,14 @@ class ConvenienceController extends Controller
         return view('billing.settings', compact('vehicles', 'users', 'categories', 'vehicleNames', 'cities'));
     }
 
-    // Add vehicle function
+    /**
+     * Add vehicle function
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function addVehicle(Request $request)
     {
         // Check if category already exists
@@ -256,12 +334,28 @@ class ConvenienceController extends Controller
         return redirect()->back()->with('success', 'Vehicle added successfully!');
     }
 
+    /**
+     * Edit vehicle.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function editVehicle(Request $request)
     {
         $ev = Vehicle::find($request->id);
         return view('billing.editVehicle', compact('ev'));
     }
 
+    /**
+     * Update vehicle.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function updateVehicle(Request $request)
     {
 
@@ -289,6 +383,14 @@ class ConvenienceController extends Controller
         }
     }
 
+    /**
+     * Delete vehicle.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function deleteVehicle(Request $request)
     {
         $vehicleId = $request->id;
@@ -332,7 +434,14 @@ class ConvenienceController extends Controller
 
 
 
-    // User Edit
+    /**
+     * User Edit
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function editUser(Request $request)
     {
         $ue = User::find($request->id);
@@ -345,6 +454,14 @@ class ConvenienceController extends Controller
     }
 
 
+    /**
+     * Update user.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function updateUser(Request $request)
     {
         try {
@@ -375,12 +492,24 @@ class ConvenienceController extends Controller
     }
 
 
+    /**
+     * View category.
+     *
+     * @return void  
+     */
     public function viewCategory()
     {
         $vehicles = Vehicle::get();
         return view('billing.addCategory', compact('vehicles'));
     }
-    // Add Category
+    /**
+     * Add Category
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function addCategory(Request $request)
     {
         $validatedData = $request->validate([
@@ -426,6 +555,14 @@ class ConvenienceController extends Controller
 
 
 
+    /**
+     * Edit category.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function editCategory(Request $request)
     {
         $uc = UserCategory::find($request->id);
@@ -433,6 +570,14 @@ class ConvenienceController extends Controller
         return view('billing.editCategory', compact('uc', 'uv'));
     }
 
+    /**
+     * Update category.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function updateCategory(Request $request)
     {
         try {
@@ -457,7 +602,14 @@ class ConvenienceController extends Controller
     }
 
 
-    // Delete Category
+    /**
+     * Delete Category
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function deleteCategory(Request $request)
     {
         $dc = UserCategory::find($request->id);
@@ -465,6 +617,12 @@ class ConvenienceController extends Controller
         return redirect()->back()->with('success', 'Category deleted successfully!');
     }
 
+    /**
+     * Edit allowed expense.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function editAllowedExpense($id){
         $city = City::with('usercategory')->findOrFail($id);
         $usercategory = UserCategory::where('id', $city->user_category_id)->first();
@@ -472,6 +630,15 @@ class ConvenienceController extends Controller
         return view('billing.editAllowedExpense', compact('city', 'usercategory', 'usercategories'));
     }
 
+    /**
+     * Update allowed expense.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function updateAllowedExpense(Request $request, $id)
     {
         // Validate the request data

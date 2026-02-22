@@ -15,6 +15,21 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Main Dashboard & Analytics Hub — powers the primary dashboard that project managers and
+ * admins see after login. Aggregates real-time performance data (pole survey/installation
+ * progress, district-wise breakdowns, top performers), meeting analytics, and TA/DA financial
+ * overviews. Supports date-range filtering and Excel export of dashboard KPIs.
+ *
+ * Data Flow:
+ *   User Login → Auth Middleware → Dashboard filters (project, date range) →
+ *   DashboardAnalyticsService → Aggregated DB queries (Poles, Tasks, Meetings, TADA) →
+ *   Blade View / AJAX JSON / Excel Export
+ *
+ * @depends-on DashboardAnalyticsService, Project, User, Pole, Streetlight, Task
+ * @business-domain Dashboard & Reporting
+ * @package App\Http\Controllers
+ */
 class HomeController extends Controller
 {
     protected DashboardAnalyticsService $analyticsService;
@@ -138,6 +153,16 @@ class HomeController extends Controller
         ]);
     }
 
+    /**
+     * Calculate role performances.
+     *
+     * @param  mixed  $user  The user model instance
+     * @param  mixed  $projectId  The project identifier
+     * @param  mixed  $taskModel  
+     * @param  mixed  $dateRange  
+     * @param  mixed  $isStreetLightProject  
+     * @return void  
+     */
     private function calculateRolePerformances($user, $projectId, $taskModel, $dateRange, $isStreetLightProject)
     {
         $roles = [
@@ -178,6 +203,17 @@ class HomeController extends Controller
         return $rolePerformances;
     }
 
+    /**
+     * Calculate user performance.
+     *
+     * @param  mixed  $user  The user model instance
+     * @param  mixed  $taskModel  
+     * @param  mixed  $projectId  The project identifier
+     * @param  mixed  $dateRange  
+     * @param  mixed  $roleName  
+     * @param  mixed  $isStreetLightProject  
+     * @return void  
+     */
     private function calculateUserPerformance($user, $taskModel, $projectId, $dateRange, $roleName, $isStreetLightProject)
     {
         if ($isStreetLightProject) {
@@ -242,6 +278,12 @@ class HomeController extends Controller
         ];
     }
 
+    /**
+     * Get the role column.
+     *
+     * @param  mixed  $role  
+     * @return void  
+     */
     private function getRoleColumn($role)
     {
         return [
@@ -251,6 +293,15 @@ class HomeController extends Controller
         ][$role];
     }
 
+    /**
+     * Get the selected project.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  User  $user  The user model instance
+     * @return void  
+     */
     private function getSelectedProject(Request $request, User $user)
     {
         if ($request->has('project_id')) {
@@ -272,6 +323,16 @@ class HomeController extends Controller
 
 
 
+    /**
+     * Get the site statistics.
+     *
+     * @param  mixed  $siteModel  
+     * @param  mixed  $taskModel  
+     * @param  mixed  $projectId  The project identifier
+     * @param  mixed  $dateRange  
+     * @param  mixed  $isStreetLightProject  
+     * @return void  
+     */
     private function getSiteStatistics($siteModel, $taskModel, $projectId, $dateRange, $isStreetLightProject)
     {
         if ($isStreetLightProject) {
@@ -298,6 +359,13 @@ class HomeController extends Controller
         ];
     }
 
+    /**
+     * Get the user counts.
+     *
+     * @param  User  $user  The user model instance
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     private function getUserCounts(User $user, $projectId)
     {
         $query = User::where('project_id', $projectId);
@@ -316,6 +384,12 @@ class HomeController extends Controller
         ];
     }
 
+    /**
+     * Get the pole statistics.
+     *
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     private function getPoleStatistics($projectId)
     {
         $totalSurvey = Pole::whereHas('task.site', function ($q) use ($projectId) {
@@ -331,6 +405,14 @@ class HomeController extends Controller
     }
 
 
+    /**
+     * Prepare statistics data.
+     *
+     * @param  mixed  $siteStats  
+     * @param  mixed  $userCounts  
+     * @param  mixed  $isStreetLightProject  
+     * @return void  
+     */
     private function prepareStatistics($siteStats, $userCounts, $isStreetLightProject = false)
     {
         if ($isStreetLightProject) {
@@ -383,6 +465,12 @@ class HomeController extends Controller
     }
 
 
+    /**
+     * Get the available projects.
+     *
+     * @param  User  $user  The user model instance
+     * @return void  
+     */
     private function getAvailableProjects(User $user)
     {
         return Project::when($user->role !== UserRole::ADMIN->value, function ($query) use ($user) {
@@ -392,6 +480,12 @@ class HomeController extends Controller
         })->get();
     }
 
+    /**
+     * Get the date range.
+     *
+     * @param  mixed  $filter  The filter criteria
+     * @return void  
+     */
     private function getDateRange($filter)
     {
         switch ($filter) {

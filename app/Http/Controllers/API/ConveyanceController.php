@@ -25,6 +25,20 @@ use Storage;
 
 use App\Services\ConveyanceService;
 
+/**
+ * Travel Expense Submission API — allows field staff to submit daily travel conveyance claims
+ * from the mobile app. Captures journey details (start/end locations, vehicle type, distance,
+ * fare), supports photo attachments for receipts, and returns claim history.
+ *
+ * Data Flow:
+ *   POST /api/conveyance → Validate journey details → Calculate fare based on vehicle rate
+ *   + distance → Create Conveyance record → Upload receipt photos → GET
+ *   /api/conveyance/history → Return paginated claim history
+ *
+ * @depends-on Conveyance, Tada, Vehicle, User
+ * @business-domain Mobile API
+ * @package App\Http\Controllers\API
+ */
 class ConveyanceController extends Controller
 {
     /**
@@ -51,7 +65,11 @@ class ConveyanceController extends Controller
         }
     }
 
-    // Conveyance Index
+    /**
+     * Conveyance Index
+     *
+     * @return void  
+     */
     public function indexConveyance()
     {
         try {
@@ -78,6 +96,11 @@ class ConveyanceController extends Controller
         }
     }
 
+    /**
+     * Check price.
+     *
+     * @return void  
+     */
     public function checkPrice()
     {
         try {
@@ -100,6 +123,12 @@ class ConveyanceController extends Controller
         }
     }
 
+    /**
+     * Get the vehicles.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function getVehicles($id)
     {
         $vehicle = Vehicle::where('id', $id)->get();
@@ -180,6 +209,14 @@ class ConveyanceController extends Controller
         }
     }
 
+    /**
+     * Store conveyance in the database.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function storeConveyance(Request $request)
     {
         try {
@@ -237,6 +274,12 @@ class ConveyanceController extends Controller
     }
 
 
+     /**
+      * Show conveyance.
+      *
+      * @param  string  $id  The resource identifier
+      * @return void  
+      */
      public function showConveyance(string $id){
         try {
             $conveyance = Conveyance::where('user_id', $id)->get();
@@ -265,6 +308,11 @@ class ConveyanceController extends Controller
         }
     }
 
+    /**
+     * Get the user category vehicle.
+     *
+     * @return void  
+     */
     public function getUserCategoryVehicle()
     {
         try {
@@ -285,6 +333,12 @@ class ConveyanceController extends Controller
         }
     }
 
+    /**
+     * Get the user category.
+     *
+     * @param  Int  $id  The resource identifier
+     * @return void  
+     */
     public function getUserCategory(Int $id)
     {
         try {
@@ -305,6 +359,14 @@ class ConveyanceController extends Controller
         }
     }
     
+    /**
+     * Allow expense.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function allowExpense(Request $request)
     {
         try {

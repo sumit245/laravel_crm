@@ -6,9 +6,16 @@ use App\Models\User;
 use App\Enums\UserRole;
 
 /**
- * User Policy
- * 
- * Authorization logic for user operations
+ * Authorization policy for user management. Admins can manage all users. Project Managers can
+ * manage engineers and vendors within their projects. Users can only edit their own profile.
+ *
+ * Data Flow:
+ *   User tries to manage another user → Policy checks role hierarchy → Admin: all → PM:
+ *   project staff → User: self only
+ *
+ * @depends-on User
+ * @business-domain Security
+ * @package App\Policies
  */
 class UserPolicy
 {

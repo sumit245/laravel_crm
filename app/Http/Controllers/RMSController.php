@@ -13,6 +13,19 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Remote Monitoring System Integration — pushes pole installation data to the government's RMS
+ * portal. Tracks push status, handles API communication, and logs responses for each pole.
+ * Supports individual and bulk push operations.
+ *
+ * Data Flow:
+ *   Select poles → Prepare payload (coordinates, serial numbers, photos) → POST to RMS API
+ *   → Log response → Mark poles as pushed → Track push history
+ *
+ * @depends-on Pole, RmsPushLog, RemoteApiHelper, Project
+ * @business-domain Government Integration
+ * @package App\Http\Controllers
+ */
 class RMSController extends Controller
 {
     public function __construct(
@@ -20,6 +33,14 @@ class RMSController extends Controller
     ) {
     }
 
+    /**
+     * Display a listing of the resource.
+     *
+     * Data flow: HTTP Request → Database Query → Blade View
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function index(Request $request)
     {
         // 1. Fetch all street light projects for the dropdown
@@ -100,6 +121,14 @@ class RMSController extends Controller
         return view('rms.index', $data);
     }
 
+    /**
+     * Send panchayat to r m s.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function sendPanchayatToRMS(Request $request)
     {
         Log::info('Controller: sendPanchayatToRMS');
@@ -275,6 +304,14 @@ class RMSController extends Controller
         }
     }
 
+    /**
+     * Export data to file.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function export(Request $request)
     {
         try {

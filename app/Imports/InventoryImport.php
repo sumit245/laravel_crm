@@ -6,11 +6,28 @@ use App\Models\Inventory;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
+/**
+ * Excel importer for rooftop project inventory. Parses GRN (Goods Received Note) Excel files to
+ * bulk-add inventory items to a store.
+ *
+ * Data Flow:
+ *   Excel upload → Parse rows → Validate item codes + serials → Create Inventory records
+ *   with project_id + store_id
+ *
+ * @depends-on Inventory
+ * @business-domain Inventory & Warehouse
+ * @package App\Imports
+ */
 class InventoryImport implements ToModel, WithHeadingRow
 {
     protected $projectId, $storeId;
 
-    // Constructor to accept project ID
+    /**
+     * Constructor to accept project ID
+     *
+     * @param  mixed  $projectId  The project identifier
+     * @param  mixed  $storeId  The store identifier
+     */
     public function __construct($projectId, $storeId)
     {
         $this->projectId = $projectId;

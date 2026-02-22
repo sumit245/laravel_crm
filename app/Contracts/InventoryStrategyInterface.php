@@ -3,9 +3,16 @@
 namespace App\Contracts;
 
 /**
- * Inventory Strategy Interface
- * 
- * Defines contract for different inventory type strategies
+ * Strategy pattern interface for inventory operations. Different project types (streetlight vs
+ * rooftop) use different inventory models and logic. This interface ensures consistent API across
+ * strategies.
+ *
+ * Data Flow:
+ *   InventoryController → Resolve strategy by project type → Execute through uniform
+ *   interface → Model-specific logic runs
+ *
+ * @business-domain Inventory & Warehouse
+ * @package App\Contracts
  */
 interface InventoryStrategyInterface
 {

@@ -6,6 +6,18 @@ use App\Http\Controllers\Controller;
 use App\Models\Project;
 use Illuminate\Http\Request;
 
+/**
+ * Project Data API — provides project information for the mobile app. Returns project details,
+ * assigned staff, and project configuration needed by the mobile app.
+ *
+ * Data Flow:
+ *   GET /api/projects → Return user's assigned projects → GET /api/projects/{id} →
+ *   Return project details with staff assignments
+ *
+ * @depends-on Project, User
+ * @business-domain Mobile API
+ * @package App\Http\Controllers\API
+ */
 class ProjectController extends Controller
 {
     /**

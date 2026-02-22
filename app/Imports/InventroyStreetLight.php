@@ -8,6 +8,19 @@ use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
 use Carbon\Carbon;
 
+/**
+ * Excel importer for streetlight inventory GRN. Parses item code, item name, serial number, SIM
+ * number (for SL02), make, model, and rate. Validates serial/SIM uniqueness and reports errors
+ * for duplicate entries.
+ *
+ * Data Flow:
+ *   Excel upload → Parse rows → Check serial/SIM uniqueness → Create
+ *   InventroyStreetLightModel records → Report imported count + errors
+ *
+ * @depends-on InventroyStreetLightModel
+ * @business-domain Inventory & Warehouse
+ * @package App\Imports
+ */
 class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFormulas
 {
     protected $projectId, $storeId;
@@ -20,7 +33,12 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
     protected array $errors = [];
     protected int $importedCount = 0;
 
-    // Constructor to accept project ID
+    /**
+     * Constructor to accept project ID
+     *
+     * @param  mixed  $projectId  The project identifier
+     * @param  mixed  $storeId  The store identifier
+     */
     public function __construct($projectId, $storeId)
     {
         $this->projectId = $projectId;

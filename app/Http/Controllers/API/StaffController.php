@@ -14,6 +14,24 @@ use Illuminate\Support\Str;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Employee & Field Staff Management — manages all staff roles: Admin, Project Managers, Site
+ * Engineers, and Vendors. Handles onboarding (create/import from Excel), profile management
+ * (avatar upload, password change, mobile number update via OTP), and performance views. The
+ * staff show page aggregates a staff member's assigned tasks, poles worked on, inventory
+ * dispatched, and panchayat-level progress. Supports bulk operations and WhatsApp OTP for secure
+ * mobile changes.
+ *
+ * Data Flow:
+ *   Admin creates/imports staff → Assign role + project → Staff profile: Show assigned
+ *   tasks, poles, inventory → OTP flow: Request → WhatsApp send → Verify → Update
+ *   mobile → Vendor/Engineer data: Aggregate panchayat-wise pole progress → Push to RMS /
+ *   Delete panchayat with inventory rollback
+ *
+ * @depends-on User, Project, Pole, StreetlightTask, InventoryDispatch, DiscussionPoint, WhatsappHelper, StaffImport, ActivityLogger
+ * @business-domain Staff & HR
+ * @package App\Http\Controllers\API
+ */
 class StaffController extends Controller
 {
     /**
@@ -39,6 +57,14 @@ class StaffController extends Controller
         ]);
     }
 
+    /**
+     * Show the form for creating a new resource.
+     *
+     * Data flow: HTTP Request → Database Query → Blade View
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function create(Request $request) {}
 
     /**
@@ -73,6 +99,15 @@ class StaffController extends Controller
      * @return \Illuminate\Http\Response
      */
     public function destroy($id) {}
+    /**
+     * Upload avatar.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function uploadAvatar(Request $request, $id)
     {
         $request->validate([
@@ -101,6 +136,12 @@ class StaffController extends Controller
         ], 200);
     }
 
+    /**
+     * Get the staff performance.
+     *
+     * @param  mixed  $user_id  The user identifier
+     * @return void  
+     */
     public function getStaffPerformance($user_id)
     {
         try {

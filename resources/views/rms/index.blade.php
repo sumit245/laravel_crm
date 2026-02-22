@@ -185,9 +185,9 @@
 
                 if (block && projectId) {
                     var district = $('#districtSelect').val(); // Get selected district
-                    var url = '/jicr/panchayats/' + encodeURIComponent(block) + 
-                              '?project_id=' + projectId + 
-                              '&district=' + encodeURIComponent(district);
+                    var url = '/jicr/panchayats/' + encodeURIComponent(block) +
+                        '?project_id=' + projectId +
+                        '&district=' + encodeURIComponent(district);
 
                     $.ajax({
                         url: url,
@@ -215,6 +215,7 @@
                 var panchayat = $(this).val();
                 var district = $('#districtSelect').val();
                 var block = $('#blockSelect').val();
+                var projectId = $('#projectSelect').val();
 
                 $('#panchayatCodeContainer').hide();
 
@@ -302,10 +303,10 @@
                             icon: 'success',
                             title: 'Push Completed!',
                             html: `<strong>${response.message}</strong><br><br>
-                                                   <div class="text-left">
-                                                       <p><strong>Success:</strong> ${response.success_count || 0} pole(s)</p>
-                                                       <p><strong>Errors:</strong> ${response.error_count || 0} pole(s)</p>
-                                                   </div>`,
+                                                       <div class="text-left">
+                                                           <p><strong>Success:</strong> ${response.success_count || 0} pole(s)</p>
+                                                           <p><strong>Errors:</strong> ${response.error_count || 0} pole(s)</p>
+                                                       </div>`,
                             confirmButtonText: 'View Report',
                             showCancelButton: true,
                             cancelButtonText: 'Close'

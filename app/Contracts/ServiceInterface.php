@@ -3,9 +3,14 @@
 namespace App\Contracts;
 
 /**
- * Service Interface
- * 
- * Base contract for all service implementations
+ * Base interface for the Service layer pattern. Defines standard service methods that business
+ * logic services must implement. Services sit between controllers and repositories.
+ *
+ * Data Flow:
+ *   Controller → Service.method() → Business logic → Repository → Database
+ *
+ * @business-domain Architecture
+ * @package App\Contracts
  */
 interface ServiceInterface
 {

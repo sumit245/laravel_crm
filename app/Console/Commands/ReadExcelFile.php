@@ -5,11 +5,28 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Artisan console command for reading and debugging Excel files from the command line. Used by
+ * developers to inspect Excel file structure, validate formats, and troubleshoot import issues
+ * without going through the web UI.
+ *
+ * Data Flow:
+ *   php artisan excel:read {file} → Parse Excel → Display headers + sample rows → Report
+ *   format issues
+ *
+ * @business-domain System Administration
+ * @package App\Console\Commands
+ */
 class ReadExcelFile extends Command
 {
     protected $signature = 'excel:read {file}';
     protected $description = 'Read and display Excel file structure';
 
+    /**
+     * Handle the incoming request or job.
+     *
+     * @return void  
+     */
     public function handle()
     {
         $filePath = $this->argument('file');

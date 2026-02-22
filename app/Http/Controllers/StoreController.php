@@ -11,6 +11,22 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Enums\UserRole;
 
+/**
+ * Warehouse / Store Management — each project has physical stores (warehouses) where inventory
+ * items (Panels, Luminaries, Batteries, Structures) are received and tracked. This controller
+ * handles store creation, viewing store inventory with real-time stock-vs-dispatched metrics,
+ * server-side paginated DataTable for 100k+ inventory rows, and Excel export of filtered
+ * inventory data.
+ *
+ * Data Flow:
+ *   Admin creates Store → Inventory imported via GRN Excel → Store show page aggregates
+ *   stock metrics (initial value, in-store, dispatched) → DataTable AJAX feeds paginated
+ *   rows with dispatch status → Export streams filtered rows to Excel
+ *
+ * @depends-on Stores, Inventory, InventroyStreetLightModel, InventoryDispatch, InventoryExport, User, Project
+ * @business-domain Inventory & Warehouse
+ * @package App\Http\Controllers
+ */
 class StoreController extends Controller
 {
     /**

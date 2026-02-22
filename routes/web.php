@@ -25,8 +25,15 @@ use App\Http\Controllers\StoreController;
 use App\Http\Controllers\TasksController;
 use App\Http\Controllers\VendorController;
 use App\Http\Controllers\WhiteboardController;
+use App\Http\Controllers\CodeDocController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
+
+// Code Documentation (no auth required)
+Route::prefix('docs')->name('docs.')->group(function () {
+    Route::get('/code', [CodeDocController::class, 'index'])->name('code.index');
+    Route::get('/code/{category}/{file?}', [CodeDocController::class, 'show'])->name('code.show');
+});
 
 Auth::routes(['register' => false]);
 

@@ -7,22 +7,51 @@ use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 
+/**
+ * Excel exporter for task/target data. Exports task assignments with site details, staff names,
+ * status, and completion dates.
+ *
+ * Data Flow:
+ *   Query builder with project filter → Stream rows to Excel → Download file
+ *
+ * @depends-on Task, StreetlightTask
+ * @business-domain Field Operations
+ * @package App\Exports
+ */
 class TasksExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSize
 {
     protected $query;
     protected $projectType;
 
+    /**
+     * Create a new TasksExport instance.
+     *
+     * @param  mixed  $query  The search query string
+     * @param  mixed  $projectType  
+     */
     public function __construct($query, $projectType)
     {
         $this->query = $query;
         $this->projectType = $projectType;
     }
 
+    /**
+     * Build the query for export data.
+     *
+     * Data flow: Database Query → Collection → Excel Output
+     *
+     * @return void  
+     */
     public function query()
     {
         return $this->query;
     }
 
+    /**
+     * Define the column headings for export.
+     *
+     * @return array  Result data array
+     */
     public function headings(): array
     {
         if ($this->projectType == 1) {
@@ -58,6 +87,12 @@ class TasksExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSiz
         ];
     }
 
+    /**
+     * Map and transform the imported row data.
+     *
+     * @param  mixed  $task  
+     * @return array  Result data array
+     */
     public function map($task): array
     {
         if ($this->projectType == 1) {

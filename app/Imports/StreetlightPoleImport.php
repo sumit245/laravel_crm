@@ -15,6 +15,18 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithChunkReading;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 
+/**
+ * Excel importer for pre-surveyed pole data. Allows importing poles with pre-filled GPS
+ * coordinates and details, useful when survey data comes from external sources.
+ *
+ * Data Flow:
+ *   Excel upload → Parse pole details with coordinates → Create Pole records → Link to
+ *   site
+ *
+ * @depends-on Pole, Streetlight
+ * @business-domain Field Operations
+ * @package App\Imports
+ */
 class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadingRow
 {
     protected ?string $jobId;
@@ -31,6 +43,13 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
     protected ?int $projectId;
 
+    /**
+     * Create a new StreetlightPoleImport instance.
+     *
+     * @param  ?string  $jobId  The background job identifier
+     * @param  ?PoleImportJob  $job  
+     * @param  ?int  $projectId  The project identifier
+     */
     public function __construct(?string $jobId = null, ?PoleImportJob $job = null, ?int $projectId = null)
     {
         $this->jobId = $jobId;
@@ -39,6 +58,12 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         $this->importService = app(PoleImportService::class);
     }
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @param  Collection  $rows  
+     * @return void  
+     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $index => $row) {
@@ -64,6 +89,13 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         }
     }
 
+    /**
+     * Process row.
+     *
+     * @param  array  $row  The imported data row
+     * @param  int  $rowNumber  
+     * @return void  
+     */
     protected function processRow(array $row, int $rowNumber): void
     {
         // Skip if pole already exists

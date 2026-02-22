@@ -5,9 +5,15 @@ namespace App\Contracts;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Meeting Service Interface
- * 
- * Defines contract for meeting business logic operations
+ * Contract for meeting business logic. Defines methods for creating meetings, managing discussion
+ * points, scheduling follow-ups, and generating meeting exports.
+ *
+ * Data Flow:
+ *   MeetController → MeetingService (implements this) → Business rules → Repository
+ *   calls → Notifications
+ *
+ * @business-domain Meetings & Collaboration
+ * @package App\Contracts
  */
 interface MeetingServiceInterface extends ServiceInterface
 {

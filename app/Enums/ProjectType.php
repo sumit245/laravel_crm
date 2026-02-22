@@ -3,9 +3,16 @@
 namespace App\Enums;
 
 /**
- * Project Type Enumeration
- * 
- * Defines different types of projects in the system
+ * Defines the two types of solar energy projects: STREETLIGHT (1) for street/public lighting and
+ * ROOFTOP (2) for rooftop solar installations. Determines which models, forms, and logic paths
+ * are used throughout the system.
+ *
+ * Data Flow:
+ *   Project created with type → Type determines: Model (Streetlight vs Site), Task model,
+ *   Inventory model, Import format, Report templates
+ *
+ * @business-domain Core Domain
+ * @package App\Enums
  */
 enum ProjectType: int
 {

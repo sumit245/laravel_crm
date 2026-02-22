@@ -9,6 +9,18 @@ use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
+/**
+ * Rejection notification email for candidates who did not clear the hiring process. Sends a
+ * professional rejection message with feedback. Can be triggered individually or in bulk.
+ *
+ * Data Flow:
+ *   Candidate rejected → Generate rejection email → Send to candidate email address →
+ *   Update candidate status
+ *
+ * @depends-on Candidate
+ * @business-domain HR & Recruitment
+ * @package App\Mail
+ */
 class RejectionLetter extends Mailable
 {
     use Queueable, SerializesModels;

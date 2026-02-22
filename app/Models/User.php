@@ -9,6 +9,19 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
+/**
+ * Core user model representing all system users — Admin, Project Managers, Site Engineers, and
+ * Vendors. Each user has a role, is assigned to projects, and may manage other staff. Contains
+ * profile info, authentication credentials, and role-based relationships.
+ *
+ * Data Flow:
+ *   Created by Admin → Assigned to Project → Assigned tasks/inventory → Performance
+ *   tracked → Profile managed
+ *
+ * @depends-on Project, Task, StreetlightTask, Pole, InventoryDispatch, Conveyance
+ * @business-domain Core Domain
+ * @package App\Models
+ */
 class User extends Authenticatable
 {
     use HasApiTokens, HasFactory, Notifiable, HasRoles;
@@ -49,48 +62,82 @@ class User extends Authenticatable
         'image'
     ];
 
-    // Relationship: Project Manager has many Site Engineers
+    /**
+     * Relationship: Project Manager has many Site Engineers
+     *
+     * @return void  
+     */
     public function siteEngineers()
     {
         return $this->hasMany(User::class, 'manager_id');
     }
 
-    // Relationship: Site Engineer belongs to a Project Manager
+    /**
+     * Relationship: Site Engineer belongs to a Project Manager
+     *
+     * @return void  
+     */
     public function projectManager()
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
 
-    // Relationship: Site Engineer has many Vendors
+    /**
+     * Relationship: Site Engineer has many Vendors
+     *
+     * @return void  
+     */
     public function vendors()
     {
         return $this->hasMany(User::class, 'site_engineer_id');
     }
 
-    // Relationship: Vendor belongs to a Site Engineer
+    /**
+     * Relationship: Vendor belongs to a Site Engineer
+     *
+     * @return void  
+     */
     public function siteEngineer()
     {
         return $this->belongsTo(User::class, 'site_engineer_id');
     }
 
-    // Relationship: User belongs to a Vertical Head
+    /**
+     * Relationship: User belongs to a Vertical Head
+     *
+     * @return void  
+     */
     public function verticalHead()
     {
         return $this->belongsTo(User::class, 'vertical_head_id');
     }
 
-    // Relationship: Vertical Head has many users
+    /**
+     * Relationship: Vertical Head has many users
+     *
+     * @return void  
+     */
     public function verticalHeadUsers()
     {
         return $this->hasMany(User::class, 'vertical_head_id');
     }
 
+    /**
+     * Projects.
+     *
+     * @return void  
+     */
     public function projects()
     {
         return $this->belongsToMany(Project::class, 'project_user')
             ->withPivot('role', 'district_id')
             ->withTimestamps();
     }
+    /**
+     * Usercategory.
+     *
+     * @return void  
+     */
     public function usercategory()
     {
         return $this->belongsTo(UserCategory::class, 'category');
@@ -144,43 +191,81 @@ class User extends Authenticatable
         return UserRole::tryFrom($this->role)?->label() ?? 'Unknown';
     }
 
+    /**
+     * Meetings.
+     *
+     * @return void  
+     */
     public function meetings()
     {
         return $this->belongsToMany(Meet::class);
     }
 
+    /**
+     * Assigned tasks.
+     *
+     * @return void  
+     */
     public function assignedTasks()
     {
         return $this->hasMany(DiscussionPoints::class, 'assignee_id');
     }
 
-    // Task relationships for performance tracking
+    /**
+     * Task relationships for performance tracking
+     *
+     * @return void  
+     */
     public function managerTasks()
     {
         return $this->hasMany(Task::class, 'manager_id');
     }
 
+    /**
+     * Engineer tasks.
+     *
+     * @return void  
+     */
     public function engineerTasks()
     {
         return $this->hasMany(Task::class, 'engineer_id');
     }
 
+    /**
+     * Vendor tasks.
+     *
+     * @return void  
+     */
     public function vendorTasks()
     {
         return $this->hasMany(Task::class, 'vendor_id');
     }
 
-    // Streetlight task relationships
+    /**
+     * Streetlight task relationships
+     *
+     * @return void  
+     */
     public function streetlightTasks()
     {
         return $this->hasMany(\App\Models\StreetlightTask::class, 'manager_id');
     }
 
+    /**
+     * Streetlight engineer tasks.
+     *
+     * @return void  
+     */
     public function streetlightEngineerTasks()
     {
         return $this->hasMany(\App\Models\StreetlightTask::class, 'engineer_id');
     }
 
+    /**
+     * Streetlight vendor tasks.
+     *
+     * @return void  
+     */
     public function streetlightVendorTasks()
     {
         return $this->hasMany(\App\Models\StreetlightTask::class, 'vendor_id');

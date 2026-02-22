@@ -7,6 +7,17 @@ use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Enums\InstallationPhase;
 
+/**
+ * Transforms data between different formats for backup and restore operations. Handles
+ * serialization, format conversion, and data migration tasks.
+ *
+ * Data Flow:
+ *   Source data → Transform to target format → Validate → Output (backup file or
+ *   database)
+ *
+ * @business-domain System Administration
+ * @package App\Services\Backup
+ */
 class DataTransformationService
 {
     /**

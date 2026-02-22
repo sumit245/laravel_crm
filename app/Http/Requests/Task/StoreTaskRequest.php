@@ -7,9 +7,17 @@ use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
 /**
- * Store Task Request
- * 
- * Validates data for creating a new task
+ * Validates input for creating a new task/target. Checks that selected sites exist, assigned
+ * staff are valid, and date ranges are logical (end date >= start date). Prevents orphaned task
+ * records.
+ *
+ * Data Flow:
+ *   POST /tasks → StoreTaskRequest validates → Check relationships → Pass: controller
+ *   creates task → Fail: redirect with errors
+ *
+ * @depends-on Task, StreetlightTask, User, Streetlight
+ * @business-domain Field Operations
+ * @package App\Http\Requests\Task
  */
 class StoreTaskRequest extends FormRequest
 {

@@ -11,14 +11,43 @@ use Illuminate\Support\Str;
 use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Pole Preview & Photo API — provides photo preview and pole detail viewing for the mobile app.
+ * Used during quality checks to review surveyed poles, their photos, and equipment details before
+ * marking as approved.
+ *
+ * Data Flow:
+ *   GET /api/preview/{pole_id} → Return pole details with photo URLs → Display in mobile
+ *   photo viewer → Support photo zoom and comparison
+ *
+ * @depends-on Pole, StreetlightTask, Streetlight, Project
+ * @business-domain Mobile API
+ * @package App\Http\Controllers\API
+ */
 class PreviewController extends Controller
 {
+    /**
+     * Apply now.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function applyNow(Request $request)
     {
         $id = $request->id;
         return view('hrm.applyNow', compact('id'));
     }
 
+    /**
+     * Store and preview in the database.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function storeAndPreview(Request $request)
     {
         // Log::info($request->all());
@@ -163,6 +192,11 @@ class PreviewController extends Controller
         }
     }
 
+    /**
+     * Preview.
+     *
+     * @return void  
+     */
     public function preview()
     {
         // Get data from session
@@ -180,6 +214,14 @@ class PreviewController extends Controller
         return view('hrm.preview', ['data' => $data]);
     }
 
+    /**
+     * Submit final.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function submitFinal(Request $request)
     {
         try {
@@ -294,6 +336,12 @@ class PreviewController extends Controller
         }
     }
 
+    /**
+     * Admin preview.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function adminPreview($id)
     {
         $candidate = Candidate::findOrFail($id);
@@ -307,6 +355,14 @@ class PreviewController extends Controller
         return view('hrm.adminPreview', compact('candidate', 'education_data'));
     }
 
+    /**
+     * Perform bulk update operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkUpdate(Request $request)
     {
         $candidateIds = $request->input('selected_candidates', []);

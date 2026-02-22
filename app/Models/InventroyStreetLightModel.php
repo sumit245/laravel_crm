@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Streetlight inventory item. Stores solar equipment with item codes: SL01 (Panel), SL02
+ * (Luminary with SIM), SL03 (Battery), SL04 (Structure). Tracks serial number, make, model, rate,
+ * and quantity. SL02 items carry SIM numbers for remote monitoring.
+ *
+ * Data Flow:
+ *   GRN Excel import → Validate serial/SIM uniqueness → Store with quantity=1 per serial
+ *   → Dispatch to vendor (quantity→0) → Consume at pole (link to pole record)
+ *
+ * @depends-on Stores, Project, InventoryDispatch
+ * @business-domain Inventory & Warehouse
+ * @package App\Models
+ */
 class InventroyStreetLightModel extends Model
 {
     use HasFactory;

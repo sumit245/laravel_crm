@@ -8,9 +8,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Builder;
 
 /**
- * Task Repository Interface
- * 
- * Defines contract for task data access operations
+ * Contract for task data access. Defines methods for querying tasks with staff and site
+ * relationships, filtering by status, and aggregating completion statistics.
+ *
+ * Data Flow:
+ *   TaskService → TaskRepository (implements this) → Eloquent queries → Task data with
+ *   relationships
+ *
+ * @business-domain Field Operations
+ * @package App\Contracts
  */
 interface TaskRepositoryInterface extends RepositoryInterface
 {

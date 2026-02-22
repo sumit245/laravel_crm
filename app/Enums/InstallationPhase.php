@@ -3,9 +3,16 @@
 namespace App\Enums;
 
 /**
- * Installation Phase Enumeration
- * 
- * Defines installation phases for rooftop solar projects
+ * Defines the phases of streetlight pole installation: Survey (initial site visit with GPS
+ * capture), Installation (physical mounting of equipment), and Commissioning (power-on and RMS
+ * registration).
+ *
+ * Data Flow:
+ *   Pole goes through phases: Survey → Installation → Commissioning → Each phase updates
+ *   different fields on the Pole record
+ *
+ * @business-domain Field Operations
+ * @package App\Enums
  */
 enum InstallationPhase: string
 {

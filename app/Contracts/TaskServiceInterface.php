@@ -6,9 +6,15 @@ use App\Enums\TaskStatus;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Task Service Interface
- * 
- * Defines contract for task business logic operations
+ * Contract for task business logic. Defines methods for bulk task creation, assignment, status
+ * transitions, ward conflict checking, and export.
+ *
+ * Data Flow:
+ *   TasksController → TaskService (implements this) → Business rules → Repository →
+ *   Model operations
+ *
+ * @business-domain Field Operations
+ * @package App\Contracts
  */
 interface TaskServiceInterface extends ServiceInterface
 {

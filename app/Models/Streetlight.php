@@ -5,6 +5,19 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Represents a panchayat/ward as a streetlight installation site. Contains district, block,
+ * panchayat, ward, and target pole count. Tracks number of surveyed and installed poles against
+ * the target.
+ *
+ * Data Flow:
+ *   Imported from Excel → Assigned to task → Poles created under it → Progress tracked
+ *   (surveyed/installed vs target)
+ *
+ * @depends-on Project, StreetlightTask, Pole
+ * @business-domain Site Management
+ * @package App\Models
+ */
 class Streetlight extends Model
 {
     use HasFactory;
@@ -34,11 +47,23 @@ class Streetlight extends Model
         return is_string($value) ? trim($value) : $value;
     }
 
+    /**
+     * Get the block code attribute.
+     *
+     * @param  mixed  $value  The value to set
+     * @return void  
+     */
     public function getBlockCodeAttribute($value)
     {
         return is_string($value) ? trim($value) : $value;
     }
 
+    /**
+     * Get the panchayat code attribute.
+     *
+     * @param  mixed  $value  The value to set
+     * @return void  
+     */
     public function getPanchayatCodeAttribute($value)
     {
         return is_string($value) ? trim($value) : $value;
@@ -65,20 +90,38 @@ class Streetlight extends Model
     {
         return $this->belongsTo(Project::class);
     }
-    // Scope for counting total poles
+    /**
+     * Scope for counting total poles
+     *
+     * @param  mixed  $query  The search query string
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     public function scopeTotalPoles($query, $projectId)
     {
         return $query->where('project_id', $projectId)->sum('total_poles');
     }
 
-    // Scope for counting surveyed poles
+    /**
+     * Scope for counting surveyed poles
+     *
+     * @param  mixed  $query  The search query string
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     public function scopeSurveyDone($query, $projectId)
     {
         return $query->where('project_id', $projectId)
             ->sum('number_of_surveyed_poles');
     }
 
-    // Scope for counting installed poles
+    /**
+     * Scope for counting installed poles
+     *
+     * @param  mixed  $query  The search query string
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     public function scopeInstallationDone($query, $projectId)
     {
         return $query->where('project_id', $projectId)

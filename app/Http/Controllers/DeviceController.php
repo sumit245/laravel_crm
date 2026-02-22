@@ -13,8 +13,24 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Mobile Device Import Management — handles bulk import of device records from Excel files.
+ * Used for tracking field devices (tablets, phones) assigned to field staff.
+ *
+ * Data Flow:
+ *   Excel upload → Parse device records → Validate → Store in database
+ *
+ * @depends-on Project
+ * @business-domain Asset Management
+ * @package App\Http\Controllers
+ */
 class DeviceController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @return void  
+     */
     public function index()
     {
         $districts = Streetlight::select('district')->distinct()->get();

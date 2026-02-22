@@ -24,6 +24,23 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Helpers\ExcelHelper;
 
+/**
+ * Project Lifecycle Management — central hub for managing solar energy projects. Each project
+ * represents a government contract (e.g., streetlight installation in a district). Handles
+ * project creation, stakeholder assignment (PMs, engineers, vendors), target management (bulk
+ * create/delete/reassign with async progress tracking for large deletions), and project-level
+ * analytics. The project show page is the operational command center showing sites, tasks,
+ * inventory, and staff.
+ *
+ * Data Flow:
+ *   Admin creates Project → Assign PMs/Engineers/Vendors via project_user pivot → Import
+ *   sites/targets from Excel → Show: Aggregates all sub-modules (sites, tasks, inventory,
+ *   staff) → Async bulk operations with job queue and progress polling
+ *
+ * @depends-on Project, User, Site, Streetlight, StreetlightTask, Task, Pole, InventoryDispatch, ActivityLogger, TargetDeletionService
+ * @business-domain Project Management
+ * @package App\Http\Controllers
+ */
 class ProjectsController extends Controller
 {
     /**
@@ -503,6 +520,15 @@ class ProjectsController extends Controller
         }
     }
 
+    /**
+     * Assign users.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function assignUsers(Request $request, $id)
     {
         try {
@@ -609,6 +635,15 @@ class ProjectsController extends Controller
         }
     }
 
+    /**
+     * Remove staff.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function removeStaff(Request $request, $id)
     {
         try {
@@ -734,6 +769,15 @@ class ProjectsController extends Controller
         }
     }
 
+    /**
+     * Destroy target.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function destroyTarget(Request $request, $id)
     {
         try {
@@ -783,6 +827,14 @@ class ProjectsController extends Controller
         }
     }
 
+    /**
+     * Perform bulk delete targets operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkDeleteTargets(Request $request)
     {
         // #region agent log
@@ -1085,6 +1137,14 @@ class ProjectsController extends Controller
         ]);
     }
 
+    /**
+     * Perform bulk reassign targets operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkReassignTargets(Request $request)
     {
         $request->validate([
@@ -1151,6 +1211,11 @@ class ProjectsController extends Controller
         }
     }
 
+    /**
+     * Download target import format.
+     *
+     * @return void  
+     */
     public function downloadTargetImportFormat()
     {
         try {
@@ -1174,6 +1239,14 @@ class ProjectsController extends Controller
         }
     }
 
+    /**
+     * Import targets data from file.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function importTargets(Request $request)
     {
         $request->validate([

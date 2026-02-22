@@ -5,6 +5,18 @@ namespace App\Http\Middleware;
 use Illuminate\Http\Middleware\TrustProxies as Middleware;
 use Illuminate\Http\Request;
 
+/**
+ * Reverse proxy configuration middleware. Configures which proxy headers to trust
+ * (X-Forwarded-For, X-Forwarded-Proto, etc.) when the application sits behind a load balancer or
+ * CDN like AWS ALB or CloudFront.
+ *
+ * Data Flow:
+ *   HTTP Request via proxy → Read forwarded headers → Set trusted proxy IPs → Correct
+ *   request URL/protocol detection
+ *
+ * @business-domain Infrastructure
+ * @package App\Http\Middleware
+ */
 class TrustProxies extends Middleware
 {
     /**

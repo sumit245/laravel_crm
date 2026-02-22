@@ -6,6 +6,21 @@ use App\Http\Controllers\Controller;
 use App\Models\Site;
 use Illuminate\Http\Request;
 
+/**
+ * Site / Panchayat Management — manages project sites (locations where work happens). For
+ * streetlight projects, a "site" represents a panchayat with a ward structure and target pole
+ * count. Sites are imported from Excel with district-panchayat-ward hierarchy. Supports pole
+ * imports per site, bulk operations, and downloadable import templates.
+ *
+ * Data Flow:
+ *   Excel import → Parse district/panchayat/ward/pole count → Create Streetlight or Site
+ *   records → Assign via Tasks → Show: Display poles underneath site → Bulk
+ *   delete/import operations
+ *
+ * @depends-on Site, Streetlight, Pole, StreetlightTask, City, Project, SiteImport, StreetlightImport, SitePoleImport, ActivityLogger
+ * @business-domain Site Management
+ * @package App\Http\Controllers\API
+ */
 class SiteController extends Controller
 {
  /**

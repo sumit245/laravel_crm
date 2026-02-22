@@ -15,6 +15,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
 
+/**
+ * Inventory Lifecycle Management — handles the full lifecycle of inventory items: receiving
+ * stock via Excel GRN imports (both rooftop and streetlight types), adding individual items with
+ * serial number & SIM uniqueness validation, dispatching items to field vendors (decrementing
+ * store quantity), tracking dispatch history, and supporting item return/replacement flows. Item
+ * codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).
+ *
+ * Data Flow:
+ *   GRN Excel Upload → Validation (serial/SIM uniqueness) → InventoryService → DB Insert
+ *   → Dispatch: Select serials → Validate stock → Create InventoryDispatch records →
+ *   Decrement quantity → Log history → Return/Replace: Reverse dispatch flow
+ *
+ * @depends-on InventoryServiceInterface, InventoryHistoryService, ActivityLogger, InventoryDispatch, InventroyStreetLightModel, Inventory, Project, Stores
+ * @business-domain Inventory & Warehouse
+ * @package App\Http\Controllers\API
+ */
 class InventoryController extends Controller
 {
     /**
@@ -66,6 +82,14 @@ class InventoryController extends Controller
         $inventory->update($request->all());
         return $inventory;
     }
+    /**
+     * Import data from file.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function import(Request $request)
     {
         $request->validate([
@@ -88,7 +112,14 @@ class InventoryController extends Controller
         $inventory->delete();
         return response()->json(['message' => 'Inventory deleted']);
     }
-    // Dispatch Inventory to a vendor
+    /**
+     * Dispatch Inventory to a vendor
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function dispatchInventory(Request $request)
     {
         try {
@@ -153,6 +184,14 @@ class InventoryController extends Controller
     }
 
 
+      /**
+       * Replace item.
+       *
+       * Data flow: HTTP Request → Processing → Response
+       *
+       * @param  Request  $request  The incoming HTTP request
+       * @return void  
+       */
       public function replaceItem(Request $request)
     {
         Log::info($request->all());

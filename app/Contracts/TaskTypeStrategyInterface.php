@@ -3,9 +3,15 @@
 namespace App\Contracts;
 
 /**
- * Task Type Strategy Interface
- * 
- * Defines contract for handling different task types (rooftop vs streetlight)
+ * Strategy pattern interface for different task types (Streetlight vs Rooftop). Each project type
+ * has different task creation, tracking, and reporting logic.
+ *
+ * Data Flow:
+ *   TaskService → Resolve strategy by project type → Execute through uniform interface →
+ *   Type-specific logic runs
+ *
+ * @business-domain Field Operations
+ * @package App\Contracts
  */
 interface TaskTypeStrategyInterface
 {

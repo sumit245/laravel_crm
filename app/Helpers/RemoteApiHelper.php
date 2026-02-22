@@ -6,8 +6,28 @@ use App\Models\DistrictCode;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * HTTP client helper for external API communication. Primarily used for pushing pole data to the
+ * government RMS system. Handles request/response formatting, error handling, and retry logic.
+ *
+ * Data Flow:
+ *   Prepare payload → RemoteApiHelper sends HTTP request → Parse response → Return
+ *   structured result
+ *
+ * @business-domain Utility
+ * @package App\Helpers
+ */
 class RemoteApiHelper
 {
+    /**
+     * Send pole data to remote server.
+     *
+     * @param  mixed  $pole  
+     * @param  mixed  $streetlight  
+     * @param  mixed  $approver  
+     * @param  mixed  $projectName  
+     * @return void  
+     */
     public static function sendPoleDataToRemoteServer($pole, $streetlight, $approver, $projectName = "SUGS")
     {
         $url = env('RMS_API_URL', 'https://ssl.slldm.com/insertMasterData.php');

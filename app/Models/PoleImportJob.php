@@ -6,6 +6,18 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
+/**
+ * Job tracking model for pole import operations. Records the status and progress of bulk pole
+ * import jobs, including total rows, processed rows, and error count.
+ *
+ * Data Flow:
+ *   Import started → Job record created → Chunks processed → Progress updated →
+ *   Completion recorded
+ *
+ * @depends-on ProcessPoleImportChunk
+ * @business-domain System Administration
+ * @package App\Models
+ */
 class PoleImportJob extends Model
 {
     use HasFactory;

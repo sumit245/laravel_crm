@@ -3,9 +3,16 @@
 namespace App\Enums;
 
 /**
- * Task Status Enumeration
- * 
- * Defines all possible task statuses and their transitions
+ * Defines task lifecycle states: Pending (newly created), In Progress (field work started),
+ * Completed (all work done), and Rejected (failed quality check). Controls allowed transitions
+ * and reporting.
+ *
+ * Data Flow:
+ *   Task created as Pending → Field work starts (In Progress) → Work verified (Completed
+ *   or Rejected)
+ *
+ * @business-domain Field Operations
+ * @package App\Enums
  */
 enum TaskStatus: string
 {

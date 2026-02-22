@@ -11,9 +11,30 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Joint Inspection & Completion Report (JICR) — generates official completion reports for
+ * government inspection. These reports document installed poles, equipment details, and
+ * photographs for formal project sign-off and billing.
+ *
+ * Data Flow:
+ *   Select project/panchayat → Fetch completed poles with photos → Generate JICR report
+ *   → Download as PDF/Excel → Submit to government authority
+ *
+ * @depends-on Pole, Streetlight, StreetlightTask, Project, User
+ * @business-domain Compliance & Reporting
+ * @package App\Http\Controllers
+ */
 class JICRController extends Controller
 {
 
+    /**
+     * Display a listing of the resource.
+     *
+     * Data flow: HTTP Request → Database Query → Blade View
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function index(Request $request)
     {
         // 1. Fetch all street light projects for the dropdown
@@ -35,6 +56,15 @@ class JICRController extends Controller
         return view('jicr.index', compact('districts', 'projects', 'projectId'));
     }
 
+    /**
+     * Get the blocks.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $district  The district identifier or name
+     * @return void  
+     */
     public function getBlocks(Request $request, $district)
     {
         // Fetch blocks based on the selected district
@@ -67,6 +97,15 @@ class JICRController extends Controller
         ]);
     }
 
+    /**
+     * Get the panchayats.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $block  The block identifier or name
+     * @return void  
+     */
     public function getPanchayats(Request $request, $block)
     {
         // Fetch panchayats based on the selected block
@@ -102,6 +141,15 @@ class JICRController extends Controller
             'block_code' => $blockCode
         ]);
     }
+    /**
+     * Get the wards.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $panchayat  The panchayat identifier or name
+     * @return void  
+     */
     public function getWards(Request $request, $panchayat)
     {
         $query = Streetlight::where('panchayat', $panchayat);
@@ -148,6 +196,14 @@ class JICRController extends Controller
         ]);
     }
 
+    /**
+     * Generate p d f.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function generatePDF(Request $request)
     {
         try {

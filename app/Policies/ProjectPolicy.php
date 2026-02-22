@@ -7,9 +7,17 @@ use App\Models\Project;
 use App\Enums\UserRole;
 
 /**
- * Project Policy
- * 
- * Authorization logic for project operations
+ * Authorization policy for project operations. Admins can do everything. Project Managers can
+ * only view/edit their assigned projects. Engineers and Vendors can only view their assigned
+ * project data.
+ *
+ * Data Flow:
+ *   User tries project action → Policy checks role + assignment → Admin: allow all → PM:
+ *   check assignment → Engineer/Vendor: read-only if assigned
+ *
+ * @depends-on User, Project
+ * @business-domain Security
+ * @package App\Policies
  */
 class ProjectPolicy
 {

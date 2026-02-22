@@ -12,6 +12,17 @@ use Carbon\Carbon;
 use App\Models\Pole;
 use App\Models\Streetlight;
 
+/**
+ * Excel importer for poles under a specific site. Imports pole data (coordinates, ward, status)
+ * directly under a site for bulk data entry.
+ *
+ * Data Flow:
+ *   Excel upload → Parse pole rows → Validate → Create Pole records under site
+ *
+ * @depends-on Pole, Site
+ * @business-domain Site Management
+ * @package App\Imports
+ */
 class SitePoleImport implements ToCollection, WithHeadingRow, WithChunkReading
 {
     protected $siteId;
@@ -19,12 +30,24 @@ class SitePoleImport implements ToCollection, WithHeadingRow, WithChunkReading
     protected $errors = [];
     protected $importedCount = 0;
 
+    /**
+     * Create a new SitePoleImport instance.
+     *
+     * @param  mixed  $siteId  The site identifier
+     * @param  mixed  $taskId  The task identifier
+     */
     public function __construct($siteId, $taskId)
     {
         $this->siteId = $siteId;
         $this->taskId = $taskId;
     }
 
+    /**
+     * Get the collection of data for export.
+     *
+     * @param  Collection  $rows  
+     * @return void  
+     */
     public function collection(Collection $rows)
     {
         foreach ($rows as $rowIndex => $row) {
@@ -139,16 +162,31 @@ class SitePoleImport implements ToCollection, WithHeadingRow, WithChunkReading
         }
     }
 
+    /**
+     * Get the errors.
+     *
+     * @return void  
+     */
     public function getErrors()
     {
         return $this->errors;
     }
 
+    /**
+     * Get the imported count.
+     *
+     * @return void  
+     */
     public function getImportedCount()
     {
         return $this->importedCount;
     }
 
+    /**
+     * Chunk size.
+     *
+     * @return int  The resulting integer value
+     */
     public function chunkSize(): int
     {
         return 1000;

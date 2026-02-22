@@ -4,6 +4,17 @@ namespace App\Http\Middleware;
 
 use Illuminate\Routing\Middleware\ValidateSignature as Middleware;
 
+/**
+ * URL signature validation middleware. Validates that signed URLs (used for email verification,
+ * temporary download links) have not been tampered with and have not expired.
+ *
+ * Data Flow:
+ *   Signed URL request → Validate HMAC signature → Check expiration → Valid: proceed →
+ *   Invalid: abort 403
+ *
+ * @business-domain Security
+ * @package App\Http\Middleware
+ */
 class ValidateSignature extends Middleware
 {
     /**

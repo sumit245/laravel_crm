@@ -12,6 +12,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Streetlight Site Data API — provides panchayat/ward/pole data for the mobile app's task
+ * execution flow. Engineers use this to fetch their assigned sites, view target pole counts, and
+ * navigate to specific GPS locations for survey work.
+ *
+ * Data Flow:
+ *   GET /api/streetlights → Filter by project + engineer → Return site list with pole
+ *   counts → GET /api/streetlights/{id}/poles → Return pole list with survey status
+ *
+ * @depends-on Streetlight, StreetlightTask, Pole, User, Project
+ * @business-domain Mobile API
+ * @package App\Http\Controllers\API
+ */
 class StreetlightController extends Controller
 {
     //
@@ -172,6 +185,14 @@ class StreetlightController extends Controller
         }
     }
 
+    /**
+     * Search for matching records.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function search(Request $request)
     {
         $search = $request->input('search');
@@ -260,21 +281,43 @@ class StreetlightController extends Controller
         return response()->json(['message' => 'Task deleted']);
     }
 
-    // 1. Get tasks assigned to the logged-in Site Engineer
+    /**
+     * 1. Get tasks assigned to the logged-in Site Engineer
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getEngineerTasks(Request $request)
     {
         $tasks = StreetlightTask::where('engineer_id', $request->id)->with('site')->get();
         return response()->json($tasks);
     }
 
-    // 2. Get tasks assigned to the logged-in Vendor
+    /**
+     * 2. Get tasks assigned to the logged-in Vendor
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getVendorTasks(Request $request)
     {
         $tasks = StreetlightTask::where('vendor_id', $request->id)->with('site')->get();
         return response()->json($tasks);
     }
 
-    // 3. Vendor submits a task, making it visible to succeeding roles
+    /**
+     * 3. Vendor submits a task, making it visible to succeeding roles
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $taskId  The task identifier
+     * @return void  
+     */
     public function submitTask(Request $request, $taskId)
     {
 
@@ -287,6 +330,15 @@ class StreetlightController extends Controller
 
         return response()->json(['message' => 'Task submitted successfully']);
     }
+    /**
+     * Get the blocks by district.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  mixed  $district  The district identifier or name
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getBlocksByDistrict($district, Request $request)
     {
         try {
@@ -353,6 +405,15 @@ class StreetlightController extends Controller
         }
     }
 
+    /**
+     * Get the panchayats by block.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  mixed  $block  The block identifier or name
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getPanchayatsByBlock($block, Request $request)
     {
         $projectId = $request->input('project_id');
@@ -425,6 +486,12 @@ class StreetlightController extends Controller
         return response()->json($uniquePanchayats);
     }
 
+    /**
+     * Get the wards by site.
+     *
+     * @param  mixed  $siteId  The site identifier
+     * @return void  
+     */
     public function getWardsBySite($siteId)
     {
         $streetlight = Streetlight::find($siteId);

@@ -20,12 +20,33 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Field Task API — the primary API used by field engineers and vendors on the mobile app.
+ * Provides task listings filtered by assigned staff, pole survey submission (with GPS
+ * coordinates, photos), installation status updates, and SIM number capture. This is where real
+ * field work data enters the system.
+ *
+ * Data Flow:
+ *   GET /api/tasks → Filter by user role → Return task list with poles → POST
+ *   /api/survey → Validate GPS + photos → Create/Update Pole record → Upload images to
+ *   S3 → POST /api/install → Mark pole as installed → Link inventory serial numbers
+ *
+ * @depends-on StreetlightTask, Task, Pole, InventoryDispatch, User, Project
+ * @business-domain Mobile API
+ * @package App\Http\Controllers\API
+ */
 class TaskController extends Controller
 {
     protected InventoryService $inventoryService;
 
     protected InventoryHistoryService $historyService;
 
+    /**
+     * Create a new TaskController instance.
+     *
+     * @param  InventoryService  $inventoryService  
+     * @param  InventoryHistoryService  $historyService  
+     */
     public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService)
     {
         $this->inventoryService = $inventoryService;
@@ -237,6 +258,12 @@ class TaskController extends Controller
         return response()->json(['message' => 'Task deleted']);
     }
 
+    /**
+     * Get the installable poles.
+     *
+     * @param  mixed  $ward  The ward identifier or number
+     * @return void  
+     */
     public function getInstallablePoles($ward)
     {
         try {
@@ -279,6 +306,12 @@ class TaskController extends Controller
         }
     }
 
+    /**
+     * Get the sites for vendor.
+     *
+     * @param  mixed  $vendorId  The vendor identifier
+     * @return void  
+     */
     public function getSitesForVendor($vendorId)
     {
         // Fetch streetlight tasks for the vendor and eager load the streetlight site
@@ -296,6 +329,12 @@ class TaskController extends Controller
         ], 200);
     }
 
+    /**
+     * Approve task.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function approveTask($id)
     {
         $task = Task::find($id);
@@ -311,7 +350,14 @@ class TaskController extends Controller
         ]);
     }
 
-    // Update poles survey or install
+    /**
+     * Update poles survey or install
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function submitStreetlightTasks(Request $request)
     {
         try {
@@ -602,7 +648,14 @@ class TaskController extends Controller
         Log::error($logMessage);
     }
 
-    // Controller to get details of pole by Id
+    /**
+     * Controller to get details of pole by Id
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getPoleDetails(Request $request)
     {
         $id = $request->pole_id;
@@ -618,7 +671,12 @@ class TaskController extends Controller
         ], 200);
     }
 
-    // Get Installed Pole for Site Engineers
+    /**
+     * Get Installed Pole for Site Engineers
+     *
+     * @param  mixed  $engineer_id  The engineer identifier
+     * @return void  
+     */
     public function getInstalledPolesForSiteEngineer($engineer_id)
     {
         $surveyed_poles = Pole::whereHas('task', function ($query) use ($engineer_id) {
@@ -748,7 +806,14 @@ class TaskController extends Controller
         ], 200);
     }
 
-    // Fetch Surveyed Poles based on user role
+    /**
+     * Fetch Surveyed Poles based on user role
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getSurveyedPoles(Request $request)
     {
         if (!auth()->check()) {
@@ -875,7 +940,14 @@ class TaskController extends Controller
         return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districtOptions', 'blockOptions', 'panchayatOptions', 'wardOptions', 'projectManagerOptions', 'siteEngineerOptions'));
     }
 
-    // Fetch Installed Poles based on user role
+    /**
+     * Fetch Installed Poles based on user role
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getInstalledPoles(Request $request)
     {
         $query = Pole::with(['task.streetlight', 'task'])
@@ -1062,13 +1134,14 @@ class TaskController extends Controller
     //         ];
     //     });
 
-    //     return response()->json([
-    //         'draw' => intval($request->input('draw')),
-    //         'recordsTotal' => $totalRecords,
-    //         'recordsFiltered' => $filteredRecords,
-    //         'data' => $data
-    //     ]);
-    // }
+    /**
+     * return response()->json([ 'draw' => intval($request->input('draw')), 'recordsTotal' => $totalRecords, 'recordsFiltered' => $filteredRecords, 'data' => $data ]); }
+     *
+     * Data flow: HTTP Request → Controller → JSON Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function getInstalledPolesData(Request $request)
     {
         $query = Pole::with(['task.streetlight'])
@@ -1236,7 +1309,12 @@ class TaskController extends Controller
         return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
     }
     */
-    // Get Pole Details by ID 'Y'
+    /**
+     * Get Pole Details by ID 'Y'
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
@@ -1253,7 +1331,12 @@ class TaskController extends Controller
         return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
     }
 
-    // 👇 Add this helper inside the same controller
+    /**
+     * 👇 Add this helper inside the same controller
+     *
+     * @param  mixed  $json  
+     * @return void  
+     */
     private function processImagesFromJson($json)
     {
         $imageUrls = [];
@@ -1287,7 +1370,12 @@ class TaskController extends Controller
         return $imageUrls;
     }
 
-    // Api to export poles in excel in vendor/staff app
+    /**
+     * Api to export poles in excel in vendor/staff app
+     *
+     * @param  mixed  $vendor_id  The vendor identifier
+     * @return void  
+     */
     public function exportPoles($vendor_id)
     {
         $vendor = User::find($vendor_id);
@@ -1360,7 +1448,14 @@ class TaskController extends Controller
         return ExcelHelper::exportMultipleSheets($sheets, $fileName);
     }
 
-    // Api to update all poles to RMS at once
+    /**
+     * Api to update all poles to RMS at once
+     *
+     * Data flow: HTTP Request → Controller → JSON Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function sendDataToRMS(Request $request)
     {
         // Optional filters if you want to limit by installed or surveyed poles
@@ -1422,6 +1517,15 @@ class TaskController extends Controller
         ]);
     }
 
+    /**
+     * Edit pole details.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function editPoleDetails(Request $request, $id)
     {
         // Return view to update pole
@@ -1430,6 +1534,15 @@ class TaskController extends Controller
         return view('poles.edit', compact('data'));
     }
 
+    /**
+     * Update pole details.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function updatePoleDetails(Request $request, $id)
     {
         // Apply logic and return to show pole details

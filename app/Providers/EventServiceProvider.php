@@ -7,6 +7,18 @@ use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
 use Illuminate\Support\Facades\Event;
 
+/**
+ * Event-listener mapping provider. Registers all event-to-listener mappings, enabling the
+ * event-driven architecture. Maps events like InventoryDispatched to listeners like
+ * LogInventoryHistory.
+ *
+ * Data Flow:
+ *   Application boots → Register event → listener mappings → Events dispatched →
+ *   Matching listeners execute
+ *
+ * @business-domain Architecture
+ * @package App\Providers
+ */
 class EventServiceProvider extends ServiceProvider
 {
     /**

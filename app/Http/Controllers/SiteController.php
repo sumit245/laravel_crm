@@ -21,12 +21,36 @@ use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Logging\ActivityLogger;
 
+/**
+ * Site / Panchayat Management — manages project sites (locations where work happens). For
+ * streetlight projects, a "site" represents a panchayat with a ward structure and target pole
+ * count. Sites are imported from Excel with district-panchayat-ward hierarchy. Supports pole
+ * imports per site, bulk operations, and downloadable import templates.
+ *
+ * Data Flow:
+ *   Excel import → Parse district/panchayat/ward/pole count → Create Streetlight or Site
+ *   records → Assign via Tasks → Show: Display poles underneath site → Bulk
+ *   delete/import operations
+ *
+ * @depends-on Site, Streetlight, Pole, StreetlightTask, City, Project, SiteImport, StreetlightImport, SitePoleImport, ActivityLogger
+ * @business-domain Site Management
+ * @package App\Http\Controllers
+ */
 class SiteController extends Controller
 {
     public function __construct(
         protected ActivityLogger $activityLogger
     ) {
     }
+    /**
+     * Import data from file.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     public function import(Request $request, $projectId)
     {
         $request->validate([
@@ -502,6 +526,14 @@ class SiteController extends Controller
     }
 
 
+    /**
+     * Search for matching records.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function search(Request $request)
     {
         $search = $request->input('search');
@@ -547,6 +579,15 @@ class SiteController extends Controller
         return view('sites.edit', compact('site', 'projectId'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  string  $id  The resource identifier
+     * @return void  
+     */
     public function update(Request $request, string $id)
     {
         try {
@@ -594,6 +635,14 @@ class SiteController extends Controller
         }
     }
 
+    /**
+     * Perform bulk delete operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkDelete(Request $request)
     {
         try {
@@ -631,6 +680,15 @@ class SiteController extends Controller
         }
     }
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  string  $id  The resource identifier
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function destroy(string $id, Request $request)
     {
         try {
@@ -656,6 +714,12 @@ class SiteController extends Controller
         }
     }
 
+    /**
+     * Download import format.
+     *
+     * @param  mixed  $projectId  The project identifier
+     * @return void  
+     */
     public function downloadImportFormat($projectId)
     {
         try {

@@ -6,9 +6,15 @@ use App\Models\Project;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * Project Service Interface
- * 
- * Defines contract for project business logic operations
+ * Contract for project business logic. Defines methods for project CRUD, staff assignment, target
+ * management, and progress tracking.
+ *
+ * Data Flow:
+ *   ProjectsController → ProjectService (implements this) → Business rules → Repository
+ *   calls → Model operations
+ *
+ * @business-domain Project Management
+ * @package App\Contracts
  */
 interface ProjectServiceInterface extends ServiceInterface
 {

@@ -6,6 +6,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 
+/**
+ * Background Job Processor — handles asynchronous job processing for long-running operations
+ * like bulk target deletion, large Excel imports, and RMS push batches. Provides progress
+ * tracking endpoints.
+ *
+ * Data Flow:
+ *   Trigger async operation → Dispatch to queue → Worker processes chunks → Update
+ *   progress in cache → Polling endpoint returns completion %
+ *
+ * @depends-on ProcessPoleImportChunk, ProcessTargetDeletionChunk, TargetDeletionJob
+ * @business-domain System Administration
+ * @package App\Http\Controllers
+ */
 class QueueProcessorController extends Controller
 {
     /**

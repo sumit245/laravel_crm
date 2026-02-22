@@ -14,6 +14,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
+/**
+ * Streetlight Pole Record Management — manages individual pole records after field teams survey
+ * and install them. Each pole has geo-coordinates, photos (before/after installation), serial
+ * numbers for attached equipment (Panel, Luminary, Battery), and RMS push status. Supports serial
+ * replacement (when faulty equipment is swapped), bulk delete, and bulk push to the government's
+ * Remote Monitoring System (RMS).
+ *
+ * Data Flow:
+ *   Field app surveys pole → API creates Pole record → Web: Edit pole details → Replace
+ *   serial (old inventory returned, new dispatched) → Upload images to S3 → Bulk push to
+ *   RMS API → Mark as pushed
+ *
+ * @depends-on Pole, InventoryDispatch, InventroyStreetLightModel, InventoryService, InventoryHistoryService, ActivityLogger
+ * @business-domain Field Operations
+ * @package App\Http\Controllers
+ */
 class PoleController extends Controller
 {
     protected InventoryService $inventoryService;
@@ -22,6 +38,13 @@ class PoleController extends Controller
 
     protected ActivityLogger $activityLogger;
 
+    /**
+     * Create a new PoleController instance.
+     *
+     * @param  InventoryService  $inventoryService  
+     * @param  InventoryHistoryService  $historyService  
+     * @param  ActivityLogger  $activityLogger  
+     */
     public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService, ActivityLogger $activityLogger)
     {
         $this->inventoryService = $inventoryService;
@@ -29,6 +52,12 @@ class PoleController extends Controller
         $this->activityLogger = $activityLogger;
     }
 
+    /**
+     * Show the form for editing the specified resource.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function edit($id)
     {
         $pole = Pole::with(['task', 'task.streetlight'])->findOrFail($id);
@@ -46,6 +75,15 @@ class PoleController extends Controller
         return view('poles.edit', compact('pole', 'installer', 'siteEngineer', 'projectManager', 'surveyImages', 'submissionImages'));
     }
 
+    /**
+     * Update the specified resource in storage.
+     *
+     * Data flow: HTTP Request → Validation → Database → Redirect with status
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function update(Request $request, $id)
     {
         $pole = Pole::findOrFail($id);
@@ -277,6 +315,12 @@ class PoleController extends Controller
         }
     }
 
+    /**
+     * Remove the specified resource from storage.
+     *
+     * @param  mixed  $id  The resource identifier
+     * @return void  
+     */
     public function destroy($id)
     {
         try {
@@ -347,6 +391,12 @@ class PoleController extends Controller
         }
     }
 
+    /**
+     * Return inventory item.
+     *
+     * @param  mixed  $serialNumber  
+     * @return void  
+     */
     private function returnInventoryItem($serialNumber)
     {
         try {
@@ -378,6 +428,15 @@ class PoleController extends Controller
         }
     }
 
+    /**
+     * Replace serial manually.
+     *
+     * @param  mixed  $pole  
+     * @param  mixed  $field  
+     * @param  mixed  $newSerial  
+     * @param  mixed  $poleDistrict  
+     * @return void  
+     */
     protected function replaceSerialManually($pole, $field, $newSerial, $poleDistrict = null)
     {
         $oldSerial = $pole->$field;
@@ -480,6 +539,14 @@ class PoleController extends Controller
         $oldDispatch->delete();
     }
 
+    /**
+     * Perform bulk delete operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkDelete(Request $request)
     {
         $request->validate([
@@ -521,6 +588,14 @@ class PoleController extends Controller
         }
     }
 
+    /**
+     * Perform bulk push rms operation.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function bulkPushRms(Request $request)
     {
         Log::info('Controller: bulkPushRms');

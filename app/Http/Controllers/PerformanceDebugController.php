@@ -6,6 +6,19 @@ use App\Enums\UserRole;
 use App\Models\{User, StreetlightTask, Task, Pole, Project};
 use Illuminate\Http\Request;
 
+/**
+ * Performance Debugging Tool — diagnostic controller used to debug and verify performance
+ * calculation accuracy. Provides detailed breakdowns of how metrics are computed for
+ * troubleshooting discrepancies.
+ *
+ * Data Flow:
+ *   Select staff member → Run performance queries with detailed logging → Compare
+ *   calculated vs expected values → Display diagnostic output
+ *
+ * @depends-on User, Pole, Task, Project
+ * @business-domain System Administration
+ * @package App\Http\Controllers
+ */
 class PerformanceDebugController extends Controller
 {
     /**

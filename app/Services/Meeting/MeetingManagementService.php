@@ -7,10 +7,37 @@ use App\Models\{Meet, DiscussionPoint, MeetingNoteHistory};
 use App\Services\BaseService;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Service layer for meeting operations. Handles meeting CRUD, discussion point management,
+ * attendee management, follow-up scheduling, and notification dispatch.
+ *
+ * Data Flow:
+ *   Controller delegates → Service validates business rules → Model operations →
+ *   Notification dispatch
+ *
+ * @depends-on Meet, DiscussionPoint, FollowUp, User
+ * @business-domain Meetings & Collaboration
+ * @package App\Services\Meeting
+ */
 class MeetingManagementService extends BaseService implements MeetingServiceInterface
 {
+    /**
+     * Create a new MeetingManagementService instance.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  MeetingRepositoryInterface  $repository  
+     */
     public function __construct(protected MeetingRepositoryInterface $repository) {}
 
+    /**
+     * Create meeting.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  array  $data  The input data array
+     * @return Model  
+     */
     public function createMeeting(array $data): Model
     {
         return $this->executeInTransaction(function () use ($data) {
@@ -34,6 +61,15 @@ class MeetingManagementService extends BaseService implements MeetingServiceInte
         });
     }
 
+    /**
+     * Update meeting.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  int  $meetingId  
+     * @param  array  $data  The input data array
+     * @return Model  
+     */
     public function updateMeeting(int $meetingId, array $data): Model
     {
         return $this->executeInTransaction(function () use ($meetingId, $data) {
@@ -43,6 +79,14 @@ class MeetingManagementService extends BaseService implements MeetingServiceInte
         });
     }
 
+    /**
+     * Delete meeting.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  int  $meetingId  
+     * @return bool  Success status
+     */
     public function deleteMeeting(int $meetingId): bool
     {
         return $this->executeInTransaction(function () use ($meetingId) {
@@ -52,6 +96,15 @@ class MeetingManagementService extends BaseService implements MeetingServiceInte
         });
     }
 
+    /**
+     * Add participants.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  int  $meetingId  
+     * @param  array  $userIds  
+     * @return Model  
+     */
     public function addParticipants(int $meetingId, array $userIds): Model
     {
         return $this->executeInTransaction(function () use ($meetingId, $userIds) {
@@ -61,6 +114,16 @@ class MeetingManagementService extends BaseService implements MeetingServiceInte
         });
     }
 
+    /**
+     * Save notes.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  int  $meetingId  
+     * @param  string  $notes  
+     * @param  int  $userId  The user identifier
+     * @return Model  
+     */
     public function saveNotes(int $meetingId, string $notes, int $userId): Model
     {
         return $this->executeInTransaction(function () use ($meetingId, $notes, $userId) {
@@ -78,6 +141,15 @@ class MeetingManagementService extends BaseService implements MeetingServiceInte
         });
     }
 
+    /**
+     * Create discussion point.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  int  $meetingId  
+     * @param  array  $data  The input data array
+     * @return Model  
+     */
     public function createDiscussionPoint(int $meetingId, array $data): Model
     {
         return $this->executeInTransaction(function () use ($meetingId, $data) {
@@ -92,6 +164,16 @@ class MeetingManagementService extends BaseService implements MeetingServiceInte
         });
     }
 
+    /**
+     * Update discussion status.
+     *
+     * Data flow: Called by Controller → Database interaction → Returns result
+     *
+     * @param  int  $discussionPointId  
+     * @param  string  $status  The status value
+     * @param  ?string  $notes  
+     * @return Model  
+     */
     public function updateDiscussionStatus(int $discussionPointId, string $status, ?string $notes = null): Model
     {
         return $this->executeInTransaction(function () use ($discussionPointId, $status, $notes) {

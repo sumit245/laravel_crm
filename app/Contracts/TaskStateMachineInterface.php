@@ -5,9 +5,15 @@ namespace App\Contracts;
 use App\Enums\TaskStatus;
 
 /**
- * Task State Machine Interface
- * 
- * Defines contract for task state transition management
+ * Contract for task state machine. Defines valid state transitions (Pending → In Progress →
+ * Completed/Rejected) and guards that prevent invalid transitions.
+ *
+ * Data Flow:
+ *   Task status change requested → State machine validates transition → Allowed: update
+ *   status → Denied: throw exception
+ *
+ * @business-domain Field Operations
+ * @package App\Contracts
  */
 interface TaskStateMachineInterface
 {

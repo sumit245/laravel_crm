@@ -25,10 +25,28 @@ use App\Helpers\ExcelHelper;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
 
+/**
+ * Data Backup & Restoration — provides database backup and data export capabilities for
+ * disaster recovery and data portability. Supports full database dumps and selective table
+ * exports.
+ *
+ * Data Flow:
+ *   Admin triggers backup → Database dump → Download file → Restore: Upload backup →
+ *   Parse → Restore tables
+ *
+ * @depends-on DataTransformationService
+ * @business-domain System Administration
+ * @package App\Http\Controllers
+ */
 class BackupController extends Controller
 {
     protected $transformer;
 
+    /**
+     * Create a new BackupController instance.
+     *
+     * @param  DataTransformationService  $transformer  
+     */
     public function __construct(DataTransformationService $transformer)
     {
         $this->transformer = $transformer;

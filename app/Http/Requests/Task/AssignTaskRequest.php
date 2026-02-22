@@ -5,9 +5,17 @@ namespace App\Http\Requests\Task;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * Assign Task Request
- * 
- * Validates data for assigning engineer/vendor to task
+ * Validates input for assigning field tasks (targets) to staff. Enforces required fields: site
+ * selection, engineer assignment, vendor assignment, and date range. Ensures business rules like
+ * date ordering are met.
+ *
+ * Data Flow:
+ *   POST /tasks/assign → AssignTaskRequest validates → Check site + staff existence →
+ *   Pass: create task → Fail: redirect with errors
+ *
+ * @depends-on StreetlightTask, Task, User
+ * @business-domain Field Operations
+ * @package App\Http\Requests\Task
  */
 class AssignTaskRequest extends FormRequest
 {

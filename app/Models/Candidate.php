@@ -5,6 +5,17 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Job candidate record for recruitment. Contains personal details, contact info, resume,
+ * interview status, and hiring decision.
+ *
+ * Data Flow:
+ *   Register candidate → Upload documents → Schedule interview → Update status → Hire
+ *   or reject
+ *
+ * @business-domain HR & Recruitment
+ * @package App\Models
+ */
 class Candidate extends Model
 {
     use HasFactory;

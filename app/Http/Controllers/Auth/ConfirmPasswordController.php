@@ -5,6 +5,19 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ConfirmsPasswords;
 
+/**
+ * Password Confirmation — handles the password re-confirmation flow required before sensitive
+ * operations like account deletion or role changes. Ensures the current session user re-enters
+ * their password for security.
+ *
+ * Data Flow:
+ *   Sensitive action triggers password confirm → User enters password → Verify against
+ *   stored hash → Allow or deny the action
+ *
+ * @depends-on User
+ * @business-domain Authentication
+ * @package App\Http\Controllers\Auth
+ */
 class ConfirmPasswordController extends Controller
 {
     /*

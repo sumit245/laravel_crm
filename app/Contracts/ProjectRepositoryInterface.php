@@ -6,9 +6,15 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Project Repository Interface
- * 
- * Defines contract for project data access operations
+ * Contract for project data access. Defines methods for querying projects with related data
+ * (staff, sites, stores), filtering by user access, and aggregating project statistics.
+ *
+ * Data Flow:
+ *   ProjectService → ProjectRepository (implements this) → Eloquent queries → Project
+ *   data
+ *
+ * @business-domain Project Management
+ * @package App\Contracts
  */
 interface ProjectRepositoryInterface extends RepositoryInterface
 {

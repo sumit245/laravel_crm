@@ -8,6 +8,17 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 
+/**
+ * Route configuration provider. Loads route files (web.php, api.php), sets API rate limiting,
+ * configures route model binding, and defines the application's URL namespace.
+ *
+ * Data Flow:
+ *   Application boots → Load web routes + API routes → Apply middleware groups → Rate
+ *   limiting configured → Routes ready to serve
+ *
+ * @business-domain Architecture
+ * @package App\Providers
+ */
 class RouteServiceProvider extends ServiceProvider
 {
     /**

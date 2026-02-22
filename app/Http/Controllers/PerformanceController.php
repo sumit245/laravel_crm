@@ -7,6 +7,19 @@ use App\Enums\UserRole;
 use App\Models\Project;
 use Illuminate\Http\Request;
 
+/**
+ * Staff Performance Analytics — calculates and displays performance metrics for engineers,
+ * vendors, and project managers. Tracks survey completion rates, installation progress, and
+ * comparative leaderboards.
+ *
+ * Data Flow:
+ *   Select project + date range → Query poles/tasks per staff → Calculate completion
+ *   percentages → Rank by performance → Display leaderboard → Export to Excel
+ *
+ * @depends-on PerformanceService, User, Pole, Task, Project
+ * @business-domain Dashboard & Reporting
+ * @package App\Http\Controllers
+ */
 class PerformanceController extends Controller
 {
     public function __construct(

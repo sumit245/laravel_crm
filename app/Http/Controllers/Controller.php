@@ -7,6 +7,12 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Routing\Controller as BaseController;
 
+/**
+ * Class Controller
+ *
+ * Extends BaseController.
+ * @package App\Http\Controllers
+ */
 class Controller extends BaseController
 {
  public const PER_PAGE               = 50;

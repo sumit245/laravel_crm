@@ -6,9 +6,15 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Collection;
 
 /**
- * User Service Interface
- * 
- * Defines contract for user management operations
+ * Contract for user business logic. Defines methods for user CRUD, role management, project
+ * assignment, and OTP verification.
+ *
+ * Data Flow:
+ *   StaffController → UserService (implements this) → Business rules → Repository →
+ *   User model operations
+ *
+ * @business-domain Staff & HR
+ * @package App\Contracts
  */
 interface UserServiceInterface extends ServiceInterface
 {

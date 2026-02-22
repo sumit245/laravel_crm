@@ -8,9 +8,30 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
+/**
+ * User Authentication — handles login with role-based redirection. After successful login,
+ * admins see the main dashboard, while project managers are redirected to their assigned project.
+ * Supports standard web login with session management.
+ *
+ * Data Flow:
+ *   Login form → Validate credentials → Create session → Role check → Redirect to
+ *   dashboard or project page
+ *
+ * @depends-on User, AuthenticatesUsers
+ * @business-domain Authentication
+ * @package App\Http\Controllers\API
+ */
 class LoginController extends Controller
 {
 
+    /**
+     * Login information.
+     *
+     * Data flow: HTTP Request → Processing → Response
+     *
+     * @param  Request  $request  The incoming HTTP request
+     * @return void  
+     */
     public function login(Request $request)
     {
         $request->validate([

@@ -7,6 +7,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Meeting access control middleware. Restricts access to meeting-related routes to only users who
+ * are authorized to view or manage meetings (typically admins and project managers). Custom
+ * business middleware.
+ *
+ * Data Flow:
+ *   HTTP Request to meeting route → Check user role/permissions → Authorized: proceed →
+ *   Unauthorized: abort 403
+ *
+ * @depends-on User
+ * @business-domain Security
+ * @package App\Http\Middleware
+ */
 class RestrictToMeetings
 {
     /**
