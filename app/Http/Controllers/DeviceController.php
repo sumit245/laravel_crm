@@ -60,24 +60,16 @@ class DeviceController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:51200', // 50MB max
             'project_id' => 'required|exists:projects,id',
         ]);
 
         try {
             $file = $request->file('file');
-            $fileSize = $file->getSize();
-            $threshold = 1024 * 1024; // 1MB - files larger than this will be queued
-
             $projectId = $request->input('project_id');
 
-            // For small files, process synchronously
-            if ($fileSize < $threshold) {
-                return $this->processSyncImport($file, $projectId);
-            } else {
-                // For large files, queue the import
-                return $this->processQueuedImport($file, $projectId);
-            }
+            // Always queue the import to avoid Nginx gateway timeout on large files
+            return $this->processQueuedImport($file, $projectId);
         } catch (\Exception $e) {
             Log::error('Error importing file: ' . $e->getMessage());
             return back()->with('error', 'Error importing file: ' . $e->getMessage());
