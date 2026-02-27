@@ -334,4 +334,11 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/rms-push', [RMSController::class, 'index'])->name('rms.index');
     Route::get('/rms-export', [RMSController::class, 'export'])->name('rms.export');
     Route::post('/rms-push', [RMSController::class, 'sendPanchayatToRMS'])->name('rms.push');
+
+    // RMS Bulk Sync Feature
+    Route::get('/rms-sync', [\App\Http\Controllers\RmsSyncController::class, 'index'])->name('rms-sync.index');
+    Route::post('/rms-sync/validate', [\App\Http\Controllers\RmsSyncController::class, 'validatePoles'])->name('rms-sync.validate');
+    Route::post('/rms-sync/update-codes', [\App\Http\Controllers\RmsSyncController::class, 'updateCodes'])->name('rms-sync.update-codes');
+    Route::post('/rms-sync/start', [\App\Http\Controllers\RmsSyncController::class, 'startSync'])->name('rms-sync.start');
+    Route::get('/rms-sync/progress', [\App\Http\Controllers\RmsSyncController::class, 'getProgress'])->name('rms-sync.progress');
 });
