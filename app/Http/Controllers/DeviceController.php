@@ -130,18 +130,10 @@ class DeviceController extends Controller
             $fileName = 'pole_import_' . time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('imports', $fileName, 'local');
 
-            // Count total rows (estimate - read first sheet)
-            $totalRows = 0;
-            try {
-                $data = Excel::toArray([], $file);
-                if (!empty($data[0])) {
-                    $totalRows = count($data[0]) - 1; // Subtract header row
-                }
-            } catch (\Exception $e) {
-                Log::warning('Could not count rows for import', ['error' => $e->getMessage()]);
-                // Estimate based on file size (rough estimate: 1KB per row)
-                $totalRows = max(1000, (int) ($file->getSize() / 1024));
-            }
+            // Estimate total rows from file size to avoid loading the entire file into memory
+            // (loading via Excel::toArray() on a 10k-row file causes 504 timeout)
+            // The background job will track actual progress row-by-row anyway.
+            $totalRows = max(100, (int) ($file->getSize() / 500)); // ~500 bytes per row estimate
 
             // Create job record
             $job = PoleImportJob::create([

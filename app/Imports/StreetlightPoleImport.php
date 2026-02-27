@@ -113,6 +113,31 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
         $existingPole = Pole::where('complete_pole_number', $completePoleNumber)->first();
         if ($existingPole) {
+            // For project 19: skip all inventory validation. Just update the pole fields directly.
+            if ($this->projectId == 19) {
+                $newLuminaryQr = trim($row['luminary_qr'] ?? '');
+                $newBatteryQr = trim($row['battery_qr'] ?? '');
+                $newPanelQr = trim($row['panel_qr'] ?? '');
+
+                $existingPole->luminary_qr = $newLuminaryQr ?: $existingPole->luminary_qr;
+                $existingPole->battery_qr = $newBatteryQr ?: $existingPole->battery_qr;
+                $existingPole->panel_qr = $newPanelQr ?: $existingPole->panel_qr;
+                $existingPole->beneficiary = !empty($row['beneficiary']) ? trim($row['beneficiary']) : $existingPole->beneficiary;
+                $existingPole->beneficiary_contact = !empty($row['beneficiary_contact']) ? trim($row['beneficiary_contact']) : $existingPole->beneficiary_contact;
+                $existingPole->ward_name = !empty($row['ward_name']) ? trim($row['ward_name']) : $existingPole->ward_name;
+                $existingPole->sim_number = !empty($row['sim_number']) ? trim($row['sim_number']) : $existingPole->sim_number;
+                $existingPole->lat = !empty($row['lat']) ? $row['lat'] : $existingPole->lat;
+                $existingPole->lng = !empty($row['long']) ? $row['long'] : $existingPole->lng;
+                $existingPole->save();
+
+                $this->successCount++;
+                Log::info('Project 19: Existing pole updated directly (no inventory validation)', [
+                    'pole_id' => $existingPole->id,
+                    'complete_pole_number' => $completePoleNumber,
+                ]);
+                return;
+            }
+
             // Get task from existing pole's relationship
             $task = $existingPole->task;
             if (!$task) {
