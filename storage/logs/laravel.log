@@ -6588,3 +6588,7 @@ DST Off\">2026-03-04 00:00:00.0 UTC (+00:00)</span>
 [stacktrace]
 #0 {main}
 "} 
+[2026-02-27 05:20:49] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 

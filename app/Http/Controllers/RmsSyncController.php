@@ -146,7 +146,7 @@ class RmsSyncController extends Controller
         $poleQuery = Pole::whereIn('task_id', $taskIds);
 
         // Filter out poles that already have a successful push log
-        $successfullyPushedPoleIds = RmsPushLog::where('status', 'success')
+        $successfullyPushedPoleIds = RmsPushLog::where('response_data->status', 'OK')
             ->whereIn('pole_id', $poleQuery->pluck('id'))
             ->pluck('pole_id');
 
@@ -180,10 +180,12 @@ class RmsSyncController extends Controller
         }
 
         $logs = $query->get()->map(function ($log) {
+            $responseStatus = is_array($log->response_data) ? ($log->response_data['status'] ?? 'unknown') : 'unknown';
+            $success = strtoupper(strval($responseStatus)) === 'OK';
             return [
                 'id' => $log->id,
                 'pole_id' => $log->pole_id,
-                'status' => $log->status,
+                'status' => $success ? 'success' : 'error',
                 'message' => $log->message,
                 'time' => $log->created_at->format('H:i:s'),
                 // Include partial pole data if available
