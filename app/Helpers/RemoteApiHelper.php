@@ -70,7 +70,11 @@ class RemoteApiHelper
         Log::info('Payload for RMS:', $payload);
         try {
             $response = Http::asForm()->post($url, $payload);
-            Log::info('RMS Response:', $response->json() ?? []);
+            Log::info('RMS Response Details:', [
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'body' => $response->body(),
+            ]);
             if ($response->successful()) {
                 Log::info("Remote API success", ['response' => $response->body()]);
             } else {

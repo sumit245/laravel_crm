@@ -82,9 +82,10 @@
 
 <div class="row my-2 mx-1">
     <x-datatable id="sitesTable" title="Sites" :columns="$columns" :addRoute="route('sites.create', ['project_id' => $project->id])" addButtonText="Add Site" :exportEnabled="true" :importEnabled="true"
-        :importRoute="route('sites.import', $project->id)" :importFormatUrl="$importFormatUrl" :bulkDeleteEnabled="true"
-        :bulkDeleteRoute="route('sites.bulkDelete') . '?project_id=' . $project->id"
-        :deleteRoute="route('sites.destroy', ':id') . '?project_id=' . $project->id" :editRoute="route('sites.edit', ':id') . '?project_id=' . $project->id" :viewRoute="route('sites.show', ':id') . '?project_type=' . $project->project_type" pageLength="50" searchPlaceholder="Search Sites..." :filters="$filters">
+        :importDisabled="$project->id == 19" :importRoute="route('sites.import', $project->id)"
+        :importFormatUrl="$importFormatUrl" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('sites.bulkDelete') . '?project_id=' . $project->id" :deleteRoute="route('sites.destroy', ':id') . '?project_id=' . $project->id"
+        :editRoute="route('sites.edit', ':id') . '?project_id=' . $project->id" :viewRoute="route('sites.show', ':id') . '?project_type=' . $project->project_type" pageLength="50" searchPlaceholder="Search Sites..."
+        :filters="$filters">
         @foreach ($sites as $site)
             <tr>
                 <td>

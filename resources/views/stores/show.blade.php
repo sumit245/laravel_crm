@@ -8,7 +8,8 @@
                 <h4 class="mb-1">{{ $store->store_name }}</h4>
                 <p class="text-muted mb-0 small">{{ $store->address }}</p>
                 <p class="text-muted mb-0 small">Incharge: {{ $store->storeIncharge->firstName ?? 'N/A' }}
-                    {{ $store->storeIncharge->lastName ?? '' }}</p>
+                    {{ $store->storeIncharge->lastName ?? '' }}
+                </p>
             </div>
             <a href="{{ route('projects.show', $project->id) }}#inventory" class="btn btn-secondary btn-sm">
                 <i class="mdi mdi-arrow-left"></i> Back to Project
@@ -172,8 +173,8 @@
                         </button>
                     </li>
                     <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="view-tab" data-bs-toggle="tab" data-bs-target="#view"
-                            type="button" role="tab" aria-controls="view" aria-selected="false">
+                        <button class="nav-link" id="view-tab" data-bs-toggle="tab" data-bs-target="#view" type="button"
+                            role="tab" aria-controls="view" aria-selected="false">
                             View Inventory
                         </button>
                     </li>
@@ -202,8 +203,8 @@
                                     @csrf
                                     <div class="input-group input-group-sm import-input-wrapper">
                                         <input type="file" name="file"
-                                            class="form-control form-control-sm import-file-input"
-                                            accept=".xlsx,.xls,.csv" required>
+                                            class="form-control form-control-sm import-file-input" accept=".xlsx,.xls,.csv"
+                                            required>
                                         <button type="submit"
                                             class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1">
                                             <i class="mdi mdi-upload"></i>
@@ -228,8 +229,7 @@
                         </div>
 
                         @if ($project->project_type == 1)
-                            <form action="{{ route('inventory.store') }}" method="POST" id="addInventoryForm"
-                                novalidate>
+                            <form action="{{ route('inventory.store') }}" method="POST" id="addInventoryForm" novalidate>
                                 @csrf
                                 <input type="hidden" name="project_type" value="{{ $project->project_type }}">
                                 <input type="hidden" name="project_id" value="{{ $project->id }}">
@@ -241,8 +241,7 @@
                                             Item <span class="text-danger">*</span>
                                         </label>
                                         <select id="item_combined"
-                                            class="form-select form-select-sm @error('code') is-invalid @enderror"
-                                            required>
+                                            class="form-select form-select-sm @error('code') is-invalid @enderror" required>
                                             <option value="">-- Select Item --</option>
                                             <option value="SL01|Module">SL01 - Module</option>
                                             <option value="SL02|Luminary">SL02 - Luminary</option>
@@ -273,8 +272,7 @@
                                             Model <span class="text-danger">*</span>
                                         </label>
                                         <input type="text" id="model" name="model"
-                                            class="form-control form-control-sm @error('model') is-invalid @enderror"
-                                            required>
+                                            class="form-control form-control-sm @error('model') is-invalid @enderror" required>
                                         @error('model')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
@@ -308,8 +306,7 @@
                                         <label for="rate" class="form-label">
                                             Rate
                                         </label>
-                                        <input type="number" id="rate" name="rate" step="0.01"
-                                            min="0" value="100"
+                                        <input type="number" id="rate" name="rate" step="0.01" min="0" value="100"
                                             class="form-control form-control-sm @error('rate') is-invalid @enderror">
                                         @error('rate')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -341,8 +338,7 @@
                                         <label for="totalvalue" class="form-label">
                                             Total Value
                                         </label>
-                                        <input type="number" id="totalvalue" name="totalvalue" step="0.01"
-                                            min="0" readonly
+                                        <input type="number" id="totalvalue" name="totalvalue" step="0.01" min="0" readonly
                                             class="form-control form-control-sm @error('totalvalue') is-invalid @enderror">
                                         @error('totalvalue')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
@@ -370,8 +366,8 @@
                                     </div>
                                     <div class="col-md-3 mb-3" id="sim_number_wrapper" style="display: none;">
                                         <label for="sim_number" class="form-label">
-                                            SIM Number <span class="text-danger">*</span> <small
-                                                class="text-muted">(Luminary only)</small>
+                                            SIM Number <span class="text-danger">*</span> <small class="text-muted">(Luminary
+                                                only)</small>
                                         </label>
                                         <input type="text" id="sim_number" name="sim_number"
                                             class="form-control form-control-sm @error('sim_number') is-invalid @enderror">
@@ -458,48 +454,49 @@
                 @endphp
 
                 {{-- Use datatable component with server-side processing --}}
-                <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)"
-                    ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray" :bulkDeleteEnabled="$isAdmin"
-                    :bulkDeleteRoute="route('inventory.bulkDelete')" :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')" :exportEnabled="true" :importEnabled="false"
-                    :availabilityColumnIndex="5" :vendorColumnIndex="6" :serialColumnIndex="3"
-                    pageLength="50" searchPlaceholder="Search inventory..." :deferLoading="$inventoryTotal ?? null" :filters="[
-        [
-            'type' => 'select',
-            'name' => 'availability',
-            'label' => 'Availability',
-            'column' => 5,
-            'width' => 3,
-            'options' => [
-                'In Stock' => 'In Stock',
-                'Dispatched' => 'Dispatched',
-                'Consumed' => 'Consumed',
+                <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)" ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray"
+                    :bulkDeleteEnabled="$isAdmin" :bulkDeleteRoute="route('inventory.bulkDelete')"
+                    :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')" :exportEnabled="true"
+                    :importEnabled="false" :availabilityColumnIndex="5" :vendorColumnIndex="6" :serialColumnIndex="3"
+                    pageLength="50" searchPlaceholder="Search inventory..." :deferLoading="$inventoryTotal ?? null"
+                    :filters="[
+            [
+                'type' => 'select',
+                'name' => 'availability',
+                'label' => 'Availability',
+                'column' => 5,
+                'width' => 3,
+                'options' => [
+                    'In Stock' => 'In Stock',
+                    'Dispatched' => 'Dispatched',
+                    'Consumed' => 'Consumed',
+                ],
             ],
-        ],
-        [
-            'type' => 'select',
-            'name' => 'vendor',
-            'label' => 'Vendor',
-            'column' => 6,
-            'width' => 3,
-            'select2' => true,
-            'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
-        ],
-        [
-            'type' => 'select',
-            'name' => 'item',
-            'label' => 'Item',
-            'column' => 1,
-            'width' => 3,
-            'options' => [
-                'SL01' => 'Panel Module (SL01 Panel)',
-                'SL02' => 'Luminary (SL02 Luminary)',
-                'SL03' => 'Battery (SL03 Battery)',
-                // Note: SL04 (Structure) is excluded from filter as it's mapped to SL03 and not shown in table
+            [
+                'type' => 'select',
+                'name' => 'vendor',
+                'label' => 'Vendor',
+                'column' => 6,
+                'width' => 3,
+                'select2' => true,
+                'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
             ],
-        ],
-    ]">
+            [
+                'type' => 'select',
+                'name' => 'item',
+                'label' => 'Item',
+                'column' => 1,
+                'width' => 3,
+                'options' => [
+                    'SL01' => 'Panel Module (SL01 Panel)',
+                    'SL02' => 'Luminary (SL02 Luminary)',
+                    'SL03' => 'Battery (SL03 Battery)',
+                    // Note: SL04 (Structure) is excluded from filter as it's mapped to SL03 and not shown in table
+                ],
+            ],
+        ]">
                     {{-- Render initial rows (fast first paint). DataTables will use the DOM rows
-                         and the 'deferLoading' option to avoid the initial ajax request. --}}
+                    and the 'deferLoading' option to avoid the initial ajax request. --}}
                     @foreach ($unifiedInventory as $item)
                         @php
                             $availability = 'In Stock';
@@ -522,17 +519,15 @@
                             $simNumber = (($item->item_code ?? '') === 'SL02' && trim((string) ($item->sim_number ?? '')) !== '') ? $item->sim_number : '-';
                         @endphp
                         <tr>
-                            <td><input type="checkbox" class="row-checkbox" value="{{ $item->id }}"
-                                    data-id="{{ $item->id }}"
-                                    data-serial-number="{{ $item->serial_number }}"
-                                    data-availability="{{ $availability }}"
-                                    data-item-code="{{ $item->item_code }}"
-                                    data-vendor-name="{{ $vendorName }}"></td>
+                            <td><input type="checkbox" class="row-checkbox" value="{{ $item->id }}" data-id="{{ $item->id }}"
+                                    data-serial-number="{{ $item->serial_number }}" data-availability="{{ $availability }}"
+                                    data-item-code="{{ $item->item_code }}" data-vendor-name="{{ $vendorName }}"></td>
                             <td>{{ $item->item_code }}</td>
                             <td>{{ $item->item }}</td>
                             <td>
                                 @if ($availability === 'Consumed' && !empty($item->streetlight_pole_id))
-                                    <a href="{{ route('poles.show', $item->streetlight_pole_id) }}" class="text-primary" style="text-decoration:none">{{ $item->serial_number }}</a>
+                                    <a href="{{ route('poles.show', $item->streetlight_pole_id) }}" class="text-primary"
+                                        style="text-decoration:none">{{ $item->serial_number }}</a>
                                 @else
                                     {{ $item->serial_number }}
                                 @endif
@@ -546,9 +541,8 @@
                             <td>{{ $receivedDate }}</td>
                             <td>
                                 @if ($availability === 'In Stock' && auth()->user()->role === \App\Enums\UserRole::ADMIN->value)
-                                    <button type="button" class="btn btn-sm btn-danger delete-item"
-                                        data-id="{{ $item->id }}" title="Delete"><i
-                                            class="mdi mdi-delete"></i></button>
+                                    <button type="button" class="btn btn-sm btn-danger delete-item" data-id="{{ $item->id }}"
+                                        title="Delete"><i class="mdi mdi-delete"></i></button>
                                 @elseif($availability === 'Dispatched')
                                     <form action="{{ route('inventory.return') }}" method="POST" class="d-inline"
                                         onsubmit="return confirm('Are you sure you want to return this item?');">
@@ -571,7 +565,7 @@
                 {{-- Custom handlers for server-side table --}}
                 @push('scripts')
                     <script>
-                        $(document).ready(function() {
+                        $(document).ready(function () {
                             // Wait for table to be initialized by component
                             function waitForTable() {
                                 // CRITICAL: Don't call DataTable() without config - it auto-initializes in client-side mode!
@@ -589,7 +583,7 @@
                                 }
 
                                 // Custom Excel export - use server-side export endpoint with filters
-                                $('#unifiedInventoryTable_excel').off('click').on('click', function() {
+                                $('#unifiedInventoryTable_excel').off('click').on('click', function () {
                                     var filterContainer = $('#datatable-wrapper-unifiedInventoryTable');
                                     var availability = filterContainer.find('.filter-select[data-filter="availability"]')
                                         .val() || '';
@@ -615,7 +609,7 @@
                                 });
 
                                 // Handle delete item buttons
-                                $(document).on('click', '#unifiedInventoryTable .delete-item', function() {
+                                $(document).on('click', '#unifiedInventoryTable .delete-item', function () {
                                     var id = $(this).data('id');
                                     if (confirm('Are you sure you want to delete this item?')) {
                                         $.ajax({
@@ -625,10 +619,10 @@
                                                 _token: '{{ csrf_token() }}',
                                                 _method: 'DELETE'
                                             },
-                                            success: function(response) {
+                                            success: function (response) {
                                                 table.ajax.reload();
                                             },
-                                            error: function(xhr) {
+                                            error: function (xhr) {
                                                 alert('Failed to delete item. Please try again.');
                                             }
                                         });
@@ -652,8 +646,7 @@
                             @csrf
                             <input type="hidden" id="dispatchStoreId" name="store_id" value="{{ $store->id }}">
                             <input type="hidden" name="project_id" value="{{ $project->id }}">
-                            <input type="hidden" name="store_incharge_id"
-                                value="{{ $store->store_incharge_id ?? 'N/A' }}">
+                            <input type="hidden" name="store_incharge_id" value="{{ $store->store_incharge_id ?? 'N/A' }}">
 
                             <!-- Vendor Selection and Entry Mode - Inline -->
                             <div class="d-flex justify-content-between align-items-end mb-3 gap-3">
@@ -689,8 +682,8 @@
                                                         class="form-control form-control-sm import-file-input"
                                                         id="bulkDispatchFile" accept=".xlsx,.xls,.csv">
                                                     <button type="button"
-                                                        class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1"
-                                                        id="processBulkUpload">
+                                                        class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1 {{ $project->id == 19 ? 'disabled' : '' }}"
+                                                        id="processBulkUpload" {{ $project->id == 19 ? 'disabled' : '' }}>
                                                         <i class="mdi mdi-upload"></i>
                                                         <span>Process Upload</span>
                                                     </button>
@@ -749,8 +742,7 @@
                                         class="preview-section already-dispatched mb-3" style="display: none;">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
-                                            <button type="button" class="btn btn-sm btn-danger"
-                                                id="removeAllDispatchedBtn">
+                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllDispatchedBtn">
                                                 <i class="mdi mdi-delete"></i> Remove All
                                             </button>
                                         </div>
@@ -763,8 +755,7 @@
                                         style="display: none;">
                                         <div class="d-flex justify-content-between align-items-center mb-2">
                                             <h6 class="mb-0"><strong>Items Could not be Dispatched:</strong></h6>
-                                            <button type="button" class="btn btn-sm btn-danger"
-                                                id="removeAllDuplicatesBtn">
+                                            <button type="button" class="btn btn-sm btn-danger" id="removeAllDuplicatesBtn">
                                                 <i class="mdi mdi-delete"></i> Remove All
                                             </button>
                                         </div>
@@ -807,10 +798,8 @@
                                                     @foreach ($inventoryItems as $item)
                                                         <option value="{{ $item->item_code }}"
                                                             data-stock="{{ $item->total_quantity }}"
-                                                            data-item="{{ $item->item }}"
-                                                            data-rate="{{ $item->rate }}"
-                                                            data-make="{{ $item->make }}"
-                                                            data-model="{{ $item->model }}">
+                                                            data-item="{{ $item->item }}" data-rate="{{ $item->rate }}"
+                                                            data-make="{{ $item->make }}" data-model="{{ $item->model }}">
                                                             {{ $item->item_code }} {{ $item->item }}
                                                         </option>
                                                     @endforeach
@@ -832,8 +821,7 @@
                                                 <!-- QR Code Scanning -->
                                                 <div class="form-group">
                                                     <label for="qr_scanner" class="form-label">Scan Item QR Code:</label>
-                                                    <input type="text" id="qr_scanner" class="form-control"
-                                                        autofocus />
+                                                    <input type="text" id="qr_scanner" class="form-control" autofocus />
                                                     <small class="text-muted">Keep scanning QR codes...</small>
                                                     <div id="qr_error" class="text-danger mt-2"></div>
                                                 </div>
@@ -854,7 +842,8 @@
                                 <button type="button" class="btn btn-primary printbtn" id="printButton">
                                     <i class="mdi mdi-printer"></i> Print
                                 </button>
-                                <button type="button" id="issueMaterial" class="btn btn-primary">
+                                <button type="button" id="issueMaterial"
+                                    class="btn btn-primary {{ $project->id == 19 ? 'disabled' : '' }}" {{ $project->id == 19 ? 'disabled' : '' }}>
                                     <i class="mdi mdi-truck-delivery"></i> Issue Items
                                 </button>
                             </div>
@@ -887,40 +876,41 @@
                             $dispatchedOrderArray = [[$dispatchedOrderColumn, 'desc']]; // Order by dispatch date descending
                         @endphp
 
-                        <x-datatable id="dispatchTabDispatchedTable" :serverSide="true" :ajaxUrl="route('store.dispatched.data', $store->id)"
-                            :ajaxData="'dispatchedTableAjaxData'" :columns="$dispatchedColumns" :order="$dispatchedOrderArray" :bulkDeleteEnabled="$isAdmin" :exportEnabled="true"
-                            :importEnabled="false" pageLength="50" searchPlaceholder="Search dispatched items..."
-                            :filters="[
-        [
-            'type' => 'select',
-            'name' => 'item_code',
-            'label' => 'Item Code',
-            'column' => 0,
-            'width' => 3,
-            'options' => [
-                'SL01' => 'SL01 - Panel',
-                'SL02' => 'SL02 - Luminary',
-                'SL03' => 'SL03 - Battery',
-                'SL04' => 'SL04 - Structure',
+                        <x-datatable id="dispatchTabDispatchedTable" :serverSide="true"
+                            :ajaxUrl="route('store.dispatched.data', $store->id)" :ajaxData="'dispatchedTableAjaxData'"
+                            :columns="$dispatchedColumns" :order="$dispatchedOrderArray" :bulkDeleteEnabled="$isAdmin"
+                            :exportEnabled="true" :importEnabled="false" pageLength="50"
+                            searchPlaceholder="Search dispatched items..." :filters="[
+            [
+                'type' => 'select',
+                'name' => 'item_code',
+                'label' => 'Item Code',
+                'column' => 0,
+                'width' => 3,
+                'options' => [
+                    'SL01' => 'SL01 - Panel',
+                    'SL02' => 'SL02 - Luminary',
+                    'SL03' => 'SL03 - Battery',
+                    'SL04' => 'SL04 - Structure',
+                ],
             ],
-        ],
-        [
-            'type' => 'select',
-            'name' => 'vendor',
-            'label' => 'Vendor',
-            'column' => 0,
-            'width' => 3,
-            'select2' => true,
-            'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
-        ],
-        [
-            'type' => 'date',
-            'name' => 'dispatch_date',
-            'label' => 'Dispatch Date',
-            'column' => 0,
-            'width' => 3,
-        ],
-    ]">
+            [
+                'type' => 'select',
+                'name' => 'vendor',
+                'label' => 'Vendor',
+                'column' => 0,
+                'width' => 3,
+                'select2' => true,
+                'options' => collect($assignedVendors)->pluck('name', 'name')->toArray(),
+            ],
+            [
+                'type' => 'date',
+                'name' => 'dispatch_date',
+                'label' => 'Dispatch Date',
+                'column' => 0,
+                'width' => 3,
+            ],
+        ]">
                             {{-- Server-side processing: tbody is empty, data loaded via AJAX --}}
                         </x-datatable>
                     </div>
@@ -929,7 +919,7 @@
                 {{-- Custom handlers for server-side table --}}
                 @push('scripts')
                     <script>
-                        $(document).ready(function() {
+                        $(document).ready(function () {
                             // Wait for table to be initialized by component
                             function waitForTable() {
                                 // CRITICAL: Don't call DataTable() without config - it auto-initializes in client-side mode!
@@ -946,7 +936,7 @@
                                 }
 
                                 // Handle delete item buttons
-                                $(document).on('click', '#dispatchTabDispatchedTable .delete-item', function() {
+                                $(document).on('click', '#dispatchTabDispatchedTable .delete-item', function () {
                                     var id = $(this).data('id');
                                     var url = $(this).data('url');
                                     if (confirm('Are you sure you want to delete this item?')) {
@@ -956,10 +946,10 @@
                                             data: {
                                                 _token: '{{ csrf_token() }}'
                                             },
-                                            success: function() {
+                                            success: function () {
                                                 table.ajax.reload();
                                             },
-                                            error: function(xhr) {
+                                            error: function (xhr) {
                                                 alert('Failed to delete item. Please try again.');
                                             }
                                         });
@@ -990,13 +980,13 @@
                         <div class="modal-body">
                             <div class="form-group mb-3">
                                 <label for="new_serial_number">New Serial Number:</label>
-                                <input type="text" class="form-control" id="new_serial_number"
-                                    name="new_serial_number" required>
+                                <input type="text" class="form-control" id="new_serial_number" name="new_serial_number"
+                                    required>
                             </div>
                             <div class="form-group mb-3">
                                 <label for="authentication_code">Authentication Code:</label>
-                                <input type="text" class="form-control" id="authentication_code"
-                                    name="authentication_code" required>
+                                <input type="text" class="form-control" id="authentication_code" name="authentication_code"
+                                    required>
                             </div>
                             <div class="form-check">
                                 <input type="checkbox" class="form-check-input" id="agreement_checkbox"
@@ -1020,7 +1010,7 @@
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             // Activate correct tab based on URL hash (e.g. #view after successful save)
             const hash = window.location.hash;
             if (hash === '#view') {
@@ -1093,7 +1083,7 @@
             }
 
             if (itemCombined) {
-                itemCombined.addEventListener('change', function() {
+                itemCombined.addEventListener('change', function () {
                     const [code, name] = this.value.split('|');
                     document.getElementById('item_code').value = code || '';
                     document.getElementById('item_name').value = name || '';
@@ -1118,7 +1108,7 @@
 
             // Show overlay during bulk import to smooth transitions
             if (importForm && importOverlay) {
-                importForm.addEventListener('submit', function() {
+                importForm.addEventListener('submit', function () {
                     importOverlay.classList.remove('d-none');
                 });
             }
@@ -1183,7 +1173,7 @@
                 }
 
                 // Debounce input to avoid spamming server
-                serialField.addEventListener('input', function() {
+                serialField.addEventListener('input', function () {
                     serialField.classList.remove('is-valid'); // reset while typing
                     if (serialCheckTimeout) {
                         clearTimeout(serialCheckTimeout);
@@ -1191,7 +1181,7 @@
                     serialCheckTimeout = setTimeout(checkSerialUnique, 400);
                 });
 
-                serialField.addEventListener('blur', function() {
+                serialField.addEventListener('blur', function () {
                     if (serialCheckTimeout) {
                         clearTimeout(serialCheckTimeout);
                     }
@@ -1205,11 +1195,11 @@
                 // Real-time validation on input
                 const inputs = addInventoryForm.querySelectorAll('input[required], select[required]');
                 inputs.forEach(input => {
-                    input.addEventListener('blur', function() {
+                    input.addEventListener('blur', function () {
                         validateField(this);
                     });
 
-                    input.addEventListener('input', function() {
+                    input.addEventListener('input', function () {
                         if (this.classList.contains('is-invalid')) {
                             validateField(this);
                         }
@@ -1217,7 +1207,7 @@
                 });
 
                 // Form submission validation
-                addInventoryForm.addEventListener('submit', function(e) {
+                addInventoryForm.addEventListener('submit', function (e) {
                     let isValid = true;
 
                     // Get all required fields including dynamically required ones
@@ -1328,7 +1318,7 @@
 
 
             // Delete item handler (fallback for any delete-item buttons outside the table)
-            $(document).on('click', '.delete-item', function() {
+            $(document).on('click', '.delete-item', function () {
                 const itemId = $(this).data('id');
                 const deleteUrl = '{{ route('inventory.destroy', ':id') }}'.replace(':id', itemId);
 
@@ -1349,10 +1339,10 @@
                                 _method: 'DELETE',
                                 _token: $('meta[name="csrf-token"]').attr('content')
                             },
-                            success: function(response) {
+                            success: function (response) {
                                 if (response.success) {
                                     Swal.fire('Deleted!', response.message ||
-                                            'Item deleted successfully', 'success')
+                                        'Item deleted successfully', 'success')
                                         .then(() => {
                                             // Reload the table if it exists, otherwise reload page
                                             if (typeof table !== 'undefined' &&
@@ -1367,7 +1357,7 @@
                                         'Failed to delete item', 'error');
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 const errorMsg = xhr.responseJSON?.message ||
                                     'Failed to delete item';
                                 Swal.fire('Error!', errorMsg, 'error');
@@ -1378,7 +1368,7 @@
             });
 
             // Replace item handler
-            $(document).on('click', '.replace-item', function() {
+            $(document).on('click', '.replace-item', function () {
                 const dispatchId = $(this).data('dispatch-id');
                 const serialNumber = $(this).data('serial-number');
 
@@ -1449,8 +1439,8 @@
                 }
             @endif
 
-            // ========== Dispatch Form JavaScript ==========
-            const itemsContainer = document.getElementById('itemsContainer');
+                // ========== Dispatch Form JavaScript ==========
+                const itemsContainer = document.getElementById('itemsContainer');
             const addMoreItemsButton = document.getElementById('addMoreItems');
             let availableQuantity = 0;
             let scannedQRs = [];
@@ -1459,7 +1449,7 @@
             // Add New Item Row
             let rowCount = 1;
             if (addMoreItemsButton) {
-                addMoreItemsButton.addEventListener("click", function() {
+                addMoreItemsButton.addEventListener("click", function () {
                     const originalRow = document.querySelector(".item-row");
                     if (!originalRow) return;
 
@@ -1499,7 +1489,7 @@
 
             // Remove Item Row
             if (itemsContainer) {
-                itemsContainer.addEventListener("click", function(e) {
+                itemsContainer.addEventListener("click", function (e) {
                     if (e.target.closest(".remove-item-btn")) {
                         const rows = itemsContainer.querySelectorAll(".item-row");
                         if (rows.length > 1) {
@@ -1512,7 +1502,7 @@
             // Handle QR Scanning
             const qrScanner = document.getElementById('qr_scanner');
             if (qrScanner) {
-                qrScanner.addEventListener('keyup', function(event) {
+                qrScanner.addEventListener('keyup', function (event) {
                     if (event.key === 'Enter' && this.value.trim() !== '') {
                         let scannedCode = this.value.trim();
                         this.value = '';
@@ -1542,17 +1532,17 @@
                         const storeId = document.getElementById('dispatchStoreId').value;
 
                         fetch('{{ route('inventory.checkQR') }}', {
-                                method: 'POST',
-                                headers: {
-                                    'Content-Type': 'application/json',
-                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                                },
-                                body: JSON.stringify({
-                                    qr_code: scannedCode,
-                                    store_id: storeId,
-                                    item_code: selectedItemCode
-                                })
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            },
+                            body: JSON.stringify({
+                                qr_code: scannedCode,
+                                store_id: storeId,
+                                item_code: selectedItemCode
                             })
+                        })
                             .then(response => response.json())
                             .then(data => {
                                 if (data.exists) {
@@ -1587,7 +1577,7 @@
 
             // Validate Quantity Against Stock
             if (itemsContainer) {
-                itemsContainer.addEventListener('input', function(e) {
+                itemsContainer.addEventListener('input', function (e) {
                     if (e.target.classList.contains('item-quantity')) {
                         const select = e.target.closest('.item-row').querySelector('.item-select');
                         if (select.selectedIndex > 0) {
@@ -1603,7 +1593,7 @@
 
             const itemSelect = document.querySelector('.item-select');
             if (itemSelect) {
-                itemSelect.addEventListener('change', function() {
+                itemSelect.addEventListener('change', function () {
                     const selectedOption = this.options[this.selectedIndex];
                     document.getElementById('item_namesss').value = selectedOption.dataset.item || '';
                     document.getElementById('item_rate').value = selectedOption.dataset.rate || '';
@@ -1678,7 +1668,7 @@
             // Print Functionality
             const printButton = document.getElementById('printButton');
             if (printButton) {
-                printButton.addEventListener('click', function(e) {
+                printButton.addEventListener('click', function (e) {
                     e.preventDefault();
 
                     const vendorSelect = document.getElementById('vendorName');
@@ -1783,89 +1773,89 @@
 
                     const printWindow = window.open('');
                     printWindow.document.write(`
-                        <html>
-                          <head>
-                            <title>Dispatch Report</title>
-                            <style>
-                              body { font-family: Arial; margin: 20px; }
-                              .header { text-align: center; margin-bottom: 30px; }
-                              table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-                              th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
-                              th { background-color: #f5f5f5; }
-                              .serial-list { max-width: 300px; word-break: break-all; }
-                              .section-title { margin-top: 30px; margin-bottom: 15px; font-size: 18px; font-weight: bold; color: #333; }
-                              .error-row { background-color: #fff5f5; }
-                              .error-cell { color: #dc3545; font-weight: bold; }
-                            </style>
-                          </head>
-                          <body>
-                            <div class="header">
-                              <h2>Inventory Dispatch Report</h2>
-                              <p><strong>Vendor:</strong> ${vendorName}</p>
-                              <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
-                            </div>
+                            <html>
+                              <head>
+                                <title>Dispatch Report</title>
+                                <style>
+                                  body { font-family: Arial; margin: 20px; }
+                                  .header { text-align: center; margin-bottom: 30px; }
+                                  table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                                  th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+                                  th { background-color: #f5f5f5; }
+                                  .serial-list { max-width: 300px; word-break: break-all; }
+                                  .section-title { margin-top: 30px; margin-bottom: 15px; font-size: 18px; font-weight: bold; color: #333; }
+                                  .error-row { background-color: #fff5f5; }
+                                  .error-cell { color: #dc3545; font-weight: bold; }
+                                </style>
+                              </head>
+                              <body>
+                                <div class="header">
+                                  <h2>Inventory Dispatch Report</h2>
+                                  <p><strong>Vendor:</strong> ${vendorName}</p>
+                                  <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
+                                </div>
 
-                            ${itemsData.length > 0 ? `
-                                                                                                                                    <div class="section-title">Items Ready to Dispatch</div>
-                                                                                                                                    <table>
-                                                                                                                                      <thead>
-                                                                                                                                        <tr>
-                                                                                                                                          <th>Item Code</th>
-                                                                                                                                          <th>Item Name</th>
-                                                                                                                                          <th>Quantity</th>
-                                                                                                                                          <th>Rate</th>
-                                                                                                                                          <th>Make/Model</th>
-                                                                                                                                          <th>Serial Numbers</th>
-                                                                                                                                        </tr>
-                                                                                                                                      </thead>
-                                                                                                                                      <tbody>
-                                                                                                                                        ${itemsData.map(item => `
-                                  <tr>
-                                    <td>${item.code}</td>
-                                    <td>${item.name}</td>
-                                    <td>${item.quantity}</td>
-                                    <td>₹${item.rate}</td>
-                                    <td>${item.make} ${item.model}</td>
-                                    <td class="serial-list">${item.serials.join(', ')}</td>
-                                  </tr>
-                                `).join('')}
-                                                                                                                                      </tbody>
-                                                                                                                                    </table>
-                                                                                                                                    ` : ''}
+                                ${itemsData.length > 0 ? `
+                                                                                                                                        <div class="section-title">Items Ready to Dispatch</div>
+                                                                                                                                        <table>
+                                                                                                                                          <thead>
+                                                                                                                                            <tr>
+                                                                                                                                              <th>Item Code</th>
+                                                                                                                                              <th>Item Name</th>
+                                                                                                                                              <th>Quantity</th>
+                                                                                                                                              <th>Rate</th>
+                                                                                                                                              <th>Make/Model</th>
+                                                                                                                                              <th>Serial Numbers</th>
+                                                                                                                                            </tr>
+                                                                                                                                          </thead>
+                                                                                                                                          <tbody>
+                                                                                                                                            ${itemsData.map(item => `
+                                      <tr>
+                                        <td>${item.code}</td>
+                                        <td>${item.name}</td>
+                                        <td>${item.quantity}</td>
+                                        <td>₹${item.rate}</td>
+                                        <td>${item.make} ${item.model}</td>
+                                        <td class="serial-list">${item.serials.join(', ')}</td>
+                                      </tr>
+                                    `).join('')}
+                                                                                                                                          </tbody>
+                                                                                                                                        </table>
+                                                                                                                                        ` : ''}
 
-                            ${nonDispatchableItems.length > 0 ? `
-                                                                                                                                    <div class="section-title">Items Could not be Dispatched</div>
-                                                                                                                                    <table>
-                                                                                                                                      <thead>
-                                                                                                                                        <tr>
-                                                                                                                                          <th>Item Code</th>
-                                                                                                                                          <th>Item Name</th>
-                                                                                                                                          <th>Serial Number</th>
-                                                                                                                                          <th>Error/Reason</th>
-                                                                                                                                        </tr>
-                                                                                                                                      </thead>
-                                                                                                                                      <tbody>
-                                                                                                                                        ${nonDispatchableItems.map(item => `
-                                  <tr class="error-row">
-                                    <td>${item.code}</td>
-                                    <td>${item.name}</td>
-                                    <td>${item.serial}</td>
-                                    <td class="error-cell">${item.error}</td>
-                                  </tr>
-                                `).join('')}
-                                                                                                                                      </tbody>
-                                                                                                                                    </table>
-                                                                                                                                    ` : ''}
+                                ${nonDispatchableItems.length > 0 ? `
+                                                                                                                                        <div class="section-title">Items Could not be Dispatched</div>
+                                                                                                                                        <table>
+                                                                                                                                          <thead>
+                                                                                                                                            <tr>
+                                                                                                                                              <th>Item Code</th>
+                                                                                                                                              <th>Item Name</th>
+                                                                                                                                              <th>Serial Number</th>
+                                                                                                                                              <th>Error/Reason</th>
+                                                                                                                                            </tr>
+                                                                                                                                          </thead>
+                                                                                                                                          <tbody>
+                                                                                                                                            ${nonDispatchableItems.map(item => `
+                                      <tr class="error-row">
+                                        <td>${item.code}</td>
+                                        <td>${item.name}</td>
+                                        <td>${item.serial}</td>
+                                        <td class="error-cell">${item.error}</td>
+                                      </tr>
+                                    `).join('')}
+                                                                                                                                          </tbody>
+                                                                                                                                        </table>
+                                                                                                                                        ` : ''}
 
-                            <script>
-                              window.onload = function() {
-                                window.print();
-                                setTimeout(() => window.close(), 500);
-                              }
-                            <\/script>
-                          </body>
-                        </html>
-                      `);
+                                <script>
+                                  window.onload = function() {
+                                    window.print();
+                                    setTimeout(() => window.close(), 500);
+                                  }
+                                <\/script>
+                              </body>
+                            </html>
+                          `);
                     printWindow.document.close();
                 });
             }
@@ -1873,7 +1863,7 @@
             // Issue Material Button
             const issueMaterialBtn = document.getElementById('issueMaterial');
             if (issueMaterialBtn) {
-                issueMaterialBtn.addEventListener('click', function(e) {
+                issueMaterialBtn.addEventListener('click', function (e) {
                     e.preventDefault();
 
                     // Check if in bulk mode (preview is visible)
@@ -1901,9 +1891,9 @@
 
                         button.disabled = true;
                         button.innerHTML = `
-                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                            Processing...
-                        `;
+                                <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                                Processing...
+                            `;
 
                         // Get serial numbers from valid items - ensure they are strings and filter out invalid values
                         const serialNumbers = bulkDispatchPreviewData.validItems
@@ -1930,25 +1920,25 @@
                         // Create AbortController for timeout handling
                         const confirmAbortController = new AbortController();
                         const confirmTimeoutId = setTimeout(() => confirmAbortController.abort(),
-                        300000); // 5 minutes timeout
+                            300000); // 5 minutes timeout
 
                         fetch("{{ route('inventory.confirm-bulk-dispatch') }}", {
-                                method: "POST",
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                        .getAttribute('content'),
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                    'Content-Type': 'application/json',
-                                },
-                                body: JSON.stringify({
-                                    vendor_id: vendorId,
-                                    project_id: projectId,
-                                    store_id: storeId,
-                                    store_incharge_id: storeInchargeId,
-                                    serial_numbers: serialNumbers
-                                }),
-                                signal: confirmAbortController.signal
-                            })
+                            method: "POST",
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content'),
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                vendor_id: vendorId,
+                                project_id: projectId,
+                                store_id: storeId,
+                                store_incharge_id: storeInchargeId,
+                                serial_numbers: serialNumbers
+                            }),
+                            signal: confirmAbortController.signal
+                        })
                             .then(response => {
                                 clearTimeout(confirmTimeoutId); // Clear timeout on success
                                 if (!response.ok) {
@@ -2000,7 +1990,7 @@
                                     errorMessage =
                                         'Request timed out after 5 minutes. Processing too many items may take longer. Please try with fewer items or contact support.';
                                 } else if (error.message && (error.message.includes('gateway') || error
-                                        .message.includes('timeout'))) {
+                                    .message.includes('timeout'))) {
                                     errorMessage =
                                         'Gateway timeout error. The server took too long to respond. Please try again with fewer items or contact support.';
                                 }
@@ -2019,21 +2009,21 @@
                         const originalText = button.innerHTML;
                         button.disabled = true;
                         button.innerHTML = `
-                        <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-                        Processing...
-                    `;
+                            <span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                            Processing...
+                        `;
                         const form = document.getElementById('dispatchForm');
                         const formData = new FormData(form);
 
                         fetch("{{ route('inventory.dispatchweb') }}", {
-                                method: "POST",
-                                headers: {
-                                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
-                                        .getAttribute('content'),
-                                    'X-Requested-With': 'XMLHttpRequest',
-                                },
-                                body: formData
-                            })
+                            method: "POST",
+                            headers: {
+                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')
+                                    .getAttribute('content'),
+                                'X-Requested-With': 'XMLHttpRequest',
+                            },
+                            body: formData
+                        })
                             .then(async response => {
                                 const text = await response.text();
                                 let data;
@@ -2097,7 +2087,7 @@
             let alreadyDispatchedItems = [];
             let dispatchMode = 'manual';
 
-            window.switchDispatchMode = function(mode) {
+            window.switchDispatchMode = function (mode) {
                 dispatchMode = mode;
                 const manualSection = document.getElementById('manualEntrySection');
                 const bulkSection = document.getElementById('bulkUploadSection');
@@ -2130,7 +2120,7 @@
 
             const processBulkUploadBtn = document.getElementById('processBulkUpload');
             if (processBulkUploadBtn) {
-                processBulkUploadBtn.addEventListener('click', function() {
+                processBulkUploadBtn.addEventListener('click', function () {
                     const fileInput = document.getElementById('bulkDispatchFile');
                     const vendorId = document.getElementById('vendorName').value;
                     const projectId = document.querySelector('input[name="project_id"]').value;
@@ -2174,13 +2164,13 @@
                     // Create AbortController for timeout handling
                     const abortController = new AbortController();
                     const timeoutId = setTimeout(() => abortController.abort(),
-                    300000); // 5 minutes timeout
+                        300000); // 5 minutes timeout
 
                     fetch('{{ route('inventory.bulk-dispatch') }}', {
-                            method: 'POST',
-                            body: formData,
-                            signal: abortController.signal
-                        })
+                        method: 'POST',
+                        body: formData,
+                        signal: abortController.signal
+                    })
                         .then(response => {
                             clearTimeout(timeoutId); // Clear timeout on success
                             if (!response.ok) {
@@ -2254,7 +2244,7 @@
                                 errorMessage =
                                     'Request timed out after 5 minutes. The file may be too large. Please try with a smaller file or contact support.';
                             } else if (error.message && (error.message.includes('gateway') || error
-                                    .message.includes('timeout'))) {
+                                .message.includes('timeout'))) {
                                 errorMessage =
                                     'Gateway timeout error. The server took too long to respond. Please try again with a smaller file or contact support.';
                             }
@@ -2278,13 +2268,13 @@
                     list.innerHTML = '<ul class="list-group">';
                     items.forEach(item => {
                         list.innerHTML += `
-                            <li class="list-group-item d-flex justify-content-between align-items-center">
-                              ${item.item_code} - ${item.item} (SN: ${item.serial_number}${item.sim_number ? ', SIM: ' + item.sim_number : ''})
-                              <button type="button" class="btn btn-sm btn-danger" onclick="removeDispatchedItem('${item.serial_number}')">
-                                <i class="mdi mdi-close"></i>
-                              </button>
-                            </li>
-                          `;
+                                <li class="list-group-item d-flex justify-content-between align-items-center">
+                                  ${item.item_code} - ${item.item} (SN: ${item.serial_number}${item.sim_number ? ', SIM: ' + item.sim_number : ''})
+                                  <button type="button" class="btn btn-sm btn-danger" onclick="removeDispatchedItem('${item.serial_number}')">
+                                    <i class="mdi mdi-close"></i>
+                                  </button>
+                                </li>
+                              `;
                     });
                     list.innerHTML += '</ul>';
                 } else {
@@ -2301,11 +2291,11 @@
                     list.innerHTML = '<ul class="list-group">';
                     items.forEach(item => {
                         list.innerHTML += `
-                            <li class="list-group-item text-danger">
-                              <strong>Error:</strong> ${item.error}<br>
-                              <small>Row: ${JSON.stringify(item.row)}</small>
-                            </li>
-                          `;
+                                <li class="list-group-item text-danger">
+                                  <strong>Error:</strong> ${item.error}<br>
+                                  <small>Row: ${JSON.stringify(item.row)}</small>
+                                </li>
+                              `;
                     });
                     list.innerHTML += '</ul>';
                 } else {
@@ -2313,7 +2303,7 @@
                 }
             }
 
-            window.removeDispatchedItem = function(serialNumber) {
+            window.removeDispatchedItem = function (serialNumber) {
                 alreadyDispatchedItems = alreadyDispatchedItems.filter(item => item.serial_number !==
                     serialNumber);
                 displayAlreadyDispatched(alreadyDispatchedItems);
@@ -2391,20 +2381,20 @@
                     // Use data attributes instead of inline onclick for better reliability
                     const removeBtn = showRemoveButton ?
                         `<button type="button" class="btn btn-sm btn-danger ms-2 remove-bulk-item-btn"
-                            data-serial="${serialNumber.replace(/"/g, '&quot;')}"
-                            data-category="${(category || '').replace(/"/g, '&quot;')}"
-                            title="Remove">
-                            <i class="mdi mdi-close"></i>
-                        </button>` : '';
+                                data-serial="${serialNumber.replace(/"/g, '&quot;')}"
+                                data-category="${(category || '').replace(/"/g, '&quot;')}"
+                                title="Remove">
+                                <i class="mdi mdi-close"></i>
+                            </button>` : '';
 
                     html += `
-                        <div class="col-md-3 col-sm-4 col-6 mb-2">
-                            <div class="d-flex align-items-center">
-                                <span class="serial-number-badge">${serialNumber}</span>
-                                ${removeBtn}
+                            <div class="col-md-3 col-sm-4 col-6 mb-2">
+                                <div class="d-flex align-items-center">
+                                    <span class="serial-number-badge">${serialNumber}</span>
+                                    ${removeBtn}
+                                </div>
                             </div>
-                        </div>
-                    `;
+                        `;
                 });
                 html += '</div>';
                 container.innerHTML = html;
@@ -2412,7 +2402,7 @@
                 // Attach event listeners to remove buttons using event delegation
                 if (showRemoveButton) {
                     container.querySelectorAll('.remove-bulk-item-btn').forEach(btn => {
-                        btn.addEventListener('click', function() {
+                        btn.addEventListener('click', function () {
                             const serialNumber = this.getAttribute('data-serial');
                             const category = this.getAttribute('data-category');
                             removeBulkPreviewItem(serialNumber, category);
@@ -2422,7 +2412,7 @@
             }
 
             // Remove item from bulk preview
-            window.removeBulkPreviewItem = function(serialNumber, category) {
+            window.removeBulkPreviewItem = function (serialNumber, category) {
                 if (!serialNumber) return;
 
                 // Convert serialNumber to string for comparison
@@ -2450,7 +2440,7 @@
             // Remove all items from a category
             const removeAllDispatchedBtn = document.getElementById('removeAllDispatchedBtn');
             if (removeAllDispatchedBtn) {
-                removeAllDispatchedBtn.addEventListener('click', function() {
+                removeAllDispatchedBtn.addEventListener('click', function () {
                     bulkDispatchPreviewData.alreadyDispatched = [];
                     displayBulkDispatchPreview(bulkDispatchPreviewData);
                 });
@@ -2458,7 +2448,7 @@
 
             const removeAllDuplicatesBtn = document.getElementById('removeAllDuplicatesBtn');
             if (removeAllDuplicatesBtn) {
-                removeAllDuplicatesBtn.addEventListener('click', function() {
+                removeAllDuplicatesBtn.addEventListener('click', function () {
                     bulkDispatchPreviewData.duplicateSerials = [];
                     displayBulkDispatchPreview(bulkDispatchPreviewData);
                 });
@@ -2466,7 +2456,7 @@
 
             const removeAllNonExistingBtn = document.getElementById('removeAllNonExistingBtn');
             if (removeAllNonExistingBtn) {
-                removeAllNonExistingBtn.addEventListener('click', function() {
+                removeAllNonExistingBtn.addEventListener('click', function () {
                     bulkDispatchPreviewData.nonExisting = [];
                     displayBulkDispatchPreview(bulkDispatchPreviewData);
                 });
@@ -2474,7 +2464,7 @@
 
             const removeDispatchedBtn = document.getElementById('removeDispatchedBtn');
             if (removeDispatchedBtn) {
-                removeDispatchedBtn.addEventListener('click', function() {
+                removeDispatchedBtn.addEventListener('click', function () {
                     alreadyDispatchedItems = [];
                     displayAlreadyDispatched([]);
                     displayInvalidItems([]);

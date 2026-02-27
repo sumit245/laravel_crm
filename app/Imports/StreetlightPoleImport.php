@@ -224,14 +224,21 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         // So validation is already done by finding the site.
 
         if (!$task) {
-            $this->errorCount++;
-            $this->errors[] = [
-                'row' => $rowNumber,
-                'complete_pole_number' => $completePoleNumber,
-                'reason' => "Target not allotted for site {$streetlight->panchayat}",
-            ];
+            if ($this->projectId == 19) {
+                // For project 19, we skip task validation and use a dummy task_id 0
+                $taskId = 96492409;
+            } else {
+                $this->errorCount++;
+                $this->errors[] = [
+                    'row' => $rowNumber,
+                    'complete_pole_number' => $completePoleNumber,
+                    'reason' => "Target not allotted for site {$streetlight->panchayat}",
+                ];
 
-            return;
+                return;
+            }
+        } else {
+            $taskId = $task->id;
         }
 
         // Validate inventory items
@@ -254,33 +261,40 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         $validationErrors = [];
         $validDispatches = [];
 
-        foreach ($itemsToValidate as $field => $serialNumber) {
-            $validation = $this->importService->validateAndDispatchInventory($serialNumber, $task);
+        // Skip inventory validation for project 19
+        if ($this->projectId != 19) {
+            foreach ($itemsToValidate as $field => $serialNumber) {
+                // If $task is null (which shouldn't happen here as we returned earlier if not 19), 
+                // but just to be safe:
+                if ($task) {
+                    $validation = $this->importService->validateAndDispatchInventory($serialNumber, $task);
 
-            if ($validation['status'] === 'error') {
-                $validationErrors[] = $validation['error'];
-            } else {
-                $validDispatches[$field] = $validation['dispatch'];
+                    if ($validation['status'] === 'error') {
+                        $validationErrors[] = $validation['error'];
+                    } else {
+                        $validDispatches[$field] = $validation['dispatch'];
+                    }
+                }
             }
-        }
 
-        // If any validation errors, skip this row
-        if (!empty($validationErrors)) {
-            $this->errorCount++;
-            $this->errors[] = [
-                'row' => $rowNumber,
-                'complete_pole_number' => $completePoleNumber,
-                'reason' => implode('; ', $validationErrors),
-            ];
+            // If any validation errors, skip this row
+            if (!empty($validationErrors)) {
+                $this->errorCount++;
+                $this->errors[] = [
+                    'row' => $rowNumber,
+                    'complete_pole_number' => $completePoleNumber,
+                    'reason' => implode('; ', $validationErrors),
+                ];
 
-            return;
+                return;
+            }
         }
 
         // All validations passed, create pole
         DB::beginTransaction();
         try {
             $poleData = [
-                'task_id' => $task->id,
+                'task_id' => $taskId,
                 'complete_pole_number' => $completePoleNumber,
                 'isSurveyDone' => true,
                 'beneficiary' => !empty($row['beneficiary']) ? trim($row['beneficiary']) : null,
@@ -308,9 +322,11 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
             $newPole = Pole::create($poleData);
 
             // Consume inventory for this pole
-            $serialNumbers = array_filter(array_values($itemsToValidate));
-            if (!empty($serialNumbers)) {
-                $this->importService->consumeInventoryForPole($newPole, $serialNumbers);
+            if ($this->projectId != 19) {
+                $serialNumbers = array_filter(array_values($itemsToValidate));
+                if (!empty($serialNumbers)) {
+                    $this->importService->consumeInventoryForPole($newPole, $serialNumbers);
+                }
             }
 
             // Update streetlight counters

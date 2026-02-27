@@ -36,7 +36,8 @@
                     <input type="hidden" name="project_id" value="{{ $project->id }}" />
                     <div class="modal-header">
                         <h5 class="modal-title" id="addTargetModalLabel">Add Target for Project:
-                            {{ $project->project_name }}</h5>
+                            {{ $project->project_name }}
+                        </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
                     <div class="modal-body">
@@ -94,11 +95,13 @@
                         <div class="mb-3">
                             <label for="selectEngineer" class="form-label">Select Site Engineer <span
                                     class="text-danger">*</span></label>
-                            <select id="selectEngineer" name="engineer_id" class="form-select select2-engineer" style="width: 100%;" required>
+                            <select id="selectEngineer" name="engineer_id" class="form-select select2-engineer"
+                                style="width: 100%;" required>
                                 <option value="">Select Engineer</option>
                                 @foreach ($assignedEngineers as $engineer)
                                     <option value="{{ $engineer->id }}">{{ $engineer->firstName }}
-                                        {{ $engineer->lastName }}</option>
+                                        {{ $engineer->lastName }}
+                                    </option>
                                 @endforeach
                             </select>
                             <div class="invalid-feedback" id="engineer_id_error"></div>
@@ -106,7 +109,8 @@
                         <div class="form-group mb-3">
                             <label for="selectVendor" class="form-label">Select Vendor <span
                                     class="text-danger">*</span></label>
-                            <select id="selectVendor" name="vendor_id" class="form-select select2-vendor" style="width: 100%;" required>
+                            <select id="selectVendor" name="vendor_id" class="form-select select2-vendor"
+                                style="width: 100%;" required>
                                 <option value="">Select Vendor</option>
                                 @foreach ($assignedVendors as $vendor)
                                     <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
@@ -122,10 +126,9 @@
                             <div class="invalid-feedback" id="start_date_error"></div>
                         </div>
                         <div class="form-group mb-3">
-                            <label for="endDate" class="form-label">End Date <span
-                                    class="text-danger">*</span></label>
-                            <input onclick="document.getElementById('endDate').showPicker()" type="date"
-                                id="endDate" name="end_date" class="form-control" required>
+                            <label for="endDate" class="form-label">End Date <span class="text-danger">*</span></label>
+                            <input onclick="document.getElementById('endDate').showPicker()" type="date" id="endDate"
+                                name="end_date" class="form-control" required>
                             <div class="invalid-feedback" id="end_date_error"></div>
                         </div>
                     </div>
@@ -140,8 +143,9 @@
 
     <!-- Add Target Button (styled to match parent) -->
     <div class="mb-3 d-flex justify-content-end">
-        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 add-target-btn"
-            style="max-height: 2.8rem;" data-bs-toggle="modal" data-bs-target="#addTargetModal">
+        <button type="button"
+            class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 add-target-btn {{ $project->id == 19 ? 'disabled' : '' }}"
+            style="max-height: 2.8rem;" data-bs-toggle="modal" data-bs-target="#addTargetModal" {{ $project->id == 19 ? 'disabled' : '' }}>
             <i class="mdi mdi-plus-circle"></i>
             <span>Add Target</span>
         </button>
@@ -156,49 +160,51 @@
         ['title' => 'End Date', 'width' => '10%'],
         ['title' => 'Wards', 'width' => '15%'],
         ['title' => 'Status', 'width' => '10%'],
-    ]" :exportEnabled="true" :importEnabled="true"
-        :importRoute="route('tasks.import')" :importFormatUrl="route('tasks.importFormat')" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('tasks.bulkDelete')" :deleteRoute="route('tasks.destroystreetlight', ':id')" :editRoute="route('tasks.edit', [':id', 'project_id' => $project->id])"
-        :viewRoute="route('tasks.show', [':id', 'project_type' => 1])" pageLength="25" searchPlaceholder="Search Targets..." :filters="[
-            [
-                'type' => 'select',
-                'name' => 'filter_status',
-                'label' => 'Status',
-                'column' => -1,
-                'width' => 3,
-                'options' => [
-                    '' => 'All',
-                    'Pending' => 'Pending',
-                    'Installed' => 'Installed',
-                ],
+    ]" :exportEnabled="true" :importEnabled="true" :importDisabled="$project->id == 19"
+        :bulkDeleteDisabled="$project->id == 19" :importRoute="route('tasks.import')"
+        :importFormatUrl="route('tasks.importFormat')" :bulkDeleteEnabled="true"
+        :bulkDeleteRoute="route('tasks.bulkDelete')" :deleteRoute="$project->id == 19 ? null : route('tasks.destroystreetlight', ':id')" :editRoute="$project->id == 19 ? null : route('tasks.edit', [':id', 'project_id' => $project->id])" :viewRoute="route('tasks.show', [':id', 'project_type' => 1])" pageLength="25"
+        searchPlaceholder="Search Targets..." :filters="[
+        [
+            'type' => 'select',
+            'name' => 'filter_status',
+            'label' => 'Status',
+            'column' => -1,
+            'width' => 3,
+            'options' => [
+                '' => 'All',
+                'Pending' => 'Pending',
+                'Installed' => 'Installed',
             ],
-            [
-                'type' => 'select',
-                'name' => 'filter_panchayat',
-                'label' => 'Panchayat',
-                'column' => 1,
-                'width' => 3,
-                'options' => $filterPanchayats ?? ['All' => ''],
-                'select2' => true,
-            ],
-            [
-                'type' => 'select',
-                'name' => 'filter_engineer',
-                'label' => 'Engineer',
-                'column' => 2,
-                'width' => 3,
-                'options' => $filterEngineers ?? ['All' => ''],
-                'select2' => true,
-            ],
-            [
-                'type' => 'select',
-                'name' => 'filter_vendor',
-                'label' => 'Vendor',
-                'column' => 3,
-                'width' => 3,
-                'options' => $filterVendors ?? ['All' => ''],
-                'select2' => true,
-            ],
-        ]">
+        ],
+        [
+            'type' => 'select',
+            'name' => 'filter_panchayat',
+            'label' => 'Panchayat',
+            'column' => 1,
+            'width' => 3,
+            'options' => $filterPanchayats ?? ['All' => ''],
+            'select2' => true,
+        ],
+        [
+            'type' => 'select',
+            'name' => 'filter_engineer',
+            'label' => 'Engineer',
+            'column' => 2,
+            'width' => 3,
+            'options' => $filterEngineers ?? ['All' => ''],
+            'select2' => true,
+        ],
+        [
+            'type' => 'select',
+            'name' => 'filter_vendor',
+            'label' => 'Vendor',
+            'column' => 3,
+            'width' => 3,
+            'options' => $filterVendors ?? ['All' => ''],
+            'select2' => true,
+        ],
+    ]">
         @foreach ($targets as $target)
             @php
                 $isInstalled =
@@ -211,9 +217,8 @@
                 );
                 $vendorName = $target->vendor->name ?? 'N/A';
             @endphp
-            <tr data-status="{{ $statusValue }}" data-id="{{ $target->id }}"
-                data-panchayat="{{ $panchayatName }}" data-engineer="{{ $engineerName }}"
-                data-vendor="{{ $vendorName }}">
+            <tr data-status="{{ $statusValue }}" data-id="{{ $target->id }}" data-panchayat="{{ $panchayatName }}"
+                data-engineer="{{ $engineerName }}" data-vendor="{{ $vendorName }}">
                 <td>
                     <input type="checkbox" class="row-checkbox" value="{{ $target->id }}">
                 </td>
@@ -246,8 +251,8 @@
                     @endif
                 </td>
                 <td class="text-center">
-                    <a href="{{ route('tasks.show', [$target->id, 'project_type' => 1]) }}"
-                        class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
+                    <a href="{{ route('tasks.show', [$target->id, 'project_type' => 1]) }}" class="btn btn-icon btn-info"
+                        data-toggle="tooltip" title="View Details">
                         <i class="mdi mdi-eye"></i>
                     </a>
                     <a href="{{ route('tasks.edit', [$target->id, 'project_id' => $project->id]) }}"
@@ -267,18 +272,18 @@
 
 @push('scripts')
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Add project_id to import form
             $('form.import-form-group').append(
                 '<input type="hidden" name="project_id" value="{{ $project->id }}">');
 
             // Initialize Select2 for filter dropdowns
-            setTimeout(function() {
+            setTimeout(function () {
                 // Get the height of regular select to match Select2
                 const regularSelectHeight = $('.filter-select:not(.filter-select2)').first()
                     .outerHeight() || 31;
 
-                $('.filter-select2').each(function() {
+                $('.filter-select2').each(function () {
                     const $select = $(this);
                     if (!$select.hasClass('select2-hidden-accessible')) {
                         $select.select2({
@@ -301,7 +306,7 @@
             }, 500);
 
             // Custom filters - integrate with datatable component's filter system
-            setTimeout(function() {
+            setTimeout(function () {
                 const table = $('#targetsTable').DataTable();
                 if (table) {
                     let filterFunctions = [];
@@ -309,12 +314,12 @@
                     // Intercept applyFilters button click
                     $(document).off('click', '#targetsTable_applyFilters').on('click',
                         '#targetsTable_applyFilters',
-                        function(e) {
+                        function (e) {
                             e.preventDefault();
                             e.stopImmediatePropagation();
 
                             // Remove previous filter functions
-                            filterFunctions.forEach(function(filterFn) {
+                            filterFunctions.forEach(function (filterFn) {
                                 const index = $.fn.dataTable.ext.search.indexOf(filterFn);
                                 if (index !== -1) {
                                     $.fn.dataTable.ext.search.splice(index, 1);
@@ -333,12 +338,12 @@
                             const panchayatSelect = filterContainer.find(
                                 '.filter-select[data-filter="filter_panchayat"]');
                             const panchayatFilter = panchayatSelect.hasClass(
-                                    'select2-hidden-accessible') ?
+                                'select2-hidden-accessible') ?
                                 panchayatSelect.select2('val') : panchayatSelect.val();
                             const engineerSelect = filterContainer.find(
                                 '.filter-select[data-filter="filter_engineer"]');
                             const engineerFilter = engineerSelect.hasClass(
-                                    'select2-hidden-accessible') ?
+                                'select2-hidden-accessible') ?
                                 engineerSelect.select2('val') : engineerSelect.val();
                             const vendorSelect = filterContainer.find(
                                 '.filter-select[data-filter="filter_vendor"]');
@@ -347,7 +352,7 @@
 
                             // Create filter functions
                             if (statusFilter) {
-                                const statusFilterFn = function(settings, data, dataIndex) {
+                                const statusFilterFn = function (settings, data, dataIndex) {
                                     if (settings.nTable.id !== 'targetsTable') return true;
                                     const $row = $(table.row(dataIndex).node());
                                     const rowStatus = $row.data('status') || 'Pending';
@@ -358,7 +363,7 @@
                             }
 
                             if (panchayatFilter) {
-                                const panchayatFilterFn = function(settings, data, dataIndex) {
+                                const panchayatFilterFn = function (settings, data, dataIndex) {
                                     if (settings.nTable.id !== 'targetsTable') return true;
                                     const $row = $(table.row(dataIndex).node());
                                     const rowPanchayat = $row.data('panchayat') || 'N/A';
@@ -369,7 +374,7 @@
                             }
 
                             if (engineerFilter) {
-                                const engineerFilterFn = function(settings, data, dataIndex) {
+                                const engineerFilterFn = function (settings, data, dataIndex) {
                                     if (settings.nTable.id !== 'targetsTable') return true;
                                     const $row = $(table.row(dataIndex).node());
                                     const rowEngineer = $row.data('engineer') || 'N/A';
@@ -380,7 +385,7 @@
                             }
 
                             if (vendorFilter) {
-                                const vendorFilterFn = function(settings, data, dataIndex) {
+                                const vendorFilterFn = function (settings, data, dataIndex) {
                                     if (settings.nTable.id !== 'targetsTable') return true;
                                     const $row = $(table.row(dataIndex).node());
                                     const rowVendor = $row.data('vendor') || 'N/A';
@@ -397,7 +402,7 @@
                     // Clear filters
                     $(document).off('click', '#targetsTable_clearFilters').on('click',
                         '#targetsTable_clearFilters',
-                        function(e) {
+                        function (e) {
                             e.preventDefault();
                             e.stopImmediatePropagation();
 
@@ -405,7 +410,7 @@
                             const filterContainer = $('#datatable-wrapper-targetsTable');
 
                             // Remove all filter functions
-                            filterFunctions.forEach(function(filterFn) {
+                            filterFunctions.forEach(function (filterFn) {
                                 const index = $.fn.dataTable.ext.search.indexOf(filterFn);
                                 if (index !== -1) {
                                     $.fn.dataTable.ext.search.splice(index, 1);
@@ -416,7 +421,7 @@
                             // Clear filter inputs and redraw
                             filterContainer.find('.filter-select, .filter-date, .filter-text').val('');
                             // Clear Select2 dropdowns
-                            filterContainer.find('.filter-select2').each(function() {
+                            filterContainer.find('.filter-select2').each(function () {
                                 if ($(this).hasClass('select2-hidden-accessible')) {
                                     $(this).val(null).trigger('change');
                                 }
@@ -427,7 +432,7 @@
             }, 1500);
 
             // Add Reassign button to bulk actions and ensure bulk actions are visible
-            setTimeout(function() {
+            setTimeout(function () {
                 const bulkActionsDiv = $('#targetsTable_bulkActions');
                 if (bulkActionsDiv.length && $('#bulkReassignBtn').length === 0) {
                     const deleteBtn = $('#targetsTable_bulkDeleteBtn');
@@ -450,19 +455,20 @@
                         .attr('type', 'button')
                         .attr('id', 'bulkReassignBtn')
                         .addClass(
-                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto'
+                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto {{ $project->id == 19 ? "disabled" : "" }}'
                         )
+                        .prop('disabled', {{ $project->id == 19 ? 'true' : 'false' }})
                         .html('<i class="mdi mdi-account-switch"></i><span>Reassign Selected</span>');
 
                     // Append reassign button to wrapper (below delete button)
                     buttonsWrapper.append(reassignBtn);
 
-                    $('#bulkReassignBtn').on('click', function() {
+                    $('#bulkReassignBtn').on('click', function () {
                         const table = $('#targetsTable').DataTable();
                         const selectedIds = [];
 
                         // Get all checked checkboxes
-                        $('#targetsTable tbody .row-checkbox:checked').each(function() {
+                        $('#targetsTable tbody .row-checkbox:checked').each(function () {
                             const taskId = $(this).val();
                             if (taskId) {
                                 selectedIds.push(taskId);
@@ -507,12 +513,12 @@
                 }
 
                 // Handle individual checkbox changes
-                $(document).on('change', '#targetsTable tbody .row-checkbox', function() {
+                $(document).on('change', '#targetsTable tbody .row-checkbox', function () {
                     updateBulkActionsVisibility();
                 });
 
                 // Handle select all checkbox changes - trigger change on all checkboxes
-                $(document).on('change', '#targetsTable_selectAll', function() {
+                $(document).on('change', '#targetsTable_selectAll', function () {
                     const isChecked = $(this).is(':checked');
                     const table = $('#targetsTable').DataTable();
                     if (!table) return;
@@ -528,12 +534,12 @@
                 });
 
                 // Update bulk actions when tab becomes active
-                $('#tasks-tab').on('shown.bs.tab', function() {
+                $('#tasks-tab').on('shown.bs.tab', function () {
                     setTimeout(updateBulkActionsVisibility, 300);
                 });
 
                 // Force update after table is fully initialized and tab is active
-                setTimeout(function() {
+                setTimeout(function () {
                     // Check if tasks tab is active (either from hash or default)
                     const hash = window.location.hash;
                     const isTasksTabActive = hash === '#tasks' || $('#tasks').hasClass('active');
@@ -554,27 +560,27 @@
                 Swal.fire({
                     title: 'Reassign Targets',
                     html: `
-            <div class="text-left">
-              <div class="mb-3">
-                <label for="reassignEngineer" class="form-label">Select Engineer (Optional)</label>
-                <select id="reassignEngineer" class="form-select select2-reassign-engineer">
-                  <option value="">No Change</option>
-                  @foreach ($reassignEngineers as $engineer)
-                    <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
-                  @endforeach
-                </select>
-              </div>
-              <div class="mb-3">
-                <label for="reassignVendor" class="form-label">Select Vendor (Optional)</label>
-                <select id="reassignVendor" class="form-select select2-reassign-vendor">
-                  <option value="">No Change</option>
-                  @foreach ($reassignVendors as $vendor)
-                    <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
-                  @endforeach
-                </select>
-              </div>
-            </div>
-          `,
+                <div class="text-left">
+                  <div class="mb-3">
+                    <label for="reassignEngineer" class="form-label">Select Engineer (Optional)</label>
+                    <select id="reassignEngineer" class="form-select select2-reassign-engineer">
+                      <option value="">No Change</option>
+                      @foreach ($reassignEngineers as $engineer)
+                        <option value="{{ $engineer->id }}">{{ $engineer->firstName }} {{ $engineer->lastName }}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                  <div class="mb-3">
+                    <label for="reassignVendor" class="form-label">Select Vendor (Optional)</label>
+                    <select id="reassignVendor" class="form-select select2-reassign-vendor">
+                      <option value="">No Change</option>
+                      @foreach ($reassignVendors as $vendor)
+                        <option value="{{ $vendor->id }}">{{ $vendor->name }}</option>
+                      @endforeach
+                    </select>
+                  </div>
+                </div>
+              `,
                     showCancelButton: true,
                     confirmButtonText: 'Reassign',
                     cancelButtonText: 'Cancel',
@@ -635,7 +641,7 @@
                                 engineer_id: result.value.engineer_id,
                                 vendor_id: result.value.vendor_id,
                             },
-                            success: function(response) {
+                            success: function (response) {
                                 Swal.fire({
                                     icon: 'success',
                                     title: 'Success!',
@@ -649,7 +655,7 @@
                                     window.location.reload();
                                 });
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 Swal.fire('Error', xhr.responseJSON?.message ||
                                     'Failed to reassign targets', 'error');
                             }
@@ -659,7 +665,7 @@
             };
 
             // Delete button handler
-            $(document).on('click', '.delete-task-btn', function(e) {
+            $(document).on('click', '.delete-task-btn', function (e) {
                 e.preventDefault();
                 const taskId = $(this).data('id');
                 const deleteUrl = $(this).data('url');
@@ -682,7 +688,7 @@
                                 _token: "{{ csrf_token() }}",
                                 _method: 'DELETE',
                             },
-                            success: function(response) {
+                            success: function (response) {
                                 // Check if async deletion was initiated
                                 if (response.job_id) {
                                     // Async deletion - start progress tracking
@@ -697,7 +703,7 @@
                                     setTimeout(() => window.location.reload(), 1500);
                                 }
                             },
-                            error: function(xhr) {
+                            error: function (xhr) {
                                 Swal.fire('Error!', xhr.responseJSON?.message ||
                                     'Failed to delete target.', 'error');
                             }
@@ -710,20 +716,20 @@
             function initializePanchayatSelect2() {
                 const district = $('#districtSearch').val();
                 const block = $('#blockSearch').val();
-                
+
                 // Destroy existing Select2 instance if it exists
                 if ($('#panchayatSearch').hasClass('select2-hidden-accessible')) {
                     $('#panchayatSearch').select2('destroy');
                 }
-                
+
                 // Disable panchayat search if district or block is not selected
                 if (!district || !block) {
                     $('#panchayatSearch').prop('disabled', true).empty();
                     return;
                 }
-                
+
                 $('#panchayatSearch').prop('disabled', false).empty();
-                
+
                 $('#panchayatSearch').select2({
                     placeholder: "Type to search panchayats in " + block + " block",
                     allowClear: true,
@@ -733,15 +739,15 @@
                         dataType: 'json',
                         method: "GET",
                         delay: 250,
-                        data: function(params) {
+                        data: function (params) {
                             return {
                                 search: params.term,
                                 district: district,
                                 block: block,
                                 project_id: {{ $project->id }}
-                            };
+                                };
                         },
-                        processResults: function(data) {
+                        processResults: function (data) {
                             if (data.length === 0) {
                                 return {
                                     results: []
@@ -754,13 +760,13 @@
                                 }))
                             };
                         },
-                        error: function(xhr) {
+                        error: function (xhr) {
                             console.error('Error searching panchayats:', xhr);
                         }
                     }
                 });
             }
-            
+
             // Function to initialize Engineer and Vendor Select2
             function initializeEngineerVendorSelect2() {
                 // Initialize Select2 for Engineer dropdown
@@ -775,7 +781,7 @@
                         dropdownCssClass: 'select2-dropdown-engineer',
                     });
                 }
-                
+
                 // Initialize Select2 for Vendor dropdown
                 const vendorSelect = $('#selectVendor');
                 if (vendorSelect.length && !vendorSelect.hasClass('select2-hidden-accessible')) {
@@ -791,21 +797,21 @@
             }
 
             // Initialize Select2 when modal opens
-            $('#addTargetModal').on('shown.bs.modal', function() {
+            $('#addTargetModal').on('shown.bs.modal', function () {
                 initializePanchayatSelect2();
-                
+
                 // Small delay to ensure modal is fully rendered
-                setTimeout(function() {
+                setTimeout(function () {
                     initializeEngineerVendorSelect2();
                 }, 100);
             });
 
             // Also initialize on modal show (earlier event) as fallback
-            $('#addTargetModal').on('show.bs.modal', function() {
+            $('#addTargetModal').on('show.bs.modal', function () {
                 // Reinitialize if already initialized (to ensure it works)
                 const engineerSelect = $('#selectEngineer');
                 const vendorSelect = $('#selectVendor');
-                
+
                 if (engineerSelect.hasClass('select2-hidden-accessible')) {
                     engineerSelect.select2('destroy');
                 }
@@ -813,20 +819,20 @@
                     vendorSelect.select2('destroy');
                 }
             });
-            
+
             // Reinitialize Select2 when district or block changes
-            $(document).on('change', '#districtSearch, #blockSearch', function() {
+            $(document).on('change', '#districtSearch, #blockSearch', function () {
                 // Clear panchayat selection
                 $('#panchayatSearch').val(null).trigger('change');
                 $('#wardSelectionContainer').hide();
                 $('#wardCheckboxes').empty();
-                
+
                 // Reinitialize Select2 with new filters
                 initializePanchayatSelect2();
             });
 
             // Handle panchayat selection change for ward loading
-            $('#panchayatSearch').on('select2:select select2:unselect', function(e) {
+            $('#panchayatSearch').on('select2:select select2:unselect', function (e) {
                 const selectedPanchayats = $(this).val();
 
                 if (!selectedPanchayats || selectedPanchayats.length === 0) {
@@ -846,7 +852,7 @@
 
             // Fetch Blocks Based on Selected District
             // Use event delegation to ensure it works even if modal is loaded dynamically
-            $(document).on('change', '#districtSearch', function() {
+            $(document).on('change', '#districtSearch', function () {
                 let district = $(this).val();
                 console.log('District selected:', district);
 
@@ -867,12 +873,12 @@
                         dataType: 'json',
                         data: {
                             project_id: {{ $project->id }}
-                        },
-                        success: function(data) {
+                            },
+                        success: function (data) {
                             console.log('Blocks response:', data);
 
                             if (Array.isArray(data) && data.length > 0) {
-                                $.each(data, function(index, block) {
+                                $.each(data, function (index, block) {
                                     // Handle both string and object formats (JICR format uses objects with .block property)
                                     const blockValue = typeof block === 'string' ?
                                         block : (block.block || block);
@@ -896,7 +902,7 @@
                                     '<option value="">No blocks available</option>');
                             }
                         },
-                        error: function(xhr, status, error) {
+                        error: function (xhr, status, error) {
                             console.error("AJAX Error fetching blocks:", status, error);
                             console.error("Response:", xhr.responseText);
                             console.error("Status Code:", xhr.status);
@@ -923,15 +929,15 @@
 
             // Fetch Panchayats Based on Selected Block
             // Use event delegation
-            $(document).on('change', '#blockSearch', function() {
+            $(document).on('change', '#blockSearch', function () {
                 let block = $(this).val();
                 console.log('Block selected:', block);
-                
+
                 // Clear panchayat selection and wards
                 $('#panchayatSearch').val(null).trigger('change');
                 $('#wardSelectionContainer').hide();
                 $('#wardCheckboxes').empty();
-                
+
                 // Reinitialize Select2 with new block filter (handled by initializePanchayatSelect2)
                 // This will enable Select2 and set up AJAX search filtered by district and block
                 initializePanchayatSelect2();
@@ -949,7 +955,7 @@
                     url: '/wards-by-site/' + siteId,
                     type: 'GET',
                     dataType: 'json',
-                    success: function(wards) {
+                    success: function (wards) {
                         if (wards && wards.length > 0) {
                             displayWards(wards);
                             $('#wardSelectionContainer').slideDown(300);
@@ -957,7 +963,7 @@
                             $('#wardSelectionContainer').hide();
                         }
                     },
-                    error: function(xhr, status, error) {
+                    error: function (xhr, status, error) {
                         console.error("AJAX Error fetching wards:", status, error);
                         $('#wardSelectionContainer').hide();
                     }
@@ -968,18 +974,18 @@
                 const container = $('#wardCheckboxes');
                 container.empty();
 
-                wards.forEach(function(ward) {
+                wards.forEach(function (ward) {
                     const wardValue = ward.trim();
                     if (wardValue) {
                         const checkbox = $('<div>').addClass(
                             'form-check form-check-inline ward-checkbox-item mb-2');
                         checkbox.html(`
-              <input class="form-check-input ward-checkbox" type="checkbox" 
-                     id="ward_${wardValue}" value="${wardValue}" checked>
-              <label class="form-check-label" for="ward_${wardValue}">
-                Ward ${wardValue}
-              </label>
-            `);
+                  <input class="form-check-input ward-checkbox" type="checkbox" 
+                         id="ward_${wardValue}" value="${wardValue}" checked>
+                  <label class="form-check-label" for="ward_${wardValue}">
+                    Ward ${wardValue}
+                  </label>
+                `);
                         container.append(checkbox);
                     }
                 });
@@ -988,24 +994,24 @@
             }
 
             // Select/Deselect All Wards
-            $('#selectAllWards').on('click', function() {
+            $('#selectAllWards').on('click', function () {
                 $('.ward-checkbox').prop('checked', true);
                 updateSelectedWards();
             });
 
-            $('#deselectAllWards').on('click', function() {
+            $('#deselectAllWards').on('click', function () {
                 $('.ward-checkbox').prop('checked', false);
                 updateSelectedWards();
             });
 
             // Update selected wards when checkboxes change
-            $(document).on('change', '.ward-checkbox', function() {
+            $(document).on('change', '.ward-checkbox', function () {
                 updateSelectedWards();
             });
 
             function updateSelectedWards() {
                 const selectedWards = [];
-                $('.ward-checkbox:checked').each(function() {
+                $('.ward-checkbox:checked').each(function () {
                     selectedWards.push($(this).val());
                 });
                 $('#selectedWardsInput').val(selectedWards.join(','));
@@ -1097,27 +1103,27 @@
             }
 
             // Clear errors when modal is opened
-            $('#addTargetModal').on('show.bs.modal', function() {
+            $('#addTargetModal').on('show.bs.modal', function () {
                 clearFormErrors();
             });
 
             // Clear errors when modal is closed
-            $('#addTargetModal').on('hidden.bs.modal', function() {
+            $('#addTargetModal').on('hidden.bs.modal', function () {
                 clearFormErrors();
                 // Reset form
                 $('#targetForm')[0].reset();
                 $('#panchayatSearch').val(null).trigger('change');
-                
+
                 // Reset select2 dropdowns properly
                 const engineerSelect = $('#selectEngineer');
                 const vendorSelect = $('#selectVendor');
-                
+
                 if (engineerSelect.hasClass('select2-hidden-accessible')) {
                     engineerSelect.val(null).trigger('change');
                 } else {
                     engineerSelect.val(null);
                 }
-                
+
                 if (vendorSelect.hasClass('select2-hidden-accessible')) {
                     vendorSelect.val(null).trigger('change');
                 } else {
@@ -1126,8 +1132,8 @@
             });
 
             // Clear errors when reset button is clicked
-            $('#targetForm').on('reset', function() {
-                setTimeout(function() {
+            $('#targetForm').on('reset', function () {
+                setTimeout(function () {
                     clearFormErrors();
                 }, 100);
             });
@@ -1167,7 +1173,7 @@
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest'
                 },
-                success: function(response) {
+                success: function (response) {
                     if (response.success) {
                         // Show success toast
                         Swal.fire({
@@ -1198,7 +1204,7 @@
                         });
                     }
                 },
-                error: function(xhr) {
+                error: function (xhr) {
                     // Re-enable submit button
                     submitButton.prop('disabled', false).html(originalButtonText);
 
@@ -1207,7 +1213,7 @@
                         const errors = xhr.responseJSON?.errors || {};
 
                         // Show field-level errors
-                        Object.keys(errors).forEach(function(field) {
+                        Object.keys(errors).forEach(function (field) {
                             const errorMessages = errors[field];
                             const errorMessage = Array.isArray(errorMessages) ? errorMessages[
                                 0] : errorMessages;
@@ -1242,10 +1248,10 @@
                             icon: 'error',
                             title: 'Server Error',
                             html: `
-                  <p><strong>Status:</strong> ${xhr.status}</p>
-                  <p><strong>Error:</strong> ${xhr.responseJSON?.error || xhr.responseJSON?.message || 'An unexpected error occurred.'}</p>
-                  ${xhr.responseJSON?.code ? `<p><strong>Code:</strong> ${xhr.responseJSON.code}</p>` : ''}
-                `,
+                      <p><strong>Status:</strong> ${xhr.status}</p>
+                      <p><strong>Error:</strong> ${xhr.responseJSON?.error || xhr.responseJSON?.message || 'An unexpected error occurred.'}</p>
+                      ${xhr.responseJSON?.code ? `<p><strong>Code:</strong> ${xhr.responseJSON.code}</p>` : ''}
+                    `,
                             confirmButtonText: 'OK'
                         });
                     } else {
@@ -1276,7 +1282,7 @@
     <!-- Override bulk delete to handle async responses -->
     <script>
         // Wait for both jQuery and the progress tracker script to be loaded
-        $(document).ready(function() {
+        $(document).ready(function () {
             // Ensure progress tracker is initialized
             if (typeof window.targetDeletionProgress === 'undefined' && typeof TargetDeletionProgress !==
                 'undefined') {
@@ -1295,7 +1301,7 @@
                     bulkDeleteBtn.off('click');
 
                     // Add our custom handler with higher priority
-                    bulkDeleteBtn.on('click', function(e) {
+                    bulkDeleteBtn.on('click', function (e) {
                         e.preventDefault();
                         e.stopImmediatePropagation();
                         e.stopPropagation();
@@ -1309,7 +1315,7 @@
                         const selectedIds = [];
 
                         // Get all checked checkboxes
-                        $('#targetsTable tbody .row-checkbox:checked').each(function() {
+                        $('#targetsTable tbody .row-checkbox:checked').each(function () {
                             const taskId = $(this).val();
                             if (taskId) {
                                 selectedIds.push(parseInt(taskId));
@@ -1376,7 +1382,7 @@
                                         _token: "{{ csrf_token() }}",
                                         ids: selectedIds,
                                     },
-                                    success: function(response) {
+                                    success: function (response) {
                                         console.log('Bulk delete response:', response);
                                         console.log('Response type:', typeof response);
                                         console.log('Response has job_id:', response &&
@@ -1443,7 +1449,7 @@
                                                     if (modal) {
                                                         const bsModal =
                                                             bootstrap.Modal
-                                                            .getInstance(modal);
+                                                                .getInstance(modal);
                                                         if (bsModal) {
                                                             bsModal.hide();
                                                         }
@@ -1460,7 +1466,7 @@
                                             }
                                         }
                                     },
-                                    error: function(xhr) {
+                                    error: function (xhr) {
                                         console.error('Bulk delete error:', xhr);
 
                                         // Update modal with error
@@ -1498,7 +1504,7 @@
 
             // Also try when the table is drawn
             if ($.fn.DataTable && $('#targetsTable').length) {
-                $('#targetsTable').on('draw.dt', function() {
+                $('#targetsTable').on('draw.dt', function () {
                     setTimeout(attachBulkDeleteHandler, 100);
                 });
             }
@@ -1768,9 +1774,10 @@
         #addTargetModal .modal-body .select2-container--open {
             z-index: 9999;
         }
-            font-size: 0.875rem;
-            color: #495057;
-            margin-left: 0.5rem;
+
+        font-size: 0.875rem;
+        color: #495057;
+        margin-left: 0.5rem;
         }
 
         .ward-checkbox-item:hover .form-check-label {

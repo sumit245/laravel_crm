@@ -1,19 +1,19 @@
 @php
-  use App\Enums\UserRole;
-  // Only include staff roles, exclude vendors (they have separate Vendor Management tab)
-  $roles = [
-      UserRole::SITE_ENGINEER->value => "Site Engineer",
-      UserRole::PROJECT_MANAGER->value => "Project Manager",
-      UserRole::STORE_INCHARGE->value => "Store Incharge",
-      UserRole::COORDINATOR->value => "Coordinator",
-  ];
-  
-  $roleColors = [
-      UserRole::SITE_ENGINEER->value => 'bg-info',
-      UserRole::PROJECT_MANAGER->value => 'bg-primary',
-      UserRole::STORE_INCHARGE->value => 'bg-warning',
-      UserRole::COORDINATOR->value => 'bg-success',
-  ];
+    use App\Enums\UserRole;
+    // Only include staff roles, exclude vendors (they have separate Vendor Management tab)
+    $roles = [
+        UserRole::SITE_ENGINEER->value => "Site Engineer",
+        UserRole::PROJECT_MANAGER->value => "Project Manager",
+        UserRole::STORE_INCHARGE->value => "Store Incharge",
+        UserRole::COORDINATOR->value => "Coordinator",
+    ];
+
+    $roleColors = [
+        UserRole::SITE_ENGINEER->value => 'bg-info',
+        UserRole::PROJECT_MANAGER->value => 'bg-primary',
+        UserRole::STORE_INCHARGE->value => 'bg-warning',
+        UserRole::COORDINATOR->value => 'bg-success',
+    ];
 @endphp
 
 <style>
@@ -273,7 +273,8 @@
                 </div>
                 <div class="bulk-actions" id="assignedBulkActions">
                     <span id="assignedSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedStaff()">
+                    <button type="button" class="btn btn-danger btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
+                        onclick="removeSelectedStaff()" {{ $project->id == 19 ? 'disabled' : '' }}>
                         <i class="mdi mdi-delete"></i> Remove Selected
                     </button>
                 </div>
@@ -283,7 +284,7 @@
                             @foreach($assignedStaffByRole as $roleValue => $staffGroup)
                                 @if($staffGroup->isNotEmpty())
                                     @php
-                                        $roleValueInt = (int)$roleValue;
+                                        $roleValueInt = (int) $roleValue;
                                         $roleName = $roles[$roleValueInt] ?? 'Unknown';
                                         $roleColor = $roleColors[$roleValueInt] ?? 'bg-secondary';
                                     @endphp
@@ -294,19 +295,27 @@
                                                 <span class="role-badge {{ $roleColor }}">{{ $roleName }}</span>
                                             </h6>
                                             <div class="d-flex align-items-center gap-3">
-                                                <input type="checkbox" class="role-select-all" data-role="{{ $roleValueInt }}" onchange="toggleRoleSelection(this)">
-                                                <span class="role-count" data-role-count="{{ $roleValueInt }}">{{ $staffGroup->count() }}</span>
+                                                <input type="checkbox" class="role-select-all" data-role="{{ $roleValueInt }}"
+                                                    onchange="toggleRoleSelection(this)">
+                                                <span class="role-count"
+                                                    data-role-count="{{ $roleValueInt }}">{{ $staffGroup->count() }}</span>
                                             </div>
                                         </div>
                                         <div class="role-staff-list">
                                             @foreach($staffGroup as $staff)
-                                                <div class="staff-item" data-staff-id="{{ $staff['id'] }}" data-role="{{ $roleValueInt }}">
+                                                <div class="staff-item" data-staff-id="{{ $staff['id'] }}"
+                                                    data-role="{{ $roleValueInt }}">
                                                     <div class="staff-info">
-                                                        <input type="checkbox" class="staff-checkbox staff-checkbox-assigned" value="{{ $staff['id'] }}" data-role="{{ $roleValueInt }}" onchange="updateBulkActions()">
+                                                        <input type="checkbox" class="staff-checkbox staff-checkbox-assigned"
+                                                            value="{{ $staff['id'] }}" data-role="{{ $roleValueInt }}"
+                                                            onchange="updateBulkActions()">
                                                         <p class="staff-name mb-0">{{ $staff['name'] }}</p>
                                                     </div>
                                                     <div class="staff-actions">
-                                                        <button type="button" class="btn-action btn-remove" onclick="removeStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')">
+                                                        <button type="button"
+                                                            class="btn-action btn-remove {{ $project->id == 19 ? 'disabled' : '' }}"
+                                                            onclick="removeStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')"
+                                                            {{ $project->id == 19 ? 'disabled' : '' }}>
                                                             <i class="mdi mdi-delete"></i>
                                                             Remove
                                                         </button>
@@ -345,7 +354,8 @@
                 </div>
                 <div class="bulk-actions" id="availableBulkActions">
                     <span id="availableSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="assignSelectedStaff()">
+                    <button type="button" class="btn btn-primary btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
+                        onclick="assignSelectedStaff()" {{ $project->id == 19 ? 'disabled' : '' }}>
                         <i class="mdi mdi-plus"></i> Assign Selected
                     </button>
                 </div>
@@ -354,7 +364,8 @@
                     <div class="search-filter-bar">
                         <div class="row g-2">
                             <div class="col-md-8">
-                                <input type="text" class="form-control search-input" id="staffSearch" placeholder="Search by name..." onkeyup="filterStaff()">
+                                <input type="text" class="form-control search-input" id="staffSearch"
+                                    placeholder="Search by name..." onkeyup="filterStaff()">
                             </div>
                             <div class="col-md-4">
                                 <select class="form-select filter-select" id="roleFilter" onchange="filterStaff()">
@@ -372,7 +383,7 @@
                             @foreach($availableStaffByRole as $roleValue => $staffGroup)
                                 @if($staffGroup->isNotEmpty())
                                     @php
-                                        $roleValueInt = (int)$roleValue;
+                                        $roleValueInt = (int) $roleValue;
                                         $roleName = $roles[$roleValueInt] ?? 'Unknown';
                                         $roleColor = $roleColors[$roleValueInt] ?? 'bg-secondary';
                                     @endphp
@@ -383,19 +394,27 @@
                                                 <span class="role-badge {{ $roleColor }}">{{ $roleName }}</span>
                                             </h6>
                                             <div class="d-flex align-items-center gap-3">
-                                                <input type="checkbox" class="role-select-all role-select-all-available" data-role="{{ $roleValueInt }}" onchange="toggleRoleSelection(this)">
-                                                <span class="role-count" data-role-count="{{ $roleValueInt }}">{{ $staffGroup->count() }}</span>
+                                                <input type="checkbox" class="role-select-all role-select-all-available"
+                                                    data-role="{{ $roleValueInt }}" onchange="toggleRoleSelection(this)">
+                                                <span class="role-count"
+                                                    data-role-count="{{ $roleValueInt }}">{{ $staffGroup->count() }}</span>
                                             </div>
                                         </div>
                                         <div class="role-staff-list">
                                             @foreach($staffGroup as $staff)
-                                                <div class="staff-item" data-staff-id="{{ $staff['id'] }}" data-role="{{ $roleValueInt }}" data-name="{{ strtolower($staff['name']) }}">
+                                                <div class="staff-item" data-staff-id="{{ $staff['id'] }}"
+                                                    data-role="{{ $roleValueInt }}" data-name="{{ strtolower($staff['name']) }}">
                                                     <div class="staff-info">
-                                                        <input type="checkbox" class="staff-checkbox staff-checkbox-available" value="{{ $staff['id'] }}" data-role="{{ $roleValueInt }}" onchange="updateBulkActions()">
+                                                        <input type="checkbox" class="staff-checkbox staff-checkbox-available"
+                                                            value="{{ $staff['id'] }}" data-role="{{ $roleValueInt }}"
+                                                            onchange="updateBulkActions()">
                                                         <p class="staff-name mb-0">{{ $staff['name'] }}</p>
                                                     </div>
                                                     <div class="staff-actions">
-                                                        <button type="button" class="btn-action btn-assign" onclick="assignStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')">
+                                                        <button type="button"
+                                                            class="btn-action btn-assign {{ $project->id == 19 ? 'disabled' : '' }}"
+                                                            onclick="assignStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')"
+                                                            {{ $project->id == 19 ? 'disabled' : '' }}>
                                                             <i class="mdi mdi-plus"></i>
                                                             Assign
                                                         </button>
@@ -420,30 +439,30 @@
 </div>
 
 @push('scripts')
-<script>
-    // Initialize project staff management - set as global variables
-    window.projectId = {{ $project->id }};
-    window.csrfToken = '{{ csrf_token() }}';
-    
-    // Also set it in meta tag if not already set
-    if (!document.querySelector('meta[name="csrf-token"]')) {
-        const meta = document.createElement('meta');
-        meta.name = 'csrf-token';
-        meta.content = window.csrfToken;
-        document.getElementsByTagName('head')[0].appendChild(meta);
-    } else {
-        document.querySelector('meta[name="csrf-token"]').setAttribute('content', window.csrfToken);
-    }
-</script>
-<script src="{{ asset('js/project-staff-management.js') }}"></script>
-<script>
-    // Handle session messages
-    @if(session()->has('success'))
-        showToast('success', {!! json_encode(session('success')) !!});
-    @endif
-    
-    @if(session()->has('error'))
-        showToast('error', {!! json_encode(session('error')) !!});
-    @endif
-</script>
+    <script>
+        // Initialize project staff management - set as global variables
+        window.projectId = {{ $project->id }};
+        window.csrfToken = '{{ csrf_token() }}';
+
+        // Also set it in meta tag if not already set
+        if (!document.querySelector('meta[name="csrf-token"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'csrf-token';
+            meta.content = window.csrfToken;
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        } else {
+            document.querySelector('meta[name="csrf-token"]').setAttribute('content', window.csrfToken);
+        }
+    </script>
+    <script src="{{ asset('js/project-staff-management.js') }}"></script>
+    <script>
+        // Handle session messages
+        @if(session()->has('success'))
+            showToast('success', {!! json_encode(session('success')) !!});
+        @endif
+
+        @if(session()->has('error'))
+            showToast('error', {!! json_encode(session('error')) !!});
+        @endif
+    </script>
 @endpush

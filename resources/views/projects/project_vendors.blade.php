@@ -1,5 +1,5 @@
 @php
-  use App\Enums\UserRole;
+    use App\Enums\UserRole;
 @endphp
 
 <style>
@@ -202,11 +202,13 @@
                         <i class="mdi mdi-account-group me-2"></i>
                         Assigned Vendors
                     </span>
-                    <span class="badge bg-dark text-white" id="assignedVendorTotalCount">{{ $assignedVendors->count() }}</span>
+                    <span class="badge bg-dark text-white"
+                        id="assignedVendorTotalCount">{{ $assignedVendors->count() }}</span>
                 </div>
                 <div class="bulk-actions" id="assignedVendorBulkActions">
                     <span id="assignedVendorSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedVendors()">
+                    <button type="button" class="btn btn-danger btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
+                        onclick="removeSelectedVendors()" {{ $project->id == 19 ? 'disabled' : '' }}>
                         <i class="mdi mdi-delete"></i> Remove Selected
                     </button>
                 </div>
@@ -214,13 +216,18 @@
                     <div id="assignedVendorContainer">
                         @if($assignedVendors->isNotEmpty())
                             @foreach($assignedVendors as $vendor)
-                                <div class="vendor-item" data-vendor-id="{{ $vendor->id }}" data-name="{{ strtolower(trim($vendor->firstName . ' ' . $vendor->lastName)) }}">
+                                <div class="vendor-item" data-vendor-id="{{ $vendor->id }}"
+                                    data-name="{{ strtolower(trim($vendor->firstName . ' ' . $vendor->lastName)) }}">
                                     <div class="vendor-info">
-                                        <input type="checkbox" class="vendor-checkbox vendor-checkbox-assigned" value="{{ $vendor->id }}" onchange="updateVendorBulkActions()">
+                                        <input type="checkbox" class="vendor-checkbox vendor-checkbox-assigned"
+                                            value="{{ $vendor->id }}" onchange="updateVendorBulkActions()">
                                         <p class="vendor-name mb-0">{{ trim($vendor->firstName . ' ' . $vendor->lastName) }}</p>
                                     </div>
                                     <div class="vendor-actions">
-                                        <button type="button" class="btn-action btn-remove" onclick="removeVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')">
+                                        <button type="button"
+                                            class="btn-action btn-remove {{ $project->id == 19 ? 'disabled' : '' }}"
+                                            onclick="removeVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')"
+                                            {{ $project->id == 19 ? 'disabled' : '' }}>
                                             <i class="mdi mdi-delete"></i>
                                             Remove
                                         </button>
@@ -251,30 +258,38 @@
                         <i class="mdi mdi-account-plus me-2"></i>
                         Available Vendors
                     </span>
-                    <span class="badge bg-dark text-white" id="availableVendorTotalCount">{{ $availableVendors->count() }}</span>
+                    <span class="badge bg-dark text-white"
+                        id="availableVendorTotalCount">{{ $availableVendors->count() }}</span>
                 </div>
                 <div class="bulk-actions" id="availableVendorBulkActions">
                     <span id="availableVendorSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-primary btn-sm" onclick="assignSelectedVendors()">
+                    <button type="button" class="btn btn-primary btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
+                        onclick="assignSelectedVendors()" {{ $project->id == 19 ? 'disabled' : '' }}>
                         <i class="mdi mdi-plus"></i> Assign Selected
                     </button>
                 </div>
                 <div class="section-body">
                     <!-- Search Bar -->
                     <div class="search-filter-bar">
-                        <input type="text" class="form-control search-input" id="vendorSearch" placeholder="Search by name..." onkeyup="filterVendors()">
+                        <input type="text" class="form-control search-input" id="vendorSearch"
+                            placeholder="Search by name..." onkeyup="filterVendors()">
                     </div>
 
                     <div id="availableVendorContainer">
                         @if($availableVendors->isNotEmpty())
                             @foreach($availableVendors as $vendor)
-                                <div class="vendor-item" data-vendor-id="{{ $vendor->id }}" data-name="{{ strtolower(trim($vendor->firstName . ' ' . $vendor->lastName)) }}">
+                                <div class="vendor-item" data-vendor-id="{{ $vendor->id }}"
+                                    data-name="{{ strtolower(trim($vendor->firstName . ' ' . $vendor->lastName)) }}">
                                     <div class="vendor-info">
-                                        <input type="checkbox" class="vendor-checkbox vendor-checkbox-available" value="{{ $vendor->id }}" onchange="updateVendorBulkActions()">
+                                        <input type="checkbox" class="vendor-checkbox vendor-checkbox-available"
+                                            value="{{ $vendor->id }}" onchange="updateVendorBulkActions()">
                                         <p class="vendor-name mb-0">{{ trim($vendor->firstName . ' ' . $vendor->lastName) }}</p>
                                     </div>
                                     <div class="vendor-actions">
-                                        <button type="button" class="btn-action btn-assign" onclick="assignVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')">
+                                        <button type="button"
+                                            class="btn-action btn-assign {{ $project->id == 19 ? 'disabled' : '' }}"
+                                            onclick="assignVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')"
+                                            {{ $project->id == 19 ? 'disabled' : '' }}>
                                             <i class="mdi mdi-plus"></i>
                                             Assign
                                         </button>
@@ -295,36 +310,36 @@
 </div>
 
 @push('scripts')
-<script>
-    // Initialize project vendor management - set as global variables
-    window.projectId = {{ $project->id }};
-    window.csrfToken = '{{ csrf_token() }}';
-    window.projectDistricts = @json(($projectDistricts ?? collect())->map(function ($district) {
-        return [
-            'id' => $district->id,
-            'name' => $district->name,
-        ];
-    }));
-    
-    // Also set it in meta tag if not already set
-    if (!document.querySelector('meta[name="csrf-token"]')) {
-        const meta = document.createElement('meta');
-        meta.name = 'csrf-token';
-        meta.content = window.csrfToken;
-        document.getElementsByTagName('head')[0].appendChild(meta);
-    } else {
-        document.querySelector('meta[name="csrf-token"]').setAttribute('content', window.csrfToken);
-    }
-</script>
-<script src="{{ asset('js/project-vendor-management.js') }}"></script>
-<script>
-    // Handle session messages
-    @if(session()->has('success'))
-        showToast('success', {!! json_encode(session('success')) !!});
-    @endif
-    
-    @if(session()->has('error'))
-        showToast('error', {!! json_encode(session('error')) !!});
-    @endif
-</script>
+    <script>
+        // Initialize project vendor management - set as global variables
+        window.projectId = {{ $project->id }};
+        window.csrfToken = '{{ csrf_token() }}';
+        window.projectDistricts = @json(($projectDistricts ?? collect())->map(function ($district) {
+            return [
+                'id' => $district->id,
+                'name' => $district->name,
+            ];
+        }));
+
+        // Also set it in meta tag if not already set
+        if (!document.querySelector('meta[name="csrf-token"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'csrf-token';
+            meta.content = window.csrfToken;
+            document.getElementsByTagName('head')[0].appendChild(meta);
+        } else {
+            document.querySelector('meta[name="csrf-token"]').setAttribute('content', window.csrfToken);
+        }
+    </script>
+    <script src="{{ asset('js/project-vendor-management.js') }}"></script>
+    <script>
+        // Handle session messages
+        @if(session()->has('success'))
+            showToast('success', {!! json_encode(session('success')) !!});
+        @endif
+
+        @if(session()->has('error'))
+            showToast('error', {!! json_encode(session('error')) !!});
+        @endif
+    </script>
 @endpush
