@@ -26,7 +26,7 @@ class RemoteApiHelper
      * @param  mixed  $streetlight  
      * @param  mixed  $approver  
      * @param  mixed  $projectName  
-     * @return \Illuminate\Http\Client\Response|null
+     * @return void  
      */
     public static function sendPoleDataToRemoteServer($pole, $streetlight, $approver, $projectName = "SUGS")
     {

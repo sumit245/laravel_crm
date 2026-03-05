@@ -143,9 +143,8 @@
 
     <!-- Add Target Button (styled to match parent) -->
     <div class="mb-3 d-flex justify-content-end">
-        <button type="button"
-            class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 add-target-btn {{ $project->id == 19 ? 'disabled' : '' }}"
-            style="max-height: 2.8rem;" data-bs-toggle="modal" data-bs-target="#addTargetModal" {{ $project->id == 19 ? 'disabled' : '' }}>
+        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 add-target-btn"
+            style="max-height: 2.8rem;" data-bs-toggle="modal" data-bs-target="#addTargetModal">
             <i class="mdi mdi-plus-circle"></i>
             <span>Add Target</span>
         </button>
@@ -160,11 +159,10 @@
         ['title' => 'End Date', 'width' => '10%'],
         ['title' => 'Wards', 'width' => '15%'],
         ['title' => 'Status', 'width' => '10%'],
-    ]" :exportEnabled="true" :importEnabled="true" :importDisabled="$project->id == 19"
-        :bulkDeleteDisabled="$project->id == 19" :importRoute="route('tasks.import')"
+    ]" :exportEnabled="true" :importEnabled="true" :importRoute="route('tasks.import')"
         :importFormatUrl="route('tasks.importFormat')" :bulkDeleteEnabled="true"
-        :bulkDeleteRoute="route('tasks.bulkDelete')" :deleteRoute="$project->id == 19 ? null : route('tasks.destroystreetlight', ':id')" :editRoute="$project->id == 19 ? null : route('tasks.edit', [':id', 'project_id' => $project->id])" :viewRoute="route('tasks.show', [':id', 'project_type' => 1])" pageLength="25"
-        searchPlaceholder="Search Targets..." :filters="[
+        :bulkDeleteRoute="route('tasks.bulkDelete')" :deleteRoute="route('tasks.destroystreetlight', ':id')"
+        :editRoute="route('tasks.edit', [':id', 'project_id' => $project->id])" :viewRoute="route('tasks.show', [':id', 'project_type' => 1])" pageLength="25" searchPlaceholder="Search Targets..." :filters="[
         [
             'type' => 'select',
             'name' => 'filter_status',
@@ -455,9 +453,8 @@
                         .attr('type', 'button')
                         .attr('id', 'bulkReassignBtn')
                         .addClass(
-                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto {{ $project->id == 19 ? "disabled" : "" }}'
+                            'btn btn-sm btn-warning d-inline-flex align-items-center gap-1 w-10 w-sm-auto'
                         )
-                        .prop('disabled', {{ $project->id == 19 ? 'true' : 'false' }})
                         .html('<i class="mdi mdi-account-switch"></i><span>Reassign Selected</span>');
 
                     // Append reassign button to wrapper (below delete button)

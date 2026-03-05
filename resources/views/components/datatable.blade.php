@@ -6,11 +6,9 @@
     'searchPlaceholder' => 'Search...',
     'exportEnabled' => true,
     'importEnabled' => false,
-    'importDisabled' => false,
     'importRoute' => null,
     'importFormatUrl' => null,
     'bulkDeleteEnabled' => true,
-    'bulkDeleteDisabled' => false,
     'bulkDeleteRoute' => null,
     'bulkReturnEnabled' => false,
     'bulkReturnRoute' => null,
@@ -60,7 +58,7 @@
                         <input type="file" name="file" class="form-control form-control-sm import-file-input"
                             accept=".xlsx,.xls,.csv" required>
                         <button type="submit"
-                            class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1 {{ $importDisabled ? 'disabled' : '' }}" {{ $importDisabled ? 'disabled' : '' }}>
+                            class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1">
                             <i class="mdi mdi-upload"></i>
                             <span>Import</span>
                         </button>
@@ -140,8 +138,8 @@
                 <div class="d-flex flex-column gap-2">
                     @if ($bulkDeleteEnabled)
                         <button type="button"
-                            class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center gap-1 {{ $bulkDeleteDisabled ? 'disabled' : '' }}"
-                            id="{{ $id }}_bulkDeleteBtn" {{ $bulkDeleteDisabled ? 'disabled' : '' }}>
+                            class="btn btn-sm btn-danger d-inline-flex align-items-center justify-content-center gap-1"
+                            id="{{ $id }}_bulkDeleteBtn">
                             <i class="mdi mdi-delete"></i>
                             <span>Delete Selected</span>
                         </button>

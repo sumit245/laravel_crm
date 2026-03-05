@@ -273,8 +273,7 @@
                 </div>
                 <div class="bulk-actions" id="assignedBulkActions">
                     <span id="assignedSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-danger btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
-                        onclick="removeSelectedStaff()" {{ $project->id == 19 ? 'disabled' : '' }}>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedStaff()">
                         <i class="mdi mdi-delete"></i> Remove Selected
                     </button>
                 </div>
@@ -312,10 +311,8 @@
                                                         <p class="staff-name mb-0">{{ $staff['name'] }}</p>
                                                     </div>
                                                     <div class="staff-actions">
-                                                        <button type="button"
-                                                            class="btn-action btn-remove {{ $project->id == 19 ? 'disabled' : '' }}"
-                                                            onclick="removeStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')"
-                                                            {{ $project->id == 19 ? 'disabled' : '' }}>
+                                                        <button type="button" class="btn-action btn-remove"
+                                                            onclick="removeStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')">
                                                             <i class="mdi mdi-delete"></i>
                                                             Remove
                                                         </button>
@@ -354,8 +351,7 @@
                 </div>
                 <div class="bulk-actions" id="availableBulkActions">
                     <span id="availableSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-primary btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
-                        onclick="assignSelectedStaff()" {{ $project->id == 19 ? 'disabled' : '' }}>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="assignSelectedStaff()">
                         <i class="mdi mdi-plus"></i> Assign Selected
                     </button>
                 </div>
@@ -411,10 +407,8 @@
                                                         <p class="staff-name mb-0">{{ $staff['name'] }}</p>
                                                     </div>
                                                     <div class="staff-actions">
-                                                        <button type="button"
-                                                            class="btn-action btn-assign {{ $project->id == 19 ? 'disabled' : '' }}"
-                                                            onclick="assignStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')"
-                                                            {{ $project->id == 19 ? 'disabled' : '' }}>
+                                                        <button type="button" class="btn-action btn-assign"
+                                                            onclick="assignStaff([{{ $staff['id'] }}], '{{ addslashes($staff['name']) }}')">
                                                             <i class="mdi mdi-plus"></i>
                                                             Assign
                                                         </button>

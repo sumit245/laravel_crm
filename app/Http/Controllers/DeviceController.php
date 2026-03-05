@@ -60,16 +60,24 @@ class DeviceController extends Controller
     public function import(Request $request)
     {
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls,csv|max:51200', // 50MB max
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240', // 10MB max
             'project_id' => 'required|exists:projects,id',
         ]);
 
         try {
             $file = $request->file('file');
+            $fileSize = $file->getSize();
+            $threshold = 1024 * 1024; // 1MB - files larger than this will be queued
+
             $projectId = $request->input('project_id');
 
-            // Always queue the import to avoid Nginx gateway timeout on large files
-            return $this->processQueuedImport($file, $projectId);
+            // For small files, process synchronously
+            if ($fileSize < $threshold) {
+                return $this->processSyncImport($file, $projectId);
+            } else {
+                // For large files, queue the import
+                return $this->processQueuedImport($file, $projectId);
+            }
         } catch (\Exception $e) {
             Log::error('Error importing file: ' . $e->getMessage());
             return back()->with('error', 'Error importing file: ' . $e->getMessage());
@@ -130,10 +138,18 @@ class DeviceController extends Controller
             $fileName = 'pole_import_' . time() . '_' . $file->getClientOriginalName();
             $filePath = $file->storeAs('imports', $fileName, 'local');
 
-            // Estimate total rows from file size to avoid loading the entire file into memory
-            // (loading via Excel::toArray() on a 10k-row file causes 504 timeout)
-            // The background job will track actual progress row-by-row anyway.
-            $totalRows = max(100, (int) ($file->getSize() / 500)); // ~500 bytes per row estimate
+            // Count total rows (estimate - read first sheet)
+            $totalRows = 0;
+            try {
+                $data = Excel::toArray([], $file);
+                if (!empty($data[0])) {
+                    $totalRows = count($data[0]) - 1; // Subtract header row
+                }
+            } catch (\Exception $e) {
+                Log::warning('Could not count rows for import', ['error' => $e->getMessage()]);
+                // Estimate based on file size (rough estimate: 1KB per row)
+                $totalRows = max(1000, (int) ($file->getSize() / 1024));
+            }
 
             // Create job record
             $job = PoleImportJob::create([

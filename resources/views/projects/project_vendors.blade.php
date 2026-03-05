@@ -207,8 +207,7 @@
                 </div>
                 <div class="bulk-actions" id="assignedVendorBulkActions">
                     <span id="assignedVendorSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-danger btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
-                        onclick="removeSelectedVendors()" {{ $project->id == 19 ? 'disabled' : '' }}>
+                    <button type="button" class="btn btn-danger btn-sm" onclick="removeSelectedVendors()">
                         <i class="mdi mdi-delete"></i> Remove Selected
                     </button>
                 </div>
@@ -224,10 +223,8 @@
                                         <p class="vendor-name mb-0">{{ trim($vendor->firstName . ' ' . $vendor->lastName) }}</p>
                                     </div>
                                     <div class="vendor-actions">
-                                        <button type="button"
-                                            class="btn-action btn-remove {{ $project->id == 19 ? 'disabled' : '' }}"
-                                            onclick="removeVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')"
-                                            {{ $project->id == 19 ? 'disabled' : '' }}>
+                                        <button type="button" class="btn-action btn-remove"
+                                            onclick="removeVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')">
                                             <i class="mdi mdi-delete"></i>
                                             Remove
                                         </button>
@@ -263,8 +260,7 @@
                 </div>
                 <div class="bulk-actions" id="availableVendorBulkActions">
                     <span id="availableVendorSelectedCount" class="fw-bold">0 selected</span>
-                    <button type="button" class="btn btn-primary btn-sm {{ $project->id == 19 ? 'disabled' : '' }}"
-                        onclick="assignSelectedVendors()" {{ $project->id == 19 ? 'disabled' : '' }}>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="assignSelectedVendors()">
                         <i class="mdi mdi-plus"></i> Assign Selected
                     </button>
                 </div>
@@ -286,10 +282,8 @@
                                         <p class="vendor-name mb-0">{{ trim($vendor->firstName . ' ' . $vendor->lastName) }}</p>
                                     </div>
                                     <div class="vendor-actions">
-                                        <button type="button"
-                                            class="btn-action btn-assign {{ $project->id == 19 ? 'disabled' : '' }}"
-                                            onclick="assignVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')"
-                                            {{ $project->id == 19 ? 'disabled' : '' }}>
+                                        <button type="button" class="btn-action btn-assign"
+                                            onclick="assignVendor([{{ $vendor->id }}], '{{ addslashes(trim($vendor->firstName . ' ' . $vendor->lastName)) }}')">
                                             <i class="mdi mdi-plus"></i>
                                             Assign
                                         </button>

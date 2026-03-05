@@ -682,8 +682,8 @@
                                                         class="form-control form-control-sm import-file-input"
                                                         id="bulkDispatchFile" accept=".xlsx,.xls,.csv">
                                                     <button type="button"
-                                                        class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1 {{ $project->id == 19 ? 'disabled' : '' }}"
-                                                        id="processBulkUpload" {{ $project->id == 19 ? 'disabled' : '' }}>
+                                                        class="btn btn-success import-submit-btn d-inline-flex align-items-center gap-1"
+                                                        id="processBulkUpload">
                                                         <i class="mdi mdi-upload"></i>
                                                         <span>Process Upload</span>
                                                     </button>
@@ -842,8 +842,7 @@
                                 <button type="button" class="btn btn-primary printbtn" id="printButton">
                                     <i class="mdi mdi-printer"></i> Print
                                 </button>
-                                <button type="button" id="issueMaterial"
-                                    class="btn btn-primary {{ $project->id == 19 ? 'disabled' : '' }}" {{ $project->id == 19 ? 'disabled' : '' }}>
+                                <button type="button" id="issueMaterial" class="btn btn-primary">
                                     <i class="mdi mdi-truck-delivery"></i> Issue Items
                                 </button>
                             </div>
