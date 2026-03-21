@@ -54,6 +54,7 @@ class UpdateTaskRequest extends FormRequest
             'progress_notes' => ['sometimes', 'nullable', 'string'],
             'blocker_description' => ['sometimes', 'nullable', 'string'],
             'extension_reason' => ['sometimes', 'nullable', 'string', 'max:1000'],
+            'allotted_wards' => ['sometimes', 'nullable', 'string'],
         ];
     }
 

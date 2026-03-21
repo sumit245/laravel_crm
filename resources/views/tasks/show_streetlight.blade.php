@@ -55,7 +55,7 @@
       <strong>Panchayat</strong> <p>{{ $streetlightTask->site->panchayat }}</p>
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Alloted Wards</strong><p> {{ $streetlightTask->site->ward }}</p>
+      <strong>Alloted Wards</strong><p> {{ $streetlightTask->allotted_wards }}</p>
     </div>
     <div class="col-md-4 mb-3">
       <strong>Mukhiya Contact</strong> <p>{{ $streetlightTask->site->mukhiya_contact }}</p>

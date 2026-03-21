@@ -269,17 +269,37 @@
                                     </select>
                                 </div>
 
-                                <!-- Site Information (Read-only) -->
+                                <!-- Site Information (Read-only + Editable Wards) -->
                                 @if(isset($tasks->site))
                                     <div class="mb-3">
                                         <label class="form-label">Site Information</label>
-                                        <div class="form-control-plaintext">
+                                        <div class="form-control-plaintext mb-2">
                                             <strong>Panchayat:</strong> {{ $tasks->site->panchayat ?? 'N/A' }}<br>
                                             @if(isset($wardInfo))
-                                                <strong>Wards:</strong> {{ $wardInfo['ward'] ?? 'N/A' }}<br>
                                                 <strong>District:</strong> {{ $wardInfo['district'] ?? 'N/A' }}
                                             @endif
                                         </div>
+                                        
+                                        <!-- Editable Wards Selection -->
+                                        @if(isset($wardInfo))
+                                            <div class="mt-3">
+                                                <label for="allotted_wards" class="form-label fw-semibold">
+                                                    <i class="mdi mdi-map-marker text-primary"></i> Allotted Wards
+                                                </label>
+                                                <select name="allotted_wards[]" id="allotted_wards" class="form-control select2" multiple="multiple" style="width: 100%;"
+                                                        {{ (isset($tasks->status) && $tasks->status === 'Completed') ? 'disabled' : '' }}>
+                                                    <!-- Wards populated by JS -->
+                                                </select>
+                                                <input type="hidden" name="allotted_wards_hidden" id="allotted_wards_hidden" value="">
+                                                @if(isset($tasks->status) && $tasks->status === 'Completed')
+                                                    <small class="text-muted d-block mt-1">
+                                                        <i class="mdi mdi-information-outline"></i> Cannot change wards for completed tasks
+                                                    </small>
+                                                @else
+                                                    <small class="text-muted d-block mt-1">Select the wards this vendor is responsible for.</small>
+                                                @endif
+                                            </div>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -319,11 +339,10 @@
 </div>
 
 @push('scripts')
-<script src="{{ asset('js/task-edit-reassignment.js') }}"></script>
 <script>
-    // Pass data to JavaScript
+    // Pass data to JavaScript FIRST before loading the external script
     window.taskEditData = {
-        taskId: {{ $tasks->id }},
+        taskId: {{ $tasks->id ?? 'null' }},
         projectId: {{ $projectId ?? ($tasks->project_id ?? 'null') }},
         currentVendorId: {{ $tasks->vendor_id ?? 'null' }},
         taskStatus: '{{ $tasks->status ?? "" }}',
@@ -332,7 +351,9 @@
         csrfToken: '{{ csrf_token() }}',
         originalEndDate: '{{ isset($tasks->end_date) ? \Carbon\Carbon::parse($tasks->end_date)->format("Y-m-d") : "" }}'
     };
-
+</script>
+<script src="{{ asset('js/task-edit-reassignment.js') }}"></script>
+<script>
     // Date extension tracking
     $(document).ready(function() {
         const $endDateInput = $('#end_date');
@@ -410,6 +431,65 @@
         $startDateInput.on('change', validateDates);
         $endDateInput.on('change', validateDates);
 
+        // Initialize Select2 for wards if the element exists
+        const $wardsSelect = $('#allotted_wards');
+        
+        if ($wardsSelect.length > 0) {
+            $wardsSelect.select2({
+                placeholder: 'Select Wards',
+                allowClear: true,
+                width: '100%'
+            });
+            
+            // Fetch wards from API
+            const siteId = '{{ $tasks->site_id ?? "" }}';
+            const taskId = '{{ $tasks->id }}';
+            
+            if (siteId && taskId) {
+                $.ajax({
+                    url: '/wards-for-edit/' + siteId + '/' + taskId,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(wards) {
+                        let selectedWards = [];
+                        
+                        // Populate Select2
+                        if (wards && wards.length > 0) {
+                            wards.forEach(function(wardData) {
+                                const option = new Option(wardData.ward, wardData.ward, false, false);
+                                $wardsSelect.append(option);
+                                
+                                if (wardData.is_currently_allotted) {
+                                    selectedWards.push(wardData.ward);
+                                }
+                            });
+                            
+                            // Pre-select currently allotted wards
+                            if (selectedWards.length > 0) {
+                                $wardsSelect.val(selectedWards).trigger('change');
+                                $('#allotted_wards_hidden').val(selectedWards.join(','));
+                            }
+                        } else {
+                            // If no wards available, show a disabled option
+                            const option = new Option('No wards available', '', false, false);
+                            $wardsSelect.append(option).prop('disabled', true);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("AJAX Error fetching wards:", status, error);
+                        const option = new Option('Error loading wards', '', false, false);
+                        $wardsSelect.append(option).prop('disabled', true);
+                    }
+                });
+            }
+            
+            // Update hidden input when selection changes
+            $wardsSelect.on('change', function() {
+                const selected = $(this).val();
+                $('#allotted_wards_hidden').val(selected ? selected.join(',') : '');
+            });
+        }
+
         // Form submission validation
         $('#taskEditForm').on('submit', function(e) {
             if (!validateDates()) {
@@ -422,6 +502,22 @@
                 });
                 return false;
             }
+            
+            // Ensure the hidden input holds the wards before submit
+            if ($wardsSelect.length > 0) {
+                const selected = $wardsSelect.val();
+                $('#allotted_wards_hidden').val(selected ? selected.join(',') : '');
+                
+                // Add the string value to form
+                const wardsString = $('#allotted_wards_hidden').val();
+                $('input[name="allotted_wards"]').remove();
+                $('<input>').attr({
+                    type: 'hidden',
+                    name: 'allotted_wards',
+                    value: wardsString
+                }).appendTo(this);
+            }
+            return true;
         });
     });
 </script>

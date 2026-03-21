@@ -226,9 +226,9 @@
                 <td>{{ $target->start_date ? \Carbon\Carbon::parse($target->start_date)->format('d/m/y') : 'N/A' }}</td>
                 <td>{{ $target->end_date ? \Carbon\Carbon::parse($target->end_date)->format('d/m/y') : 'N/A' }}</td>
                 <td class="wards-cell">
-                    <div class="wards-content" title="{{ $target->site->ward ?? 'N/A' }}">
+                    <div class="wards-content" title="{{ $target->allotted_wards ?? 'N/A' }}">
                         @php
-                            $wards = $target->site->ward ?? 'N/A';
+                            $wards = $target->allotted_wards ?? 'N/A';
                             $wardsArray = is_string($wards) ? explode(',', $wards) : [$wards];
                             $wardsArray = array_map('trim', $wardsArray);
                         @endphp
@@ -974,8 +974,7 @@
                 wards.forEach(function (ward) {
                     const wardValue = ward.trim();
                     if (wardValue) {
-                        const checkbox = $('<div>').addClass(
-                            'form-check form-check-inline ward-checkbox-item mb-2');
+                        const checkbox = $('<div>').addClass('ward-checkbox-item mb-2');
                         checkbox.html(`
                   <input class="form-check-input ward-checkbox" type="checkbox" 
                          id="ward_${wardValue}" value="${wardValue}" checked>
@@ -1134,6 +1133,9 @@
                     clearFormErrors();
                 }, 100);
             });
+
+            // Handle form submission via AJAX
+            $('#targetForm').on('submit', function(e) {
             e.preventDefault();
 
             // Clear previous errors
@@ -1265,6 +1267,7 @@
             });
 
             return false;
+        });
         });
 
     </script>
@@ -1770,11 +1773,6 @@
 
         #addTargetModal .modal-body .select2-container--open {
             z-index: 9999;
-        }
-
-        font-size: 0.875rem;
-        color: #495057;
-        margin-left: 0.5rem;
         }
 
         .ward-checkbox-item:hover .form-check-label {

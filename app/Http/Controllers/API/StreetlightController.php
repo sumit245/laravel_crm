@@ -217,8 +217,6 @@ class StreetlightController extends Controller
             $query->where('project_id', $projectId);
         }
         
-        // Get sites that are either never allotted or partially allotted
-        $usedSiteIds = StreetlightTask::pluck('site_id')->toArray();
         $sites = $query->get();
         
         // Filter panchayats that are either:
@@ -227,29 +225,30 @@ class StreetlightController extends Controller
         $availablePanchayats = [];
         
         foreach ($sites as $site) {
-            $task = StreetlightTask::where('site_id', $site->id)->first();
+            $siteWards = $site->ward ? array_map('trim', explode(',', $site->ward)) : [];
+            $siteWards = array_filter($siteWards);
             
-            if (!$task) {
+            // Aggregate allotted_wards across ALL tasks for this site
+            $existingTasks = StreetlightTask::where('site_id', $site->id)->get();
+            $allottedWards = [];
+            foreach ($existingTasks as $task) {
+                if (!empty($task->allotted_wards)) {
+                    $taskWards = array_map('trim', explode(',', $task->allotted_wards));
+                    $allottedWards = array_merge($allottedWards, $taskWards);
+                }
+            }
+            $allottedWards = array_unique($allottedWards);
+            
+            if ($existingTasks->isEmpty()) {
                 // Never allotted - include it
                 $availablePanchayats[] = [
                     'id' => $site->id,
                     'text' => $site->panchayat
                 ];
             } else {
-                // Check if partially allotted
-                $siteWards = $site->ward ? array_map('trim', explode(',', $site->ward)) : [];
-                $allottedWards = Pole::where('task_id', $task->id)
-                    ->whereNotNull('ward_name')
-                    ->distinct()
-                    ->pluck('ward_name')
-                    ->map(function($ward) {
-                        return trim($ward);
-                    })
-                    ->toArray();
-                
                 // Check if all wards are allotted
                 $allWardsAllotted = !empty($siteWards) && 
-                    count($siteWards) === count(array_intersect($siteWards, $allottedWards));
+                    empty(array_diff($siteWards, $allottedWards));
                 
                 if (!$allWardsAllotted) {
                     // Partially allotted - include it
@@ -258,6 +257,7 @@ class StreetlightController extends Controller
                         'text' => $site->panchayat . ' (Partially Allotted)'
                     ];
                 }
+                // Fully allotted — excluded from results
             }
         }
         
@@ -433,9 +433,21 @@ class StreetlightController extends Controller
         $availablePanchayats = [];
         
         foreach ($sites as $site) {
-            $task = StreetlightTask::where('site_id', $site->id)->first();
+            $siteWards = $site->ward ? array_map('trim', explode(',', $site->ward)) : [];
+            $siteWards = array_filter($siteWards);
             
-            if (!$task) {
+            // Aggregate allotted_wards across ALL tasks for this site
+            $existingTasks = StreetlightTask::where('site_id', $site->id)->get();
+            $allottedWards = [];
+            foreach ($existingTasks as $task) {
+                if (!empty($task->allotted_wards)) {
+                    $taskWards = array_map('trim', explode(',', $task->allotted_wards));
+                    $allottedWards = array_merge($allottedWards, $taskWards);
+                }
+            }
+            $allottedWards = array_unique($allottedWards);
+            
+            if ($existingTasks->isEmpty()) {
                 // Never allotted - include it
                 $availablePanchayats[] = [
                     'id' => $site->id,
@@ -446,20 +458,9 @@ class StreetlightController extends Controller
                     'status' => 'unallotted'
                 ];
             } else {
-                // Check if partially allotted
-                $siteWards = $site->ward ? array_map('trim', explode(',', $site->ward)) : [];
-                $allottedWards = Pole::where('task_id', $task->id)
-                    ->whereNotNull('ward_name')
-                    ->distinct()
-                    ->pluck('ward_name')
-                    ->map(function($ward) {
-                        return trim($ward);
-                    })
-                    ->toArray();
-                
                 // Check if all wards are allotted
                 $allWardsAllotted = !empty($siteWards) && 
-                    count($siteWards) === count(array_intersect($siteWards, $allottedWards));
+                    empty(array_diff($siteWards, $allottedWards));
                 
                 if (!$allWardsAllotted) {
                     // Partially allotted - include it
@@ -470,10 +471,11 @@ class StreetlightController extends Controller
                         'block' => $site->block,
                         'ward' => $site->ward,
                         'status' => 'partially_allotted',
-                        'allotted_wards' => $allottedWards,
+                        'allotted_wards' => array_values($allottedWards),
                         'total_wards' => $siteWards
                     ];
                 }
+                // Fully allotted — excluded from results
             }
         }
         
@@ -503,28 +505,84 @@ class StreetlightController extends Controller
         $allWards = array_map('trim', explode(',', $streetlight->ward));
         $allWards = array_filter($allWards); // Remove empty values
         
-        // Check if there's an existing task for this site
-        $task = StreetlightTask::where('site_id', $siteId)->first();
-        
-        if ($task) {
-            // Get already allotted wards from poles
-            $allottedWards = Pole::where('task_id', $task->id)
-                ->whereNotNull('ward_name')
-                ->distinct()
-                ->pluck('ward_name')
-                ->map(function($ward) {
-                    return trim($ward);
-                })
-                ->toArray();
-            
-            // Filter out already allotted wards
-            $availableWards = array_diff($allWards, $allottedWards);
-            
-            // Return only unallotted wards
-            return response()->json(array_values($availableWards));
+        // Aggregate allotted_wards across ALL tasks for this site
+        $existingTasks = StreetlightTask::where('site_id', $siteId)->get();
+        $allottedWards = [];
+        foreach ($existingTasks as $task) {
+            if (!empty($task->allotted_wards)) {
+                $taskWards = array_map('trim', explode(',', $task->allotted_wards));
+                $allottedWards = array_merge($allottedWards, $taskWards);
+            }
         }
+        $allottedWards = array_unique($allottedWards);
         
-        // No task exists, return all wards
-        return response()->json(array_values($allWards));
+        // Filter out already allotted wards
+        $availableWards = array_diff($allWards, $allottedWards);
+        
+        // Return only unallotted wards
+        return response()->json(array_values($availableWards));
+    }
+
+    /**
+     * Get wards for a specific site, intended for the Task Edit view.
+     * Includes unallotted wards AND wards currently allotted to the specified task.
+     *
+     * @param int $siteId
+     * @param int $taskId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getWardsForEdit($siteId, $taskId)
+    {
+        try {
+            $site = Streetlight::find($siteId);
+            
+            if (!$site || empty($site->ward)) {
+                return response()->json([]);
+            }
+            
+            $siteWards = $site->ward ? explode(',', $site->ward) : [];
+            $siteWards = array_filter(array_map('trim', $siteWards));
+            
+            // Aggregate allotted_wards across ALL OTHER tasks for this site
+            $otherTasks = StreetlightTask::where('site_id', $siteId)
+                                         ->where('id', '!=', $taskId)
+                                         ->get();
+            $allottedWards = [];
+            foreach ($otherTasks as $task) {
+                if (!empty($task->allotted_wards)) {
+                    $taskWards = array_map('trim', explode(',', $task->allotted_wards));
+                    $allottedWards = array_merge($allottedWards, $taskWards);
+                }
+            }
+            $allottedWards = array_unique($allottedWards);
+            
+            // Get wards allotted to THIS specific task
+            $thisTask = StreetlightTask::find($taskId);
+            $thisTaskWards = [];
+            if ($thisTask && !empty($thisTask->allotted_wards)) {
+                $thisTaskWards = array_map('trim', explode(',', $thisTask->allotted_wards));
+            }
+            
+            $availableWards = [];
+            
+            foreach ($siteWards as $ward) {
+                $wardValue = trim($ward);
+                if (empty($wardValue)) continue;
+                
+                // Return wards that are NOT allotted to OTHER tasks
+                if (!in_array($wardValue, $allottedWards)) {
+                    $availableWards[] = [
+                        'ward' => $wardValue,
+                        'is_currently_allotted' => in_array($wardValue, $thisTaskWards)
+                    ];
+                }
+            }
+            
+            return response()->json($availableWards);
+            
+        } catch (\Exception $e) {
+            \Log::error('Error fetching wards for edit: ' . $e->getMessage());
+            return response()->json(['error' => 'An error occurred while fetching wards.'], 500);
+        }
     }
 }

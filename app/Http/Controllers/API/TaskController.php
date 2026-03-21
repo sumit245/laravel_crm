@@ -313,21 +313,49 @@ class TaskController extends Controller
      * @return void  
      */
     public function getSitesForVendor($vendorId)
-    {
-        // Fetch streetlight tasks for the vendor and eager load the streetlight site
-        $tasks = StreetlightTask::with('site')
-            ->where('vendor_id', $vendorId)
-            ->get();
+        {
+            // Fetch streetlight tasks for the vendor and eager load the streetlight site
+            $tasks = StreetlightTask::with('site')
+                ->where('vendor_id', $vendorId)
+                ->get();
 
-        // Extract unique streetlight sites from the tasks
-        $sites = $tasks->pluck('site')->filter()->unique('id')->values();
+            // Transform each task into a site object with task-specific data
+            $sites = $tasks->filter(function ($task) {
+                return $task->site !== null; // Exclude orphaned tasks
+            })->map(function ($task) {
+                $site = $task->site;
+                
+                return [
+                    'id' => $task->id, // Task ID
+                    'site_id' => $site->id,
+                    'district_code' => $site->district_code,
+                    'block_code' => $site->block_code,
+                    'panchayat_code' => $site->panchayat_code,
+                    'state' => $site->state,
+                    'district' => $site->district,
+                    'block' => $site->block,
+                    'panchayat' => $site->panchayat,
+                    'ward' => $task->allotted_wards,
+                    'mukhiya_contact' => $site->mukhiya_contact,
+                    'number_of_surveyed_poles' => $site->number_of_surveyed_poles,
+                    'number_of_installed_poles' => $site->number_of_installed_poles,
+                    'start_date' => \App\Helpers\DateFormatter::formatToDDMMYYYY($task->start_date),
+                    'end_date' => \App\Helpers\DateFormatter::formatToDDMMYYYY($task->end_date),
+                    'created_at' => \App\Helpers\DateFormatter::formatToDDMMYYYY($task->created_at),
+                    'updated_at' => \App\Helpers\DateFormatter::formatToDDMMYYYY($task->updated_at),
+                    'project_id' => $task->project_id,
+                    'total_poles' => $task->allotted_wards
+                        ? count(array_filter(array_map('trim', explode(',', $task->allotted_wards)))) * 10
+                        : 0,
+                ];
+            })->values();
 
-        return response()->json([
-            'status' => 'success',
-            'vendor_id' => $vendorId,
-            'sites' => $sites,
-        ], 200);
-    }
+            return response()->json([
+                'status' => 'success',
+                'vendor_id' => $vendorId,
+                'sites' => $sites,
+            ], 200);
+        }
 
     /**
      * Approve task.

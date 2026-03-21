@@ -448,6 +448,10 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
     /**
      * Create bulk tasks for multiple sites
      * 
+     * Ward-level allotment: each task stores the specific wards allotted. Multiple tasks
+     * can exist for the same site_id with different wards (e.g. different vendors for
+     * different wards). Duplicate ward assignments are rejected.
+     * 
      * @param int $projectId
      * @param array $siteIds
      * @param array $taskData
@@ -461,17 +465,47 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
 
             // Handle streetlight projects (project_type == 1)
             if ($project->project_type == 1) {
-                foreach ($siteIds as $siteId) {
-                    // Check if task already exists for this site
-                    $existingTask = StreetlightTask::where('site_id', $siteId)->first();
-                    if ($existingTask) {
-                        continue;
-                    }
+                // Get selected wards from form (comma-separated string)
+                $selectedWardsRaw = $taskData['selected_wards'] ?? '';
+                $selectedWards = !empty($selectedWardsRaw)
+                    ? array_map('trim', explode(',', $selectedWardsRaw))
+                    : [];
+                $selectedWards = array_filter($selectedWards); // Remove empty values
 
+                foreach ($siteIds as $siteId) {
                     // Verify streetlight site exists
                     $streetlight = Streetlight::find($siteId);
                     if (!$streetlight) {
                         throw new InvalidArgumentException("Streetlight site with ID {$siteId} not found");
+                    }
+
+                    // Determine wards to allot for this site
+                    $wardsToAllot = $selectedWards;
+
+                    // If no specific wards selected, use all wards from the site
+                    if (empty($wardsToAllot) && !empty($streetlight->ward)) {
+                        $wardsToAllot = array_map('trim', explode(',', $streetlight->ward));
+                        $wardsToAllot = array_filter($wardsToAllot);
+                    }
+
+                    // Get all already-allotted wards across ALL existing tasks for this site
+                    $existingTasks = StreetlightTask::where('site_id', $siteId)->get();
+                    $alreadyAllottedWards = [];
+                    foreach ($existingTasks as $existingTask) {
+                        if (!empty($existingTask->allotted_wards)) {
+                            $taskWards = array_map('trim', explode(',', $existingTask->allotted_wards));
+                            $alreadyAllottedWards = array_merge($alreadyAllottedWards, $taskWards);
+                        }
+                    }
+                    $alreadyAllottedWards = array_unique($alreadyAllottedWards);
+
+                    // Remove already-allotted wards from the selection
+                    $availableWards = array_diff($wardsToAllot, $alreadyAllottedWards);
+                    $availableWards = array_values($availableWards); // Re-index
+
+                    // Skip if no wards are available to allot
+                    if (empty($availableWards)) {
+                        continue;
                     }
 
                     // Prepare task data for streetlight
@@ -484,6 +518,7 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
                         'status' => TaskStatus::PENDING->value,
                         'start_date' => $taskData['start_date'] ?? now(),
                         'end_date' => $taskData['end_date'] ?? null,
+                        'allotted_wards' => implode(',', $availableWards),
                     ];
 
                     StreetlightTask::create($streetlightTaskData);

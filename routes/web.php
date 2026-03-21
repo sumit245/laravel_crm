@@ -319,6 +319,7 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
     Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
     Route::get('/wards-by-site/{siteId}', [StreetlightController::class, 'getWardsBySite'])->name('wards.bySite');
+    Route::get('/wards-for-edit/{siteId}/{taskId}', [StreetlightController::class, 'getWardsForEdit'])->name('wards.forEdit');
 
     // Hiring (using existing candidate routes, only adding authenticated-only routes)
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');

@@ -6592,3 +6592,282 @@ DST Off\">2026-03-04 00:00:00.0 UTC (+00:00)</span>
 [stacktrace]
 #0 {main}
 "} 
+[2026-03-16 05:14:16] local.INFO: Blocks for district {"district":"Muzaffarpur","project_id":"19","blocks_count":1,"blocks":[{"block":"Singhwara"}]} 
+[2026-03-16 05:50:34] local.INFO: Blocks for district {"district":"Muzaffarpur","project_id":"19","blocks_count":1,"blocks":[{"block":"Singhwara"}]} 
+[2026-03-16 05:54:03] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 
+[2026-03-16 06:05:52] local.INFO: Blocks for district {"district":"Muzaffarpur","project_id":"19","blocks_count":1,"blocks":[{"block":"Singhwara"}]} 
+[2026-03-16 06:46:26] local.INFO: Blocks for district {"district":"Muzaffarpur","project_id":"19","blocks_count":1,"blocks":[{"block":"Singhwara"}]} 
+[2026-03-16 06:46:59] local.INFO: Staff assigned to project {"project_id":"19","user_ids":["34"],"assigned_by":11} 
+[2026-03-16 06:47:11] local.INFO: Blocks for district {"district":"Muzaffarpur","project_id":"19","blocks_count":1,"blocks":[{"block":"Singhwara"}]} 
+[2026-03-16 07:26:44] local.ERROR: Method App\Http\Controllers\API\StreetlightController::getWardsForEdit does not exist. {"userId":11,"exception":"[object] (BadMethodCallException(code: 0): Method App\\Http\\Controllers\\API\\StreetlightController::getWardsForEdit does not exist. at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Controller.php:68)
+[stacktrace]
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): Illuminate\\Routing\\Controller->__call('getWardsForEdit', Array)
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('getWardsForEdit', Array)
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\API\\StreetlightController), 'getWardsForEdit')
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/app/Http/Middleware/RestrictToMeetings.php(64): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\RestrictToMeetings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#14 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#15 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#18 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#22 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#24 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#25 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#26 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#27 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#28 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#29 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#30 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#31 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#34 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#39 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#41 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#46 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#47 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#48 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/X...')
+#49 {main}
+"} 
+[2026-03-16 07:38:53] local.ERROR: Method App\Http\Controllers\API\StreetlightController::getWardsForEdit does not exist. {"userId":11,"exception":"[object] (BadMethodCallException(code: 0): Method App\\Http\\Controllers\\API\\StreetlightController::getWardsForEdit does not exist. at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Controller.php:68)
+[stacktrace]
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): Illuminate\\Routing\\Controller->__call('getWardsForEdit', Array)
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('getWardsForEdit', Array)
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\API\\StreetlightController), 'getWardsForEdit')
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/app/Http/Middleware/RestrictToMeetings.php(64): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): App\\Http\\Middleware\\RestrictToMeetings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Auth/Middleware/Authenticate.php(57): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Auth\\Middleware\\Authenticate->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/VerifyCsrfToken.php(78): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\VerifyCsrfToken->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#14 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/View/Middleware/ShareErrorsFromSession.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#15 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\View\\Middleware\\ShareErrorsFromSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#16 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(121): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#17 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Session/Middleware/StartSession.php(64): Illuminate\\Session\\Middleware\\StartSession->handleStatefulRequest(Object(Illuminate\\Http\\Request), Object(Illuminate\\Session\\Store), Object(Closure))
+#18 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Session\\Middleware\\StartSession->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#19 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/AddQueuedCookiesToResponse.php(37): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#20 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\AddQueuedCookiesToResponse->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Cookie/Middleware/EncryptCookies.php(67): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#22 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Cookie\\Middleware\\EncryptCookies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#23 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#24 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#25 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#26 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#27 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#28 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#29 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#30 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#31 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#32 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#34 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#35 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#36 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#37 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#38 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#39 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#40 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(49): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#41 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#42 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#43 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#44 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#45 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#46 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#47 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#48 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/X...')
+#49 {main}
+"} 
+[2026-03-20 12:41:15] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 
+[2026-03-20 13:12:33] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 14:08:56] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 14:10:55] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 14:22:54] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 14:39:53] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 
+[2026-03-20 15:13:11] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:13:41] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:29:15] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:29:16] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:38:09] local.INFO: Blocks for district {"district":"Lakhisarai","project_id":"11","blocks_count":6,"blocks":[{"block":"Surajgarha"},{"block":"Chanan"},{"block":"Pipriya "},{"block":"Lakhisarai"},{"block":"Halsi"},{"block":"Ramgar Chowak"}]} 
+[2026-03-20 15:38:50] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:38:50] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:41:20] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:41:22] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:59:12] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-20 15:59:13] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:16:48] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:16:48] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:25:42] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:26:49] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:32:02] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:33:25] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:37:58] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:37:58] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:39:05] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:39:05] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:39:09] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:41:23] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:41:38] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:41:43] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:41:56] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:42:12] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:42:56] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:45:39] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:46:08] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:46:17] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:46:22] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:46:31] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:49:18] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 04:54:45] local.INFO: Blocks for district {"district":"Lakhisarai","project_id":"11","blocks_count":6,"blocks":[{"block":"Surajgarha"},{"block":"Chanan"},{"block":"Pipriya "},{"block":"Lakhisarai"},{"block":"Halsi"},{"block":"Ramgar Chowak"}]} 
+[2026-03-21 04:56:34] local.INFO: Blocks for district {"district":"Lakhisarai","project_id":"11","blocks_count":6,"blocks":[{"block":"Surajgarha"},{"block":"Chanan"},{"block":"Pipriya "},{"block":"Lakhisarai"},{"block":"Halsi"},{"block":"Ramgar Chowak"}]} 
+[2026-03-21 04:57:07] local.INFO: Blocks for district {"district":"Lakhisarai","project_id":"11","blocks_count":6,"blocks":[{"block":"Surajgarha"},{"block":"Chanan"},{"block":"Pipriya "},{"block":"Lakhisarai"},{"block":"Halsi"},{"block":"Ramgar Chowak"}]} 
+[2026-03-21 05:51:34] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 
+[2026-03-21 06:06:52] local.ERROR: Uncaught PDOException: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: 'vendor' for column `sugs`.`users`.`role` at row 1 in /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php:45
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php(45): PDOStatement->execute()
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php(816): Illuminate\Database\MySqlConnection->{closure:Illuminate\Database\MySqlConnection::insert():34}('insert into `us...', Array)
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate\Database\Connection->runQueryCallback('insert into `us...', Array, Object(Closure))
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php(34): Illuminate\Database\Connection->run('insert into `us...', Array, Object(Closure))
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php(35): Illuminate\Database\MySqlConnection->insert('insert into `us...', Array, 'id')
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3549): Illuminate\Database\Query\Processors\MySqlProcessor->processInsertGetId(Object(Illuminate\Database\Query\Builder), 'insert into `us...', Array, 'id')
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1982): Illuminate\Database\Query\Builder->insertGetId(Array, 'id')
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1334): Illuminate\Database\Eloquent\Builder->__call('insertGetId', Array)
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1299): Illuminate\Database\Eloquent\Model->insertAndSetId(Object(Illuminate\Database\Eloquent\Builder), Array)
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1138): Illuminate\Database\Eloquent\Model->performInsert(Object(Illuminate\Database\Eloquent\Builder))
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1025): Illuminate\Database\Eloquent\Model->save()
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/helpers.php(320): Illuminate\Database\Eloquent\Builder->{closure:Illuminate\Database\Eloquent\Builder::create():1024}(Object(App\Models\User))
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1024): tap(Object(App\Models\User), Object(Closure))
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php(23): Illuminate\Database\Eloquent\Builder->create(Array)
+#14 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2335): Illuminate\Database\Eloquent\Model->forwardCallTo(Object(Illuminate\Database\Eloquent\Builder), 'create', Array)
+#15 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2347): Illuminate\Database\Eloquent\Model->__call('create', Array)
+#16 Command line code(7): Illuminate\Database\Eloquent\Model::__callStatic('create', Array)
+#17 {main}
+
+Next Illuminate\Database\QueryException: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: 'vendor' for column `sugs`.`users`.`role` at row 1 (Connection: mysql, SQL: insert into `users` (`name`, `email`, `password`, `role`, `updated_at`, `created_at`) values (Test Vendor, test1774073212@example.com, $2y$12$bM.6PhhZbs4Q0/uTyM9pjOUYxcf.3EuWTw3T.fk2pmNQzarnE9GMa, vendor, 2026-03-21 06:06:52, 2026-03-21 06:06:52)) in /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate\Database\Connection->runQueryCallback('insert into `us...', Array, Object(Closure))
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php(34): Illuminate\Database\Connection->run('insert into `us...', Array, Object(Closure))
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php(35): Illuminate\Database\MySqlConnection->insert('insert into `us...', Array, 'id')
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3549): Illuminate\Database\Query\Processors\MySqlProcessor->processInsertGetId(Object(Illuminate\Database\Query\Builder), 'insert into `us...', Array, 'id')
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1982): Illuminate\Database\Query\Builder->insertGetId(Array, 'id')
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1334): Illuminate\Database\Eloquent\Builder->__call('insertGetId', Array)
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1299): Illuminate\Database\Eloquent\Model->insertAndSetId(Object(Illuminate\Database\Eloquent\Builder), Array)
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1138): Illuminate\Database\Eloquent\Model->performInsert(Object(Illuminate\Database\Eloquent\Builder))
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1025): Illuminate\Database\Eloquent\Model->save()
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/helpers.php(320): Illuminate\Database\Eloquent\Builder->{closure:Illuminate\Database\Eloquent\Builder::create():1024}(Object(App\Models\User))
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1024): tap(Object(App\Models\User), Object(Closure))
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php(23): Illuminate\Database\Eloquent\Builder->create(Array)
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2335): Illuminate\Database\Eloquent\Model->forwardCallTo(Object(Illuminate\Database\Eloquent\Builder), 'create', Array)
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2347): Illuminate\Database\Eloquent\Model->__call('create', Array)
+#14 Command line code(7): Illuminate\Database\Eloquent\Model::__callStatic('create', Array)
+#15 {main}
+  thrown {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Uncaught PDOException: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: 'vendor' for column `sugs`.`users`.`role` at row 1 in /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php:45
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php(45): PDOStatement->execute()
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php(816): Illuminate\\Database\\MySqlConnection->{closure:Illuminate\\Database\\MySqlConnection::insert():34}('insert into `us...', Array)
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('insert into `us...', Array, Object(Closure))
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php(34): Illuminate\\Database\\Connection->run('insert into `us...', Array, Object(Closure))
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php(35): Illuminate\\Database\\MySqlConnection->insert('insert into `us...', Array, 'id')
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3549): Illuminate\\Database\\Query\\Processors\\MySqlProcessor->processInsertGetId(Object(Illuminate\\Database\\Query\\Builder), 'insert into `us...', Array, 'id')
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1982): Illuminate\\Database\\Query\\Builder->insertGetId(Array, 'id')
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1334): Illuminate\\Database\\Eloquent\\Builder->__call('insertGetId', Array)
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1299): Illuminate\\Database\\Eloquent\\Model->insertAndSetId(Object(Illuminate\\Database\\Eloquent\\Builder), Array)
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1138): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1025): Illuminate\\Database\\Eloquent\\Model->save()
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/helpers.php(320): Illuminate\\Database\\Eloquent\\Builder->{closure:Illuminate\\Database\\Eloquent\\Builder::create():1024}(Object(App\\Models\\User))
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1024): tap(Object(App\\Models\\User), Object(Closure))
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#14 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2335): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#15 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2347): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#16 Command line code(7): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#17 {main}
+
+Next Illuminate\\Database\\QueryException: SQLSTATE[22007]: Invalid datetime format: 1366 Incorrect integer value: 'vendor' for column `sugs`.`users`.`role` at row 1 (Connection: mysql, SQL: insert into `users` (`name`, `email`, `password`, `role`, `updated_at`, `created_at`) values (Test Vendor, test1774073212@example.com, $2y$12$bM.6PhhZbs4Q0/uTyM9pjOUYxcf.3EuWTw3T.fk2pmNQzarnE9GMa, vendor, 2026-03-21 06:06:52, 2026-03-21 06:06:52)) in /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829
+Stack trace:
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php(783): Illuminate\\Database\\Connection->runQueryCallback('insert into `us...', Array, Object(Closure))
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/MySqlConnection.php(34): Illuminate\\Database\\Connection->run('insert into `us...', Array, Object(Closure))
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Processors/MySqlProcessor.php(35): Illuminate\\Database\\MySqlConnection->insert('insert into `us...', Array, 'id')
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Query/Builder.php(3549): Illuminate\\Database\\Query\\Processors\\MySqlProcessor->processInsertGetId(Object(Illuminate\\Database\\Query\\Builder), 'insert into `us...', Array, 'id')
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1982): Illuminate\\Database\\Query\\Builder->insertGetId(Array, 'id')
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1334): Illuminate\\Database\\Eloquent\\Builder->__call('insertGetId', Array)
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1299): Illuminate\\Database\\Eloquent\\Model->insertAndSetId(Object(Illuminate\\Database\\Eloquent\\Builder), Array)
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(1138): Illuminate\\Database\\Eloquent\\Model->performInsert(Object(Illuminate\\Database\\Eloquent\\Builder))
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1025): Illuminate\\Database\\Eloquent\\Model->save()
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/helpers.php(320): Illuminate\\Database\\Eloquent\\Builder->{closure:Illuminate\\Database\\Eloquent\\Builder::create():1024}(Object(App\\Models\\User))
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Builder.php(1024): tap(Object(App\\Models\\User), Object(Closure))
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Support/Traits/ForwardsCalls.php(23): Illuminate\\Database\\Eloquent\\Builder->create(Array)
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2335): Illuminate\\Database\\Eloquent\\Model->forwardCallTo(Object(Illuminate\\Database\\Eloquent\\Builder), 'create', Array)
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Eloquent/Model.php(2347): Illuminate\\Database\\Eloquent\\Model->__call('create', Array)
+#14 Command line code(7): Illuminate\\Database\\Eloquent\\Model::__callStatic('create', Array)
+#15 {main}
+  thrown at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Database/Connection.php:829)
+[stacktrace]
+#0 {main}
+"} 
+[2026-03-21 06:37:01] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 06:37:01] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 06:37:56] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 06:37:56] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 06:45:52] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 06:47:20] local.INFO: Blocks for district {"district":"Lakhisarai","project_id":"11","blocks_count":6,"blocks":[{"block":"Surajgarha"},{"block":"Chanan"},{"block":"Pipriya "},{"block":"Lakhisarai"},{"block":"Halsi"},{"block":"Ramgar Chowak"}]} 
+[2026-03-21 06:47:55] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 06:47:55] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:15:20] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:15:20] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:22:52] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:22:53] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:29:22] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:29:22] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:38:13] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 07:38:13] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:13:25] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:13:25] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:52:18] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:52:18] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:52:50] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:52:50] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:53:50] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 08:53:50] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 09:02:35] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 09:02:35] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 09:02:47] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-21 09:02:47] local.INFO: viewVendorInventory {"vendorId":"127"} 

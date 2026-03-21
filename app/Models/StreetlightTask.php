@@ -33,6 +33,7 @@ class StreetlightTask extends Model
         'materials_consumed',
         'approved_by',
         'billed',
+        'allotted_wards',
     ];
 
     /**

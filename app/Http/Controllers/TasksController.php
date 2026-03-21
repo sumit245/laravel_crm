@@ -388,6 +388,7 @@ class TasksController extends Controller
                             'approved_by',
                             'billed',
                             'extension_reason',
+                            'allotted_wards',
                         ]);
 
                         // Track date extensions for audit trail
