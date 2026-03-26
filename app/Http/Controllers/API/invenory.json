@@ -1,0 +1,143 @@
+{
+    "consumed": [
+        {
+            "dispatch_date": "2025-06-23 10:20:27",
+            "item": "Module",
+            "item_code": "SL01",
+            "make": "2794",
+            "manufacturer": null,
+            "model": "Solar penal 120wp",
+            "rate": 2250,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 0,
+            "total_value": 139500
+        },
+        {
+            "dispatch_date": "2025-06-23 10:30:36",
+            "item": "Luminary",
+            "item_code": "SL02",
+            "make": "2025",
+            "manufacturer": null,
+            "model": "SSL20W",
+            "rate": 2500,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 0,
+            "total_value": 147500
+        },
+        {
+            "dispatch_date": "2025-06-23 10:35:37",
+            "item": "Battery",
+            "item_code": "SL03",
+            "make": "2025",
+            "manufacturer": null,
+            "model": "LiFePO454Ah",
+            "rate": 6000,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 0,
+            "total_value": 366000
+        }
+    ],
+    "in_stock": [
+        {
+            "dispatch_date": "2025-06-17 12:23:11",
+            "item": "Module",
+            "item_code": "SL01",
+            "make": "2794",
+            "manufacturer": null,
+            "model": "Solar penal 120wp",
+            "rate": 2250,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 155,
+            "total_value": 362550
+        },
+        {
+            "dispatch_date": "2025-06-17 12:26:42",
+            "item": "Luminary",
+            "item_code": "SL02",
+            "make": "2025",
+            "manufacturer": null,
+            "model": "SSL20W",
+            "rate": 2500,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 126,
+            "total_value": 315000
+        },
+        {
+            "dispatch_date": "2025-06-17 12:37:36",
+            "item": "Battery",
+            "item_code": "SL03",
+            "make": "2025",
+            "manufacturer": null,
+            "model": "LiFePO454Ah",
+            "rate": 6000,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 158,
+            "total_value": 948000
+        }
+    ],
+    "total_received": [
+        {
+            "dispatch_date": "2025-06-17 12:23:11",
+            "item": "Module",
+            "item_code": "SL01",
+            "make": "2794",
+            "manufacturer": null,
+            "model": "Solar penal 120wp",
+            "rate": 2250,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 155,
+            "total_value": 502050
+        },
+        {
+            "dispatch_date": "2025-06-17 12:26:42",
+            "item": "Luminary",
+            "item_code": "SL02",
+            "make": "2025",
+            "manufacturer": null,
+            "model": "SSL20W",
+            "rate": 2500,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 126,
+            "total_value": 462500
+        },
+        {
+            "dispatch_date": "2025-06-17 12:37:36",
+            "item": "Battery",
+            "item_code": "SL03",
+            "make": "2025",
+            "manufacturer": null,
+            "model": "LiFePO454Ah",
+            "rate": 6000,
+            "serial_number": [Array
+            ],
+            "store_incharge": "Deepak Kumar",
+            "store_name": "LAKHISARAI STORE",
+            "total_quantity": 158,
+            "total_value": 1314000
+        }
+    ]
+}

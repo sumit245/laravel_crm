@@ -1176,7 +1176,6 @@ class InventoryController extends Controller
     {
         Log::info('viewVendorInventory', ['vendorId' => $vendorId]);
         try {
-            $todayDate = now()->toDateString();
             $inventory = InventoryDispatch::where('vendor_id', $vendorId)
                 ->with(['project', 'store', 'storeIncharge'])
                 ->get();
@@ -1189,12 +1188,6 @@ class InventoryController extends Controller
                     'vendor_id' => $vendorId,
                 ], 404);
             }
-
-            // Filter today's inventory
-            $todayInventory = $inventory->where('dispatch_date', '>=', $todayDate)
-                ->groupBy('item_code')->map(function ($items) {
-                    return $this->formatInventoryItem($items);
-                })->values();
 
             $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
                 return $this->formatInventoryItem($items);
@@ -1221,18 +1214,27 @@ class InventoryController extends Controller
                 $totalReceived[] = $item;
             }
 
+            $sumQuantity = fn($arr) => array_sum(array_column($arr, 'total_quantity'));
+            $sumValue    = fn($arr) => array_sum(array_column($arr, 'total_value'));
+
             // Prepare final response
             $response = [
                 'vendor_id' => $vendorId,
                 'project_id' => optional($inventory->first()->project)->id,
                 'project_name' => optional($inventory->first()->project)->project_name,
-                'total_inventory_value' => number_format($inventory->sum('total_value'), 2, '.', ''),
-                'inventory_count' => count($groupedInventory),
-                'today_inventory' => $todayInventory,
                 'all_inventory' => [
-                    'total_received' => $totalReceived,
-                    'in_stock' => $inStock,
-                    'consumed' => $consumed,
+                    'total_received' => [
+                        'total' => ['quantity' => $sumQuantity($totalReceived), 'value' => $sumValue($totalReceived)],
+                        'items' => $totalReceived,
+                    ],
+                    'in_stock' => [
+                        'total' => ['quantity' => $sumQuantity($inStock), 'value' => $sumValue($inStock)],
+                        'items' => $inStock,
+                    ],
+                    'consumed' => [
+                        'total' => ['quantity' => $sumQuantity($consumed), 'value' => $sumValue($consumed)],
+                        'items' => $consumed,
+                    ],
                 ],
             ];
 
@@ -1248,26 +1250,57 @@ class InventoryController extends Controller
     }
 
     /**
-     * Helper function to format inventory items
+     * Helper function to format inventory items.
+     * Each dispatch entry keeps its own dispatch_date and serial_number.
+     * For Luminary (SL02), sim_number is included per serial.
      */
     private function formatInventoryItem($items)
     {
         $firstItem = $items->first();
+        $isLuminary = $firstItem->item_code === 'SL02';
+
+        // Build per-dispatch entries so dispatch_date is mapped to its own serials
+        $dispatches = $items->map(function ($dispatch) use ($isLuminary) {
+            $serials = collect(json_decode($dispatch->serial_number, true) ?? [$dispatch->serial_number])
+                ->filter()
+                ->values();
+
+            $entry = [
+                'dispatch_date' => $dispatch->dispatch_date,
+                'quantity'      => $dispatch->total_quantity,
+                'serial_number' => $serials->all(),
+            ];
+
+            // For luminary, attach sim_number per serial from inventory_streetlight
+            if ($isLuminary && $serials->isNotEmpty()) {
+                $simMap = \App\Models\InventroyStreetLightModel::whereIn('serial_number', $serials->all())
+                    ->pluck('sim_number', 'serial_number');
+
+                $entry['items'] = $serials->map(fn($sn) => [
+                    'serial_number' => $sn,
+                    'sim_number'    => $simMap[$sn] ?? null,
+                    'dispatch_date' => $dispatch->dispatch_date,
+                ])->values()->all();
+
+                unset($entry['serial_number']); // replaced by items
+            }
+
+            return $entry;
+        })->values()->all();
 
         return [
-            'item_code' => $firstItem->item_code,
-            'item' => $firstItem->item,
-            'manufacturer' => $firstItem->manufacturer,
-            'make' => $firstItem->make,
-            'model' => $firstItem->model,
-            'rate' => (float) $firstItem->rate,
-            'total_quantity' => $items->sum('total_quantity'),
-            'total_value' => $items->sum('total_value'),
-            'dispatch_date' => $firstItem->dispatch_date,
-            'serial_number' => $items->pluck('serial_number')->flatten()->filter()->values()->all(),
-            'store_name' => optional($firstItem->store)->store_name,
+            'item_code'      => $firstItem->item_code,
+            'item'           => $firstItem->item,
+            'manufacturer'   => $firstItem->manufacturer,
+            'make'           => $firstItem->make,
+            'model'          => $firstItem->model,
+            'rate'           => (float) $firstItem->rate,
+            'total_quantity' => $items->count(), // each row = 1 dispatched unit
+            'total_value'    => $items->count() * (float) $firstItem->rate,
+            'store_name'     => optional($firstItem->store)->store_name,
             'store_incharge' => optional($firstItem->storeIncharge)->firstName.' '.
                 optional($firstItem->storeIncharge)->lastName,
+            'dispatches'     => $dispatches,
         ];
     }
 

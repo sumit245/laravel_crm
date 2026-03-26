@@ -740,6 +740,7 @@ class TaskController extends Controller
         // Transform the data to match the desired output structure
         $transformed_poles = $surveyed_poles->map(function ($pole) {
             return [
+                'task_id'=>$pole->task->id,
                 'pole_id' => $pole->id,
                 'complete_pole_number' => $pole->complete_pole_number,
                 'ward' => $pole->task->site->ward ?? null,
