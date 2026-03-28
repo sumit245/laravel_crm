@@ -1176,75 +1176,94 @@ class InventoryController extends Controller
     {
         Log::info('viewVendorInventory', ['vendorId' => $vendorId]);
         try {
-            $inventory = InventoryDispatch::where('vendor_id', $vendorId)
+            // Aggregate counts and values in SQL — no need to load all rows into PHP
+            $summary = InventoryDispatch::where('vendor_id', $vendorId)
+                ->selectRaw('
+                    item_code, item, make, model, rate,
+                    project_id, store_id, store_incharge_id,
+                    COUNT(*) as total_qty,
+                    SUM(CASE WHEN is_consumed = 0 THEN 1 ELSE 0 END) as in_stock_qty,
+                    SUM(CASE WHEN is_consumed = 1 THEN 1 ELSE 0 END) as consumed_qty,
+                    COUNT(*) * rate as total_value,
+                    SUM(CASE WHEN is_consumed = 0 THEN 1 ELSE 0 END) * rate as in_stock_value,
+                    SUM(CASE WHEN is_consumed = 1 THEN 1 ELSE 0 END) * rate as consumed_value
+                ')
+                ->groupBy('item_code', 'item', 'make', 'model', 'rate', 'project_id', 'store_id', 'store_incharge_id')
                 ->with(['project', 'store', 'storeIncharge'])
                 ->get();
 
-            if ($inventory->isEmpty()) {
-                Log::warning("No inventory found for vendor_id: {$vendorId}");
-
+            if ($summary->isEmpty()) {
                 return response()->json([
                     'message' => 'No inventory found for this vendor.',
                     'vendor_id' => $vendorId,
                 ], 404);
             }
 
-            $groupedInventory = $inventory->groupBy('item_code')->map(function ($items) {
-                return $this->formatInventoryItem($items);
-            });
+            $first = $summary->first();
 
             $totalReceived = [];
-            $inStock = [];
-            $consumed = [];
+            $inStock       = [];
+            $consumed      = [];
 
-            foreach ($groupedInventory as $item) {
-                $matchingItems = $inventory->where('item_code', $item['item_code']);
+            foreach ($summary as $row) {
+                $base = [
+                    'item_code'      => $row->item_code,
+                    'item'           => $row->item,
+                    'make'           => $row->make,
+                    'model'          => $row->model,
+                    'rate'           => (float) $row->rate,
+                    'store_name'     => optional($row->store)->store_name,
+                    'store_incharge' => trim(optional($row->storeIncharge)->firstName . ' ' . optional($row->storeIncharge)->lastName),
+                ];
 
-                $consumedItems = $matchingItems->where('is_consumed', 1);
-                $inStockItems = $matchingItems->where('is_consumed', 0);
+                $totalReceived[] = array_merge($base, [
+                    'total_quantity' => (int) $row->total_qty,
+                    'total_value'    => (float) $row->total_value,
+                ]);
 
-                if ($consumedItems->isNotEmpty()) {
-                    $consumed[] = $this->formatInventoryItem($consumedItems);
+                if ($row->in_stock_qty > 0) {
+                    $inStock[] = array_merge($base, [
+                        'total_quantity' => (int) $row->in_stock_qty,
+                        'total_value'    => (float) $row->in_stock_value,
+                    ]);
                 }
 
-                if ($inStockItems->isNotEmpty()) {
-                    $inStock[] = $this->formatInventoryItem($inStockItems);
+                if ($row->consumed_qty > 0) {
+                    $consumed[] = array_merge($base, [
+                        'total_quantity' => (int) $row->consumed_qty,
+                        'total_value'    => (float) $row->consumed_value,
+                    ]);
                 }
-
-                $totalReceived[] = $item;
             }
 
-            $sumQuantity = fn($arr) => array_sum(array_column($arr, 'total_quantity'));
-            $sumValue    = fn($arr) => array_sum(array_column($arr, 'total_value'));
+            $sumQty = fn($arr) => array_sum(array_column($arr, 'total_quantity'));
+            $sumVal = fn($arr) => array_sum(array_column($arr, 'total_value'));
 
-            // Prepare final response
-            $response = [
-                'vendor_id' => $vendorId,
-                'project_id' => optional($inventory->first()->project)->id,
-                'project_name' => optional($inventory->first()->project)->project_name,
+            return response()->json([
+                'vendor_id'    => $vendorId,
+                'project_id'   => optional($first->project)->id,
+                'project_name' => optional($first->project)->project_name,
                 'all_inventory' => [
                     'total_received' => [
-                        'total' => ['quantity' => $sumQuantity($totalReceived), 'value' => $sumValue($totalReceived)],
+                        'total' => ['quantity' => $sumQty($totalReceived), 'value' => $sumVal($totalReceived)],
                         'items' => $totalReceived,
                     ],
                     'in_stock' => [
-                        'total' => ['quantity' => $sumQuantity($inStock), 'value' => $sumValue($inStock)],
+                        'total' => ['quantity' => $sumQty($inStock), 'value' => $sumVal($inStock)],
                         'items' => $inStock,
                     ],
                     'consumed' => [
-                        'total' => ['quantity' => $sumQuantity($consumed), 'value' => $sumValue($consumed)],
+                        'total' => ['quantity' => $sumQty($consumed), 'value' => $sumVal($consumed)],
                         'items' => $consumed,
                     ],
                 ],
-            ];
-
-            return response()->json($response);
+            ]);
         } catch (Exception $e) {
             Log::error($e->getMessage());
 
             return response()->json([
                 'message' => 'Something went wrong!',
-                'error' => $e->getMessage(),
+                'error'   => $e->getMessage(),
             ], 500);
         }
     }
