@@ -1291,7 +1291,6 @@ class InventoryController extends Controller
         return [
             'item_code'      => $firstItem->item_code,
             'item'           => $firstItem->item,
-            'manufacturer'   => $firstItem->manufacturer,
             'make'           => $firstItem->make,
             'model'          => $firstItem->model,
             'rate'           => (float) $firstItem->rate,
