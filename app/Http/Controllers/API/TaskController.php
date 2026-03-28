@@ -731,13 +731,13 @@ class TaskController extends Controller
      */
     public function getInstalledPolesForVendor($vendor_id)
     {
-        $poles = Pole::join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
+        $poles = Pole::join('streetlight_tasks', 'streelight_poles.task_id', '=', 'streetlight_tasks.id')
             ->join('streetlights', 'streetlight_tasks.site_id', '=', 'streetlights.id')
             ->leftJoin('users as engineers', 'streetlight_tasks.engineer_id', '=', 'engineers.id')
             ->leftJoin('users as managers', 'streetlight_tasks.manager_id', '=', 'managers.id')
             ->where('streetlight_tasks.vendor_id', $vendor_id)
             ->select(
-                'poles.*',
+                'streelight_poles.*',
                 'streetlights.ward', 'streetlights.panchayat', 'streetlights.block',
                 'streetlights.district', 'streetlights.state',
                 'engineers.first_name as engineer_first_name',
