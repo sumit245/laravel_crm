@@ -313,11 +313,11 @@ class TaskController extends Controller
      * @return void  
      */
     public function getSitesForVendor($vendorId)
-        {
-            // Fetch streetlight tasks for the vendor and eager load the streetlight site
-            $tasks = StreetlightTask::with('site')
-                ->where('vendor_id', $vendorId)
-                ->get();
+    {
+        // Fetch streetlight tasks for the vendor and eager load the streetlight site
+        $tasks = StreetlightTask::with('site')
+            ->where('vendor_id', $vendorId)
+            ->get();
 
             // Transform each task into a site object with task-specific data
             $sites = $tasks->filter(function ($task) {
@@ -727,87 +727,85 @@ class TaskController extends Controller
     }
 
     /**
-     * Get all installed poles for a specific Vendor
-     */
     public function getInstalledPolesForVendor($vendor_id)
     {
-        $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
-            $query->where('vendor_id', $vendor_id);
-        })->where('isSurveyDone', 1)
-            ->where('isInstallationDone', 0)
-            ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
-            ->get();
-        // Transform the data to match the desired output structure
-        $transformed_poles = $surveyed_poles->map(function ($pole) {
-            return [
-                'task_id'=>$pole->task->id,
-                'pole_id' => $pole->id,
-                'complete_pole_number' => $pole->complete_pole_number,
-                'ward' => $pole->task->site->ward ?? null,
-                'panchayat' => $pole->task->site->panchayat ?? null,
-                'block' => $pole->task->site->block ?? null,
-                'district' => $pole->task->site->district ?? null,
-                'state' => $pole->task->site->state ?? null,
-                'beneficiary' => $pole->beneficiary,
-                'beneficiary_contact' => $pole->beneficiary_contact,
-                'isSurveyed' => true,
-                'isInstalled' => false,
-                'installed_location' => [
-                    'lat' => $pole->lat,
-                    'lng' => $pole->lng,
-                ],
-                'remarks' => $pole->remarks,
-                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'site_engineer_name' => $pole->task->engineer->first_name ?? null, // Assuming 'name' is the field for engineer's name
-                'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
-                'assigned_date' => $pole->created_at,
-                'submission_date' => $pole->updated_at,
-                'status' => $pole->status,
-            ];
-        });
-
-        $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
-            $query->where('vendor_id', $vendor_id);
-        })->where('isInstallationDone', 1)
-            ->with(['task.site', 'task.engineer', 'task.manager']) // Eager load relationships
+        $poles = Pole::join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
+            ->join('streetlights', 'streetlight_tasks.site_id', '=', 'streetlights.id')
+            ->leftJoin('users as engineers', 'streetlight_tasks.engineer_id', '=', 'engineers.id')
+            ->leftJoin('users as managers', 'streetlight_tasks.manager_id', '=', 'managers.id')
+            ->where('streetlight_tasks.vendor_id', $vendor_id)
+            ->select(
+                'poles.*',
+                'streetlights.ward', 'streetlights.panchayat', 'streetlights.block',
+                'streetlights.district', 'streetlights.state',
+                'engineers.first_name as engineer_first_name',
+                'managers.name as manager_name',
+                'streetlight_tasks.id as task_id_val'
+            )
             ->get();
 
-        // Transform the data to match the desired output structure
-        $transformed__installed_poles = $installed_poles->map(function ($pole) {
-            return [
-                'pole_id' => $pole->id,
-                'complete_pole_number' => $pole->complete_pole_number,
-                'ward_name' => $pole->ward_name ?? null,
-                'luminary_qr' => $pole->luminary_qr,
-                'battery_qr' => $pole->battery_qr,
-                'panel_qr' => $pole->panel_qr,
-                'beneficiary_contact' => $pole->beneficiary_contact,
-                'isSurveyed' => true,
-                'isInstalled' => true,
-                'sim_number' => $pole->sim_number,
-                'panchayat' => $pole->task->site->panchayat ?? null,
-                'block' => $pole->task->site->block ?? null,
-                'district' => $pole->task->site->district ?? null,
-                'state' => $pole->task->site->state ?? null,
-                'beneficiary' => $pole->beneficiary,
-                'installed_location' => [
-                    'lat' => $pole->lat,
-                    'lng' => $pole->lng,
-                ],
-                'remarks' => $pole->remarks,
-                'survey_image' => collect(json_decode($pole->survey_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'submission_image' => collect(json_decode($pole->submission_image, true) ?? [])->map(fn($image) => Storage::disk('s3')->url($image))->toArray(),
-                'site_engineer_name' => $pole->task->engineer->name ?? null, // Assuming 'name' is the field for engineer's name
-                'project_manager_name' => $pole->task->manager->name ?? null, // Assuming 'name' is the field for manager's name
-                'status' => $pole->status,
-            ];
-        });
+        $s3BaseUrl = rtrim(config('filesystems.disks.s3.url') ?? ('https://'.config('filesystems.disks.s3.bucket').'.s3.'.config('filesystems.disks.s3.region').'.amazonaws.com'), '/');
+
+        $mapImages = function ($json) use ($s3BaseUrl) {
+            return collect(json_decode($json, true) ?? [])
+                ->filter(fn($img) => !empty($img))
+                ->map(fn($img) => $s3BaseUrl . '/' . ltrim($img, '/'))
+                ->values()->toArray();
+        };
+
+        $surveyed = $poles->where('isSurveyDone', 1)->where('isInstallationDone', 0)->map(fn($pole) => [
+            'task_id'             => $pole->task_id_val,
+            'pole_id'             => $pole->id,
+            'complete_pole_number'=> $pole->complete_pole_number,
+            'ward'                => $pole->ward,
+            'panchayat'           => $pole->panchayat,
+            'block'               => $pole->block,
+            'district'            => $pole->district,
+            'state'               => $pole->state,
+            'beneficiary'         => $pole->beneficiary,
+            'beneficiary_contact' => $pole->beneficiary_contact,
+            'isSurveyed'          => true,
+            'isInstalled'         => false,
+            'installed_location'  => ['lat' => $pole->lat, 'lng' => $pole->lng],
+            'remarks'             => $pole->remarks,
+            'survey_image'        => $mapImages($pole->survey_image),
+            'submission_image'    => $mapImages($pole->submission_image),
+            'site_engineer_name'  => $pole->engineer_first_name,
+            'project_manager_name'=> $pole->manager_name,
+            'assigned_date'       => $pole->created_at,
+            'submission_date'     => $pole->updated_at,
+            'status'              => $pole->status,
+        ])->values();
+
+        $installed = $poles->where('isInstallationDone', 1)->map(fn($pole) => [
+            'pole_id'             => $pole->id,
+            'complete_pole_number'=> $pole->complete_pole_number,
+            'ward_name'           => $pole->ward_name,
+            'luminary_qr'         => $pole->luminary_qr,
+            'battery_qr'          => $pole->battery_qr,
+            'panel_qr'            => $pole->panel_qr,
+            'beneficiary'         => $pole->beneficiary,
+            'beneficiary_contact' => $pole->beneficiary_contact,
+            'isSurveyed'          => true,
+            'isInstalled'         => true,
+            'sim_number'          => $pole->sim_number,
+            'panchayat'           => $pole->panchayat,
+            'block'               => $pole->block,
+            'district'            => $pole->district,
+            'state'               => $pole->state,
+            'installed_location'  => ['lat' => $pole->lat, 'lng' => $pole->lng],
+            'remarks'             => $pole->remarks,
+            'survey_image'        => $mapImages($pole->survey_image),
+            'submission_image'    => $mapImages($pole->submission_image),
+            'site_engineer_name'  => $pole->engineer_first_name,
+            'project_manager_name'=> $pole->manager_name,
+            'status'              => $pole->status,
+        ])->values();
 
         return response()->json([
-            'message' => 'Installed poles for Vendor',
-            'surveyed_poles' => $transformed_poles,
-            'installed_poles' => $transformed__installed_poles,
+            'message'        => 'Installed poles for Vendor',
+            'surveyed_poles' => $surveyed,
+            'installed_poles'=> $installed,
         ], 200);
     }
 
