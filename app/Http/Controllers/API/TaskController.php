@@ -727,6 +727,8 @@ class TaskController extends Controller
     }
 
     /**
+     * Get all installed poles for a specific Vendor
+     */
     public function getInstalledPolesForVendor($vendor_id)
     {
         $poles = Pole::join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
