@@ -740,8 +740,8 @@ class TaskController extends Controller
                 'streelight_poles.*',
                 'streetlights.ward', 'streetlights.panchayat', 'streetlights.block',
                 'streetlights.district', 'streetlights.state',
-                'engineers.first_name as engineer_first_name',
-                'managers.name as manager_name',
+                'engineers.firstName as engineer_first_name',
+                'managers.firstName as manager_name',
                 'streetlight_tasks.id as task_id_val'
             )
             ->get();
