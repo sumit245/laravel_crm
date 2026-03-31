@@ -1176,148 +1176,204 @@ class InventoryController extends Controller
     {
         Log::info('viewVendorInventory', ['vendorId' => $vendorId]);
         try {
-            // Aggregate counts and values in SQL — no need to load all rows into PHP
-            $summary = InventoryDispatch::where('vendor_id', $vendorId)
-                ->selectRaw('
-                    item_code, item, make, model, rate,
-                    project_id, store_id, store_incharge_id,
-                    COUNT(*) as total_qty,
-                    SUM(CASE WHEN is_consumed = 0 THEN 1 ELSE 0 END) as in_stock_qty,
-                    SUM(CASE WHEN is_consumed = 1 THEN 1 ELSE 0 END) as consumed_qty,
-                    COUNT(*) * rate as total_value,
-                    SUM(CASE WHEN is_consumed = 0 THEN 1 ELSE 0 END) * rate as in_stock_value,
-                    SUM(CASE WHEN is_consumed = 1 THEN 1 ELSE 0 END) * rate as consumed_value
-                ')
-                ->groupBy('item_code', 'item', 'make', 'model', 'rate', 'project_id', 'store_id', 'store_incharge_id')
-                ->with(['project', 'store', 'storeIncharge'])
-                ->get();
+            // ── 1. Existence check + project meta (single lightweight query) ──────────
+            $meta = InventoryDispatch::where('vendor_id', $vendorId)
+                ->with('project:id,project_name')
+                ->select('project_id')
+                ->first();
 
-            if ($summary->isEmpty()) {
+            if (!$meta) {
+                Log::warning("No inventory found for vendor_id: {$vendorId}");
                 return response()->json([
-                    'message' => 'No inventory found for this vendor.',
+                    'message'   => 'No inventory found for this vendor.',
                     'vendor_id' => $vendorId,
                 ], 404);
             }
 
-            $first = $summary->first();
+            // ── 2. Aggregate totals per item_code + is_consumed bucket via SQL ────────
+            //    This replaces loading all rows into PHP memory.
+            $aggregates = InventoryDispatch::where('vendor_id', $vendorId)
+                ->selectRaw('
+                    item_code,
+                    item,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                ')
+                ->groupBy('item_code', 'item','model', 'rate',
+                          'store_id', 'store_incharge_id', 'is_consumed')
+                ->with(['store:id,store_name', 'storeIncharge:id,firstName,lastName'])
+                ->get()
+                ->groupBy('item_code');   // small result set — safe in PHP
 
+            // ── 3. Build the three buckets using chunked dispatch queries ─────────────
             $totalReceived = [];
             $inStock       = [];
             $consumed      = [];
 
-            foreach ($summary as $row) {
-                $base = [
-                    'item_code'      => $row->item_code,
-                    'item'           => $row->item,
-                    'make'           => $row->make,
-                    'model'          => $row->model,
-                    'rate'           => (float) $row->rate,
-                    'store_name'     => optional($row->store)->store_name,
-                    'store_incharge' => trim(optional($row->storeIncharge)->firstName . ' ' . optional($row->storeIncharge)->lastName),
-                ];
+            foreach ($aggregates as $itemCode => $rows) {
+                // Rows for this item_code: one row per (is_consumed) value
+                $allRow      = null;
+                $inStockRow  = null;
+                $consumedRow = null;
 
-                $totalReceived[] = array_merge($base, [
-                    'total_quantity' => (int) $row->total_qty,
-                    'total_value'    => (float) $row->total_value,
-                ]);
-
-                if ($row->in_stock_qty > 0) {
-                    $inStock[] = array_merge($base, [
-                        'total_quantity' => (int) $row->in_stock_qty,
-                        'total_value'    => (float) $row->in_stock_value,
-                    ]);
+                foreach ($rows as $row) {
+                    if ((int)$row->is_consumed === 0) {
+                        $inStockRow = $row;
+                    } else {
+                        $consumedRow = $row;
+                    }
+                    // Use any row for the "all" meta (item details are the same)
+                    $allRow = $row;
                 }
 
-                if ($row->consumed_qty > 0) {
-                    $consumed[] = array_merge($base, [
-                        'total_quantity' => (int) $row->consumed_qty,
-                        'total_value'    => (float) $row->consumed_value,
-                    ]);
+                // Fetch dispatches for this item_code in chunks to avoid memory spikes
+                $allDispatches      = $this->fetchDispatchesChunked($vendorId, $itemCode, null);
+                $inStockDispatches  = $this->fetchDispatchesChunked($vendorId, $itemCode, 0);
+                $consumedDispatches = $this->fetchDispatchesChunked($vendorId, $itemCode, 1);
+
+                $totalReceived[] = $this->buildItemPayload(
+                    $allRow,
+                    (int)($allRow->total_quantity ?? 0) + (int)(optional($consumedRow)->total_quantity ?? 0),
+                    $allDispatches
+                );
+
+                if ($inStockRow) {
+                    $inStock[] = $this->buildItemPayload($inStockRow, (int)$inStockRow->total_quantity, $inStockDispatches);
+                }
+
+                if ($consumedRow) {
+                    $consumed[] = $this->buildItemPayload($consumedRow, (int)$consumedRow->total_quantity, $consumedDispatches);
                 }
             }
 
-            $sumQty = fn($arr) => array_sum(array_column($arr, 'total_quantity'));
-            $sumVal = fn($arr) => array_sum(array_column($arr, 'total_value'));
+            // Re-compute total_received quantity/value as sum of in_stock + consumed
+            foreach ($totalReceived as &$item) {
+                $code = $item['item_code'];
+                $inStockQty   = collect($inStock)->firstWhere('item_code', $code)['total_quantity'] ?? 0;
+                $consumedQty  = collect($consumed)->firstWhere('item_code', $code)['total_quantity'] ?? 0;
+                $item['total_quantity'] = $inStockQty + $consumedQty;
+                $item['total_value']    = $item['total_quantity'] * $item['rate'];
+            }
+            unset($item);
+
+            $sumQuantity = fn($arr) => array_sum(array_column($arr, 'total_quantity'));
+            $sumValue    = fn($arr) => array_sum(array_column($arr, 'total_value'));
 
             return response()->json([
                 'vendor_id'    => $vendorId,
-                'project_id'   => optional($first->project)->id,
-                'project_name' => optional($first->project)->project_name,
+                'project_id'   => optional($meta->project)->id,
+                'project_name' => optional($meta->project)->project_name,
                 'all_inventory' => [
                     'total_received' => [
-                        'total' => ['quantity' => $sumQty($totalReceived), 'value' => $sumVal($totalReceived)],
+                        'total' => ['quantity' => $sumQuantity($totalReceived), 'value' => $sumValue($totalReceived)],
                         'items' => $totalReceived,
                     ],
                     'in_stock' => [
-                        'total' => ['quantity' => $sumQty($inStock), 'value' => $sumVal($inStock)],
+                        'total' => ['quantity' => $sumQuantity($inStock), 'value' => $sumValue($inStock)],
                         'items' => $inStock,
                     ],
                     'consumed' => [
-                        'total' => ['quantity' => $sumQty($consumed), 'value' => $sumVal($consumed)],
+                        'total' => ['quantity' => $sumQuantity($consumed), 'value' => $sumValue($consumed)],
                         'items' => $consumed,
                     ],
                 ],
             ]);
         } catch (Exception $e) {
             Log::error($e->getMessage());
-
-            return response()->json([
-                'message' => 'Something went wrong!',
-                'error'   => $e->getMessage(),
-            ], 500);
+            return response()->json(['message' => 'Something went wrong!', 'error' => $e->getMessage()], 500);
         }
     }
 
     /**
-     * Helper function to format inventory items.
-     * Each dispatch entry keeps its own dispatch_date and serial_number.
-     * For Luminary (SL02), sim_number is included per serial.
+     * Stream dispatch rows for a given vendor/item_code/is_consumed bucket in chunks,
+     * building the dispatch array without ever holding all rows in memory at once.
+     *
+     * @param  int|string  $vendorId
+     * @param  string      $itemCode
+     * @param  int|null    $isConsumed  null = all, 0 = in-stock, 1 = consumed
+     * @return array
      */
-    private function formatInventoryItem($items)
+    private function fetchDispatchesChunked($vendorId, string $itemCode, ?int $isConsumed): array
     {
-        $firstItem = $items->first();
-        $isLuminary = $firstItem->item_code === 'SL02';
+        $isLuminary = $itemCode === 'SL02';
+        $dispatches = [];
 
-        // Build per-dispatch entries so dispatch_date is mapped to its own serials
-        $dispatches = $items->map(function ($dispatch) use ($isLuminary) {
-            $serials = collect(json_decode($dispatch->serial_number, true) ?? [$dispatch->serial_number])
-                ->filter()
-                ->values();
+        // For luminary we need to batch-load sim_numbers; collect all serials first
+        // then do a single lookup per chunk rather than per row.
+        $query = InventoryDispatch::where('vendor_id', $vendorId)
+            ->where('item_code', $itemCode)
+            ->select('dispatch_date', 'serial_number', 'total_quantity', 'is_consumed');
 
-            $entry = [
-                'dispatch_date' => $dispatch->dispatch_date,
-                'quantity'      => $dispatch->total_quantity,
-                'serial_number' => $serials->all(),
-            ];
+        if (!is_null($isConsumed)) {
+            $query->where('is_consumed', $isConsumed);
+        }
 
-            // For luminary, attach sim_number per serial from inventory_streetlight
-            if ($isLuminary && $serials->isNotEmpty()) {
-                $simMap = \App\Models\InventroyStreetLightModel::whereIn('serial_number', $serials->all())
-                    ->pluck('sim_number', 'serial_number');
+        $query->orderBy('dispatch_date')
+              ->chunk(500, function ($rows) use ($isLuminary, &$dispatches) {
+                  if ($isLuminary) {
+                      $allSerials = [];
+                      $parsedRows = [];
 
-                $entry['items'] = $serials->map(fn($sn) => [
-                    'serial_number' => $sn,
-                    'sim_number'    => $simMap[$sn] ?? null,
-                    'dispatch_date' => $dispatch->dispatch_date,
-                ])->values()->all();
+                      foreach ($rows as $row) {
+                          $serials = collect(json_decode($row->serial_number, true) ?? [$row->serial_number])
+                              ->filter()->values()->all();
+                          $parsedRows[] = ['row' => $row, 'serials' => $serials];
+                          array_push($allSerials, ...$serials);
+                      }
 
-                unset($entry['serial_number']); // replaced by items
-            }
+                      // One DB round-trip for the entire chunk
+                      $simMap = \App\Models\InventroyStreetLightModel::whereIn('serial_number', array_unique($allSerials))
+                          ->pluck('sim_number', 'serial_number');
 
-            return $entry;
-        })->values()->all();
+                      foreach ($parsedRows as ['row' => $row, 'serials' => $serials]) {
+                          $dispatches[] = [
+                              'dispatch_date' => $row->dispatch_date,
+                              'quantity'      => $row->total_quantity,
+                              'items'         => array_map(fn($sn) => [
+                                  'serial_number' => $sn,
+                                  'sim_number'    => $simMap[$sn] ?? null,
+                                  'dispatch_date' => $row->dispatch_date,
+                              ], $serials),
+                          ];
+                      }
+                  } else {
+                      foreach ($rows as $row) {
+                          $serials = collect(json_decode($row->serial_number, true) ?? [$row->serial_number])
+                              ->filter()->values()->all();
+                          $dispatches[] = [
+                              'dispatch_date' => $row->dispatch_date,
+                              'quantity'      => $row->total_quantity,
+                              'serial_number' => $serials,
+                          ];
+                      }
+                  }
+              });
 
+        return $dispatches;
+    }
+
+    /**
+     * Build the item-level payload from an aggregate row + pre-built dispatch list.
+     */
+    private function buildItemPayload($row, int $totalQuantity, array $dispatches): array
+    {
         return [
-            'item_code'      => $firstItem->item_code,
-            'item'           => $firstItem->item,
-            'make'           => $firstItem->make,
-            'model'          => $firstItem->model,
-            'rate'           => (float) $firstItem->rate,
-            'total_quantity' => $items->count(), // each row = 1 dispatched unit
-            'total_value'    => $items->count() * (float) $firstItem->rate,
-            'store_name'     => optional($firstItem->store)->store_name,
-            'store_incharge' => optional($firstItem->storeIncharge)->firstName.' '.
-                optional($firstItem->storeIncharge)->lastName,
+            'item_code'      => $row->item_code,
+            'item'           => $row->item,
+            'manufacturer'   => $row->manufacturer ?? null,
+            'make'           => $row->make ?? null,
+            'model'          => $row->model,
+            'rate'           => (float) $row->rate,
+            'total_quantity' => $totalQuantity,
+            'total_value'    => $totalQuantity * (float) $row->rate,
+            'store_name'     => optional($row->store)->store_name,
+            'store_incharge' => trim(optional($row->storeIncharge)->firstName . ' ' .
+                                     optional($row->storeIncharge)->lastName),
             'dispatches'     => $dispatches,
         ];
     }

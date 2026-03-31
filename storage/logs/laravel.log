@@ -8040,3 +8040,180 @@ Stack trace:
 [2026-03-26 06:42:47] local.INFO: viewVendorInventory {"vendorId":"127"} 
 [2026-03-26 06:42:51] local.INFO: viewVendorInventory {"vendorId":"127"} 
 [2026-03-26 06:42:54] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:01:14] local.ERROR: Method App\Http\Controllers\API\InventoryController::viewVendorInventory does not exist. {"exception":"[object] (BadMethodCallException(code: 0): Method App\\Http\\Controllers\\API\\InventoryController::viewVendorInventory does not exist. at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Controller.php:68)
+[stacktrace]
+#0 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Controller.php(54): Illuminate\\Routing\\Controller->__call('viewVendorInven...', Array)
+#1 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/ControllerDispatcher.php(43): Illuminate\\Routing\\Controller->callAction('viewVendorInven...', Array)
+#2 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Route.php(259): Illuminate\\Routing\\ControllerDispatcher->dispatch(Object(Illuminate\\Routing\\Route), Object(App\\Http\\Controllers\\API\\InventoryController), 'viewVendorInven...')
+#3 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Route.php(205): Illuminate\\Routing\\Route->runController()
+#4 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(806): Illuminate\\Routing\\Route->run()
+#5 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Routing\\Router->{closure:Illuminate\\Routing\\Router::runRouteWithinStack():805}(Object(Illuminate\\Http\\Request))
+#6 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Middleware/SubstituteBindings.php(50): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#7 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\SubstituteBindings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#8 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(159): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#9 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(125): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequest(Object(Illuminate\\Http\\Request), Object(Closure), Array)
+#10 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Middleware/ThrottleRequests.php(87): Illuminate\\Routing\\Middleware\\ThrottleRequests->handleRequestUsingNamedLimiter(Object(Illuminate\\Http\\Request), Object(Closure), 'api', Object(Closure))
+#11 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Routing\\Middleware\\ThrottleRequests->handle(Object(Illuminate\\Http\\Request), Object(Closure), 'api')
+#12 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#13 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(805): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#14 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(784): Illuminate\\Routing\\Router->runRouteWithinStack(Object(Illuminate\\Routing\\Route), Object(Illuminate\\Http\\Request))
+#15 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(748): Illuminate\\Routing\\Router->runRoute(Object(Illuminate\\Http\\Request), Object(Illuminate\\Routing\\Route))
+#16 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Routing/Router.php(737): Illuminate\\Routing\\Router->dispatchToRoute(Object(Illuminate\\Http\\Request))
+#17 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(200): Illuminate\\Routing\\Router->dispatch(Object(Illuminate\\Http\\Request))
+#18 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(144): Illuminate\\Foundation\\Http\\Kernel->{closure:Illuminate\\Foundation\\Http\\Kernel::dispatchToRouter():197}(Object(Illuminate\\Http\\Request))
+#19 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:Illuminate\\Pipeline\\Pipeline::prepareDestination():142}(Object(Illuminate\\Http\\Request))
+#20 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ConvertEmptyStringsToNull.php(31): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#21 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ConvertEmptyStringsToNull->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#22 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TransformsRequest.php(21): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#23 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/TrimStrings.php(40): Illuminate\\Foundation\\Http\\Middleware\\TransformsRequest->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#24 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\TrimStrings->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#25 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/ValidatePostSize.php(27): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#26 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\ValidatePostSize->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#27 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Middleware/PreventRequestsDuringMaintenance.php(99): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#28 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Foundation\\Http\\Middleware\\PreventRequestsDuringMaintenance->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#29 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Http/Middleware/HandleCors.php(62): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#30 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\HandleCors->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#31 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Http/Middleware/TrustProxies.php(39): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#32 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(183): Illuminate\\Http\\Middleware\\TrustProxies->handle(Object(Illuminate\\Http\\Request), Object(Closure))
+#33 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Pipeline/Pipeline.php(119): Illuminate\\Pipeline\\Pipeline->{closure:{closure:Illuminate\\Pipeline\\Pipeline::carry():158}:159}(Object(Illuminate\\Http\\Request))
+#34 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(175): Illuminate\\Pipeline\\Pipeline->then(Object(Closure))
+#35 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Http/Kernel.php(144): Illuminate\\Foundation\\Http\\Kernel->sendRequestThroughRouter(Object(Illuminate\\Http\\Request))
+#36 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/public/index.php(51): Illuminate\\Foundation\\Http\\Kernel->handle(Object(Illuminate\\Http\\Request))
+#37 /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/resources/server.php(16): require_once('/Applications/X...')
+#38 {main}
+"} 
+[2026-03-31 11:01:40] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:15:07] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:15:10] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:15:45] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:16:18] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:17:38] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:22:46] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:22:46] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:35] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:35] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:37] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:37] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:38] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:38] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:38] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:38] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:39] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:39] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:40] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:40] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:40] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:40] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:23:40] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:23:40] local.ERROR: SQLSTATE[42S22]: Column not found: 1054 Unknown column 'manufacturer' in 'field list' (Connection: mysql, SQL: select 
+                    item_code,
+                    item,
+                    manufacturer,
+                    make,
+                    model,
+                    rate,
+                    store_id,
+                    store_incharge_id,
+                    is_consumed,
+                    COUNT(*) AS total_quantity,
+                    COUNT(*) * rate AS total_value
+                 from `inventory_dispatch` where `vendor_id` = 127 group by `item_code`, `item`, `manufacturer`, `make`, `model`, `rate`, `store_id`, `store_incharge_id`, `is_consumed`)  
+[2026-03-31 11:29:51] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:30:11] local.INFO: viewVendorInventory {"vendorId":"127"} 
+[2026-03-31 11:31:06] local.INFO: viewVendorInventory {"vendorId":"127"} 
