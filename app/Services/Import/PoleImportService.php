@@ -66,16 +66,16 @@ class PoleImportService extends BaseService
                     ->first();
 
                 if ($existingDispatch) {
-                    // Dispatch exists, check if consumed
-                    if ($existingDispatch->is_consumed) {
-                        return [
-                            'status' => 'error',
-                            'dispatch' => null,
-                            'error' => "Item with serial number '{$serialNumber}' is already consumed",
-                        ];
-                    }
+                    // TEMP DISABLED FOR CLIENT DEMO — skip consumed check
+                    // if ($existingDispatch->is_consumed) {
+                    //     return [
+                    //         'status' => 'error',
+                    //         'dispatch' => null,
+                    //         'error' => "Item with serial number '{$serialNumber}' is already consumed",
+                    //     ];
+                    // }
 
-                    // Valid - dispatch exists and not consumed
+                    // Valid - dispatch exists (consumed or not — allowed for demo)
                     return [
                         'status' => 'valid',
                         'dispatch' => $existingDispatch,
@@ -99,15 +99,16 @@ class PoleImportService extends BaseService
                     ];
                 }
 
-                if ($dispatch->is_consumed) {
-                    return [
-                        'status' => 'error',
-                        'dispatch' => null,
-                        'error' => "Item with serial number '{$serialNumber}' is already consumed",
-                    ];
-                }
+                // TEMP DISABLED FOR CLIENT DEMO — skip consumed check
+                // if ($dispatch->is_consumed) {
+                //     return [
+                //         'status' => 'error',
+                //         'dispatch' => null,
+                //         'error' => "Item with serial number '{$serialNumber}' is already consumed",
+                //     ];
+                // }
 
-                // Valid - dispatch exists and not consumed (in vendor custody)
+                // Valid - dispatch exists (consumed or not — allowed for demo)
                 return [
                     'status' => 'valid',
                     'dispatch' => $dispatch,

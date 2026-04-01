@@ -113,58 +113,28 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
 
         $existingPole = Pole::where('complete_pole_number', $completePoleNumber)->first();
         if ($existingPole) {
-            // Get task from existing pole's relationship
-            $task = $existingPole->task;
-            if (!$task) {
+            // TEMP DEMO LOGIC: only block if the pole is already fully installed
+            if ($existingPole->isInstallationDone) {
+                // Already installed — skip silently (don't overwrite real installation data)
                 $this->errorCount++;
                 $this->errors[] = [
-                    'row' => $rowNumber,
+                    'row'                  => $rowNumber,
                     'complete_pole_number' => $completePoleNumber,
-                    'reason' => 'Existing pole does not have an associated task',
+                    'reason'               => 'Pole already exists as an installation — skipped',
                 ];
                 return;
             }
 
-            // Check if existing pole belongs to the selected project (if project is selected)
-            if ($this->projectId && $task->project_id != $this->projectId) {
-                $this->errorCount++;
-                $this->errors[] = [
-                    'row' => $rowNumber,
-                    'complete_pole_number' => $completePoleNumber,
-                    'reason' => 'Existing pole belongs to a different project',
-                ];
-                return;
-            }
-
-            $updateResult = $this->importService->updateExistingPoleWithInventory($existingPole, $row, $task);
-            if ($updateResult['status'] === 'error') {
-                $this->errorCount++;
-                $this->errors[] = [
-                    'row' => $rowNumber,
-                    'complete_pole_number' => $completePoleNumber,
-                    'reason' => $updateResult['error'],
-                ];
-                Log::info('Poles rejected', [
-                    'row' => $rowNumber,
-                    'complete_pole_number' => $completePoleNumber,
-                    'error' => $updateResult['error'],
-                ]);
-
-                return;
-            }
-
-            // Success path for existing pole updates / replacements
+            // Pole exists but NOT installed — count as success and move on
+            // (no update, no inventory ops; we just want to tally it)
             $this->successCount++;
-
-            Log::info('Poles items replaced successfully', [
-                'row' => $rowNumber,
-                'pole_id' => $existingPole->id,
+            Log::info('Pole exists but not installed — counted for tally', [
+                'row'                  => $rowNumber,
                 'complete_pole_number' => $completePoleNumber,
-                'replaced_items' => $updateResult['replaced_items'] ?? [],
             ]);
             return;
-
         }
+
 
         // Find streetlight site
         $district = trim($row['district'] ?? '');
