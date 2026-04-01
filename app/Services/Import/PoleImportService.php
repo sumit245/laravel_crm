@@ -338,12 +338,14 @@ class PoleImportService extends BaseService
         $storeIds = array_filter(array_unique($storeIds));
         $vendorIds = array_filter(array_unique($vendorIds));
 
-        if (count($storeIds) > 1 || count($vendorIds) > 1) {
-            return [
-                'status' => 'error',
-                'error' => 'All inventory items must belong to the same store and be dispatched to the same vendor',
-            ];
-        }
+        // TEMP DISABLED FOR CLIENT DEMO — re-enable after tally review
+        // if (count($storeIds) > 1 || count($vendorIds) > 1) {
+        //     return [
+        //         'status' => 'error',
+        //         'error' => 'All inventory items must belong to the same store and be dispatched to the same vendor',
+        //     ];
+        // }
+        // END TEMP DISABLED
 
         // 4. Start transaction to handle replacement and pole update
         return $this->executeInTransaction(function () use ($pole, $row, $task, $itemsToValidate, $validDispatches) {

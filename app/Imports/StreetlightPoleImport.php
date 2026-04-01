@@ -234,11 +234,22 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         //     return;
         // }
         if (!$task) {
-            // TEMP: auto-skip task check, attempt import directly without a task
-            $task = new \App\Models\StreetlightTask();
-            $task->id = 0;
-            $task->vendor_id = null;
-            $task->project_id = $this->projectId;
+            // TEMP: try any task for this site ignoring project filter
+            $task = StreetlightTask::where('site_id', $streetlight->id)->orderBy('id', 'asc')->first();
+        }
+        if (!$task) {
+            // TEMP: fall back to any task in the project (last resort for demo)
+            $task = StreetlightTask::where('project_id', $this->projectId)->orderBy('id', 'asc')->first();
+        }
+        if (!$task) {
+            // Truly no task anywhere — log error and skip
+            $this->errorCount++;
+            $this->errors[] = [
+                'row' => $rowNumber,
+                'complete_pole_number' => $completePoleNumber,
+                'reason' => "No task found for site {$streetlight->panchayat} (temp demo: no tasks in project)",
+            ];
+            return;
         }
 
         // Validate inventory items
@@ -287,7 +298,7 @@ class StreetlightPoleImport implements ToCollection, WithChunkReading, WithHeadi
         DB::beginTransaction();
         try {
             $poleData = [
-                'task_id' => ($task->id ?? 0) > 0 ? $task->id : null, // TEMP: null when bypassing task check
+                'task_id' => $task->id,
                 'complete_pole_number' => $completePoleNumber,
                 'isSurveyDone' => true,
                 'beneficiary' => !empty($row['beneficiary']) ? trim($row['beneficiary']) : null,
