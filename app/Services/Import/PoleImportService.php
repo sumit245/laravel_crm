@@ -66,16 +66,15 @@ class PoleImportService extends BaseService
                     ->first();
 
                 if ($existingDispatch) {
-                    // TEMP DISABLED FOR CLIENT DEMO — skip consumed check
-                    // if ($existingDispatch->is_consumed) {
-                    //     return [
-                    //         'status' => 'error',
-                    //         'dispatch' => null,
-                    //         'error' => "Item with serial number '{$serialNumber}' is already consumed",
-                    //     ];
-                    // }
+                    if ($existingDispatch->is_consumed) {
+                        return [
+                            'status' => 'error',
+                            'dispatch' => null,
+                            'error' => "Item with serial number '{$serialNumber}' is already consumed",
+                        ];
+                    }
 
-                    // Valid - dispatch exists (consumed or not — allowed for demo)
+                    // Valid - dispatch exists
                     return [
                         'status' => 'valid',
                         'dispatch' => $existingDispatch,
@@ -99,16 +98,15 @@ class PoleImportService extends BaseService
                     ];
                 }
 
-                // TEMP DISABLED FOR CLIENT DEMO — skip consumed check
-                // if ($dispatch->is_consumed) {
-                //     return [
-                //         'status' => 'error',
-                //         'dispatch' => null,
-                //         'error' => "Item with serial number '{$serialNumber}' is already consumed",
-                //     ];
-                // }
+                if ($dispatch->is_consumed) {
+                    return [
+                        'status' => 'error',
+                        'dispatch' => null,
+                        'error' => "Item with serial number '{$serialNumber}' is already consumed",
+                    ];
+                }
 
-                // Valid - dispatch exists (consumed or not — allowed for demo)
+                // Valid - dispatch exists
                 return [
                     'status' => 'valid',
                     'dispatch' => $dispatch,
@@ -339,14 +337,12 @@ class PoleImportService extends BaseService
         $storeIds = array_filter(array_unique($storeIds));
         $vendorIds = array_filter(array_unique($vendorIds));
 
-        // TEMP DISABLED FOR CLIENT DEMO — re-enable after tally review
-        // if (count($storeIds) > 1 || count($vendorIds) > 1) {
-        //     return [
-        //         'status' => 'error',
-        //         'error' => 'All inventory items must belong to the same store and be dispatched to the same vendor',
-        //     ];
-        // }
-        // END TEMP DISABLED
+        if (count($storeIds) > 1 || count($vendorIds) > 1) {
+            return [
+                'status' => 'error',
+                'error' => 'All inventory items must belong to the same store and be dispatched to the same vendor',
+            ];
+        }
 
         // 4. Start transaction to handle replacement and pole update
         return $this->executeInTransaction(function () use ($pole, $row, $task, $itemsToValidate, $validDispatches) {
