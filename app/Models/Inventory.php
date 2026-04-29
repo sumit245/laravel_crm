@@ -32,6 +32,7 @@ class Inventory extends Model
   'initialQuantity',
   'rate',
   'total',
+  'quantity',
   'quantityStock',
   'materialDispatchDate',
   'deliveryDate',

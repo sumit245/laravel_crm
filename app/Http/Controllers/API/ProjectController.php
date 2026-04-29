@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Project\UpdateProjectRequest;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Project Data API — provides project information for the mobile app. Returns project details,
@@ -20,6 +22,11 @@ use Illuminate\Http\Request;
  */
 class ProjectController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -50,6 +57,10 @@ class ProjectController extends Controller
                 'rate'              => $request->rate,
             ]);
 
+            $this->activityLogger->log('project', 'created', $project, [
+                'description' => "Created project '{$project->project_name}' via API"
+            ]);
+
             // Return success response
             return response()->json([
                 'message' => 'Project created successfully',
@@ -76,10 +87,16 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, $id)
+    public function update(UpdateProjectRequest $request, $id)
     {
         $project = Project::findOrFail($id);
-        $project->update($request->all());
+        $this->activityLogger->diff($project);
+        $project->update($request->validated());
+
+        $this->activityLogger->log('project', 'updated', $project, [
+            'description' => "Updated project '{$project->project_name}' via API"
+        ]);
+
         return $project;
     }
 
@@ -89,7 +106,13 @@ class ProjectController extends Controller
     public function destroy($id)
     {
         $project = Project::findOrFail($id);
+        $projectName = $project->project_name;
         $project->delete();
+
+        $this->activityLogger->log('project', 'deleted', null, [
+            'description' => "Deleted project '{$projectName}' via API"
+        ]);
+
         return response()->json(['message' => 'Project deleted']);
     }
 }

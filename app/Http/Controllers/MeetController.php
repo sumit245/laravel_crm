@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Meeting Minutes & Discussion Tracking — manages formal meetings between project stakeholders
@@ -36,6 +37,11 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class MeetController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Dashboard.
      *
@@ -350,6 +356,10 @@ class MeetController extends Controller
             $discussionPoint->update(['assigned_to' => $assignedToUsers[0]]);
         }
 
+        $this->activityLogger->log('meeting', 'discussion_point_added', $discussionPoint, [
+            'description' => "Added discussion point '{$request->title}' to meeting #{$request->meet_id}"
+        ]);
+
         // Preserve the active tab (default to discussion tab for discussion points)
         $tab = $request->input('active_tab', 'discussion');
         return redirect()->route('meets.details', ['id' => $request->meet_id, 'tab' => $tab])
@@ -372,6 +382,10 @@ class MeetController extends Controller
         ]);
 
         $point->update(['status' => $request->status]);
+
+        $this->activityLogger->log('meeting', 'status_changed', $point, [
+            'description' => "Updated discussion point status to '{$request->status}'"
+        ]);
 
         // Preserve the active tab (default to discussion tab for status updates)
         $tab = $request->input('active_tab', 'discussion');
@@ -564,6 +578,11 @@ class MeetController extends Controller
         ]);
 
         $meet->attendees()->attach($validated['users']);
+
+        $this->activityLogger->log('meeting', 'created', $meet, [
+            'description' => "Created meeting '{$validated['title']}' with " . count($validated['users']) . " attendees"
+        ]);
+
         $users = User::whereIn('id', $validated['users'])->get(['firstName', 'lastName', 'contactNo']);
         foreach ($users as $user) {
             try {
@@ -737,6 +756,10 @@ class MeetController extends Controller
             }
         }
 
+        $this->activityLogger->log('meeting', 'updated', $meet, [
+            'description' => "Updated meeting '{$meet->title}'"
+        ]);
+
         return redirect()->route('meets.index')->with('success', 'Meeting updated successfully!');
     }
 
@@ -748,7 +771,13 @@ class MeetController extends Controller
      */
     public function destroy(Meet $meet)
     {
+        $meetTitle = $meet->title;
         $meet->delete();
+
+        $this->activityLogger->log('meeting', 'deleted', null, [
+            'description' => "Deleted meeting '{$meetTitle}'"
+        ]);
+
         return redirect()->route('meets.index')->with('success', 'Meeting deleted');
     }
 
@@ -786,12 +815,16 @@ class MeetController extends Controller
         ]);
 
         $followUpMeet->attendees()->attach($meet->attendees->pluck('id'));
-        FollowUp::create([
+        $followUp = FollowUp::create([
             'parent_meet_id' => $meet->id,
             'meet_id' => $followUpMeet->id,
             'title' => $validated['title'],
             'meet_date' => $validated['meet_date'],
             'status' => 'scheduled',
+        ]);
+
+        $this->activityLogger->log('meeting', 'follow_up_scheduled', $followUpMeet, [
+            'description' => "Scheduled follow-up '{$validated['title']}' for meeting '{$meet->title}'"
         ]);
 
         // Preserve the active tab (default to followups tab for follow-up scheduling)
@@ -820,8 +853,13 @@ class MeetController extends Controller
         }
 
         $meetId = $point->meet_id;
+        $pointTitle = $point->title;
         $tab = $request->input('active_tab', 'discussion');
         $point->delete();
+
+        $this->activityLogger->log('meeting', 'discussion_point_deleted', null, [
+            'description' => "Deleted discussion point '{$pointTitle}' from meeting #{$meetId}"
+        ]);
 
         return redirect()->route('meets.details', ['id' => $meetId, 'tab' => $tab])
             ->with('success', 'Task deleted successfully!');
@@ -847,6 +885,11 @@ class MeetController extends Controller
         }
 
         $meet->attendees()->detach($user->id);
+
+        $this->activityLogger->log('meeting', 'attendee_removed', $meet, [
+            'description' => "Removed attendee {$user->firstName} {$user->lastName} from meeting '{$meet->title}'"
+        ]);
+
         $tab = $request->input('active_tab', 'attendees');
 
         return redirect()->route('meets.details', ['id' => $meet->id, 'tab' => $tab])
@@ -880,6 +923,10 @@ class MeetController extends Controller
         }
 
         $followUp->delete();
+
+        $this->activityLogger->log('meeting', 'follow_up_deleted', null, [
+            'description' => "Deleted follow-up meeting from parent meeting #{$meetId}"
+        ]);
 
         return redirect()->route('meets.details', ['id' => $meetId, 'tab' => $tab])
             ->with('success', 'Follow-up meeting deleted successfully!');
@@ -927,7 +974,15 @@ class MeetController extends Controller
         }
 
         if (array_key_exists('notes', $data)) {
-            $meet->notes = $data['notes'];
+            // Sanitize HTML to prevent XSS while preserving CKEditor formatting
+            $allowedTags = '<p><br><strong><b><em><i><u><s><a><ul><ol><li><h1><h2><h3><h4><h5><h6>'
+                . '<blockquote><table><thead><tbody><tr><th><td><img><figure><figcaption><span><div><hr>';
+            $sanitized = strip_tags($data['notes'] ?? '', $allowedTags);
+            // Remove any on* event handlers from remaining tags
+            $sanitized = preg_replace('/\s+on\w+\s*=\s*["\'][^"\']*["\']/i', '', $sanitized);
+            // Remove javascript: protocol from href/src attributes
+            $sanitized = preg_replace('/(?:href|src)\s*=\s*["\']javascript:[^"\']*["\']/i', '', $sanitized);
+            $meet->notes = $sanitized;
         }
 
         $meet->save();

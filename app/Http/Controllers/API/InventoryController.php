@@ -14,6 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Inventory Lifecycle Management — handles the full lifecycle of inventory items: receiving
@@ -33,12 +34,19 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class InventoryController extends Controller
 {
+    protected ActivityLogger $activityLogger;
+
+    public function __construct(ActivityLogger $activityLogger)
+    {
+        $this->activityLogger = $activityLogger;
+    }
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return Inventory::with(['project', 'site'])->get();
+        $perPage = $request->integer('per_page', config('crm.pagination.per_page', 50));
+        return Inventory::with(['project', 'site'])->paginate($perPage);
     }
 
     /**
@@ -56,6 +64,9 @@ class InventoryController extends Controller
                 'quantityStock'   => 'string',
             ]);
             $inventory = Inventory::create($validated);
+            $this->activityLogger->log('inventory', 'created', $inventory, [
+                'description' => "Created inventory {$inventory->productName} ({$inventory->quantityStock} {$inventory->unit})"
+            ]);
             return response()->json([
                 'message' => 'Inventory created successfully',
                 'data'    => $inventory,
@@ -79,7 +90,20 @@ class InventoryController extends Controller
     public function update(Request $request, $id)
     {
         $inventory = Inventory::findOrFail($id);
-        $inventory->update($request->all());
+        $beforeAfter = $this->activityLogger->diff($inventory);
+        $validated = $request->validate([
+            'productName'     => 'sometimes|string',
+            'brand'           => 'sometimes|string',
+            'description'     => 'nullable|string',
+            'unit'            => 'sometimes|string',
+            'initialQuantity' => 'sometimes|numeric|min:0',
+            'quantityStock'   => 'sometimes|numeric|min:0',
+            'rate'            => 'nullable|numeric',
+        ]);
+        $inventory->update($validated);
+        $this->activityLogger->log('inventory', 'updated', $inventory, array_merge([
+            'description' => "Updated inventory {$inventory->productName}"
+        ], $beforeAfter));
         return $inventory;
     }
     /**
@@ -109,7 +133,11 @@ class InventoryController extends Controller
     public function destroy($id)
     {
         $inventory = Inventory::findOrFail($id);
+        $productName = $inventory->productName;
         $inventory->delete();
+        $this->activityLogger->log('inventory', 'deleted', null, [
+            'description' => "Deleted inventory {$productName} (#{$id})"
+        ]);
         return response()->json(['message' => 'Inventory deleted']);
     }
     /**
@@ -135,45 +163,47 @@ class InventoryController extends Controller
 
             $project = Project::findOrFail($request->project_id);
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
-            $dispatchedItems = [];
 
-            foreach ($request->items as $item) {
-                $inventory = $inventoryModel::where('id', $item['inventory_id'])
-                    ->where('project_id', $request->project_id)
-                    ->where('store_id', $request->store_id) // Ensure it belongs to correct store
-                    ->first();
+            $dispatchedItems = DB::transaction(function () use ($request, $inventoryModel) {
+                $results = [];
+                foreach ($request->items as $item) {
+                    $inventory = $inventoryModel::where('id', $item['inventory_id'])
+                        ->where('project_id', $request->project_id)
+                        ->where('store_id', $request->store_id)
+                        ->first();
 
-                if (!$inventory) {
-                    return response()->json([
-                        'message' => "Inventory ID {$item['inventory_id']} not found for this project"
-                    ], 404);
+                    if (!$inventory) {
+                        throw new \RuntimeException("Inventory ID {$item['inventory_id']} not found for this project");
+                    }
+                    if ($inventory->quantity < $item['quantity']) {
+                        throw new \RuntimeException("Not enough stock for item {$inventory->item}");
+                    }
+                    $dispatch = InventoryDispatch::create([
+                        'vendor_id'        => $request->vendor_id,
+                        'project_id'       => $request->project_id,
+                        'inventory_id'     => $item['inventory_id'],
+                        'quantity'         => $item['quantity'],
+                        'dispatch_date'    => Carbon::now(),
+                        'store_id'         => $request->store_id,
+                        'store_incharge_id'=> $request->store_incharge_id,
+                    ]);
+                    $inventory->decrement('quantity', $item['quantity']);
+                    $results[] = $dispatch;
                 }
-                if ($inventory->quantity < $item['quantity']) {
-                    return response()->json([
-                        'message' => "Not enough stock for item {$inventory->item}",
-                    ], 400);
-                }
-                // Store dispatch details
-                $dispatch = InventoryDispatch::create([
-                    'vendor_id' => $request->vendor_id,
-                    'project_id' => $request->project_id,
-                    'inventory_id' => $item['inventory_id'],
-                    'quantity' => $item['quantity'],
-                    'dispatch_date' => Carbon::now(),
-                    'store_id' => $request->store_id,
-                    'store_incharge_id' => $request->store_incharge_id,
-                ]);
-                // Reduce stock from correct table
-                $inventory->decrement('quantity', $item['quantity']);
-                $dispatchedItems[] = $dispatch;
-            }
+                return $results;
+            });
 
+            $this->activityLogger->log('inventory', 'dispatched', $project, [
+                'description' => "Dispatched " . count($dispatchedItems) . " items to vendor {$request->vendor_id}"
+            ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Inventory dispatched successfully',
                 'data' => $dispatchedItems
             ], 201);
+        } catch (\RuntimeException $e) {
+            return response()->json(['message' => $e->getMessage()], 400);
         } catch (Exception $e) {
             Log::error($e->getMessage());
             return response()->json([
@@ -248,6 +278,10 @@ class InventoryController extends Controller
             $newItem->update(['quantity' => 0]);
 
             DB::commit();
+
+            $this->activityLogger->log('inventory', 'replaced', null, [
+                'description' => "Replaced item {$request->old_serial_number} with new item {$request->new_serial_number}"
+            ]);
 
             return back()->with('success', 'Serial number replaced successfully.');
         } catch (\Exception $e) {

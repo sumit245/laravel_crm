@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Vendor Management — handles vendor-specific operations like viewing assigned inventory,
@@ -36,6 +37,12 @@ use Maatwebsite\Excel\Facades\Excel;
 class VendorController extends Controller
 {
     use GeneratesUniqueUsername;
+
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -130,6 +137,10 @@ class VendorController extends Controller
 
             $summary = $import->getSummary();
 
+            $this->activityLogger->log('vendor', 'imported', null, [
+                'description' => "Imported vendors from Excel"
+            ]);
+
             return redirect()->back()
                 ->with('success', $summary['message'])
                 ->with('import_errors', $summary['errors']);
@@ -222,6 +233,10 @@ class VendorController extends Controller
             if (!empty($validated['project_id'])) {
                 $vendor->assignToProject($validated['project_id'], $districtId);
             }
+
+            $this->activityLogger->log('vendor', 'created', $vendor, [
+                'description' => "Created vendor {$vendor->firstName} {$vendor->lastName} ({$vendor->username})"
+            ]);
 
             return redirect()->route('uservendors.index')
                 ->with('success', 'Vendor created successfully.');
@@ -658,12 +673,17 @@ class VendorController extends Controller
             $districtId = $validated['district_id'] ?? null;
             unset($validated['district_id']);
 
+            $beforeAfter = $this->activityLogger->diff($vendor);
             $vendor->update($validated);
             
             // Sync to project_user pivot table if project_id is provided
             if (!empty($validated['project_id'])) {
                 $vendor->assignToProject($validated['project_id'], $districtId);
             }
+
+            $this->activityLogger->log('vendor', 'updated', $vendor, array_merge([
+                'description' => "Updated vendor {$vendor->name}"
+            ], $beforeAfter));
             
             return redirect()->route('uservendors.show', $id)->with('success', 'Vendor updated successfully.');
         } catch (\Exception $e) {
@@ -690,7 +710,13 @@ class VendorController extends Controller
         
         try {
             $vendor = User::where('role', UserRole::VENDOR->value)->findOrFail($id);
+            $vendorName = $vendor->name;
             $vendor->delete();
+
+            $this->activityLogger->log('vendor', 'deleted', null, [
+                'description' => "Deleted vendor {$vendorName}"
+            ]);
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);
@@ -777,6 +803,11 @@ class VendorController extends Controller
                 if (!empty($errors)) {
                     $message .= " " . implode(" ", $errors);
                 }
+
+                $this->activityLogger->log('vendor', 'deleted', null, [
+                    'description' => "Bulk deleted {$deletedCount} vendor(s)"
+                ]);
+
                 return response()->json([
                     'success' => true,
                     'message' => $message
@@ -844,6 +875,11 @@ class VendorController extends Controller
             }
             
             $modeText = $validated['mode'] === 'add' ? 'added to' : 'assigned to';
+
+            $this->activityLogger->log('vendor', 'updated', null, [
+                'description' => "Bulk {$modeText} {$updatedCount} vendor(s) to " . count($validated['project_ids']) . " project(s)"
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => "Successfully {$modeText} {$updatedCount} vendor(s) to " . count($validated['project_ids']) . " project(s)."
@@ -923,6 +959,10 @@ class VendorController extends Controller
 
         // Save image path in the database
         $user->update(['image' => Storage::disk('s3')->url($path)]);
+
+        $this->activityLogger->log('vendor', 'updated', $user, [
+            'description' => "Updated avatar for vendor {$user->username}"
+        ]);
 
         return response()->json([
             'message' => 'Profile picture uploaded successfully',

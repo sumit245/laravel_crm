@@ -306,6 +306,10 @@ class TasksController extends Controller
         try {
             $task = $this->taskService->updateTask($id, $request->validated());
 
+            $this->activityLogger->log('task', 'updated', $task, [
+                'description' => "Updated rooftop task #{$id}"
+            ]);
+
             return redirect()->route('projects.show', $task->project_id)
                 ->with('success', 'Task updated successfully');
         } catch (\Exception $e) {
@@ -462,7 +466,12 @@ class TasksController extends Controller
                         }
                     }
 
+                    $beforeAfter = $this->activityLogger->diff($task);
                     $task->update($validData);
+
+                    $this->activityLogger->log('task', 'updated', $task, array_merge([
+                        'description' => "Updated streetlight target #{$id}"
+                    ], $beforeAfter));
 
                     return redirect()->route('projects.show', $projectId)
                         ->with('success', 'Task updated successfully.');
@@ -516,6 +525,10 @@ class TasksController extends Controller
                 $task = $this->taskService->updateTask($id, $request->validated());
             }
 
+            $this->activityLogger->log('task', 'updated', $task, [
+                'description' => "Updated rooftop task #{$id}"
+            ]);
+
             return redirect()->route('projects.show', $request->project_id)
                 ->with('success', 'Task updated successfully.');
         } catch (\Exception $e) {
@@ -531,6 +544,10 @@ class TasksController extends Controller
     {
         try {
             $this->taskService->deleteTask($id);
+
+            $this->activityLogger->log('task', 'deleted', null, [
+                'description' => "Deleted task #{$id}"
+            ]);
 
             return redirect()->back()
                 ->with('success', 'Task Deleted successfully.');

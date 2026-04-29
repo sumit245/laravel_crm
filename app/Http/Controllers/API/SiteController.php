@@ -5,6 +5,7 @@ namespace App\Http\Controllers\API;
 use App\Http\Controllers\Controller;
 use App\Models\Site;
 use Illuminate\Http\Request;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Site / Panchayat Management — manages project sites (locations where work happens). For
@@ -23,12 +24,19 @@ use Illuminate\Http\Request;
  */
 class SiteController extends Controller
 {
+    protected ActivityLogger $activityLogger;
+
+    public function __construct(ActivityLogger $activityLogger)
+    {
+        $this->activityLogger = $activityLogger;
+    }
  /**
   * Display a listing of the resource.
   */
- public function index()
+ public function index(Request $request)
  {
-  return Site::with('project')->get(); // List all sites with their projects
+  $perPage = $request->integer('per_page', config('crm.pagination.per_page', 50));
+  return Site::with('project')->paginate($perPage);
  }
 
  /**
@@ -45,6 +53,9 @@ class SiteController extends Controller
     'location'   => 'required|string',
    ]);
    $site = Site::create($validated);
+   $this->activityLogger->log('site', 'created', $site, [
+       'description' => "Created site {$site->site_name}"
+   ]);
    return response()->json([
     'message' => 'Site Created Successfully!',
     'data'    => $site,
@@ -74,7 +85,18 @@ class SiteController extends Controller
  public function update(Request $request, $id)
  {
   $site = Site::findOrFail($id);
-  $site->update($request->all());
+  $beforeAfter = $this->activityLogger->diff($site);
+  $validated = $request->validate([
+   'project_id' => 'sometimes|exists:projects,id',
+   'site_name'  => 'sometimes|string|max:255',
+   'state'      => 'sometimes|string',
+   'district'   => 'sometimes|string',
+   'location'   => 'sometimes|string',
+  ]);
+  $site->update($validated);
+  $this->activityLogger->log('site', 'updated', $site, array_merge([
+      'description' => "Updated site {$site->site_name}"
+  ], $beforeAfter));
   return $site;
  }
 
@@ -84,7 +106,11 @@ class SiteController extends Controller
  public function destroy($id)
  {
   $site = Site::findOrFail($id);
+  $siteName = $site->site_name;
   $site->delete();
+  $this->activityLogger->log('site', 'deleted', null, [
+      'description' => "Deleted site {$siteName} (#{$id})"
+  ]);
   return response()->json(['message' => 'Site deleted']);
  }
 }

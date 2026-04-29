@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Meet;
 use App\Models\Whiteboard;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Collaborative Whiteboard / Notes — provides a shared notes/whiteboard feature for project
@@ -19,6 +20,11 @@ use App\Models\Whiteboard;
  */
 class WhiteboardController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
      /**
       * 
       *
@@ -48,6 +54,10 @@ class WhiteboardController extends Controller
             ['review_meeting_id' => $reviewMeeting->id],
             ['data' => $request->input('data')]
         );
+
+        $this->activityLogger->log('whiteboard', 'updated', $whiteboard, [
+            'description' => "Updated whiteboard for meeting '{$reviewMeeting->title}'"
+        ]);
 
         return response()->json(['success' => true]);
     }

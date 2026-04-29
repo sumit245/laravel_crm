@@ -24,6 +24,7 @@ use phpseclib3\Math\BinaryField\Integer;
 use Storage;
 
 use App\Services\ConveyanceService;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Travel Expense Submission API — allows field staff to submit daily travel conveyance claims
@@ -41,6 +42,11 @@ use App\Services\ConveyanceService;
  */
 class ConveyanceController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -202,6 +208,10 @@ class ConveyanceController extends Controller
 
             FacadesDB::commit();
 
+            $this->activityLogger->log('conveyance', 'created', $tada, [
+                'description' => "Submitted TADA/travel expense claim via API"
+            ]);
+
             return response()->json(['message' => 'TADA record created successfully.'], 201);
         } catch (\Exception $e) {
             FacadesDB::rollback();
@@ -233,6 +243,10 @@ class ConveyanceController extends Controller
             
 
             $conveyance = Conveyance::create($data);
+
+            $this->activityLogger->log('conveyance', 'created', $conveyance, [
+                'description' => "Submitted conveyance claim from {$data['from']} to {$data['to']} via API"
+            ]);
 
             return response()->json($conveyance, 201);
         } catch (\Throwable $th) {

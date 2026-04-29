@@ -306,6 +306,10 @@ class SiteController extends Controller
 
                 $streetlight = Streetlight::create($validatedData);
 
+                $this->activityLogger->log('site', 'created', $project, [
+                    'description' => "Created Streetlight site {$streetlight->panchayat} (Task ID: {$streetlight->task_id})"
+                ]);
+
                 return redirect()->route('projects.show', $projectId)
                     ->with('success', 'Streetlight site created successfully.');
             } else {
@@ -333,6 +337,10 @@ class SiteController extends Controller
                 ]);
 
                 $site = Site::create($validatedData);
+
+                $this->activityLogger->log('site', 'created', clone $project, [
+                    'description' => "Created site {$site->site_name}"
+                ]);
 
                 return redirect()->route('sites.show', $site->id)
                     ->with('success', 'Site created successfully.');
@@ -453,11 +461,20 @@ class SiteController extends Controller
                 $errorFileUrl = $disk->url($relativePath);
 
                 $message = "Imported {$importedCount} pole(s) with " . count($errors) . " error(s).";
+                
+                $this->activityLogger->log('pole', 'imported', null, [
+                    'description' => "Imported {$importedCount} poles for site #{$siteId}"
+                ]);
+
                 return redirect()->back()
                     ->with('success', $message)
                     ->with('import_errors_url', $errorFileUrl)
                     ->with('import_errors_count', count($errors));
             }
+
+            $this->activityLogger->log('pole', 'imported', null, [
+                'description' => "Successfully imported {$importedCount} poles for site #{$siteId}"
+            ]);
 
             return redirect()->back()->with('success', "Successfully imported {$importedCount} pole(s).");
         } catch (\Exception $e) {
@@ -478,6 +495,10 @@ class SiteController extends Controller
             ]);
 
             $deletedCount = Pole::whereIn('id', $request->ids)->delete();
+
+            $this->activityLogger->log('pole', 'deleted', null, [
+                'description' => "Bulk deleted {$deletedCount} poles"
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -597,6 +618,7 @@ class SiteController extends Controller
                 $project = Project::find($projectId);
                 if ($project && $project->project_type == 1) {
                     $streetlight = Streetlight::findOrFail($id);
+                    $beforeAfter = $this->activityLogger->diff($streetlight);
                     $streetlight->update($request->only([
                         'task_id',
                         'state',
@@ -610,12 +632,16 @@ class SiteController extends Controller
                         'block_code',
                         'panchayat_code'
                     ]));
+                    $this->activityLogger->log('site', 'updated', $streetlight, array_merge([
+                        'description' => "Updated Streetlight site {$streetlight->panchayat}"
+                    ], $beforeAfter));
                     return redirect()->route('projects.show', $projectId)
                         ->with('success', 'Streetlight site updated successfully.');
                 }
             }
 
             $site = Site::findOrFail($id);
+            $beforeAfter = $this->activityLogger->diff($site);
             $site->update($request->only([
                 'task_id',
                 'state',
@@ -625,6 +651,9 @@ class SiteController extends Controller
                 'ward',
                 'mukhiya_contact',
             ]));
+            $this->activityLogger->log('site', 'updated', $site, array_merge([
+                'description' => "Updated site {$site->site_name}"
+            ], $beforeAfter));
             return redirect()->route('sites.show', $site->id)
                 ->with('success', 'Site updated successfully.');
         } catch (\Exception $e) {
@@ -668,6 +697,10 @@ class SiteController extends Controller
                 $deletedCount = Site::whereIn('id', $request->ids)->delete();
             }
 
+            $this->activityLogger->log('site', 'deleted', null, [
+                'description' => "Bulk deleted {$deletedCount} sites"
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => "{$deletedCount} site(s) deleted successfully."
@@ -698,14 +731,22 @@ class SiteController extends Controller
                 $project = Project::find($projectId);
                 if ($project && $project->project_type == 1) {
                     $streetlight = Streetlight::findOrFail($id);
+                    $siteName = $streetlight->panchayat;
                     $streetlight->delete();
+                    $this->activityLogger->log('site', 'deleted', null, [
+                        'description' => "Deleted Streetlight site {$siteName} (#{$id})"
+                    ]);
                     return redirect()->back()
                         ->with('success', 'Streetlight site deleted successfully.');
                 }
             }
 
             $site = Site::findOrFail($id);
+            $siteName = $site->site_name;
             $site->delete();
+            $this->activityLogger->log('site', 'deleted', null, [
+                'description' => "Deleted site {$siteName} (#{$id})"
+            ]);
             return redirect()->back()
                 ->with('success', 'Site deleted successfully.');
         } catch (\Exception $e) {

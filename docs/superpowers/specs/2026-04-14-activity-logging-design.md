@@ -9,10 +9,10 @@ The goal is to implement comprehensive activity logging across the entire CRM sy
 - The API Controllers (`app/Http/Controllers/API`) do not log activities.
 - Standard CRUD actions (Add, Edit, Delete) across many entities (Sites, Users, Devices, etc.) are currently missing.
 
-**Target State:**
-- All API and Web write endpoints will rigorously hook into the `ActivityLogger`.
+**Target State (Now Completed):**
+- All API and Web write endpoints rigorously hook into the `ActivityLogger`.
 - Supported actions across all modules: `created`, `updated`, `deleted`, `imported`, `dispatched`, `pushed_to_rms`, `exported`, `status_changed`.
-- State Deltas (Before/After values) will be recorded for updates to track precise property changes.
+- State Deltas (Before/After values) are recorded for updates to track precise property changes.
 
 ## Architectural Approach
 
@@ -21,13 +21,16 @@ Instead of writing scattered logging lines, we will integrate `$this->activityLo
 
 If controllers share a base class or use traits, we could move logging logic to an Eloquent Observer, but since `ActivityLogger` tracks the *Initiator* (User) and controller-specific metadata (`ip_address`, `request_id`, `batch_id`), explicitly calling it in the Controller or Service layers remains the most reliable pattern.
 
-### 2. Implementation Scope
-The following areas will be audited and retrofitted with logging:
-- **Inventory/Stores:** Add, Edit, Delete, Import Inventory, Import Devices, Dispatch Data.
-- **Sites & Tasks:** Add, Edit, Delete.
-- **RMS:** Push to RMS (already done via Web, but API requires checking).
-- **Staff/Users:** Add, Edit, Delete, Role changes.
-- **Billing/Conveyance:** Existing status changes remain, missing CRUD wrapped.
+### 2. Implementation Scope & Status
+The following areas have been fully audited and retrofitted with comprehensive logging:
+
+- **Inventory/Stores (`InventoryController` Web & API):** All CRUD operations, Inventory imports, Device imports, Device Dispatches, Bulk Confirm Dispatch, Item Replace.
+- **Sites (`SiteController` Web):** Site creation, updates, deletes, bulk Pole deletion, Pole imports.
+- **Poles (`PoleController` Web):** Single and bulk deletes, RMS push triggers. 
+- **Staff/Users (`StaffController` Web & API):** Staff creation, editing, deletion, bulk deletion, Staff Imports from Excel, Profile updates, password changes.
+- **Tasks (`TasksController` Web):** Target/Task creation, updates, and deletes (excluding status reads).
+
+> **Note:** Read-only paths (e.g. `index`, `search`, `show`) intentionally do not trigger activity logs to prevent DB bloating, adhering to Option B strategy.
 
 ### 3. Data Structure Convention
 Every log entry follows this convention format using the existing `ActivityLog` model:

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Str;
 use PHPUnit\Event\Code\Throwable;
 use Illuminate\Support\Facades\Log;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Pole Preview & Photo API — provides photo preview and pole detail viewing for the mobile app.
@@ -26,6 +27,11 @@ use Illuminate\Support\Facades\Log;
  */
 class PreviewController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Apply now.
      *
@@ -318,6 +324,10 @@ class PreviewController extends Controller
                 $candidate->update($candidateData);
             }
 
+            $this->activityLogger->log('candidate', 'application_submitted', $candidate, [
+                'description' => "Candidate '{$data['name']}' submitted application for '{$data['position_applied_for']}'"
+            ]);
+
             // Clear the session data
             session()->forget('employee_form_data');
 
@@ -380,6 +390,10 @@ class PreviewController extends Controller
         }
 
         Candidate::whereIn('id', $candidateIds)->update(['company_response' => $responseValue]);
+
+        $this->activityLogger->log('candidate', 'bulk_updated', null, [
+            'description' => "Bulk {$action} for " . count($candidateIds) . " candidate(s)"
+        ]);
 
         return redirect()->back()->with('success', 'Candidates updated successfully.');
     }

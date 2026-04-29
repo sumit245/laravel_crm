@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\ProjectType;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
 use App\Helpers\ExcelHelper;
@@ -26,7 +27,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Employee & Field Staff Management — manages all staff roles: Admin, Project Managers, Site
@@ -49,6 +52,12 @@ use Maatwebsite\Excel\Facades\Excel;
 class StaffController extends Controller
 {
     use GeneratesUniqueUsername;
+
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Returns a list of all staff members.
      */
@@ -62,17 +71,15 @@ class StaffController extends Controller
             UserRole::PROJECT_MANAGER->value,
             UserRole::STORE_INCHARGE->value,
             UserRole::COORDINATOR->value
-        ])->with(['projects', 'usercategory'])->get();
-        $staff->map(function ($staff) use ($today) {
-            $staff->totalTasks = Task::where('engineer_id', $staff->id)->count();
-            $staff->pendingTasks = Task::where('engineer_id', $staff->id)->where('status', 'Pending')->count();
-            $staff->inProgressTasks = Task::where('engineer_id', $staff->id)->where('status', 'In Progress')->count();
-            $staff->completedTasks = Task::where('engineer_id', $staff->id)->where('status', 'Done')->count();
-            $staff->tasksAssignedToday = Task::where('engineer_id', $staff->id)->whereDate('created_at', $today)->count();
-            $staff->tasksCompletedToday = Task::where('engineer_id', $staff->id)->whereDate('updated_at', $today)->where('status', 'Done')->count();
-
-            return $staff;
-        });
+        ])->with(['projects', 'usercategory'])
+          ->withCount([
+              'engineerTasks as totalTasks',
+              'engineerTasks as pendingTasks'        => fn($q) => $q->where('status', 'Pending'),
+              'engineerTasks as inProgressTasks'     => fn($q) => $q->where('status', 'In Progress'),
+              'engineerTasks as completedTasks'      => fn($q) => $q->where('status', 'Done'),
+              'engineerTasks as tasksAssignedToday'  => fn($q) => $q->whereDate('created_at', $today),
+              'engineerTasks as tasksCompletedToday' => fn($q) => $q->whereDate('updated_at', $today)->where('status', 'Done'),
+          ])->get();
         $projects = Project::all();
         $departments = UserCategory::all();
 
@@ -100,6 +107,10 @@ class StaffController extends Controller
             Excel::import($import, $file);
 
             $summary = $import->getSummary();
+
+            $this->activityLogger->log('user', 'imported', null, [
+                'description' => "Imported staff members from Excel"
+            ]);
 
             return redirect()->back()
                 ->with('success', $summary['message'])
@@ -139,7 +150,7 @@ class StaffController extends Controller
             'lastName' => 'required|string',
             'email' => 'required|email|unique:users,email',
             'contactNo' => 'string',
-            'role' => 'required|integer',
+            'role' => ['required', 'integer', Rule::in(UserRole::values())],
             'category' => 'nullable|numeric',
             'department' => 'nullable|string|max:255',
             'address' => 'string|max:255',
@@ -158,15 +169,22 @@ class StaffController extends Controller
         ]);
 
         try {
-            $validated['username'] = $this->generateUniqueUsername($validated['firstName']);
-            $validated['password'] = bcrypt($validated['password']);
-            $staff = User::create($validated);
-            DB::table('project_user')->insert([
-                'user_id' => $staff->id,
-                'project_id' => $validated['project_id'],
-                'role' => $validated['role'],
-                'created_at' => now(),
-                'updated_at' => now(),
+            $staff = DB::transaction(function () use ($validated) {
+                $validated['username'] = $this->generateUniqueUsername($validated['firstName']);
+                $validated['password'] = bcrypt($validated['password']);
+                $staff = User::create($validated);
+                DB::table('project_user')->insert([
+                    'user_id'    => $staff->id,
+                    'project_id' => $validated['project_id'],
+                    'role'       => $validated['role'],
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+                return $staff;
+            });
+
+            $this->activityLogger->log('user', 'created', $staff, [
+                'description' => "Created new staff member {$staff->firstName} {$staff->lastName} ({$staff->username})"
             ]);
 
             return redirect()->route('staff.index')
@@ -188,6 +206,10 @@ class StaffController extends Controller
         try {
             $staff = User::with(['projectManager', 'siteEngineers', 'vendors', 'projects', 'usercategory', 'verticalHead'])
                 ->findOrFail($id);
+
+            // Authorization: check if current user can view this staff member
+            $this->authorize('view', $staff);
+
             $userId = $staff->id;
 
             // Get all assigned projects from pivot table
@@ -257,7 +279,7 @@ class StaffController extends Controller
             // Gather streetlight data per project
             $streetlightDataByProject = [];
             foreach ($assignedProjects as $project) {
-                if ($project->project_type == 1) {
+                if ($project->project_type === ProjectType::STREETLIGHT->value) {
                     // Get tasks where staff is engineer, manager, or vendor
                     $projectTasks = StreetlightTask::where('project_id', $project->id)
                         ->where(function($query) use ($userId) {
@@ -321,7 +343,7 @@ class StaffController extends Controller
             // Gather rooftop data per project
             $rooftopDataByProject = [];
             foreach ($assignedProjects as $project) {
-                if ($project->project_type == 0) {
+                if ($project->project_type === ProjectType::ROOFTOP_SOLAR->value) {
                     // Get tasks where staff is engineer, manager, or vendor
                     $projectTaskIds = Task::where('project_id', $project->id)
                         ->where(function($query) use ($userId) {
@@ -377,7 +399,7 @@ class StaffController extends Controller
             $allTasks = collect();
 
             foreach ($assignedProjects as $project) {
-                if ($project->project_type == 1) {
+                if ($project->project_type === ProjectType::STREETLIGHT->value) {
                     // Streetlight: Sum of total_poles
                     if (isset($streetlightDataByProject[$project->id])) {
                         $totalTasksCount += $streetlightDataByProject[$project->id]['total_poles'] ?? 0;
@@ -394,7 +416,7 @@ class StaffController extends Controller
 
             // Calculate pending tasks count from all project tasks
             foreach ($assignedProjects as $project) {
-                if ($project->project_type == 1) {
+                if ($project->project_type === ProjectType::STREETLIGHT->value) {
                     $projectTasks = StreetlightTask::where('project_id', $project->id)
                         ->where(function($query) use ($userId) {
                             $query->where('engineer_id', $userId)
@@ -455,6 +477,9 @@ class StaffController extends Controller
 
         $user = User::findOrFail($id);
 
+        // Authorization: only admin/PM or the user themselves can upload avatar
+        $this->authorize('update', $user);
+
         // Generate unique filename: username_YYYYMMDD_HHMMSS.jpg
         $timestamp = Carbon::now()->format('Ymd_His');
         $filename = "{$user->username}_{$timestamp}.jpg";
@@ -477,6 +502,10 @@ class StaffController extends Controller
     public function edit(string $id)
     {
         $staff = User::findOrFail($id);
+
+        // Authorization: check if current user can update this staff member
+        $this->authorize('update', $staff);
+
         $projects = Project::all();
         $projectEngineers = User::where('role', 2)->get();
         $usercategory = DB::table('user_categories')
@@ -504,7 +533,7 @@ class StaffController extends Controller
             'department' => 'nullable|string|max:255',
             'address' => 'string|max:255',
             'password' => 'nullable|string|min:6|confirmed',
-            'role' => 'nullable|integer',
+            'role' => ['nullable', 'integer', Rule::in(UserRole::values())],
             'accountName' => 'nullable|string|max:255',
             'accountNumber' => 'nullable|string|max:255',
             'ifsc' => 'nullable|string|max:50',
@@ -522,7 +551,12 @@ class StaffController extends Controller
             $validated['password'] = bcrypt($validated['password']);
         }
 
+        $beforeAfter = $this->activityLogger->diff($staff);
         $staff->update($validated);
+
+        $this->activityLogger->log('user', 'updated', $staff, array_merge([
+            'description' => "Updated staff profile for {$staff->username}"
+        ], $beforeAfter));
 
         return redirect()
             ->route('staff.show', $staff->id)
@@ -535,7 +569,16 @@ class StaffController extends Controller
     public function destroy(User $staff)
     {
         try {
+            // Authorization: only admin can delete
+            $this->authorize('delete', $staff);
+
+            $staffName = "{$staff->firstName} {$staff->lastName} ({$staff->username})";
             $staff->delete();
+
+            $this->activityLogger->log('user', 'deleted', null, [
+                'description' => "Deleted staff member {$staffName}"
+            ]);
+
             return response()->json(['success' => true, 'message' => 'Staff deleted successfully.']);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => 'Failed to delete staff member.'], 500);
@@ -553,7 +596,16 @@ class StaffController extends Controller
                 'ids.*' => 'exists:users,id',
             ]);
 
-            $count = User::whereIn('id', $request->ids)->delete();
+            // Authorization: only admin can bulk delete
+            $this->authorize('delete', User::findOrFail($request->ids[0]));
+
+            // Prevent self-deletion
+            $ids = array_diff($request->ids, [auth()->id()]);
+            $count = User::whereIn('id', $ids)->delete();
+
+            $this->activityLogger->log('user', 'deleted', null, [
+                'description' => "Bulk deleted {$count} staff members"
+            ]);
 
             return response()->json([
                 'success' => true,
@@ -609,7 +661,8 @@ class StaffController extends Controller
             }
 
             $file = $request->file('profile_picture');
-            $filename = time() . '_' . uniqid() . '.' . $file->getClientOriginalExtension();
+            $extension = $file->guessExtension() ?: $file->getClientOriginalExtension();
+            $filename = time() . '_' . uniqid() . '.' . $extension;
             $imagePath = Storage::disk('s3')->putFileAs('profile_pictures', $file, $filename);
 
             if (!$imagePath) {
@@ -619,6 +672,10 @@ class StaffController extends Controller
             $imageUrl = Storage::disk('s3')->url($imagePath);
             $user->image = $imageUrl;
             $user->save();
+
+            $this->activityLogger->log('user', 'updated', $user, [
+                'description' => "Updated profile picture for {$user->username} via web"
+            ]);
 
             return redirect()->back()->with('success', 'Profile picture updated successfully!');
         } catch (\Exception $e) {
@@ -767,6 +824,10 @@ class StaffController extends Controller
             'password' => bcrypt($request->password)
         ]);
 
+        $this->activityLogger->log('user', 'updated', User::find($id), [
+            'description' => "Changed password for user ID {$id}"
+        ]);
+
         return redirect()
             ->route('staff.index')
             ->with('success', 'Password updated successfully.');
@@ -798,17 +859,27 @@ class StaffController extends Controller
             ->pluck('vendor_id')
             ->unique();
 
+        // Load all tasks for all vendors in a single query, then group in memory
+        $allTasks = StreetlightTask::where('manager_id', $managerid)
+            ->whereIn('vendor_id', $vendorids)
+            ->with('site', 'vendor')
+            ->get()
+            ->groupBy('vendor_id');
+
+        $allTaskIds = $allTasks->flatten()->pluck('id');
+
+        // Pre-fetch pole counts for all tasks in 2 queries instead of N×2
+        $surveyedPolesByTask   = Pole::whereIn('task_id', $allTaskIds)->where('isSurveyDone', 1)->get()->groupBy('task_id');
+        $installedPolesByTask  = Pole::whereIn('task_id', $allTaskIds)->where('isInstallationDone', 1)->get()->groupBy('task_id');
+
         $vendorPoleCounts = [];
 
         foreach ($vendorids as $vendorId) {
-            $tasks = StreetlightTask::where('manager_id', $managerid)
-                ->where('vendor_id', $vendorId)
-                ->with('site', 'vendor')
-                ->get();
+            $tasks = $allTasks->get($vendorId, collect());
 
-            $taskIds = $tasks->pluck('id');
-            $surveyCount = Pole::whereIn('task_id', $taskIds)->where('isSurveyDone', 1)->count();
-            $installCount = Pole::whereIn('task_id', $taskIds)->where('isInstallationDone', 1)->count();
+            $taskIds     = $tasks->pluck('id');
+            $surveyCount  = $surveyedPolesByTask->only($taskIds->toArray())->flatten()->count();
+            $installCount = $installedPolesByTask->only($taskIds->toArray())->flatten()->count();
 
             $totalPoles = $tasks->reduce(function ($carry, $task) {
                 return $carry + ($task->site)->total_poles ?? 0;
@@ -831,12 +902,9 @@ class StaffController extends Controller
 
             $todayTaskIds = $todayTasks->pluck('id');
 
-            $todaySurvey = Pole::whereIn('task_id', $todayTaskIds)
-                ->where('isSurveyDone', 1)->count();
-
-            $todayInstall = Pole::whereIn('task_id', $todayTaskIds)
-                ->where('isInstallationDone', 1)->count();
-
+            $todayTaskIdsArray = $todayTaskIds->toArray();
+            $todaySurvey  = $surveyedPolesByTask->only($todayTaskIdsArray)->flatten()->count();
+            $todayInstall = $installedPolesByTask->only($todayTaskIdsArray)->flatten()->count();
 
             $todayTargetTasks = $tasks->filter(function ($task) use ($today) {
                 return $task->end_date >= $today;

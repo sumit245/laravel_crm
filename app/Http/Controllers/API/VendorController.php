@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Vendor Management — handles vendor-specific operations like viewing assigned inventory,
@@ -24,6 +25,11 @@ use Carbon\Carbon;
  */
 class VendorController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Create a new vendor.
      *
@@ -57,21 +63,28 @@ class VendorController extends Controller
      */
     public function create(Request $request)
     {
+        $validated = $request->validate([
+            'name'      => 'required|string|max:255',
+            'firstName' => 'required|string|max:255',
+            'lastName'  => 'required|string|max:255',
+            'email'     => 'required|email|max:255|unique:users,email',
+            'password'  => 'required|string|min:8|confirmed',
+            'username'  => 'required|string|max:50|unique:users,username',
+            'contactNo' => 'nullable|string|max:20',
+            'address'   => 'nullable|string|max:255',
+            'image'     => 'nullable|url',
+        ]);
+
         try {
-            // Create new vendor
-            $user = User::create([
-                'name' => $request->name,
-                'email' => $request->email,
-                'password' => bcrypt($request->password), // Encrypt password
-                'username' => $request->username,
-                'firstName' => $request->firstName,
-                'lastName' => $request->lastName,
-                'image' => $request->image,
-                'status' => 'active', // Default status
-                'address' => $request->address,
-                'contactNo' => $request->contactNo,
-                'role' => UserRole::VENDOR->value,
-                'disableLogin' => 0, // Default
+            $validated['password']     = bcrypt($validated['password']);
+            $validated['status']       = 'active';
+            $validated['role']         = UserRole::VENDOR->value;
+            $validated['disableLogin'] = 0;
+
+            $user = User::create($validated);
+
+            $this->activityLogger->log('vendor', 'created', $user, [
+                'description' => "Created vendor {$user->firstName} {$user->lastName} via API"
             ]);
 
             return response()->json([
@@ -96,7 +109,7 @@ class VendorController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user || $user->role != UserRole::VENDOR->value) {
+        if (!$user || $user->role !== UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
@@ -117,7 +130,7 @@ class VendorController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user || $user->role != UserRole::VENDOR->value) {
+        if (!$user || $user->role !== UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
@@ -141,7 +154,7 @@ class VendorController extends Controller
         $validatedData = $request->validate([
             'firstName' => 'nullable|string|max:255',
             'lastName' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
+            'email' => 'nullable|email|max:255|unique:users,email,' . $id,
             'password' => 'nullable|string|min:8', // Add more password rules if needed
             'contactNo' => 'nullable|string|max:20',
             'address' => 'nullable|string|max:255',
@@ -150,7 +163,7 @@ class VendorController extends Controller
         // Find the vendor
         $user = User::find($id);
 
-        if (!$user || $user->role != UserRole::VENDOR->value) {
+        if (!$user || $user->role !== UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
@@ -168,6 +181,10 @@ class VendorController extends Controller
 
         // Update vendor data
         $user->update($updateData);
+
+        $this->activityLogger->log('vendor', 'updated', $user, [
+            'description' => "Updated vendor {$user->name} via API"
+        ]);
 
         return response()->json([
             'message' => 'Vendor updated successfully',
@@ -190,14 +207,19 @@ class VendorController extends Controller
     {
         $user = User::find($id);
 
-        if (!$user || $user->role != UserRole::VENDOR->value) {
+        if (!$user || $user->role !== UserRole::VENDOR->value) {
             return response()->json([
                 'message' => 'Vendor not found or invalid role',
             ], 404);
         }
 
         // Delete vendor
+        $vendorName = $user->name;
         $user->delete();
+
+        $this->activityLogger->log('vendor', 'deleted', null, [
+            'description' => "Deleted vendor {$vendorName} via API"
+        ]);
 
         return response()->json([
             'message' => 'Vendor deleted successfully',
@@ -222,7 +244,7 @@ class VendorController extends Controller
         $user = User::find($id);
 
         if (!$user) {
-            return response()->json(['message' => 'User not authenticated'], 401);
+            return response()->json(['message' => 'User not found'], 404);
         }
 
         // Generate unique filename: username_YYYYMMDD_HHMMSS.jpg
@@ -234,6 +256,10 @@ class VendorController extends Controller
 
         // Save image path in the database
         $user->update(['image' => Storage::disk('s3')->url($path)]);
+
+        $this->activityLogger->log('vendor', 'updated', $user, [
+            'description' => "Updated avatar for vendor {$user->username} via API"
+        ]);
 
         return response()->json([
             'message' => 'Profile picture uploaded successfully',

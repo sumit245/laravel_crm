@@ -100,10 +100,10 @@ class InventoryController extends Controller
         if ($projectId && $storeId) {
             $inventory = InventroyStreetLightModel::where('project_id', $projectId)
                 ->where('store_id', $storeId)
-                ->paginate(50);
+                ->paginate(config('crm.pagination.per_page', 50));
         } else {
             $inventory = InventroyStreetLightModel::where('project_id', $projectId)
-                ->paginate(50);
+                ->paginate(config('crm.pagination.per_page', 50));
         }
 
         // Get stores for the selected project
@@ -309,6 +309,11 @@ class InventoryController extends Controller
             }
 
             // Fallback: redirect to inventory index (legacy behavior)
+            $this->activityLogger->log('inventory', 'created', null, [
+                'description' => "Added new inventory item {$itemCode} ({$serialNumber})",
+                'extra' => ['project_type' => $projectType]
+            ]);
+
             return redirect()->route('inventory.index', [
                 'project_id' => $request->input('project_id'),
                 'store_id' => $storeId,
@@ -423,7 +428,12 @@ class InventoryController extends Controller
 
         try {
             $inventoryItem = Inventory::findOrFail($id);
+            $beforeAfter = $this->activityLogger->diff($inventoryItem);
             $inventoryItem->update($validated);
+
+            $this->activityLogger->log('inventory', 'updated', $inventoryItem, array_merge([
+                'description' => "Updated inventory {$inventoryItem->productName}"
+            ], $beforeAfter));
 
             return redirect()->route('inventory.index')
                 ->with('success', 'Inventory updated successfully.');
@@ -453,7 +463,12 @@ class InventoryController extends Controller
 
         try {
 
+            $beforeAfter = $this->activityLogger->diff($item);
             $item->update($validated);
+
+            $this->activityLogger->log('inventory', 'updated', $item, array_merge([
+                'description' => "Updated inventory {$item->productName}"
+            ], $beforeAfter));
 
             return redirect()->route('inventory.show', compact('item'))
                 ->with('success', 'Inventory updated successfully.');
@@ -477,7 +492,12 @@ class InventoryController extends Controller
             if (! $item) {
                 $item = Inventory::findOrFail($id);
             }
+            $itemDesc = $item->productName ?? $item->item ?? "ID: {$id}";
             $item->delete();
+
+            $this->activityLogger->log('inventory', 'deleted', null, [
+                'description' => "Deleted inventory {$itemDesc} (#{$id})"
+            ]);
 
             return response()->json(['success' => true, 'message' => 'Item deleted successfully.']);
         } catch (\Exception $e) {
@@ -758,6 +778,13 @@ class InventoryController extends Controller
 
                 $dispatchedItems[] = $dispatch;
             }
+
+            if (count($dispatchedItems) > 0) {
+                $this->activityLogger->log('inventory', 'dispatched', $project, [
+                    'description' => "Dispatched " . count($dispatchedItems) . " items to vendor {$request->vendor_id} via Web UI"
+                ]);
+            }
+
             if ($request->ajax()) {
                 return response()->json([
                     'status' => 'success',
@@ -1140,6 +1167,12 @@ class InventoryController extends Controller
                 DB::commit();
 
                 $message = 'Successfully dispatched '.count($dispatchedItems).' item(s)';
+                if (count($dispatchedItems) > 0) {
+                    $this->activityLogger->log('inventory', 'dispatched', $project, [
+                        'description' => "Bulk dispatched " . count($dispatchedItems) . " items to vendor {$request->vendor_id}"
+                    ]);
+                }
+
                 if (count($failedItems) > 0) {
                     $message .= '. '.count($failedItems).' item(s) failed to dispatch.';
                 }
@@ -1562,6 +1595,12 @@ class InventoryController extends Controller
             }
 
             $oldDispatch->delete();
+
+            $this->activityLogger->log('inventory', 'replaced', null, [
+                'description' => "Replaced item {$request->old_serial_number} with new item {$request->new_serial_number}"
+            ]);
+
+            DB::commit();
 
             if (isset($oldStreet)) {
                 $oldStreet->quantity = 1;

@@ -35,7 +35,7 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email'    => 'required|string',
+            'email'    => 'required|email',
             'password' => 'required|string',
         ]);
 
@@ -43,6 +43,11 @@ class LoginController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json(['error' => 'credentialError', 'status' => 401], 401);
+        }
+
+        // Prevent disabled accounts from authenticating
+        if ($user->disableLogin) {
+            return response()->json(['error' => 'accountDisabled', 'status' => 403], 403);
         }
 
         $tokenResult = $user->createToken('authToken');

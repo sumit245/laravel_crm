@@ -14,61 +14,66 @@ use App\Http\Controllers\API\VendorController;
 use Illuminate\Support\Facades\Route;
 
 
-Route::post('/login', [LoginController::class, 'login']);
-Route::apiResource('staff', StaffController::class);
-Route::prefix('staff')->group(function () {
-    Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
-    Route::get('/get-performance/{user_id}', [StaffController::class, 'getStaffPerformance']);
+// Public: Login endpoint (no auth required, rate-limited)
+Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:login');
+
+// All other API routes require authentication
+Route::middleware('auth:sanctum')->group(function () {
+    Route::apiResource('staff', StaffController::class);
+    Route::prefix('staff')->group(function () {
+        Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
+        Route::get('/get-performance/{user_id}', [StaffController::class, 'getStaffPerformance']);
+    });
+
+    Route::prefix('vendor')->group(function () {
+        Route::get('/', [VendorController::class, 'index']);
+        Route::post('/', [VendorController::class, 'create']);
+        Route::get('{id}', [VendorController::class, 'show']);
+        Route::get('{id}/edit', [VendorController::class, 'edit']);
+        Route::put('{id}', [VendorController::class, 'update']);
+        Route::delete('{id}', [VendorController::class, 'destroy']);
+        Route::get('{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
+    });
+
+    Route::apiResource('projects', ProjectController::class);
+    Route::apiResource('site', SiteController::class);
+
+    Route::apiResource('task', TaskController::class);
+    Route::post('/tasks/{id}/approve', [TaskController::class, 'approveTask']);
+    Route::get('/get_installable_pole/{ward}', [TaskController::class, 'getInstallablePoles']);
+    Route::post('streetlight/tasks/update', [TaskController::class, 'submitStreetlightTasks']);
+    Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEngineerTasks']);
+    Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
+    Route::apiResource('streetlight', StreetlightController::class);
+
+    Route::apiResource('inventories', InventoryController::class);
+    Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
+    Route::get('get-inventory/vendor/{vendor_id}', [WebInventoryController::class, 'viewVendorInventory']);
+
+    Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
+    Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);
+    Route::get('/installed-poles/vendor/{vendor_id}', [TaskController::class, 'getInstalledPolesForVendor']);
+    Route::get('/installed-poles/project-manager/{manager_id}', [TaskController::class, 'getInstalledPolesForProjectManager']);
+    Route::get('/export-poles/vendor/{id}', [TaskController::class, 'exportPoles'])->name('poles.export');
+
+    Route::post('fetch-states', [DropdownController::class, 'fetchState']);
+    Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
+
+    // Route to send all data to RMS at once
+    Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
+
+    // Conveyance
+    Route::apiResource('tadas', ConveyanceController::class);
+    Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
+    Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
+    Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
+    Route::get('all-vehicles/{id}', [ConveyanceController::class, 'getVehicles']);
+    Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicle']);
+    Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
+    Route::get('check-price', [ConveyanceController::class, 'checkPice']);
+    Route::get('allow-expense', [ConveyanceController::class, 'allowExpense']);
+    Route::get('users/{id}/allowed-vehicles', [ConveyanceController::class, 'getAllowedVehicles']);
 });
-
-Route::prefix('vendor')->group(function () {
-    Route::get('/', [VendorController::class, 'index']);
-    Route::post('/', [VendorController::class, 'create']);
-    Route::get('{id}', [VendorController::class, 'show']);
-    Route::get('{id}/edit', [VendorController::class, 'edit']);
-    Route::put('{id}', [VendorController::class, 'update']);
-    Route::delete('{id}', [VendorController::class, 'destroy']);
-    Route::get('{vendorId}/sites', [TaskController::class, 'getSitesForVendor']);
-});
-
-Route::apiResource('projects', ProjectController::class);
-Route::apiResource('site', SiteController::class);
-
-Route::apiResource('task', TaskController::class);
-Route::post('/tasks/{id}/approve', [TaskController::class, 'approveTask']);
-Route::get('/get_installable_pole/{ward}', [TaskController::class, 'getInstallablePoles']);
-Route::post('streetlight/tasks/update', [TaskController::class, 'submitStreetlightTasks']);
-Route::get('streetlight/tasks/engineers', [StreetlightController::class, 'getEngineerTasks']);
-Route::get('streetlight/tasks/vendors', [StreetlightController::class, 'getVendorTasks']);
-Route::apiResource('streetlight', StreetlightController::class);
-
-Route::apiResource('inventories', InventoryController::class);
-Route::post('inventory/dispatch/vendor', [InventoryController::class, 'dispatchInventory']);
-Route::get('get-inventory/vendor/{vendor_id}', [WebInventoryController::class, 'viewVendorInventory']);
-
-Route::post('/pole-details', [TaskController::class, 'getPoleDetails']);
-Route::get('/installed-poles/site-engineer/{engineer_id}', [TaskController::class, 'getInstalledPolesForSiteEngineer']);
-Route::get('/installed-poles/vendor/{vendor_id}', [TaskController::class, 'getInstalledPolesForVendor']);
-Route::get('/installed-poles/project-manager/{manager_id}', [TaskController::class, 'getInstalledPolesForProjectManager']);
-Route::get('/export-poles/vendor/{id}', [TaskController::class, 'exportPoles'])->name('poles.export');
-
-Route::post('fetch-states', [DropdownController::class, 'fetchState']);
-Route::post('fetch-cities', [DropdownController::class, 'fetchCity']);
-
-// Route to send all data to RMS at once
-Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
-
-// Conveyance
-Route::apiResource('tadas', ConveyanceController::class);
-Route::post('conveyances', [ConveyanceController::class, 'storeConveyance']);
-Route::get('conveyances', [ConveyanceController::class, 'indexConveyance']);
-Route::get('conveyances/{id}', [ConveyanceController::class, 'showConveyance']);
-Route::get('all-vehicles/{id}', [ConveyanceController::class, 'getVehicles']);
-Route::get('user-category', [ConveyanceController::class, 'getUserCategoryVehicle']);
-Route::get('user-category/{id}', [ConveyanceController::class, 'getUserCategory']);
-Route::get('check-price', [ConveyanceController::class, 'checkPice']);
-Route::get('allow-expense', [ConveyanceController::class, 'allowExpense']);
-Route::get('users/{id}/allowed-vehicles', [ConveyanceController::class, 'getAllowedVehicles']);
 
 
 

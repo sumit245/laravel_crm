@@ -25,8 +25,10 @@ class InventoryDispatch extends Model
     protected $fillable = [
         'vendor_id',
         'project_id',
+        'inventory_id',
         'store_id',
         'store_incharge_id',
+        'quantity',
         'item_code',
         'item',
         'rate',
@@ -38,8 +40,7 @@ class InventoryDispatch extends Model
         'isDispatched',
         'dispatch_date',
         'is_consumed',
-        'streetlight_pole_id'
-
+        'streetlight_pole_id',
     ];
 
     /**

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Models\Candidate;
 use Illuminate\Support\Facades\Storage;
 use Smalot\PdfParser\Parser; // Install with: composer require smalot/pdfparser
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Recruitment & Candidate Management — manages job candidate records during hiring. Supports
@@ -27,6 +28,11 @@ use Smalot\PdfParser\Parser; // Install with: composer require smalot/pdfparser
  */
 class CandidateController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * 
      *
@@ -80,6 +86,10 @@ class CandidateController extends Controller
         try {
             Excel::import(new CandidatesImport, $request->file('file'));
 
+            $this->activityLogger->log('candidate', 'imported', null, [
+                'description' => "Imported candidates from Excel"
+            ]);
+
             return redirect()->back()->with('success', 'Candidates imported successfully.');
         } catch (\Illuminate\Database\QueryException $e) {
             // Check if it's a duplicate entry error
@@ -105,11 +115,14 @@ class CandidateController extends Controller
     public function sendEmails()
     {
         $candidates = Candidate::where('status', 'pending')->get();
+        $ids = $candidates->pluck('id');
 
         foreach ($candidates as $candidate) {
             Mail::to($candidate->email)->send(new CandidateMail($candidate));
-            $candidate->update(['status' => 'emailed']);
         }
+
+        // Single bulk update instead of N individual queries
+        Candidate::whereIn('id', $ids)->update(['status' => 'emailed']);
 
         return redirect()->back()->with('success', 'Emails sent successfully.');
     }
@@ -173,6 +186,10 @@ class CandidateController extends Controller
         // Update candidate details
         $candidate->update(array_filter($extractedData));
 
+        $this->activityLogger->log('candidate', 'updated', $candidate, [
+            'description' => "Uploaded documents and extracted data for candidate #{$id}"
+        ]);
+
         return redirect()->back()->with('success', 'Documents uploaded and details extracted successfully.');
     }
 
@@ -185,7 +202,12 @@ class CandidateController extends Controller
     public function destroy($id)
     {
         $candidate = Candidate::findOrFail($id);
+        $candidateName = $candidate->full_name ?? "#{$id}";
         $candidate->delete();
+
+        $this->activityLogger->log('candidate', 'deleted', null, [
+            'description' => "Deleted candidate {$candidateName}"
+        ]);
 
         if (request()->expectsJson()) {
             return response()->json(['message' => 'Deleted successfully']);

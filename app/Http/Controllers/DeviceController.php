@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Mobile Device Import Management — handles bulk import of device records from Excel files.
@@ -26,6 +27,11 @@ use Maatwebsite\Excel\Facades\Excel;
  */
 class DeviceController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -69,7 +75,13 @@ class DeviceController extends Controller
             $projectId = $request->input('project_id');
 
             // Always queue — even small files — to avoid gateway timeouts on millions of rows
-            return $this->processQueuedImport($file, $projectId);
+            $result = $this->processQueuedImport($file, $projectId);
+
+            $this->activityLogger->log('device', 'imported', null, [
+                'description' => "Imported pole/device data from Excel for project #{$projectId}"
+            ]);
+
+            return $result;
         } catch (\Exception $e) {
             Log::error('Error importing file: ' . $e->getMessage());
             return back()->with('error', 'Error importing file: ' . $e->getMessage());

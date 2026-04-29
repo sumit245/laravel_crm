@@ -34,6 +34,11 @@ use Illuminate\Support\Facades\Log;
  */
 class StaffController extends Controller
 {
+    public function __construct(
+        protected \App\Services\Logging\ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Create a new vendor.
      *
@@ -129,6 +134,10 @@ class StaffController extends Controller
 
         // Save image path in the database
         $user->update(['image' => Storage::disk('s3')->url($path)]);
+
+        $this->activityLogger->log('user', 'updated', $user, [
+            'description' => "User {$user->username} uploaded a new profile picture (avatar) via API"
+        ]);
 
         return response()->json([
             'message' => 'Profile picture uploaded successfully',

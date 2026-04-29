@@ -381,6 +381,10 @@ class PoleController extends Controller
                 }
             }
 
+            $this->activityLogger->log('pole', 'deleted', null, [
+                'description' => "Deleted pole {$pole->complete_pole_number} (#{$id})"
+            ]);
+
             return redirect()->route('poles.index')
                 ->with('success', 'Pole deleted successfully.');
         } catch (\Exception $e) {
@@ -574,6 +578,10 @@ class PoleController extends Controller
 
             DB::commit();
 
+            $this->activityLogger->log('pole', 'deleted', null, [
+                'description' => "Bulk deleted {$deletedCount} poles"
+            ]);
+
             return response()->json([
                 'message' => "Successfully deleted {$deletedCount} pole(s).",
                 'deleted_count' => $deletedCount,
@@ -685,6 +693,10 @@ class PoleController extends Controller
                     ];
                 }
             }
+
+            $this->activityLogger->log('pole', 'pushed', null, [
+                'description' => "Bulk pushed {$successCount} pole(s) to RMS successfully, {$errorCount} error(s)"
+            ]);
 
             return response()->json([
                 'message' => "Pushed {$successCount} pole(s) successfully. {$errorCount} error(s).",

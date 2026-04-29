@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Enums\UserRole;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Warehouse / Store Management — each project has physical stores (warehouses) where inventory
@@ -29,6 +30,11 @@ use App\Enums\UserRole;
  */
 class StoreController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     /**
      * Display a listing of the resource.
      */
@@ -70,11 +76,15 @@ class StoreController extends Controller
                 'storeIncharge' => 'required|exists:users,id',
             ]);
 
-            Stores::create([
+            $store = Stores::create([
                 'project_id' => $projectId,
                 'store_name' => $validated['name'],
                 'address' => $validated['address'],
                 'store_incharge_id' => $validated['storeIncharge'],
+            ]);
+
+            $this->activityLogger->log('store', 'created', $store, [
+                'description' => "Created store '{$validated['name']}' for project #{$projectId}"
             ]);
 
             return redirect()->back()->with('success', 'Store Created Successfully');
@@ -421,11 +431,12 @@ class StoreController extends Controller
         if ($request->filled('search.value')) {
             $isFiltered = true;
             $search = $request->input('search.value');
-            $query->where(function ($q) use ($search) {
-                $q->where('inv.item_code', 'like', "%{$search}%")
-                    ->orWhere('inv.item', 'like', "%{$search}%")
-                    ->orWhere('inv.serial_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
+            $searchTerm = '%' . $search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('inv.item_code', 'like', $searchTerm)
+                    ->orWhere('inv.item', 'like', $searchTerm)
+                    ->orWhere('inv.serial_number', 'like', $searchTerm)
+                    ->orWhereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', [$searchTerm]);
             });
         }
 
@@ -451,7 +462,7 @@ class StoreController extends Controller
 
         if ($request->filled('vendor_name')) {
             $isFiltered = true;
-            $query->where(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
+            $query->whereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', ['%' . $request->input('vendor_name') . '%']);
         }
 
         // 4. Count Filtered (Only run expensive count if filtered)
@@ -461,7 +472,7 @@ class StoreController extends Controller
         // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:sim, 5:avail, 6:vendor, 7:disp_date, 8:in_date, 9:act]
         // User:  [0:code, 1:item, 2:serial, 3:sim, 4:avail, 5:vendor, 6:disp_date, 7:in_date, 8:act]
         $orderColumnIndex = $request->input('order.0.column', $isAdmin ? 8 : 7); // Default 'created_at' index
-        $orderDir = $request->input('order.0.dir', 'desc');
+        $orderDir = in_array(strtolower($request->input('order.0.dir', 'desc')), ['asc', 'desc']) ? $request->input('order.0.dir', 'desc') : 'desc';
 
         // Map dataTable column index to DB columns
         // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:sim, 5:avail, 6:vendor, 7:disp_date, 8:in_date, 9:act]
@@ -645,11 +656,12 @@ class StoreController extends Controller
         // Apply filters (same as inventoryData)
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($q) use ($search) {
-                $q->where('inv.item_code', 'like', "%{$search}%")
-                    ->orWhere('inv.item', 'like', "%{$search}%")
-                    ->orWhere('inv.serial_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
+            $searchTerm = '%' . $search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('inv.item_code', 'like', $searchTerm)
+                    ->orWhere('inv.item', 'like', $searchTerm)
+                    ->orWhere('inv.serial_number', 'like', $searchTerm)
+                    ->orWhereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', [$searchTerm]);
             });
         }
 
@@ -671,7 +683,7 @@ class StoreController extends Controller
         }
 
         if ($request->filled('vendor_name')) {
-            $query->where(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
+            $query->whereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', ['%' . $request->input('vendor_name') . '%']);
         }
 
         // Note: For very large datasets (100k+), standard export might fail due to memory.
@@ -755,11 +767,12 @@ class StoreController extends Controller
         if ($request->filled('search.value')) {
             $isFiltered = true;
             $search = $request->input('search.value');
-            $query->where(function ($q) use ($search) {
-                $q->where('disp.item_code', 'like', "%{$search}%")
-                    ->orWhere('disp.item', 'like', "%{$search}%")
-                    ->orWhere('disp.serial_number', 'like', "%{$search}%")
-                    ->orWhere(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$search}%");
+            $searchTerm = '%' . $search . '%';
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('disp.item_code', 'like', $searchTerm)
+                    ->orWhere('disp.item', 'like', $searchTerm)
+                    ->orWhere('disp.serial_number', 'like', $searchTerm)
+                    ->orWhereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', [$searchTerm]);
             });
         }
 
@@ -770,7 +783,7 @@ class StoreController extends Controller
 
         if ($request->filled('vendor_name')) {
             $isFiltered = true;
-            $query->where(DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, ""))'), 'like', "%{$request->input('vendor_name')}%");
+            $query->whereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', ['%' . $request->input('vendor_name') . '%']);
         }
 
         if ($request->filled('dispatch_date')) {
@@ -782,7 +795,7 @@ class StoreController extends Controller
 
         // Ordering
         $orderColumnIndex = $request->input('order.0.column', $isAdmin ? 5 : 4); // Default 'dispatch_date' index
-        $orderDir = $request->input('order.0.dir', 'desc');
+        $orderDir = in_array(strtolower($request->input('order.0.dir', 'desc')), ['asc', 'desc']) ? $request->input('order.0.dir', 'desc') : 'desc';
 
         // Map dataTable column index to DB columns
         // Admin: [0:chk, 1:code, 2:item, 3:serial, 4:vendor, 5:date, 6:val, 7:act]
@@ -855,7 +868,13 @@ class StoreController extends Controller
     {
         try {
             $store = Stores::findOrFail($id);
+            $storeName = $store->store_name;
             $store->delete();
+
+            $this->activityLogger->log('store', 'deleted', null, [
+                'description' => "Deleted store '{$storeName}'"
+            ]);
+
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()]);

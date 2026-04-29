@@ -18,12 +18,14 @@ use App\Enums\UserRole;
 use App\Services\Backup\DataTransformationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
 use App\Helpers\ExcelHelper;
 use Maatwebsite\Excel\Facades\Excel;
 use Carbon\Carbon;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Data Backup & Restoration — provides database backup and data export capabilities for
@@ -41,15 +43,17 @@ use Carbon\Carbon;
 class BackupController extends Controller
 {
     protected $transformer;
+    protected ActivityLogger $activityLogger;
 
     /**
      * Create a new BackupController instance.
      *
      * @param  DataTransformationService  $transformer  
      */
-    public function __construct(DataTransformationService $transformer)
+    public function __construct(DataTransformationService $transformer, ActivityLogger $activityLogger)
     {
         $this->transformer = $transformer;
+        $this->activityLogger = $activityLogger;
     }
 
     /**
@@ -108,6 +112,10 @@ class BackupController extends Controller
                 gc_collect_cycles();
             }
 
+            $this->activityLogger->log('backup', 'created', null, [
+                'description' => 'Created backup for ' . count($files) . ' project(s) in ' . $format . ' format'
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => 'Backup created successfully',
@@ -155,6 +163,10 @@ class BackupController extends Controller
         }
 
         File::delete($filePath);
+
+        $this->activityLogger->log('backup', 'deleted', null, [
+            'description' => "Deleted backup file '{$filename}'"
+        ]);
 
         return response()->json([
             'success' => true,
@@ -228,6 +240,12 @@ class BackupController extends Controller
         if ($result === 0 && File::exists($filePath)) {
             return $filename;
         }
+
+        Log::error('MySQL dump failed', [
+            'exit_code' => $result,
+            'output'    => implode("\n", $output),
+            'file'      => $filePath,
+        ]);
 
         return null;
     }

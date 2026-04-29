@@ -1,47 +1,10 @@
 <?php
 
-use App\Http\Controllers\ActivityLogController;
-use App\Http\Controllers\API\PreviewController;
-use App\Http\Controllers\API\StreetlightController;
-use App\Http\Controllers\API\TaskController;
-use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\BackupController;
-use App\Http\Controllers\CandidateController;
-use App\Http\Controllers\ConvenienceController;
-use App\Http\Controllers\DeviceController;
-use App\Http\Controllers\HomeController;
-use App\Http\Controllers\InventoryController;
-use App\Http\Controllers\JICRController;
-use App\Http\Controllers\MeetController;
-use App\Http\Controllers\PerformanceController;
-use App\Http\Controllers\PerformanceDebugController;
-use App\Http\Controllers\PoleController;
-use App\Http\Controllers\ProjectsController;
-use App\Http\Controllers\QueueProcessorController;
-use App\Http\Controllers\RMSController;
-use App\Http\Controllers\SiteController;
-use App\Http\Controllers\StaffController;
-use App\Http\Controllers\StoreController;
-use App\Http\Controllers\TasksController;
-use App\Http\Controllers\VendorController;
-use App\Http\Controllers\WhiteboardController;
-use App\Http\Controllers\CodeDocController;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-
-// Code Documentation (no auth required)
-Route::prefix('docs')->name('docs.')->group(function () {
-    Route::get('/code', [CodeDocController::class, 'index'])->name('code.index');
-    Route::get('/code/{category}/{file?}', [CodeDocController::class, 'show'])->name('code.show');
-});
+use App\Http\Controllers\{ActivityLogController, API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
-
-// Allow GET /logout to use the same controller method,
-// so direct hits to /logout (e.g. from a link) don't fail
-Route::get('/logout', [LoginController::class, 'logout'])
-    ->middleware('auth')
-    ->name('logout.get');
 
 // Public Routes
 Route::get('apply-now/{id}', [PreviewController::class, 'applyNow'])->name('apply-now');
@@ -58,18 +21,10 @@ Route::post('/candidates/{id}/upload', [CandidateController::class, 'uploadDocum
 
 Route::get('privacy-policy', fn() => view('privacy'));
 Route::get('terms-and-conditions', fn() => view('terms'));
-Route::get('/queue/process', [QueueProcessorController::class, 'process'])->name('queue.process');
 Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
 Route::post('/backup/create', [BackupController::class, 'create'])->name('backup.create');
 Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
 Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
-// Activity Logs
-Route::prefix('activity-logs')
-    ->name('activity-logs.')
-    ->group(function () {
-        Route::get('/', [ActivityLogController::class, 'index'])->name('index');
-        Route::get('{activityLog}', [ActivityLogController::class, 'show'])->name('show');
-    });
 
 // Authenticated Routes
 Route::middleware(['auth', 'restrict.meetings'])->group(function () {
@@ -94,8 +49,6 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/engineer-data/{id}', [StaffController::class, 'engineerData'])->name('engineer.data');
     Route::resource('staff', StaffController::class);
     Route::post('/staff/bulk-delete', [StaffController::class, 'bulkDelete'])->name('staff.bulkDelete');
-    Route::post('/staff/projects/{projectId}/panchayat/{panchayat}/delete', [StaffController::class, 'deletePanchayat'])->name('staff.deletePanchayat');
-    Route::post('/staff/projects/{projectId}/panchayat/{panchayat}/push-rms', [StaffController::class, 'pushPanchayatToRMS'])->name('staff.pushPanchayatToRMS');
     Route::prefix('staff')
         ->name('staff.')
         ->group(function () {
@@ -107,7 +60,6 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
             Route::post('{id}/change-password', [StaffController::class, 'updatePassword'])->name('update-password');
         });
     Route::post('/staff/{id}/upload-avatar', [StaffController::class, 'uploadAvatar'])->name('staff.uploadAvatar');
-    Route::get('/staff/{staffId}/projects/{projectId}/export', [StaffController::class, 'exportStreetlightExcel'])->name('staff.exportStreetlight');
     Route::post('/import-staff', action: [StaffController::class, 'import'])->name('import.staff');
 
     // Performance
@@ -138,45 +90,43 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::delete('/meets/{meet}/attendees/{user}', [MeetController::class, 'removeAttendee'])->name('meets.attendees.remove');
     Route::delete('/follow-ups/{followUp}', [MeetController::class, 'deleteFollowUp'])->name('follow-ups.delete');
     Route::delete('/meets/{meet}', [MeetController::class, 'destroy'])->name('meets.destroy');
-    // Dev-only pages for E2E testing (only in local environment)
-    if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST')) {
-        Route::get('/__dev/unified-inventory-test', function () {
-            return view('dev.unified_inventory_test');
-        })->name('__dev.unified_inventory_test');
+// Dev-only pages for E2E testing (only in local environment)
+if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST')) {
+    Route::get('/__dev/unified-inventory-test', function () {
+        return view('dev.unified_inventory_test');
+    })->name('__dev.unified_inventory_test');
 
-        Route::get('/__dev/inventory-data', function (\Illuminate\Http\Request $request) {
-            // Simulate server-side DataTables response. Expect parameters: start, length, draw
-            $start = intval($request->query('start', 0));
-            $length = intval($request->query('length', 10));
-            $total = 100; // pretend there are 100 records on server
+    Route::get('/__dev/inventory-data', function (\Illuminate\Http\Request $request) {
+        // Simulate server-side DataTables response. Expect parameters: start, length, draw
+        $start = intval($request->query('start', 0));
+        $length = intval($request->query('length', 10));
+        $total = 100; // pretend there are 100 records on server
 
-            $data = [];
-            $page = intval($start / max(1, $length));
-            for ($i = 0; $i < $length; $i++) {
-                $index = $start + $i + 1;
-                if ($index > $total) {
-                    break;
-                }
-                $data[] = [
-                    'IT' . $index,
-                    'Item ' . $index,
-                    'SERI' . $index,
-                    '<span class="badge bg-success">In Stock</span>',
-                    'Vendor ' . $index,
-                    date('d/m/Y'),
-                    date('d/m/Y'),
-                    '',
-                ];
-            }
+        $data = [];
+        $page = intval($start / max(1, $length));
+        for ($i = 0; $i < $length; $i++) {
+            $index = $start + $i + 1;
+            if ($index > $total) break;
+            $data[] = [
+                'IT' . $index,
+                'Item ' . $index,
+                'SERI' . $index,
+                '<span class="badge bg-success">In Stock</span>',
+                'Vendor ' . $index,
+                date('d/m/Y'),
+                date('d/m/Y'),
+                ''
+            ];
+        }
 
-            return response()->json([
-                'draw' => intval($request->query('draw', 1)),
-                'recordsTotal' => $total,
-                'recordsFiltered' => $total,
-                'data' => $data,
-            ]);
-        })->name('__dev.inventory_data');
-    }
+        return response()->json([
+            'draw' => intval($request->query('draw', 1)),
+            'recordsTotal' => $total,
+            'recordsFiltered' => $total,
+            'data' => $data,
+        ]);
+    })->name('__dev.inventory_data');
+}
 
     // optional
     Route::get('/meets/{meet}/export/excel', [MeetController::class, 'exportExcel'])->name('meets.exportExcel');
@@ -210,12 +160,12 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::prefix('sites')->group(function () {
         Route::get('search', [SiteController::class, 'search'])->name('sites.search');
         Route::post('import/{project_id}', [SiteController::class, 'import'])->name('sites.import');
-        Route::get('import-format/{projectId}', [SiteController::class, 'downloadImportFormat'])->name('sites.importFormat');
         Route::post('ward-poles', [SiteController::class, 'getWardPoles'])->name('sites.ward.poles');
         Route::post('bulk-delete', [SiteController::class, 'bulkDelete'])->name('sites.bulkDelete');
         Route::post('{siteId}/poles/import', [SiteController::class, 'importPoles'])->name('sites.poles.import');
         Route::post('poles/bulk-delete', [SiteController::class, 'bulkDeletePoles'])->name('sites.poles.bulkDelete');
         Route::get('{siteId}/poles/export-format', [SiteController::class, 'downloadPoleImportFormat'])->name('sites.poles.exportFormat');
+        Route::get('import-format/{project_id}', [SiteController::class, 'downloadImportFormat'])->name('sites.importFormat');
     });
     Route::resource('sites', SiteController::class);
 
@@ -293,9 +243,6 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/tasks/export/excel', [TasksController::class, 'exportToExcel'])->name('tasks.export');
     Route::post('/tasks/bulk-delete', [ProjectsController::class, 'bulkDeleteTargets'])->name('tasks.bulkDelete');
     Route::post('/tasks/bulk-reassign', [ProjectsController::class, 'bulkReassignTargets'])->name('tasks.bulkReassign');
-    Route::post('/api/check-ward-conflict', [TasksController::class, 'checkWardConflict'])->name('api.check-ward-conflict');
-    Route::get('/projects/targets/deletion-progress/{jobId}', [ProjectsController::class, 'getDeletionProgress'])->name('targets.deletionProgress');
-    Route::get('/projects/targets/active-deletion-jobs', [ProjectsController::class, 'getActiveDeletionJobs'])->name('targets.activeJobs');
     Route::get('/tasks/download/import-format', [ProjectsController::class, 'downloadTargetImportFormat'])->name('tasks.importFormat');
     Route::post('/tasks/import', [ProjectsController::class, 'importTargets'])->name('tasks.import');
     Route::get('/tasks/{id}/{any?}', [TasksController::class, 'show'])
@@ -311,15 +258,11 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     Route::get('/poles/{id}/edit', [PoleController::class, 'edit'])->name('poles.edit');
     Route::put('/poles/{id}', [PoleController::class, 'update'])->name('poles.update');
     Route::delete('/poles/{id}', [PoleController::class, 'destroy'])->name('poles.destroy');
-    Route::post('/poles/bulk-delete', [PoleController::class, 'bulkDelete'])->name('poles.bulkDelete');
-    Route::post('/poles/bulk-push-rms', [PoleController::class, 'bulkPushRms'])->name('poles.bulkPushRms');
 
     // Streetlight
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
     Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
     Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
-    Route::get('/wards-by-site/{siteId}', [StreetlightController::class, 'getWardsBySite'])->name('wards.bySite');
-    Route::get('/wards-for-edit/{siteId}/{taskId}', [StreetlightController::class, 'getWardsForEdit'])->name('wards.forEdit');
 
     // Hiring (using existing candidate routes, only adding authenticated-only routes)
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
@@ -328,11 +271,12 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Device Import
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
-    Route::get('/devices-import/sample', [DeviceController::class, 'downloadSample'])->name('device.import.sample');
-    Route::get('/devices-import/progress/{jobId}', [DeviceController::class, 'getImportProgress'])->name('device.import.progress');
 
     // RMS Push
-    Route::get('/rms-push', [RMSController::class, 'index'])->name('rms.index');
-    Route::get('/rms-export', [RMSController::class, 'export'])->name('rms.export');
+    Route::get('/rms-export', [RMSController::class, 'index'])->name('rms.index');
     Route::post('/rms-push', [RMSController::class, 'sendPanchayatToRMS'])->name('rms.push');
+
+    // Activity Logs
+    Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
+    Route::get('/activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
 });

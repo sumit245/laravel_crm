@@ -11,6 +11,7 @@ use DB;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Services\Logging\ActivityLogger;
 
 /**
  * Streetlight Site Data API — provides panchayat/ward/pole data for the mobile app's task
@@ -27,6 +28,11 @@ use Illuminate\Support\Facades\Storage;
  */
 class StreetlightController extends Controller
 {
+    public function __construct(
+        protected ActivityLogger $activityLogger
+    ) {
+    }
+
     //
 
     /**
@@ -44,6 +50,10 @@ class StreetlightController extends Controller
     {
         try {
             $streetlight = Streetlight::create($request->all());
+
+            $this->activityLogger->log('streetlight', 'created', $streetlight, [
+                'description' => "Created streetlight site via API"
+            ]);
 
             // Save to streetlight table
 
@@ -278,6 +288,11 @@ class StreetlightController extends Controller
     {
         $task = Task::findOrFail($id);
         $task->delete();
+
+        $this->activityLogger->log('streetlight', 'deleted', null, [
+            'description' => "Deleted streetlight task #{$id} via API"
+        ]);
+
         return response()->json(['message' => 'Task deleted']);
     }
 
@@ -326,6 +341,10 @@ class StreetlightController extends Controller
         $task->update([
             'status' => 'Submitted',
             'completion_details' => $request->input('completion_details'),
+        ]);
+
+        $this->activityLogger->log('streetlight', 'status_changed', $task, [
+            'description' => "Submitted streetlight task #{$taskId} via API"
         ]);
 
         return response()->json(['message' => 'Task submitted successfully']);
