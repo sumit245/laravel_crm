@@ -330,19 +330,28 @@ class TaskController extends Controller
             'lng' => 'nullable|numeric',
         ]);
 
+        $isSurveyDone = ($validated['isSurveyDone'] ?? null) === 'true';
+        $isInstallationDone = ($validated['isInstallationDone'] ?? null) === 'true';
+
         // ✅ Step 2: Fetch task & site
         $task = StreetlightTask::findOrFail($validated['task_id']);
         $approved_by = $task->engineer->firstName . " " . $task->engineer->lastName;
         $streetlight = Streetlight::findOrFail($task->site_id);
 
         // ✅ Step 3: Create or get pole (locked to prevent race conditions)
-        $pole = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $streetlight) {
+        $pole = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $streetlight, $isSurveyDone, $isInstallationDone) {
             $pole = Pole::where('task_id', $validated['task_id'])
                 ->where('complete_pole_number', $validated['complete_pole_number'])
                 ->lockForUpdate()
                 ->first();
 
             if (!$pole) {
+                if ($isInstallationDone) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'complete_pole_number' => ['Pole not found. Survey must be submitted before installation.'],
+                    ]);
+                }
+
                 $pole = Pole::create([
                     'task_id'             => $validated['task_id'],
                     'complete_pole_number'=> $validated['complete_pole_number'],
@@ -350,12 +359,14 @@ class TaskController extends Controller
                     'beneficiary'         => $validated['beneficiary'] ?? null,
                     'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
                     'remarks'             => $validated['remarks'] ?? null,
-                    'isSurveyDone'        => true,
+                    'isSurveyDone'        => $isSurveyDone,
                     'isInstallationDone'  => false,
                     'lat'                 => $validated['lat'] ?? null,
                     'lng'                 => $validated['lng'] ?? null,
                 ]);
-                $streetlight->increment('number_of_surveyed_poles');
+                if ($isSurveyDone) {
+                    $streetlight->increment('number_of_surveyed_poles');
+                }
             }
 
             return $pole;
@@ -373,7 +384,7 @@ class TaskController extends Controller
         }
 
         // ✅ Step 5: Update survey data
-        if ($request->isSurveyDone && !$pole->isSurveyDone) {
+        if ($isSurveyDone && !$pole->isSurveyDone) {
             $pole->update([
                 'isSurveyDone' => true,
                 'beneficiary' => $validated['beneficiary'] ?? null,
@@ -384,7 +395,7 @@ class TaskController extends Controller
         }
 
         // ✅ Step 6: Update installation data
-        if ($request->isInstallationDone && !$pole->isInstallationDone) {
+        if ($isInstallationDone && !$pole->isInstallationDone) {
             $pole->update([
                 'isInstallationDone' => true,
                 'vendor_id' => $task->vendor_id, // Set vendor_id from task when pole is installed
@@ -409,9 +420,19 @@ class TaskController extends Controller
 
                 // Validate each serial number's dispatch district matches pole's district
                 $dispatches = InventoryDispatch::whereIn('serial_number', $serials)
+                    ->where('vendor_id', $task->vendor_id)
                     ->where('isDispatched', true)
                     ->where('is_consumed', false)
                     ->get();
+
+                $missingSerials = array_values(array_diff($serials, $dispatches->pluck('serial_number')->all()));
+                if (!empty($missingSerials)) {
+                    return response()->json([
+                        'message' => 'One or more installation items were not found in dispatch (or already consumed).',
+                        'error' => 'inventory_not_found',
+                        'missing_serials' => $missingSerials,
+                    ], 422);
+                }
 
                 foreach ($dispatches as $dispatch) {
                     // Get project's districts
@@ -430,8 +451,6 @@ class TaskController extends Controller
                 }
 
                 // All validations passed, mark as consumed
-                $dispatches = InventoryDispatch::whereIn('serial_number', $serials)->get();
-                
                 foreach ($dispatches as $dispatch) {
                     $dispatch->update([
                         'is_consumed' => true,
