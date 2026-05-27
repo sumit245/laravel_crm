@@ -446,23 +446,13 @@ class TaskController extends Controller
 
             // ✅ Step 6: Update installation data
             if ($isInstallationDone && !$pole->isInstallationDone) {
-                $pole->update([
-                    'isInstallationDone' => true,
-                    'vendor_id' => $task->vendor_id, // Set vendor_id from task when pole is installed
-                    'luminary_qr' => $validated['luminary_qr'] ?? null,
-                    'sim_number' => $validated['sim_number'] ?? null,
-                    'panel_qr' => $validated['panel_qr'] ?? null,
-                    'battery_qr' => $validated['battery_qr'] ?? null,
-                ]);
-
-                $streetlight->increment('number_of_installed_poles');
-
                 // ✅ Step 7: Mark inventory as consumed with district validation
                 $serials = array_filter([
                     $validated['luminary_qr'] ?? null,
                     $validated['panel_qr'] ?? null,
                     $validated['battery_qr'] ?? null,
                 ]);
+                $dispatches = collect();
 
                 if (!empty($serials)) {
                     // Get pole's district
@@ -499,21 +489,40 @@ class TaskController extends Controller
                             ], 400);
                         }
                     }
+                }
 
-                    // All validations passed, mark as consumed
+                \Illuminate\Support\Facades\DB::transaction(function () use ($pole, $streetlight, $task, $validated, $dispatches) {
+                    $lockedPole = Pole::whereKey($pole->id)->lockForUpdate()->firstOrFail();
+
+                    if ($lockedPole->isInstallationDone) {
+                        return;
+                    }
+
+                    $lockedPole->update([
+                        'isInstallationDone' => true,
+                        'vendor_id' => $task->vendor_id,
+                        'luminary_qr' => $validated['luminary_qr'] ?? null,
+                        'sim_number' => $validated['sim_number'] ?? null,
+                        'panel_qr' => $validated['panel_qr'] ?? null,
+                        'battery_qr' => $validated['battery_qr'] ?? null,
+                    ]);
+
+                    $streetlight->increment('number_of_installed_poles');
+
                     foreach ($dispatches as $dispatch) {
                         $dispatch->update([
                             'is_consumed' => true,
-                            'streetlight_pole_id' => $pole->id,
+                            'streetlight_pole_id' => $lockedPole->id,
                         ]);
 
                         // Log history
                         $project = \App\Models\Project::find($dispatch->project_id);
                         $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
-                        $this->historyService->logConsumed($dispatch, $inventoryType, $pole);
+                        $this->historyService->logConsumed($dispatch, $inventoryType, $lockedPole);
                     }
-                }
-                $site = Streetlight::findOrFail($task->site_id);
+                });
+
+                $pole->refresh();
                 RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
             }
 
@@ -531,7 +540,10 @@ class TaskController extends Controller
                 'errors' => $exception->errors(),
             ]);
 
-            throw $exception;
+            return response()->json([
+                'message' => 'Validation failed.',
+                'errors' => $exception->errors(),
+            ], 422);
         } catch (\Throwable $exception) {
             Log::error('Streetlight task submission failed', [
                 'task_id' => $request->input('task_id'),
