@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Enums\ProjectType;
 use App\Enums\TaskStatus;
 use App\Enums\UserRole;
+use App\Exports\StaffImportFormatExport;
 use App\Helpers\ExcelHelper;
 use App\Helpers\WhatsappHelper;
 use App\Imports\StaffImport;
@@ -30,6 +31,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Logging\ActivityLogger;
+use App\Services\Rms\RmsSyncService;
 
 /**
  * Employee & Field Staff Management — manages all staff roles: Admin, Project Managers, Site
@@ -108,8 +110,14 @@ class StaffController extends Controller
 
             $summary = $import->getSummary();
 
+            if (($summary['created'] + $summary['updated']) === 0) {
+                return redirect()->back()
+                    ->withErrors(['file' => 'No staff records were imported. Please check the file format and required columns.'])
+                    ->with('import_errors', $summary['errors']);
+            }
+
             $this->activityLogger->log('user', 'imported', null, [
-                'description' => "Imported staff members from Excel"
+                'description' => "Imported staff members from Excel. Created: {$summary['created']}, Updated: {$summary['updated']}, Skipped: {$summary['skipped']}"
             ]);
 
             return redirect()->back()
@@ -124,6 +132,25 @@ class StaffController extends Controller
             return redirect()->back()->withErrors(['file' => 'Import validation failed'])->with('import_errors', $messages);
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['file' => 'Import failed: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * Download staff import format template.
+     */
+    public function importFormat()
+    {
+        try {
+            return Excel::download(
+                new StaffImportFormatExport(),
+                'staff_import_format_' . date('Y-m-d') . '.xlsx'
+            );
+        } catch (\Exception $e) {
+            Log::error('Staff import format download failed', ['error' => $e->getMessage()]);
+
+            return redirect()->back()->withErrors([
+                'file' => 'Unable to download staff import format.',
+            ]);
         }
     }
 
@@ -443,6 +470,8 @@ class StaffController extends Controller
             ]);
             $pendingTasksCount = $pendingTasks->count();
 
+            view()->share('pageHeaderSubtitle', 'Staff profile · ' . $staff->name);
+
             return view('staff.show', compact(
                 'staff',
                 'assignedProjects',
@@ -640,6 +669,33 @@ class StaffController extends Controller
     }
 
     /**
+     * Update the logged-in user's basic profile details.
+     */
+    public function updateProfileDetails(Request $request)
+    {
+        $validated = $request->validate([
+            'firstName' => ['required', 'string', 'max:25'],
+            'lastName' => ['required', 'string', 'max:25'],
+        ]);
+
+        $user = Auth::user();
+        $beforeAfter = $this->activityLogger->diff($user);
+
+        $user->firstName = trim($validated['firstName']);
+        $user->lastName = trim($validated['lastName']);
+        $user->name = trim($user->firstName . ' ' . $user->lastName);
+        $user->save();
+
+        $this->activityLogger->log('user', 'updated', $user, array_merge([
+            'description' => "Updated profile details for {$user->username}"
+        ], $beforeAfter));
+
+        return redirect()
+            ->back()
+            ->with('success', 'Profile details updated successfully.');
+    }
+
+    /**
      * Update profile picture.
      *
      * Data flow: HTTP Request → Processing → Response
@@ -684,7 +740,7 @@ class StaffController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
 
-            return redirect()->back()->with('error', 'Failed to update profile picture: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Failed to update profile picture. Please try again later.');
         }
     }
 
@@ -1176,84 +1232,25 @@ class StaffController extends Controller
     /**
      * Push panchayat to RMS server
      */
-    public function pushPanchayatToRMS(Request $request, $projectId, $panchayat)
+    public function pushPanchayatToRMS(Request $request, $projectId, $panchayat, RmsSyncService $rmsSyncService)
     {
         try {
-            // Get all streetlight sites for this panchayat and project
-            $streetlights = Streetlight::where('project_id', $projectId)
-                ->where('panchayat', $panchayat)
-                ->get();
-
-            if ($streetlights->isEmpty()) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'No streetlight sites found for this panchayat.'
-                ], 404);
-            }
-
-            $responses = [];
-            $successCount = 0;
-            $errorCount = 0;
-
-            foreach ($streetlights as $streetlight) {
-                // Get all tasks for this site
-                $tasks = StreetlightTask::where('site_id', $streetlight->id)->get();
-
-                foreach ($tasks as $task) {
-                    // Get all installed poles for this task
-                    $poles = Pole::where('task_id', $task->id)
-                        ->where('isInstallationDone', true)
-                        ->get();
-
-                    foreach ($poles as $pole) {
-                        try {
-                            $engineer = $task->engineer;
-                            $approved_by = $engineer ? ($engineer->firstName . ' ' . $engineer->lastName) : 'System';
-
-                            // Push to RMS
-                            $apiResponse = \App\Helpers\RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
-
-                            if ($apiResponse && $apiResponse->successful()) {
-                                $successCount++;
-                                $responses[] = [
-                                    'pole_id' => $pole->id,
-                                    'status' => 'success',
-                                    'message' => 'Pushed successfully'
-                                ];
-                            } else {
-                                $errorCount++;
-                                $responses[] = [
-                                    'pole_id' => $pole->id,
-                                    'status' => 'error',
-                                    'message' => $apiResponse ? 'API returned error' : 'No response from API'
-                                ];
-                            }
-                        } catch (\Exception $e) {
-                            $errorCount++;
-                            Log::error('Failed to push pole to RMS', [
-                                'pole_id' => $pole->id,
-                                'error' => $e->getMessage()
-                            ]);
-
-                            $responses[] = [
-                                'pole_id' => $pole->id,
-                                'status' => 'error',
-                                'message' => $e->getMessage()
-                            ];
-                        }
-                    }
-                }
-            }
+            $batch = $rmsSyncService->queueSync([
+                'source' => 'staff_panchayat_push',
+                'project_id' => (int) $projectId,
+                'panchayat' => (string) $panchayat,
+                'installed_only' => true,
+            ], Auth::id());
 
             return response()->json([
                 'success' => true,
-                'message' => "Panchayat '{$panchayat}' pushed to RMS. Success: {$successCount}, Errors: {$errorCount}",
+                'message' => "Panchayat '{$panchayat}' RMS sync queued.",
                 'data' => [
-                    'success_count' => $successCount,
-                    'error_count' => $errorCount,
-                    'responses' => $responses
-                ]
-            ]);
+                    'batch_id' => $batch->id,
+                    'status' => $batch->status,
+                    'status_url' => route('rms.sync.status', $batch),
+                ],
+            ], 202);
         } catch (\Exception $e) {
             Log::error('Failed to push panchayat to RMS', [
                 'project_id' => $projectId,
@@ -1281,6 +1278,8 @@ class StaffController extends Controller
             // Get staff and project
             $staff = User::findOrFail($staffId);
             $project = Project::findOrFail($projectId);
+
+            $this->authorize('view', $staff);
 
             // Validate project is streetlight type
             if ($project->project_type != 1) {

@@ -1,0 +1,15 @@
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/NullSafetyTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/PaginationTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/MassAssignmentTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/VendorSitesApiPropertyTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/VendorValidationTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/InventoryAddStreetlightTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/TransactionIntegrityTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/tests/Feature/StoreInventoryTest.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/scripts/annotate.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/scripts/update_class_docblocks.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/channels.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/console.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/web.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/routes/api.php
+/Applications/XAMPP/xamppfiles/htdocs/laravel_crm/commands.txt

@@ -23,6 +23,7 @@ class RmsPushLog extends Model
 
     protected $fillable = [
         'pole_id',
+        'status',
         'message',
         'response_data',
         'district',

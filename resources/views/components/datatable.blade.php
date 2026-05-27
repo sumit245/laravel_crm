@@ -926,13 +926,12 @@
             const debouncedUpdateSelectAllState = debounce(updateSelectAllState, 50);
             let paginationMoved = false;
 
-            // FIXME: This function is not being called either when dom loads or when the page length is changed.
             function updatePaginationInfo() {
                 if (!table || typeof table.page === 'undefined') return;
                 try {
                     const info = table.page.info();
-                    console.log("info", info);
-                    const text = `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
+                    const firstRecord = info.recordsDisplay === 0 ? 0 : info.start + 1;
+                    const text = `Showing ${firstRecord} to ${info.end} of ${info.recordsDisplay} entries`;
                     const infoElement = $('#' + '{{ $id }}' + '_info');
                     if (infoElement.length) {
                         infoElement.text(text).show();
@@ -1120,7 +1119,6 @@
                 });
             @endif
 
-            // FIXME: This function is not being called either when dom loads or when the page length is changed.
             function initializeDataTable(forceInit = false) {
                 var $table = $(tableId);
                 if (!$table.length) return;
@@ -1293,9 +1291,7 @@
                                 if (table && typeof table.page !== 'undefined') {
                                     debouncedUpdateBulkActions();
                                     debouncedUpdateSelectAllState();
-                                    const info = table.page.info();
-                                    const text = `Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`;
-                                    $('#' + '{{ $id }}' + '_info').text(text);
+                                    updatePaginationInfo();
                                 }
                             }, 0);
 
@@ -1352,10 +1348,7 @@
                                     $('#' + '{{ $id }}' + '_pagination_wrapper').show();
                                     paginationMoved = true;
                                 }
-                                if (table && typeof table.page !== 'undefined') {
-                                    const info = table.page.info();
-                                    $('#' + '{{ $id }}' + '_info').text(`Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`);
-                                }
+                                updatePaginationInfo();
                             }, 200);
 
                             window['datatableInitComplete_{{ $jsSafeId }}'] = true;
@@ -1384,6 +1377,7 @@
                     if (table) {
                         window['table_{{ $jsSafeId }}'] = table;
                         window['datatable_{{ $jsSafeId }}'] = table;
+                        table.on('draw page length search', updatePaginationInfo);
                     }
 
                 } catch (err) {
@@ -1392,8 +1386,7 @@
 
                 setTimeout(function() {
                     if (table && typeof table.page !== 'undefined') {
-                        const info = table.page.info();
-                        $('#' + '{{ $id }}' + '_info').text(`Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`);
+                        updatePaginationInfo();
                         if (table.columns) table.columns.adjust();
                     }
                 }, 300);
@@ -1404,8 +1397,7 @@
                         table.page.len($(this).val()).draw();
                         setTimeout(function() {
                              if (table && typeof table.page !== 'undefined') {
-                                const info = table.page.info();
-                                $('#' + '{{ $id }}' + '_info').text(`Showing ${info.start + 1} to ${info.end} of ${info.recordsTotal} entries`);
+                                updatePaginationInfo();
                              }
                         }, 100);
                     }

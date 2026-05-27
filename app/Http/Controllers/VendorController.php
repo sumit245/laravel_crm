@@ -21,6 +21,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Logging\ActivityLogger;
+use App\Services\Settings\VendorEarningsSettingsService;
 
 /**
  * Vendor Management — handles vendor-specific operations like viewing assigned inventory,
@@ -555,12 +556,14 @@ class VendorController extends Controller
                     })
                     ->count();
                 
-                $projectEarnings = $installedPoles * 500; // ₹500 per installed pole
+                $poleRate = app(VendorEarningsSettingsService::class)->rateForProject($project->id);
+                $projectEarnings = $installedPoles * $poleRate;
                 
                 $earningsByProject[$project->id] = [
                     'project' => $project,
                     'earnings' => $projectEarnings,
                     'installed_poles' => $installedPoles,
+                    'pole_rate' => $poleRate,
                 ];
             } else {
                 // For rooftop: calculate based on completed sites

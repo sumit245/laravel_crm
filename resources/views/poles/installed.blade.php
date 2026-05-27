@@ -25,6 +25,8 @@
             :importEnabled="false" 
             :bulkDeleteEnabled="true"
             :bulkDeleteRoute="route('poles.bulkDelete')"
+            :serverSide="true"
+            :ajaxUrl="$installedPolesAjaxUrl"
             pageLength="50" 
             searchPlaceholder="Search Poles..."
             :filters="[
@@ -82,87 +84,7 @@
                         'partial' => 'Partial',
                     ],
                 ],
-            ]">
-            @foreach ($poles as $pole)
-            @php
-                // Calculate RMS status for this pole using eager-loaded logs
-                $rmsLogs = $pole->rmsLogs ?? collect();
-                $rmsSuccessCount = $rmsLogs->where('status', 'success')->count();
-                $rmsErrorCount = $rmsLogs->where('status', 'error')->count();
-                $rmsTotal = $rmsSuccessCount + $rmsErrorCount;
-                $rmsStatus = $rmsTotal > 0 ? ($rmsErrorCount > 0 ? 'partial' : 'success') : 'pending';
-            @endphp
-            <tr data-surveyed="{{ $pole->isSurveyDone ? '1' : '0' }}" 
-                data-installed="{{ $pole->isInstallationDone ? '1' : '0' }}" 
-                data-billed="{{ $pole->task && $pole->task->billed ? '1' : '0' }}"
-                data-rms-status="{{ $rmsStatus }}"
-                data-rms-success="{{ $rmsSuccessCount }}"
-                data-rms-error="{{ $rmsErrorCount }}"
-                data-rms-total="{{ $rmsTotal }}"
-                data-pole-id="{{ $pole->id }}">
-                <td>
-                    <input type="checkbox" class="row-checkbox" value="{{ $pole->id }}">
-                </td>
-                <td>
-                    @if ($pole->lat && $pole->lng)
-                        <span class="text-primary" style="cursor:pointer;" onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})">
-                            {{ $pole->complete_pole_number ?? 'N/A' }}
-                        </span>
-                    @else
-                        {{ $pole->complete_pole_number ?? 'N/A' }}
-                    @endif
-                </td>
-                <td>{{ $pole->beneficiary ?? 'N/A' }}</td>
-                <td>{{ $pole->beneficiary_contact ?? 'N/A' }}</td>
-                <td>{{ $pole->luminary_qr ?? 'N/A' }}</td>
-                <td>{{ $pole->sim_number ?? 'N/A' }}</td>
-                <td>{{ $pole->battery_qr ?? 'N/A' }}</td>
-                <td>{{ $pole->panel_qr ?? 'N/A' }}</td>
-                <td>
-                    @if ($pole->task && $pole->task->billed)
-                        <span class="badge badge-success">Yes</span>
-                    @else
-                        <span class="badge badge-readable badge-no">No</span>
-                    @endif
-                </td>
-                <td>
-                    @if ($rmsTotal > 0)
-                        <div class="rms-status-indicator" 
-                             data-success="{{ $rmsSuccessCount }}" 
-                             data-error="{{ $rmsErrorCount }}"
-                             data-total="{{ $rmsTotal }}"
-                             data-pole-id="{{ $pole->id }}"
-                             style="cursor: pointer;"
-                             title="Success: {{ $rmsSuccessCount }}, Errors: {{ $rmsErrorCount }} - Click to download report">
-                            <div class="rms-progress-bar">
-                                <div class="rms-success-bar" style="width: {{ $rmsTotal > 0 ? ($rmsSuccessCount / $rmsTotal * 100) : 0 }}%"></div>
-                                <div class="rms-error-bar" style="width: {{ $rmsTotal > 0 ? ($rmsErrorCount / $rmsTotal * 100) : 0 }}%"></div>
-                            </div>
-                            <small class="rms-status-text">
-                                {{ $rmsSuccessCount }}/{{ $rmsTotal }} Success
-                            </small>
-                        </div>
-                    @else
-                        <span class="badge badge-readable badge-not-pushed">Not Pushed</span>
-                    @endif
-                </td>
-                <td class="text-center">
-                    <a href="{{ route('poles.show', $pole->id) }}" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-                        <i class="mdi mdi-eye"></i>
-                    </a>
-                    <a href="{{ route('poles.edit', $pole->id) }}" class="btn btn-icon btn-warning" data-toggle="tooltip" title="Edit Pole">
-                        <i class="mdi mdi-pencil"></i>
-                    </a>
-                    <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
-                        title="Delete Pole" data-id="{{ $pole->id }}"
-                        data-name="{{ $pole->complete_pole_number ?? 'this pole' }}"
-                        data-url="{{ route('poles.destroy', $pole->id) }}">
-                        <i class="mdi mdi-delete"></i>
-                    </button>
-                </td>
-            </tr>
-            @endforeach
-        </x-datatable>
+            ]"></x-datatable>
 
         {{-- Bulk Actions Bar --}}
         <div id="bulkActionsBar" class="mt-3 p-3 bg-light border rounded" style="display: none;">

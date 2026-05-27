@@ -182,7 +182,8 @@ class StoreController extends Controller
                 : [DB::raw('NULL as sim_number')]
             ))
             ->orderBy('inv.created_at', 'desc')
-            // ->limit(2000)
+            // Initial paint only. Full dataset is served by server-side DataTables ajax.
+            ->limit(config('crm.pagination.per_page', 50))
             ->get();
 
         // OPTIMIZATION 3: Metrics Calculation using Aggregates

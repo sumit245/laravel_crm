@@ -9,7 +9,7 @@
     <!-- Import Candidates and Send Emails in one line -->
     <div class="row mb-3">
       <div class="col-md-10">
-        <form action="{{ route("import.candidates") }}" method="POST" enctype="multipart/form-data">
+        <form action="{{ route("candidates.import") }}" method="POST" enctype="multipart/form-data">
           @csrf
           <div class="input-group">
             <input type="file" name="file" class="form-control form-height form-control-sm" required>
@@ -21,7 +21,7 @@
         
       </div>
       <div class="col-md-2 d-flex align-items-end">
-        <form action="{{ route("send.emails") }}" method="POST" class="w-100">
+        <form action="{{ route("candidates.send-emails") }}" method="POST" class="w-100">
           @csrf
           <button type="submit" class="btn btn-sm btn-primary w-100">
             <i class="mdi mdi-email-send"></i> Send Emails
@@ -111,6 +111,7 @@
           :importEnabled="false" 
           :bulkDeleteEnabled="true"
           :bulkDeleteRoute="route('candidates.bulkDelete')"
+          :actionsColumnEnabled="false"
           pageLength="50" 
           searchPlaceholder="Search candidates...">
           @foreach ($candidates as $index => $candidate)
@@ -207,7 +208,9 @@
 
   function toggleActionButtons() {
     const anyChecked = Array.from(checkboxes).some(cb => cb.checked);
-    actionButtons.style.display = anyChecked ? 'block' : 'none';
+    if (actionButtons) {
+      actionButtons.style.display = anyChecked ? 'block' : 'none';
+    }
   }
 
   // Toggle buttons on individual checkbox change
@@ -220,11 +223,6 @@
       toggleActionButtons();
     });
   }
-  document.getElementById('select-all').addEventListener('change', function () {
-    const checkboxes = document.querySelectorAll('.candidate-checkbox');
-    checkboxes.forEach(checkbox => checkbox.checked = this.checked);
-  });
-
   // Auto-show date/time picker
   ['from_date', 'to_date'].forEach(id => {
     const el = document.getElementById(id);

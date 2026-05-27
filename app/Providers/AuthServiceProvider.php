@@ -13,6 +13,8 @@ use App\Policies\StorePolicy;
 use App\Policies\UserPolicy;
 use App\Models\ActivityLog;
 use App\Policies\ActivityLogPolicy;
+use App\Models\Settings\OrganizationSetting;
+use App\Policies\SettingsPolicy;
 
 /**
  * Authentication and authorization service provider. Registers Gate definitions, Policy mappings
@@ -38,6 +40,7 @@ class AuthServiceProvider extends ServiceProvider
         User::class => UserPolicy::class,
         Stores::class => StorePolicy::class,
         ActivityLog::class => ActivityLogPolicy::class,
+        OrganizationSetting::class => SettingsPolicy::class,
     ];
 
     /**

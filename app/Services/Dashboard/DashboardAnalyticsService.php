@@ -476,12 +476,16 @@ class DashboardAnalyticsService
             $daysDiff = max(1, Carbon::parse($dateRange[0])->diffInDays(Carbon::parse($dateRange[1])));
             $speed = $daysDiff > 0 ? $installed / $daysDiff : 0;
 
-            // Determine speed status
-            $speedStatus = 'slow';
-            if ($speed >= 5) {
-                $speedStatus = 'fast';
-            } elseif ($speed >= 2) {
-                $speedStatus = 'medium';
+            // Tri-state speed status:
+            // - not_started: no installation started yet (or invalid total poles)
+            // - slow: started but below pace
+            // - on_track: started and meeting pace
+            if ((int) $panchayat->total_poles <= 0 || $installed === 0) {
+                $speedStatus = 'not_started';
+            } elseif ($speed < 2) {
+                $speedStatus = 'slow';
+            } else {
+                $speedStatus = 'on_track';
             }
 
             // Calculate trend (compare with previous period)
@@ -517,8 +521,8 @@ class DashboardAnalyticsService
             ];
         }
 
-        // Sort by speed (fastest first)
-        usort($result, fn($a, $b) => $b['speed'] <=> $a['speed']);
+        // Sort by speed (slowest first) to surface worst performers first.
+        usort($result, fn($a, $b) => $a['speed'] <=> $b['speed']);
 
         return $result;
     }

@@ -5,21 +5,44 @@
         <span class="icon-menu"></span>
       </button>
     </div>
+    @php
+      $brandLogo = $organizationBranding?->logo_url ?: 'https://www.sugslloyds.com/sugs-assets/logo.png';
+      $brandLogoAlt = $organizationBranding?->company_name ? $organizationBranding->company_name . ' logo' : 'Company logo';
+    @endphp
     <div>
       <a class="navbar-brand brand-logo" href="{{ url("/") }}">
-        <img src="https://www.sugslloyds.com/sugs-assets/logo.png" alt="logo" />
+        <img src="{{ $brandLogo }}" alt="{{ $brandLogoAlt }}" />
       </a>
       <a class="navbar-brand brand-logo-mini" href="{{ url("/") }}">
-        <img src="https://www.sugslloyds.com/sugs-assets/logo.png" alt="logo" />
+        <img src="{{ $brandLogo }}" alt="{{ $brandLogoAlt }}" />
       </a>
     </div>
   </div>
   <div class="navbar-menu-wrapper d-flex align-items-top">
     <ul class="navbar-nav">
       <li class="nav-item font-weight-semibold d-none d-lg-block ms-0">
-        <h1 class="welcome-text">Good Morning, <span
+        @php
+          $hour = now()->hour;
+          $timeGreeting = match (true) {
+              $hour < 12 => 'Good Morning',
+              $hour < 17 => 'Good Afternoon',
+              default => 'Good Evening',
+          };
+        @endphp
+        <h1 class="welcome-text">{{ $timeGreeting }}, <span
             class="fw-bold text-black">{{ Auth::user()->name ?? "Guest" }}</span></h1>
-        <h3 class="welcome-sub-text">Your performance summary</h3>
+        @php
+          $currentUser = Auth::user();
+          $userRole = \App\Enums\UserRole::tryFrom((int) ($currentUser->role ?? -1));
+          $dashboardSummaryText = match ($userRole) {
+              \App\Enums\UserRole::ADMIN => 'Organization summary',
+              \App\Enums\UserRole::PROJECT_MANAGER => 'Your project summary',
+              \App\Enums\UserRole::SITE_ENGINEER, \App\Enums\UserRole::VENDOR => 'Your tasks today',
+              default => 'Your dashboard summary',
+          };
+          $headerSubtitle = $pageHeaderSubtitle ?? $dashboardSummaryText;
+        @endphp
+        <h3 class="welcome-sub-text">{{ $headerSubtitle }}</h3>
       </li>
     </ul>
     <ul class="navbar-nav ms-auto">
@@ -43,20 +66,28 @@
         <a class="nav-link count-indicator" id="notificationDropdown" href="#" data-bs-toggle="dropdown"
           aria-expanded="false">
           <i class="icon-bell icon-lg"></i>
-          <span class="count"></span>
+          <span class="count" id="notificationCountBadge" style="display: none;">0</span>
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown preview-list pb-0"
           aria-labelledby="notificationDropdown">
-          <a class="dropdown-item border-bottom py-3">
-            <p class="font-weight-medium float-left mb-0">You have 0 new notifications</p>
-            <span class="badge badge-pill badge-primary float-right">View all</span>
-          </a>
+          <div class="dropdown-item border-bottom py-3 d-flex justify-content-between align-items-center">
+            <p class="font-weight-medium mb-0" id="notificationSummaryText">You have 0 new notifications</p>
+            <button type="button" class="badge badge-pill badge-primary border-0" id="markAllNotificationsReadButton">
+              Mark all read
+            </button>
+          </div>
+          <div id="notificationList">
+            <div class="dropdown-item py-3 text-muted">No notifications yet.</div>
+          </div>
         </div>
       </li>
       <li class="nav-item dropdown d-none d-lg-block user-dropdown">
-        <a class="nav-link" id="UserDropdown" href="#" data-bs-toggle="dropdown" aria-expanded="false">
+        <a class="nav-link d-flex align-items-center gap-1" id="UserDropdown" href="#" data-bs-toggle="dropdown"
+          aria-expanded="false" aria-label="Open profile menu">
           <img class="img-xs rounded-circle" src="{{ Auth::user()->image ?? asset("images/faces/face8.jpg") }}"
             alt="Profile image">
+          <i id="userDropdownChevron" class="mdi mdi-chevron-down" aria-hidden="true"></i>
+          <span class="visually-hidden">Profile menu</span>
         </a>
         <div class="dropdown-menu dropdown-menu-right navbar-dropdown" aria-labelledby="UserDropdown">
           <div class="dropdown-header text-center">
@@ -69,12 +100,12 @@
             <span class="badge badge-pill badge-danger">1</span>
           </a>
 
-          <a class="dropdown-item" href="#">
+          <span class="dropdown-item disabled" aria-disabled="true">
             <i class="dropdown-item-icon mdi mdi-message-text-outline text-primary me-2"></i> Messages
-          </a>
-          <a class="dropdown-item" href="#">
+          </span>
+          <span class="dropdown-item disabled" aria-disabled="true">
             <i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Activity
-          </a>
+          </span>
           <a class="dropdown-item" href={{ route("staff.change-password", Auth::id()) }}>
             <i class="dropdown-item-icon mdi mdi-calendar-check-outline text-primary me-2"></i> Change Password
           </a>
@@ -130,5 +161,20 @@
           .catch(error => console.error('Error:', error));
       });
     });
+
+    const userDropdownTrigger = document.getElementById("UserDropdown");
+    const userDropdownChevron = document.getElementById("userDropdownChevron");
+
+    if (userDropdownTrigger && userDropdownChevron) {
+      userDropdownTrigger.addEventListener("shown.bs.dropdown", function() {
+        userDropdownChevron.classList.remove("mdi-chevron-down");
+        userDropdownChevron.classList.add("mdi-chevron-up");
+      });
+
+      userDropdownTrigger.addEventListener("hidden.bs.dropdown", function() {
+        userDropdownChevron.classList.remove("mdi-chevron-up");
+        userDropdownChevron.classList.add("mdi-chevron-down");
+      });
+    }
   });
 </script>

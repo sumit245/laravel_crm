@@ -39,6 +39,7 @@ class Project extends Model
     ];
 
     protected $casts = [
+        'project_type' => 'integer',
         'start_date' => 'date',
         'end_date' => 'date',
         'agreement_date' => 'date',

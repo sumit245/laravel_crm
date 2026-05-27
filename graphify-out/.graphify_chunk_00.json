@@ -1,0 +1,596 @@
+{
+  "nodes": [
+    {
+      "id": "viteconfig_build",
+      "label": "Vite Build Config",
+      "file_type": "code",
+      "source_file": "vite.config.js",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_follow_ups",
+      "label": "follow_ups Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_12_040058_add_meet_id_to_follow_ups_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_meets",
+      "label": "meets Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_10_06_083606_create_meet_user_pivot_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_inventory_dispatch",
+      "label": "inventory_dispatch Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_03_31_000000_add_vendor_item_consumed_index_to_inventory_dispatch.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "idx_dispatch_vendor_item_consumed",
+      "label": "Composite Index: vendor_id + item_code + is_consumed on inventory_dispatch",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_03_31_000000_add_vendor_item_consumed_index_to_inventory_dispatch.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_project_user",
+      "label": "project_user Pivot Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_01_19_000000_add_district_id_to_project_user_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_cities",
+      "label": "cities Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_01_19_000000_add_district_id_to_project_user_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_inventory_streetlight",
+      "label": "inventory_streetlight Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_01_20_000001_add_indexes_for_inventory_performance.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "migration_inventory_perf_indexes",
+      "label": "Migration: Inventory Performance Indexes",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_01_20_000001_add_indexes_for_inventory_performance.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_discussion_point_user",
+      "label": "discussion_point_user Pivot Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_16_054244_create_discussion_point_user_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_discussion_points",
+      "label": "discussion_points Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_10_06_083453_create_discussion_points_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_users",
+      "label": "users Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_11_03_161101_add_department_and_vertical_head_to_users_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_streelight_poles",
+      "label": "streelight_poles Table (typo: streelight)",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_02_18_074000_change_image_columns_to_longtext_in_streelight_poles_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_streetlight_tasks",
+      "label": "streetlight_tasks Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_17_225959_backfill_vendor_id_for_existing_installed_poles.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "migration_backfill_vendor_id",
+      "label": "Migration: Backfill vendor_id on streelight_poles from streetlight_tasks",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_17_225959_backfill_vendor_id_for_existing_installed_poles.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "migration_allotted_wards",
+      "label": "Migration: Add allotted_wards to streetlight_tasks",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_03_16_000000_add_allotted_wards_to_streetlight_tasks.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "migration_sim_number",
+      "label": "Migration: Add sim_number to inventory_streetlight",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_17_195727_add_sim_number_to_inventory_streetlight_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_target_deletion_jobs",
+      "label": "target_deletion_jobs Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_29_133928_create_target_deletion_jobs_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_meet_user",
+      "label": "meet_user Pivot Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_10_06_083606_create_meet_user_pivot_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_projects",
+      "label": "projects Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_11_03_081107_add_project_to_discussion_points_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_streetlights",
+      "label": "streetlights Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_08_06_204122_drop_columns_from_streetlights_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_sites",
+      "label": "sites Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_07_18_054816_make_fields_default.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_jobs",
+      "label": "jobs Table (Laravel Queue)",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_30_065502_create_jobs_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_meeting_note_histories",
+      "label": "meeting_note_histories Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_09_02_060411_create_meeting_note_histories_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_rms_push_logs",
+      "label": "rms_push_logs Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_01_18_190352_create_rms_push_logs_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "migration_meets_type_varchar",
+      "label": "Migration: Change meets.type from ENUM to VARCHAR",
+      "file_type": "code",
+      "source_file": "database/migrations/2025_12_15_141339_change_meets_type_to_varchar.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "table_pole_import_jobs",
+      "label": "pole_import_jobs Table",
+      "file_type": "code",
+      "source_file": "database/migrations/2026_02_08_071221_add_project_id_to_pole_import_jobs_table.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "table_follow_ups",
+      "target": "table_meets",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_12_040058_add_meet_id_to_follow_ups_table.php",
+      "source_location": "line 14",
+      "weight": 1.0
+    },
+    {
+      "source": "idx_dispatch_vendor_item_consumed",
+      "target": "table_inventory_dispatch",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2026_03_31_000000_add_vendor_item_consumed_index_to_inventory_dispatch.php",
+      "source_location": "line 24-29",
+      "weight": 1.0
+    },
+    {
+      "source": "table_project_user",
+      "target": "table_cities",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2026_01_19_000000_add_district_id_to_project_user_table.php",
+      "source_location": "line 18-20",
+      "weight": 1.0
+    },
+    {
+      "source": "migration_inventory_perf_indexes",
+      "target": "table_inventory_streetlight",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_01_20_000001_add_indexes_for_inventory_performance.php",
+      "source_location": "line 17-27",
+      "weight": 1.0
+    },
+    {
+      "source": "migration_inventory_perf_indexes",
+      "target": "table_inventory_dispatch",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_01_20_000001_add_indexes_for_inventory_performance.php",
+      "source_location": "line 30-41",
+      "weight": 1.0
+    },
+    {
+      "source": "table_discussion_point_user",
+      "target": "table_discussion_points",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_16_054244_create_discussion_point_user_table.php",
+      "source_location": "line 15",
+      "weight": 1.0
+    },
+    {
+      "source": "table_discussion_point_user",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_16_054244_create_discussion_point_user_table.php",
+      "source_location": "line 16",
+      "weight": 1.0
+    },
+    {
+      "source": "table_users",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_11_03_161101_add_department_and_vertical_head_to_users_table.php",
+      "source_location": "line 16",
+      "weight": 1.0
+    },
+    {
+      "source": "table_discussion_points",
+      "target": "table_meets",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_10_06_083453_create_discussion_points_table.php",
+      "source_location": "line 17",
+      "weight": 1.0
+    },
+    {
+      "source": "table_discussion_points",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_10_06_083453_create_discussion_points_table.php",
+      "source_location": "line 20",
+      "weight": 1.0
+    },
+    {
+      "source": "migration_backfill_vendor_id",
+      "target": "table_streelight_poles",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_17_225959_backfill_vendor_id_for_existing_installed_poles.php",
+      "source_location": "line 16-21",
+      "weight": 1.0
+    },
+    {
+      "source": "migration_backfill_vendor_id",
+      "target": "table_streetlight_tasks",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_17_225959_backfill_vendor_id_for_existing_installed_poles.php",
+      "source_location": "line 17",
+      "weight": 1.0
+    },
+    {
+      "source": "table_streelight_poles",
+      "target": "table_streetlight_tasks",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "database/migrations/2025_12_17_225959_backfill_vendor_id_for_existing_installed_poles.php",
+      "source_location": "line 16-21",
+      "weight": 0.9
+    },
+    {
+      "source": "migration_allotted_wards",
+      "target": "table_streetlight_tasks",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2026_03_16_000000_add_allotted_wards_to_streetlight_tasks.php",
+      "source_location": "line 14-16",
+      "weight": 1.0
+    },
+    {
+      "source": "migration_sim_number",
+      "target": "table_inventory_streetlight",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_17_195727_add_sim_number_to_inventory_streetlight_table.php",
+      "source_location": "line 14-16",
+      "weight": 1.0
+    },
+    {
+      "source": "table_target_deletion_jobs",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_29_133928_create_target_deletion_jobs_table.php",
+      "source_location": "line 32",
+      "weight": 1.0
+    },
+    {
+      "source": "table_target_deletion_jobs",
+      "target": "table_streetlight_tasks",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "database/migrations/2025_12_29_133928_create_target_deletion_jobs_table.php",
+      "source_location": "line 17",
+      "weight": 0.8
+    },
+    {
+      "source": "table_meet_user",
+      "target": "table_meets",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_10_06_083606_create_meet_user_pivot_table.php",
+      "source_location": "line 16",
+      "weight": 1.0
+    },
+    {
+      "source": "table_meet_user",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_10_06_083606_create_meet_user_pivot_table.php",
+      "source_location": "line 17",
+      "weight": 1.0
+    },
+    {
+      "source": "table_discussion_points",
+      "target": "table_projects",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_11_03_081107_add_project_to_discussion_points_table.php",
+      "source_location": "line 15",
+      "weight": 1.0
+    },
+    {
+      "source": "table_meeting_note_histories",
+      "target": "table_meets",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_09_02_060411_create_meeting_note_histories_table.php",
+      "source_location": "line 16",
+      "weight": 1.0
+    },
+    {
+      "source": "table_meeting_note_histories",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_09_02_060411_create_meeting_note_histories_table.php",
+      "source_location": "line 17",
+      "weight": 1.0
+    },
+    {
+      "source": "table_rms_push_logs",
+      "target": "table_streelight_poles",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2026_01_18_190352_create_rms_push_logs_table.php",
+      "source_location": "line 27",
+      "weight": 1.0
+    },
+    {
+      "source": "table_rms_push_logs",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2026_01_18_190352_create_rms_push_logs_table.php",
+      "source_location": "line 28",
+      "weight": 1.0
+    },
+    {
+      "source": "migration_meets_type_varchar",
+      "target": "table_meets",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2025_12_15_141339_change_meets_type_to_varchar.php",
+      "source_location": "line 16",
+      "weight": 1.0
+    },
+    {
+      "source": "table_pole_import_jobs",
+      "target": "table_projects",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "database/migrations/2026_02_08_071221_add_project_id_to_pole_import_jobs_table.php",
+      "source_location": "line 15",
+      "weight": 1.0
+    },
+    {
+      "source": "table_pole_import_jobs",
+      "target": "table_streelight_poles",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "database/migrations/2026_02_08_071221_add_project_id_to_pole_import_jobs_table.php",
+      "source_location": null,
+      "weight": 0.85
+    },
+    {
+      "source": "table_inventory_dispatch",
+      "target": "table_inventory_streetlight",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.9,
+      "source_file": "database/migrations/2025_01_20_000001_add_indexes_for_inventory_performance.php",
+      "source_location": "line 33-35",
+      "weight": 0.9
+    },
+    {
+      "source": "viteconfig_build",
+      "target": "table_users",
+      "relation": "references",
+      "confidence": "AMBIGUOUS",
+      "confidence_score": 0.1,
+      "source_file": "vite.config.js",
+      "source_location": null,
+      "weight": 0.1
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

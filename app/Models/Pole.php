@@ -76,6 +76,11 @@ class Pole extends Model
         return $this->belongsTo(User::class, 'vendor_id');
     }
 
+    public function rmsLogs()
+    {
+        return $this->hasMany(RmsPushLog::class, 'pole_id');
+    }
+
     /**
      * Get all inventory dispatches consumed by this pole
      * Relationship: Pole has many InventoryDispatches

@@ -88,8 +88,7 @@
               ]" 
             :exportEnabled="true" 
             :importEnabled="false" 
-            :bulkDeleteEnabled="true"
-            :bulkDeleteRoute="route('conveyance.bulkDelete')"
+            :bulkDeleteEnabled="false"
             pageLength="50" 
             searchPlaceholder="Search convenience requests...">
             @foreach ($cons as $row)

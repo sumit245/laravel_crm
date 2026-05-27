@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{ActivityLogController, API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
+use App\Http\Controllers\{ActivityLogController, API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, CodeDocController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, NotificationController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, RmsSyncController, SettingsController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -26,10 +26,13 @@ Route::post('/backup/create', [BackupController::class, 'create'])->name('backup
 Route::get('/backup/download/{filename}', [BackupController::class, 'download'])->name('backup.download');
 Route::delete('/backup/delete/{filename}', [BackupController::class, 'delete'])->name('backup.delete');
 
+Route::get('/docs/code', [CodeDocController::class, 'index'])->name('docs.code.index');
+Route::get('/docs/code/{category}/{file?}', [CodeDocController::class, 'show'])->name('docs.code.show');
+
 // Authenticated Routes
 Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Home
-    Route::get('/', [HomeController::class, 'index'])->name('home');
+    Route::redirect('/', '/dashboard')->name('home');
     Route::get('dashboard', [HomeController::class, 'index'])->name('dashboard');
     Route::get('/export-excel', [HomeController::class, 'exportToExcel'])->name('export.excel');
 
@@ -47,12 +50,16 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
     // Staff
     Route::get('/vendor-data/{id}', [StaffController::class, 'vendorData'])->name('vendor.data');
     Route::get('/engineer-data/{id}', [StaffController::class, 'engineerData'])->name('engineer.data');
+    Route::get('/staff/{staffId}/export-streetlight/{projectId}', [StaffController::class, 'exportStreetlightExcel'])
+        ->name('staff.exportStreetlight');
+    Route::get('/staff/import-format', [StaffController::class, 'importFormat'])->name('staff.importFormat');
     Route::resource('staff', StaffController::class);
     Route::post('/staff/bulk-delete', [StaffController::class, 'bulkDelete'])->name('staff.bulkDelete');
     Route::prefix('staff')
         ->name('staff.')
         ->group(function () {
             Route::get('update-profile/{id}', [StaffController::class, 'updateProfile'])->name('profile');
+            Route::post('update-profile-details', [StaffController::class, 'updateProfileDetails'])->name('updateProfileDetails');
             Route::post('update-profile-picture', [StaffController::class, 'updateProfilePicture'])->name('updateProfilePicture');
             Route::post('mobile/send-otp', [StaffController::class, 'sendMobileChangeOtp'])->name('mobile.send-otp');
             Route::post('mobile/verify-otp', [StaffController::class, 'verifyMobileChangeOtp'])->name('mobile.verify-otp');
@@ -61,6 +68,8 @@ Route::middleware(['auth', 'restrict.meetings'])->group(function () {
         });
     Route::post('/staff/{id}/upload-avatar', [StaffController::class, 'uploadAvatar'])->name('staff.uploadAvatar');
     Route::post('/import-staff', action: [StaffController::class, 'import'])->name('import.staff');
+    Route::post('/staff/projects/{projectId}/panchayat/{panchayat}/delete', [StaffController::class, 'deletePanchayat'])->name('staff.panchayat.delete');
+    Route::post('/staff/projects/{projectId}/panchayat/{panchayat}/push-rms', [StaffController::class, 'pushPanchayatToRMS'])->name('staff.panchayat.push-rms');
 
     // Performance
     Route::prefix('performance')
@@ -170,13 +179,35 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::resource('sites', SiteController::class);
 
     // Convenience / Billing
+    Route::prefix('settings')
+        ->name('settings.')
+        ->group(function () {
+            Route::get('/{section?}', [SettingsController::class, 'index'])->name('section');
+            Route::post('/organization', [SettingsController::class, 'updateOrganization'])->name('organization.update');
+            Route::post('/billing/vehicles', [SettingsController::class, 'storeVehicle'])->name('billing.vehicles.store');
+            Route::put('/billing/vehicles/{vehicle}', [SettingsController::class, 'updateVehicle'])->name('billing.vehicles.update');
+            Route::delete('/billing/vehicles/{vehicle}', [SettingsController::class, 'destroyVehicle'])->name('billing.vehicles.destroy');
+            Route::post('/billing/categories', [SettingsController::class, 'storeCategory'])->name('billing.categories.store');
+            Route::put('/billing/categories/{category}', [SettingsController::class, 'updateCategory'])->name('billing.categories.update');
+            Route::delete('/billing/categories/{category}', [SettingsController::class, 'destroyCategory'])->name('billing.categories.destroy');
+            Route::put('/billing/users/{user}/category', [SettingsController::class, 'updateUserCategory'])->name('billing.users.category.update');
+            Route::put('/billing/cities/{city}', [SettingsController::class, 'updateCity'])->name('billing.cities.update');
+            Route::post('/vendor-earnings', [SettingsController::class, 'updateVendorEarnings'])->name('vendor-earnings.update');
+            Route::post('/vendor-earnings/projects', [SettingsController::class, 'updateProjectVendorEarnings'])->name('vendor-earnings.projects.update');
+            Route::post('/permissions', [SettingsController::class, 'updatePermissions'])->name('permissions.update');
+            Route::post('/notifications', [SettingsController::class, 'updateNotifications'])->name('notifications.update');
+            Route::post('/import-export', [SettingsController::class, 'updateImportExport'])->name('import-export.update');
+            Route::post('/rms', [SettingsController::class, 'updateRms'])->name('rms.update');
+            Route::post('/dashboard', [SettingsController::class, 'updateDashboard'])->name('dashboard.update');
+        });
+
     Route::prefix('billing')
         ->name('billing.')
         ->group(function () {
             Route::get('convenience', [ConvenienceController::class, 'convenience'])->name('convenience');
             Route::get('tada', [ConvenienceController::class, 'tadaView'])->name('tada');
             Route::get('tada-details/{id}', [ConvenienceController::class, 'viewtadaDetails'])->name('tadaDetails');
-            Route::get('settings', [ConvenienceController::class, 'settings'])->name('settings');
+            Route::redirect('settings', '/settings/billing')->name('settings');
             Route::post('settings/add', [ConvenienceController::class, 'addVehicle'])->name('addvehicle');
             Route::get('settings/edit/{id}', [ConvenienceController::class, 'editVehicle'])->name('editvehicle');
             Route::post('settings/update', [ConvenienceController::class, 'updateVehicle'])->name('updatevehicle');
@@ -205,9 +236,9 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::get('/convenience-details/{id}', [ConvenienceController::class, 'showdetailsconveyance'])->name('convenience.details');
     Route::get('/view-bills', [ConvenienceController::class, 'viewBills'])->name('view.bills');
 
-    // Inventory
-    Route::resource('inventory', InventoryController::class)->except(['show', 'store']);
+    // Inventory operations are surfaced from project/store detail pages.
     Route::post('/inventory/store', [InventoryController::class, 'store'])->name('inventory.store');
+    Route::delete('/inventory/{inventory}', [InventoryController::class, 'destroy'])->name('inventory.destroy');
     Route::prefix('inventory')
         ->name('inventory.')
         ->group(function () {
@@ -221,8 +252,6 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
             Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
             Route::get('view', [InventoryController::class, 'viewInventory'])->name('view');
             Route::post('replace', [InventoryController::class, 'replaceItem'])->name('replace');
-            Route::get('edit/{id}', [InventoryController::class, 'editInventory'])->name('editInventory');
-            Route::put('update/{id}', [InventoryController::class, 'updateInventory'])->name('updateInventory');
             Route::post('bulk-delete', [InventoryController::class, 'bulkDelete'])->name('bulkDelete');
             Route::get('dispatch', [InventoryController::class, 'showDispatchInventory'])->name('showDispatchInventory');
             Route::post('return', [InventoryController::class, 'returnInventory'])->name('return');
@@ -258,6 +287,8 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::get('/poles/{id}/edit', [PoleController::class, 'edit'])->name('poles.edit');
     Route::put('/poles/{id}', [PoleController::class, 'update'])->name('poles.update');
     Route::delete('/poles/{id}', [PoleController::class, 'destroy'])->name('poles.destroy');
+    Route::post('/poles/bulk-delete', [PoleController::class, 'bulkDelete'])->name('poles.bulkDelete');
+    Route::post('/poles/bulk-push-rms', [PoleController::class, 'bulkPushRms'])->name('poles.bulkPushRms');
 
     // Streetlight
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
@@ -265,18 +296,31 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
 
     // Hiring (using existing candidate routes, only adding authenticated-only routes)
+    Route::get('/candidates/{id}/preview', [PreviewController::class, 'adminPreview'])->name('admin-preview');
     Route::post('/candidates/bulk-update', [PreviewController::class, 'bulkUpdate'])->name('candidates.bulkUpdate');
+    Route::post('/candidates/bulk-delete', [CandidateController::class, 'bulkDelete'])->name('candidates.bulkDelete');
     Route::delete('/candidates/{id}', [CandidateController::class, 'destroy'])->name('candidates.destroy');
 
     // Device Import
     Route::get('/devices-import', [DeviceController::class, 'index'])->name('device.index');
+    Route::get('/devices-import/sample', [DeviceController::class, 'downloadSample'])->name('device.import.sample');
+    Route::get('/devices-import/progress/{jobId}', [DeviceController::class, 'getImportProgress'])->name('device.import.progress');
     Route::post('/import-devices', [DeviceController::class, 'import'])->name('import.device');
 
     // RMS Push
     Route::get('/rms-export', [RMSController::class, 'index'])->name('rms.index');
+    Route::get('/rms-export/report', [RMSController::class, 'export'])->name('rms.export');
     Route::post('/rms-push', [RMSController::class, 'sendPanchayatToRMS'])->name('rms.push');
+    Route::get('/rms-sync/{batch}', [RmsSyncController::class, 'show'])->name('rms.sync.status');
 
     // Activity Logs
     Route::get('/activity-logs', [ActivityLogController::class, 'index'])->name('activity-logs.index');
     Route::get('/activity-logs/{activityLog}', [ActivityLogController::class, 'show'])->name('activity-logs.show');
+
+    // In-app notifications
+    Route::get('/notifications/summary', [NotificationController::class, 'summary'])->name('notifications.summary');
+    Route::post('/notifications/{notification}/read', [NotificationController::class, 'markRead'])->name('notifications.read');
+    Route::post('/notifications/read-all', [NotificationController::class, 'markAllRead'])->name('notifications.readAll');
+
+    Route::post('/tasks/check-ward-conflict', [TasksController::class, 'checkWardConflict'])->name('api.check-ward-conflict');
 });

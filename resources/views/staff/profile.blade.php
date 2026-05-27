@@ -1,35 +1,81 @@
 @extends("layouts.main")
 
 @section("content")
-  <div class="content-wrapper bg-white p-3">
-    <div class="d-flex justify-content-between align-items-center">
-      <h6>Upload Profile Photo</h6>
-      <span class="close">×</span>
+  @php
+    $profilePhoto = $user->image ?: asset("images/faces/face8.jpg");
+    $pendingMobile = session("mobile_change_mobile");
+    $hasPendingMobileOtp = (bool) session("mobile_change_otp") && $pendingMobile;
+  @endphp
+
+  <div class="content-wrapper bg-white p-3 staff-profile-page">
+    <div class="profile-page-header">
+      <h1>Profile Settings</h1>
+      <button type="button" class="profile-close-button" id="profile-close-button" aria-label="Close profile settings">
+        <span aria-hidden="true">×</span>
+      </button>
     </div>
     <div class="body">
       <div class="name">
         <h6 class="text-uppercase">{{ $user->firstName }} {{ $user->lastName }}</h6>
       </div>
+
+      <form method="POST" action="{{ route('staff.updateProfileDetails') }}" class="profile-details-form">
+        @csrf
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="firstName" class="form-label">First Name</label>
+            <input type="text"
+                   class="form-control @error('firstName') is-invalid @enderror"
+                   id="firstName"
+                   name="firstName"
+                   value="{{ old('firstName', $user->firstName) }}"
+                   maxlength="25"
+                   required>
+            @error('firstName')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="lastName" class="form-label">Last Name</label>
+            <input type="text"
+                   class="form-control @error('lastName') is-invalid @enderror"
+                   id="lastName"
+                   name="lastName"
+                   value="{{ old('lastName', $user->lastName) }}"
+                   maxlength="25"
+                   required>
+            @error('lastName')
+              <div class="invalid-feedback">{{ $message }}</div>
+            @enderror
+          </div>
+          <div class="col-md-4 mb-3 profile-details-actions">
+            <button type="submit" class="btn save">Update Name</button>
+          </div>
+        </div>
+      </form>
+
+      <hr class="my-4">
+
       <form id="upload-form" action="{{ route('staff.updateProfilePicture') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="row">
           <div class="col-md-4">
             <div class="photo">
-              <img src="{{ $user->image }}" alt="Profile Photo" class="custom-image" id="current-photo">
-              <div class="trash" id="remove-image" style="display: none;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="red" stroke-width="2">
+              <img src="{{ $profilePhoto }}" alt="Profile photo for {{ $user->firstName }} {{ $user->lastName }}" class="custom-image" id="current-photo">
+              <button type="button" class="trash" id="remove-image" style="display: none;" aria-label="Remove selected profile photo">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <polyline points="3 6 5 6 21 6"></polyline>
                   <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
                 </svg>
-              </div>
+              </button>
             </div>
           </div>
 
           <div class="col-md-6">
-            <div class="upload" id="uploadTrigger" style="cursor: pointer;">
+            <div class="upload">
               <h2>Upload new photo</h2>
-              <div class="area drop-area" id="drop-area">
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#ccc" id="upload-icon">
+              <label class="area drop-area" id="drop-area" for="photoInput" role="button" tabindex="0" aria-label="Choose a new profile photo" aria-describedby="upload-help">
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" id="upload-icon" aria-hidden="true">
                   <rect x="3" y="3" width="18" height="18" rx="2"></rect>
                   <circle cx="8.5" cy="8.5" r="1.5"></circle>
                   <polyline points="21 15 16 10 5 21"></polyline>
@@ -41,24 +87,25 @@
                   <img id="image-preview" src="/placeholder.svg" alt="Preview" style="max-width: 200px; max-height: 200px; margin: 10px auto;">
                   <p id="file-info" class="mt-2" style="font-size: 14px; color: #666;"></p>
                 </div>
+              </label>
+              <div id="upload-help">
+                <p class="info">Accepted file types: .jpg, .jpeg, .png, .gif, .heic, .heif</p>
+                <p class="info">Maximum file size: 2MB</p>
               </div>
-              <p class="info">Accepted file types: .jpg, .jpeg, .png, .gif, .heic, .heif</p>
-              <p class="info">Maximum file size: 2MB</p>
 
-              <!-- Hidden file input -->
-              <input type="file" name="profile_picture" id="photoInput" accept="image/*" style="display: none;">
+              <input type="file" name="profile_picture" id="photoInput" accept="image/*" class="visually-hidden-file" tabindex="-1" aria-hidden="true">
             </div>
           </div>
         </div>
 
         <!-- Error/Success messages -->
         <div id="message-container" class="mt-3" style="display: none;">
-          <div id="message" class="alert"></div>
+          <div id="message" class="alert" role="alert" aria-live="polite" tabindex="-1"></div>
         </div>
 
         <div class="d-flex justify-content-end align-items-center mx-2 mt-4">
           <div>
-            <button type="button" class="btn btn-outline btn-danger mx-2" id="cancel-button">Cancel</button>
+            <button type="button" class="btn profile-cancel-button mx-2" id="cancel-button">Cancel</button>
           </div>
           <div>
             <button type="submit" class="btn save" id="submit-button">Save</button>
@@ -75,7 +122,6 @@
             <strong>Current:</strong> {{ $user->contactNo ?? 'Not set' }}
           </p>
 
-          {{-- Step 1: Request OTP --}}
           <form method="POST" action="{{ route('staff.mobile.send-otp') }}" class="mt-2">
             @csrf
             <div class="mb-2">
@@ -89,25 +135,34 @@
                      pattern="[0-9]{10}"
                      required>
             </div>
-            <button type="submit" class="btn btn-sm btn-primary">Send OTP on WhatsApp</button>
+            <button type="submit" class="btn btn-sm btn-primary">{{ $hasPendingMobileOtp ? 'Send New OTP' : 'Send OTP on WhatsApp' }}</button>
           </form>
 
-          {{-- Step 2: Verify OTP --}}
-          <form method="POST" action="{{ route('staff.mobile.verify-otp') }}" class="mt-3">
-            @csrf
-            <div class="mb-2">
-              <label for="otp" class="form-label">Enter OTP</label>
-              <input type="text"
-                     class="form-control"
-                     id="otp"
-                     name="otp"
-                     placeholder="6-digit OTP"
-                     maxlength="6"
-                     pattern="[0-9]{6}"
-                     required>
+          @if($hasPendingMobileOtp)
+            <div class="otp-status" role="status">
+              OTP sent to <strong>{{ $pendingMobile }}</strong>. It expires in 10 minutes.
             </div>
-            <button type="submit" class="btn btn-sm btn-success">Verify & Update Mobile</button>
-          </form>
+
+            <form method="POST" action="{{ route('staff.mobile.verify-otp') }}" class="mt-3">
+              @csrf
+              <div class="mb-2">
+                <label for="otp" class="form-label">Enter OTP</label>
+                <input type="text"
+                       class="form-control"
+                       id="otp"
+                       name="otp"
+                       placeholder="6-digit OTP"
+                       maxlength="6"
+                       pattern="[0-9]{6}"
+                       inputmode="numeric"
+                       autocomplete="one-time-code"
+                       required>
+              </div>
+              <button type="submit" class="btn btn-sm btn-success">Verify & Update Mobile</button>
+            </form>
+          @else
+            <p class="otp-help mt-3">Verification appears after an OTP is sent.</p>
+          @endif
         </div>
       </div>
     </div>
@@ -118,7 +173,6 @@
       // Elements
       const form = document.getElementById('upload-form');
       const photoInput = document.getElementById('photoInput');
-      const uploadTrigger = document.getElementById('uploadTrigger');
       const dropArea = document.getElementById('drop-area');
       const previewContainer = document.getElementById('preview-container');
       const imagePreview = document.getElementById('image-preview');
@@ -131,12 +185,24 @@
       const message = document.getElementById('message');
       const submitButton = document.getElementById('submit-button');
       const cancelButton = document.getElementById('cancel-button');
+      const closeButton = document.getElementById('profile-close-button');
 
       let hasFile = false;
       
-      // Click-to-open file dialog
-      uploadTrigger.addEventListener('click', () => {
-        photoInput.click();
+      closeButton.addEventListener('click', function() {
+        if (window.history.length > 1) {
+          window.history.back();
+          return;
+        }
+
+        window.location.href = "{{ route('dashboard') }}";
+      });
+
+      dropArea.addEventListener('keydown', e => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          photoInput.click();
+        }
       });
 
       // File input change handler
@@ -203,12 +269,16 @@
         // Validate file type
         const validTypes = ['image/jpeg', 'image/png', 'image/jpg', 'image/gif', 'image/heic', 'image/heif'];
         if (!validTypes.includes(file.type)) {
+          photoInput.value = '';
+          hasFile = false;
           showMessage('Please select a valid image file (.jpg, .jpeg, .png, .gif, .heic, .heif).', 'error');
           return;
         }
         
         // Validate file size (max 2MB)
         if (file.size > 2 * 1024 * 1024) {
+          photoInput.value = '';
+          hasFile = false;
           showMessage('File size exceeds 2MB limit. Please select a smaller file.', 'error');
           return;
         }
@@ -260,7 +330,7 @@
         removeImage.style.display = 'none';
         
         // Reset current photo
-        currentPhoto.src = "{{ $user->image }}";
+        currentPhoto.src = "{{ $profilePhoto }}";
         
         // Clear file flag
         hasFile = false;
@@ -285,6 +355,7 @@
         }
         
         messageContainer.style.display = 'block';
+        message.focus();
       }
 
       // Hide message
@@ -306,36 +377,64 @@
 
 @push("styles")
   <style>
-    .header {
-      background: #e0e0e0;
-      padding: 15px;
-      position: relative;
-      text-align: center
+    .staff-profile-page {
+      color: #1f2528;
     }
 
-    .header h1 {
-      font-size: 32px;
-      font-weight: normal
+    .staff-profile-page .profile-page-header {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
     }
 
-    .close {
-      position: absolute;
-      right: 20px;
-      top: 15px;
+    .staff-profile-page .profile-page-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .staff-profile-page .profile-close-button {
+      align-items: center;
+      background: transparent;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      color: #4c555a;
+      cursor: pointer;
+      display: inline-flex;
       font-size: 28px;
-      cursor: pointer
+      height: 44px;
+      justify-content: center;
+      line-height: 1;
+      width: 44px;
     }
 
-    .body {
+    .staff-profile-page .profile-close-button:hover,
+    .staff-profile-page .profile-close-button:focus {
+      background: #eef4f6;
+      border-color: #cbd8dd;
+      outline: none;
+    }
+
+    .staff-profile-page .body {
       padding: 20px
     }
 
-    .name {
+    .staff-profile-page .name {
       font-size: 32px;
       margin-bottom: 20px
     }
 
-    .photo {
+    .staff-profile-page .profile-details-form {
+      max-width: 820px;
+    }
+
+    .staff-profile-page .profile-details-actions {
+      align-items: flex-end;
+      display: flex;
+    }
+
+    .staff-profile-page .photo {
       border: 1px solid #ddd;
       border-radius: 50%;
       position: relative;
@@ -343,7 +442,7 @@
       aspect-ratio: 1/1;
     }
 
-    .photo img {
+    .staff-profile-page .photo img {
       width: 100%;
       height: 100%;
       object-fit: cover;
@@ -351,13 +450,14 @@
       display: block
     }
 
-    .trash {
+    .staff-profile-page .trash {
       position: absolute;
       top: 20px;
       right: 20px;
       background: white;
       border: 1px solid #ddd;
       border-radius: 20px;
+      color: #b42318;
       width: 40px;
       height: 40px;
       display: flex;
@@ -367,22 +467,27 @@
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
 
-    .trash:hover {
+    .staff-profile-page .trash:hover,
+    .staff-profile-page .trash:focus {
       background: #f8f8f8;
+      outline: 2px solid #8dd3e7;
+      outline-offset: 2px;
     }
 
-    .upload {
+    .staff-profile-page .upload {
       flex: 1
     }
 
-    .upload h2 {
+    .staff-profile-page .upload h2 {
       font-size: 24px;
       margin-bottom: 15px;
       font-weight: normal
     }
 
-    .area {
+    .staff-profile-page .area {
       border: 2px dashed #ccc;
+      color: #8d989e;
+      cursor: pointer;
       padding: 20px;
       text-align: center;
       min-height: 200px;
@@ -394,44 +499,47 @@
       transition: all 0.3s ease;
     }
 
-    .area.highlight {
+    .staff-profile-page .area.highlight,
+    .staff-profile-page .area:focus {
       border-color: #8dd3e7;
       background-color: rgba(141, 211, 231, 0.1);
+      outline: none;
     }
 
-    .area svg {
+    .staff-profile-page .area svg {
       margin-bottom: 15px;
       opacity: .5;
       transition: opacity 0.3s ease;
     }
 
-    .area:hover svg {
+    .staff-profile-page .area:hover svg,
+    .staff-profile-page .area:focus svg {
       opacity: .8;
     }
 
-    .text {
+    .staff-profile-page .text {
       font-size: 18px;
       color: #666
     }
 
-    .blue {
-      color: #2196F3
+    .staff-profile-page .blue {
+      color: #1155cc
     }
 
-    .info {
+    .staff-profile-page .info {
       color: #666;
       margin-bottom: 10px;
       font-size: 16px
     }
 
-    .footer {
+    .staff-profile-page .footer {
       padding: 20px;
       display: flex;
       justify-content: space-between;
       border-top: 1px solid #eee
     }
 
-    .btn {
+    .staff-profile-page .btn {
       padding: 10px 25px;
       font-size: 18px;
       border-radius: 4px;
@@ -440,51 +548,117 @@
       transition: all 0.3s ease;
     }
 
-    .btn:disabled {
+    .staff-profile-page .btn:disabled {
       opacity: 0.7;
       cursor: not-allowed;
     }
 
-    .save {
-      background: #8dd3e7;
-      color: white
+    .staff-profile-page .save {
+      background: #137b91;
+      color: #f8fbfc
     }
 
-    .save:hover:not(:disabled) {
-      background: #7bc0d4;
+    .staff-profile-page .save:hover:not(:disabled),
+    .staff-profile-page .save:focus {
+      background: #0d6578;
+      outline: 2px solid #8dd3e7;
+      outline-offset: 2px;
     }
 
-    .btn-danger {
+    .staff-profile-page .profile-cancel-button {
       color: #dc3545;
       border: 1px solid #dc3545;
+      background: #fffafa;
     }
 
-    .btn-danger:hover {
+    .staff-profile-page .profile-cancel-button:hover,
+    .staff-profile-page .profile-cancel-button:focus {
       background-color: #dc3545;
       color: white;
+      outline: 2px solid #f1aeb5;
+      outline-offset: 2px;
     }
 
-    .alert {
+    .staff-profile-page .alert {
       padding: 10px 15px;
       border-radius: 4px;
       margin-bottom: 15px;
     }
 
-    .alert-success {
+    .staff-profile-page .alert-success {
       background-color: #d4edda;
       color: #155724;
       border: 1px solid #c3e6cb;
     }
 
-    .alert-danger {
+    .staff-profile-page .alert-danger {
       background-color: #f8d7da;
       color: #721c24;
       border: 1px solid #f5c6cb;
     }
 
-    #image-preview {
+    .staff-profile-page #image-preview {
       border-radius: 8px;
       box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .staff-profile-page .visually-hidden-file {
+      display: none;
+    }
+
+    .staff-profile-page .otp-status {
+      background: #eef8fb;
+      border: 1px solid #b9dfe8;
+      border-radius: 4px;
+      color: #194d5a;
+      margin-top: 14px;
+      padding: 10px 12px;
+    }
+
+    .staff-profile-page .otp-help {
+      color: #66727a;
+      font-size: 14px;
+      margin-bottom: 0;
+    }
+
+    @media (max-width: 767.98px) {
+      .staff-profile-page .body {
+        padding: 12px 0;
+      }
+
+      .staff-profile-page .photo {
+        margin: 0 auto 24px;
+        max-width: 220px;
+      }
+
+      .staff-profile-page .upload h2 {
+        font-size: 20px;
+      }
+
+      .staff-profile-page .btn {
+        width: 100%;
+      }
+
+      .staff-profile-page .profile-details-actions {
+        align-items: stretch;
+      }
+
+      .staff-profile-page .d-flex.justify-content-end {
+        align-items: stretch !important;
+        flex-direction: column-reverse;
+        gap: 10px;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
+
+      .staff-profile-page .d-flex.justify-content-end > div {
+        width: 100%;
+      }
+
+      .staff-profile-page .profile-cancel-button {
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+      }
     }
   </style>
 @endpush

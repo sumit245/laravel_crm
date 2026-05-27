@@ -19,19 +19,28 @@ use App\Enums\UserRole;
  */
 class UserPolicy
 {
+    private function roleOf(User $user): ?UserRole
+    {
+        return UserRole::tryFrom((int) $user->role);
+    }
+
     /**
      * Determine if user can view any users
      */
     public function viewAny(User $user): bool
     {
-        $role = UserRole::fromValue($user->role);
-        
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return false;
+        }
+
         // Admin, Project Manager, and HR Manager can view users
         return in_array($role, [
             UserRole::ADMIN,
             UserRole::PROJECT_MANAGER,
             UserRole::HR_MANAGER
-        ]);
+        ], true);
     }
 
     /**
@@ -39,7 +48,11 @@ class UserPolicy
      */
     public function view(User $user, User $targetUser): bool
     {
-        $role = UserRole::fromValue($user->role);
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return $user->id === $targetUser->id;
+        }
 
         // Users can view themselves
         if ($user->id === $targetUser->id) {
@@ -70,10 +83,14 @@ class UserPolicy
      */
     public function create(User $user): bool
     {
-        $role = UserRole::fromValue($user->role);
-        
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return false;
+        }
+
         // Admin and HR Manager can create users
-        return in_array($role, [UserRole::ADMIN, UserRole::HR_MANAGER]);
+        return in_array($role, [UserRole::ADMIN, UserRole::HR_MANAGER], true);
     }
 
     /**
@@ -81,7 +98,11 @@ class UserPolicy
      */
     public function update(User $user, User $targetUser): bool
     {
-        $role = UserRole::fromValue($user->role);
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return $user->id === $targetUser->id;
+        }
 
         // Users can update themselves (limited fields)
         if ($user->id === $targetUser->id) {
@@ -111,8 +132,12 @@ class UserPolicy
      */
     public function delete(User $user, User $targetUser): bool
     {
-        $role = UserRole::fromValue($user->role);
-        
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return false;
+        }
+
         // Only admin can delete users
         // Cannot delete yourself
         return $role->isAdmin() && $user->id !== $targetUser->id;
@@ -123,7 +148,11 @@ class UserPolicy
      */
     public function disableLogin(User $user, User $targetUser): bool
     {
-        $role = UserRole::fromValue($user->role);
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return false;
+        }
         
         // Admin can disable any user except themselves
         if ($role->isAdmin() && $user->id !== $targetUser->id) {
@@ -148,8 +177,12 @@ class UserPolicy
             return true;
         }
 
-        $role = UserRole::fromValue($user->role);
-        
+        $role = $this->roleOf($user);
+
+        if ($role === null) {
+            return false;
+        }
+
         // Admin can change any password
         return $role->isAdmin();
     }

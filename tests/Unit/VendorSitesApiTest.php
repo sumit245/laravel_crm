@@ -132,7 +132,7 @@ class VendorSitesApiTest extends TestCase
         ]);
 
         // Make API request
-        $response = $this->getJson("/api/vendor/{$vendor->id}/sites");
+        $response = $this->actingAs($vendor, 'sanctum')->getJson("/api/vendor/{$vendor->id}/sites");
 
         // Assert: Response is successful
         $response->assertStatus(200);
@@ -214,7 +214,7 @@ class VendorSitesApiTest extends TestCase
         ]);
 
         // Make API request
-        $response = $this->getJson("/api/vendor/{$vendor->id}/sites");
+        $response = $this->actingAs($vendor, 'sanctum')->getJson("/api/vendor/{$vendor->id}/sites");
 
         // Assert: Response is successful
         $response->assertStatus(200);

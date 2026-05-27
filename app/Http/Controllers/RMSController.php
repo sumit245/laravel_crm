@@ -2,13 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Helpers\RemoteApiHelper;
-use App\Models\Pole;
 use App\Models\Project;
 use App\Models\RmsPushLog;
 use App\Models\Streetlight;
-use App\Models\StreetlightTask;
 use App\Services\Logging\ActivityLogger;
+use App\Services\Rms\RmsSyncService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -129,7 +127,7 @@ class RMSController extends Controller
      * @param  Request  $request  The incoming HTTP request
      * @return void  
      */
-    public function sendPanchayatToRMS(Request $request)
+    public function sendPanchayatToRMS(Request $request, RmsSyncService $rmsSyncService)
     {
         Log::info('Controller: sendPanchayatToRMS');
         // 1. Validate the incoming request to ensure we have the location and optional codes.
@@ -169,130 +167,41 @@ class RMSController extends Controller
                 }
             }
 
-            // 3. Fetch Data for RMS Push
+            // 3. Ensure selected area exists
             $query = Streetlight::where('district', $validated['district'])
                 ->where('block', $validated['block'])
                 ->where('panchayat', $validated['panchayat'])
                 ->where('project_id', $validated['project_id']);
 
-            $streetlights = $query->get();
-
-            if ($streetlights->isEmpty()) {
+            if (!$query->exists()) {
                 return response()->json(['message' => 'No streetlights found for the selected panchayat.'], 404);
             }
-
-            // Create a map for quick lookups: [site_id => streetlight_model]
-            $streetlightMap = $streetlights->keyBy('id');
-            $streetlightIds = $streetlightMap->keys();
-
-            // Get all related tasks, eager-loading the engineer to prevent another N+1 query.
-            $tasks = StreetlightTask::whereIn('site_id', $streetlightIds)
-                ->with('engineer') // Eager load the engineer relationship
-                ->get();
-
-            // Create a map for quick lookups: [task_id => task_model]
-            $taskMap = $tasks->keyBy('id');
-            $taskIds = $taskMap->keys();
-
-            // Finally, get all poles associated with these tasks.
-            $poles = Pole::whereIn('task_id', $taskIds)->get();
-
-            if ($poles->isEmpty()) {
-                return response()->json(['message' => 'No poles found for the selected tasks in this panchayat.'], 404);
-            }
-
-            // 4. Process each pole and send its data
-            $responses = [];
-
-            foreach ($poles as $pole) {
-                try {
-                    // Look up the related data from our pre-fetched maps.
-                    $task = $taskMap->get($pole->task_id);
-                    $streetlight = $task ? $streetlightMap->get($task->site_id) : null;
-
-                    // Ensure all required data exists before proceeding.
-                    if (!$task || !$streetlight || !$task->engineer) {
-                        throw new Exception('Missing related task, streetlight, or engineer data.');
-                    }
-
-                    $approved_by = $task->engineer->firstName . ' ' . $task->engineer->lastName;
-
-                    // Call your helper to send the data, passing the dynamic project name
-                    $apiResponse = RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by, $projectName);
-
-                    $responseData = $apiResponse ? $apiResponse->json() : null;
-                    $status = 'error';
-                    $message = 'Unknown error';
-
-                    if ($apiResponse && $apiResponse->successful() && $responseData && isset($responseData['status']) && strtoupper((string) $responseData['status']) === 'OK') {
-                        $status = 'success';
-                        $message = $responseData['detail'] ?? $responseData['details'] ?? 'Successfully pushed to RMS';
-                    } else {
-                        $message = $responseData['detail'] ?? $responseData['details'] ?? ($apiResponse ? $apiResponse->body() : 'No response from RMS API');
-                        if (!$responseData || !isset($responseData['status'])) {
-                            $responseData = ['status' => 'ERR', 'detail' => $message];
-                        }
-                    }
-
-                    RmsPushLog::create([
-                        'pole_id' => $pole->id,
-                        'message' => $message,
-                        'response_data' => $responseData,
-                        'status' => $status,
-                        'district' => $streetlight->district ?? null,
-                        'block' => $streetlight->block ?? null,
-                        'panchayat' => $streetlight->panchayat ?? null,
-                        'pushed_by' => auth()->id(),
-                        'pushed_at' => now(),
-                    ]);
-
-                    $responses[] = ['pole_id' => $pole->id, 'status' => $status, 'message' => $message];
-                } catch (Exception $e) {
-                    Log::error('Failed to send pole data to RMS', [
-                        'pole_id' => $pole->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                    RmsPushLog::create([
-                        'pole_id' => $pole->id,
-                        'message' => $e->getMessage(),
-                        'response_data' => ['status' => 'ERR', 'detail' => $e->getMessage()],
-                        'status' => 'error',
-                        'district' => $validated['district'] ?? null,
-                        'block' => $validated['block'] ?? null,
-                        'panchayat' => $validated['panchayat'] ?? null,
-                        'pushed_by' => auth()->id(),
-                        'pushed_at' => now(),
-                    ]);
-
-                    $responses[] = [
-                        'pole_id' => $pole->id,
-                        'status' => 'error',
-                        'message' => $e->getMessage(),
-                    ];
-                }
-            }
-
-            $successCount = collect($responses)->where('status', 'success')->count();
-            $errorCount = collect($responses)->where('status', 'error')->count();
+            $batch = $rmsSyncService->queueSync([
+                'source' => 'rms_portal_push',
+                'project_id' => (int) $validated['project_id'],
+                'district' => $validated['district'],
+                'block' => $validated['block'],
+                'panchayat' => $validated['panchayat'],
+                'filter' => 'all',
+            ], auth()->id(), $projectName);
 
             $this->activityLogger->log('rms', 'pushed', null, [
-                'description' => 'Panchayat data pushed to RMS.',
+                'description' => 'Panchayat RMS sync queued.',
                 'extra' => [
                     'district' => $validated['district'],
                     'block' => $validated['block'],
                     'panchayat' => $validated['panchayat'],
                     'project_id' => $validated['project_id'] ?? null,
-                    'success_count' => $successCount,
-                    'error_count' => $errorCount,
+                    'batch_id' => $batch->id,
                 ],
             ]);
 
             return response()->json([
-                'message' => 'Pole data sync process completed for ' . $validated['panchayat'] . '.',
-                'result' => $responses,
-                'success_count' => $successCount,
-                'error_count' => $errorCount,
-            ]);
+                'message' => 'Pole data sync queued for ' . $validated['panchayat'] . '.',
+                'batch_id' => $batch->id,
+                'status' => $batch->status,
+                'status_url' => route('rms.sync.status', $batch),
+            ], 202);
         } catch (Exception $e) {
             // Catch any unexpected errors during the initial data fetch.
             Log::critical('A critical error occurred during the RMS push preparation.', [

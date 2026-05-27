@@ -107,6 +107,37 @@
 @push('scripts')
     <script>
         $(document).ready(function () {
+            function pollBatchStatus(statusUrl, onComplete) {
+                const pollIntervalMs = 3000;
+                const timer = setInterval(() => {
+                    $.get(statusUrl)
+                        .done(function (statusResponse) {
+                            const processed = statusResponse.processed_poles || 0;
+                            const total = statusResponse.total_poles || 0;
+                            const success = statusResponse.success_count || 0;
+                            const error = statusResponse.error_count || 0;
+                            const status = statusResponse.status || 'queued';
+
+                            Swal.update({
+                                title: 'RMS Sync In Progress',
+                                html: `<p>Status: <strong>${status}</strong></p>
+                                       <p>Processed: <strong>${processed}</strong> / ${total}</p>
+                                       <p>Success: <strong>${success}</strong> | Errors: <strong>${error}</strong></p>`,
+                                allowOutsideClick: false
+                            });
+
+                            if (status === 'completed' || status === 'failed') {
+                                clearInterval(timer);
+                                onComplete(statusResponse);
+                            }
+                        })
+                        .fail(function () {
+                            clearInterval(timer);
+                            Swal.fire('Sync Monitor Error', 'Could not fetch RMS sync status.', 'warning');
+                        });
+                }, pollIntervalMs);
+            }
+
             // Initialize Select2
             $('.select2').select2({
                 width: '100%',
@@ -300,20 +331,29 @@
                     },
                     success: function (response) {
                         Swal.fire({
-                            icon: 'success',
-                            title: 'Push Completed!',
+                            icon: 'info',
+                            title: 'Sync Queued',
                             html: `<strong>${response.message}</strong><br><br>
-                                                       <div class="text-left">
-                                                           <p><strong>Success:</strong> ${response.success_count || 0} pole(s)</p>
-                                                           <p><strong>Errors:</strong> ${response.error_count || 0} pole(s)</p>
-                                                       </div>`,
-                            confirmButtonText: 'View Report',
-                            showCancelButton: true,
-                            cancelButtonText: 'Close'
-                        }).then((result) => {
-                            if (result.isConfirmed) {
-                                window.location.href = '{{ route("rms.export") }}?panchayat=' + encodeURIComponent(panchayat);
-                            }
+                                   Batch ID: <code>${response.batch_id}</code>`,
+                            allowOutsideClick: false,
+                            showConfirmButton: false
+                        });
+
+                        pollBatchStatus(response.status_url, function (finalStatus) {
+                            const isCompleted = finalStatus.status === 'completed';
+                            Swal.fire({
+                                icon: isCompleted ? 'success' : 'error',
+                                title: isCompleted ? 'Sync Completed' : 'Sync Failed',
+                                html: `<p>Success: <strong>${finalStatus.success_count || 0}</strong></p>
+                                       <p>Errors: <strong>${finalStatus.error_count || 0}</strong></p>`,
+                                confirmButtonText: 'View Report',
+                                showCancelButton: true,
+                                cancelButtonText: 'Close'
+                            }).then((result) => {
+                                if (result.isConfirmed) {
+                                    window.location.href = '{{ route("rms.export") }}?panchayat=' + encodeURIComponent(panchayat);
+                                }
+                            });
                         });
                     },
                     error: function (xhr) {

@@ -34,8 +34,10 @@ class ConveyanceService
             return collect([]);
         }
 
-        // Fetch UserCategory by the code stored in user's category column (e.g., 'M5')
-        $userCategory = UserCategory::where('category_code', $user->category)->first();
+        // Older records may store either the user_categories.id or the category_code.
+        $userCategory = UserCategory::where('id', $user->category)
+            ->orWhere('category_code', $user->category)
+            ->first();
 
         // If no category found or no allowed_vehicles defined, return empty
         if (!$userCategory || empty($userCategory->allowed_vehicles)) {

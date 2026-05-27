@@ -49,71 +49,6 @@ class InventoryController extends Controller
     ) {}
 
     /**
-     * Display a listing of the resource.
-     */
-    public function index(Request $request)
-    {
-        $user = auth()->user();
-        $projectId = $request->query('project_id');
-
-        if (! $projectId && $user->project_id) {
-            $projectId = $user->project_id;
-        }
-        if (! $projectId) {
-            $project = Project::when($user->role !== \App\Enums\UserRole::ADMIN->value, function ($query) use ($user) {
-                $query->whereHas('users', function ($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                });
-            })->first();
-            $projectId = $project ? $project->id : null;
-        }
-
-        if (! $projectId) {
-            return redirect()->route('projects.index')->with('error', 'No project assigned. Please select a project to view inventory.');
-        }
-
-        // For Project Managers, ensure they can only see projects they're assigned to
-        if ($user->role === \App\Enums\UserRole::PROJECT_MANAGER->value) {
-            $isAssigned = DB::table('project_user')
-                ->where('project_id', $projectId)
-                ->where('user_id', $user->id)
-                ->exists();
-
-            if (! $isAssigned) {
-                return redirect()->route('projects.index')->with('error', 'You do not have access to this project.');
-            }
-        }
-
-        $storeId = $request->query('store_id');
-
-        // Get all projects for Admin (for sidebar project selector)
-        $allProjects = [];
-        if ($user->role === \App\Enums\UserRole::ADMIN->value) {
-            $allProjects = Project::orderBy('project_name')->get();
-        } elseif ($user->role === \App\Enums\UserRole::PROJECT_MANAGER->value) {
-            // PMs see only their assigned projects
-            $allProjects = Project::whereHas('users', function ($q) use ($user) {
-                $q->where('users.id', $user->id);
-            })->orderBy('project_name')->get();
-        }
-
-        if ($projectId && $storeId) {
-            $inventory = InventroyStreetLightModel::where('project_id', $projectId)
-                ->where('store_id', $storeId)
-                ->paginate(config('crm.pagination.per_page', 50));
-        } else {
-            $inventory = InventroyStreetLightModel::where('project_id', $projectId)
-                ->paginate(config('crm.pagination.per_page', 50));
-        }
-
-        // Get stores for the selected project
-        $stores = Stores::where('project_id', $projectId)->get();
-        $selectedProject = Project::find($projectId);
-
-        return view('inventory.index', compact('inventory', 'allProjects', 'selectedProject', 'stores', 'projectId', 'storeId'));
-    }
-
-    /**
      * Import data from file.
      *
      * Data flow: HTTP Request → Validation → Database → Redirect with status
@@ -139,7 +74,13 @@ class InventoryController extends Controller
                 ],
             ]);
 
-            return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
+            if ($storeId) {
+                return redirect()
+                    ->to(route('store.show', $storeId).'#view')
+                    ->with('success', 'Inventory imported successfully!');
+            }
+
+            return redirect()->route('projects.index')->with('success', 'Inventory imported successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }
@@ -242,15 +183,6 @@ class InventoryController extends Controller
     }
 
     /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
-        return view('inventory.create');
-    }
-
-    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -308,16 +240,13 @@ class InventoryController extends Controller
                     ->with('success', 'Inventory added successfully.');
             }
 
-            // Fallback: redirect to inventory index (legacy behavior)
             $this->activityLogger->log('inventory', 'created', null, [
                 'description' => "Added new inventory item {$itemCode} ({$serialNumber})",
                 'extra' => ['project_type' => $projectType]
             ]);
 
-            return redirect()->route('inventory.index', [
-                'project_id' => $request->input('project_id'),
-                'store_id' => $storeId,
-            ])->with('success', 'Inventory added successfully.');
+            return redirect()->route('projects.index')
+                ->with('success', 'Inventory added successfully.');
         } catch (\Exception $e) {
             Log::error('Error creating inventory: '.$e->getMessage());
 
@@ -391,97 +320,6 @@ class InventoryController extends Controller
     }
 
     /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-        $item = Inventory::findOrFail($id);
-
-        return view('inventory.edit', compact('item'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function editInventory($id)
-    {
-        $inventoryItem = Inventory::findOrFail($id);
-
-        return view('inventory.editInventory', compact('inventoryItem'));
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function updateInventory(Request $request, $id)
-    {
-        $validated = $request->validate([
-            'productName' => 'required|string|max:255',
-            'brand' => 'nullable|string',
-            'description' => 'nullable|string',
-            'initialQuantity' => 'required|string',
-            'quantityStock' => 'nullable|string',
-            'unit' => 'required|string|max:25',
-            'receivedDate' => 'nullable|date',
-        ]);
-
-        try {
-            $inventoryItem = Inventory::findOrFail($id);
-            $beforeAfter = $this->activityLogger->diff($inventoryItem);
-            $inventoryItem->update($validated);
-
-            $this->activityLogger->log('inventory', 'updated', $inventoryItem, array_merge([
-                'description' => "Updated inventory {$inventoryItem->productName}"
-            ], $beforeAfter));
-
-            return redirect()->route('inventory.index')
-                ->with('success', 'Inventory updated successfully.');
-        } catch (\Exception $e) {
-            return redirect()->back()
-                ->withErrors(['error' => $e->getMessage()])
-                ->withInput();
-        }
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Inventory $item)
-    {
-        //
-        // Validate the incoming data without requiring a username
-        $validated = $request->validate([
-            'productName' => 'required|string|max:255',
-            'brand' => 'nullable|string',
-            'description' => 'nullable|string',
-            'initialQuantity' => 'required|string',
-            'quantityStock' => 'nullable|string',
-            'unit' => 'required|string|max:25',
-            'receivedDate' => 'nullable|date',
-        ]);
-
-        try {
-
-            $beforeAfter = $this->activityLogger->diff($item);
-            $item->update($validated);
-
-            $this->activityLogger->log('inventory', 'updated', $item, array_merge([
-                'description' => "Updated inventory {$item->productName}"
-            ], $beforeAfter));
-
-            return redirect()->route('inventory.show', compact('item'))
-                ->with('success', 'Inventory updated successfully.');
-        } catch (\Exception $e) {
-            $errorMessage = $e->getMessage();
-
-            return redirect()->back()
-                ->withErrors(['error' => $errorMessage])
-                ->withInput();
-        }
-    }
-
-    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
@@ -518,26 +356,59 @@ class InventoryController extends Controller
         try {
             $projectId = $request->project_id;
             $storeId = $request->store_id;
+
+            if (! $projectId || ! $storeId) {
+                return redirect()->route('projects.index')
+                    ->with('error', 'Please select a project and store to view inventory.');
+            }
+
             $store = Stores::findOrFail($storeId);
             $storeName = $store->store_name;
-            $storeIncharge = User::findOrFail($store->store_incharge_id);
-            $inchargeName = $storeIncharge->firstName.' '.$storeIncharge->lastName;
+            $storeIncharge = $store->store_incharge_id ? User::find($store->store_incharge_id) : null;
+            $inchargeName = $storeIncharge ? trim($storeIncharge->firstName.' '.$storeIncharge->lastName) : 'N/A';
 
             $project = Project::findOrFail($projectId);
             $projectType = $project->project_type;
             $inventoryModel = ($project->project_type == 1) ? InventroyStreetLightModel::class : Inventory::class;
 
-            // Get all inventory items (no pagination for unified view)
-            $allInventory = $inventoryModel::where('project_id', $projectId)
+            $inventoryBaseQuery = $inventoryModel::query()
+                ->where('project_id', $projectId)
+                ->where('store_id', $storeId);
+
+            // Keep the existing unified view behavior, but fetch only required columns.
+            $allInventory = (clone $inventoryBaseQuery)
+                ->select([
+                    'id',
+                    'item_code',
+                    'item',
+                    'serial_number',
+                    'manufacturer',
+                    'make',
+                    'model',
+                    'hsn',
+                    'quantity',
+                    'rate',
+                    'created_at',
+                ])
                 ->where('store_id', $storeId)
                 ->orderBy('created_at', 'desc')
                 ->get();
 
-            // Get all dispatched items for this store
-            $allDispatched = InventoryDispatch::where('isDispatched', true)
+            // Load dispatches once and reuse for row status + summary metrics.
+            $allDispatched = InventoryDispatch::query()
+                ->where('isDispatched', true)
                 ->where('store_id', $storeId)
                 ->where('project_id', $projectId)
-                ->with('vendor')
+                ->with('vendor:id,firstName,lastName')
+                ->select([
+                    'id',
+                    'item_code',
+                    'serial_number',
+                    'dispatch_date',
+                    'vendor_id',
+                    'is_consumed',
+                    'total_value',
+                ])
                 ->get()
                 ->keyBy('serial_number');
 
@@ -590,38 +461,39 @@ class InventoryController extends Controller
                 ];
             }
 
-            // For backward compatibility, keep old paginated query (will be ignored in view)
+            // For backward compatibility with the existing blade view.
             $inventory = collect($unifiedInventory);
 
-            $dispatch = InventoryDispatch::where('isDispatched', true)
-                ->where('store_id', $storeId)
-                ->get();
-            $batteryQuery = $inventoryModel::where('project_id', $projectId)
-                ->where('store_id', $storeId)
-                ->where('item_code', 'SL03');
-            $totalBattery = $batteryQuery->count();
-            $batteryRate = $batteryQuery->value('rate') ?? 0;
-            $totalBatteryValue = $batteryQuery->sum(DB::raw('quantity * rate'));
-            $totalBatteryValue = number_format($totalBatteryValue, 2);
-            // Battery Dispatch data
-            $batteryDispatch = $dispatch->where('item_code', 'SL03')->count();
-            $availableBattery = $totalBattery - $batteryDispatch;
-            $dispatchAmountBattery = $dispatch->where('item_code', 'SL03')->sum('total_value');
-            $dispatchAmountBattery = number_format($dispatchAmountBattery, 2);
+            $inventorySummary = (clone $inventoryBaseQuery)
+                ->select('item_code')
+                ->selectRaw('COUNT(*) as total_quantity')
+                ->selectRaw('SUM(COALESCE(quantity, 0) * COALESCE(rate, 0)) as total_value')
+                ->groupBy('item_code')
+                ->get()
+                ->keyBy('item_code');
 
-            // Luminary Data
-            $luminaryQuery = $inventoryModel::where('project_id', $projectId)
+            $dispatchSummary = InventoryDispatch::query()
+                ->where('isDispatched', true)
                 ->where('store_id', $storeId)
-                ->where('item_code', 'SL02');
-            $totalLuminary = $luminaryQuery->count();
-            $LuminaryRate = $luminaryQuery->value('rate') ?? 0;
-            $totalLuminaryValue = $luminaryQuery->sum(DB::raw('quantity * rate'));
-            $totalLuminaryValue = number_format($totalLuminaryValue, 2);
-            // Luminary Dispatch data
-            $luminaryDispatch = $dispatch->where('item_code', 'SL02')->count();
-            $availableLuminary = $totalLuminary - $luminaryDispatch;
-            $dispatchAmountLuminary = $dispatch->where('item_code', 'SL02')->sum('total_value');
-            $dispatchAmountLuminary = number_format($dispatchAmountLuminary, 2);
+                ->where('project_id', $projectId)
+                ->select('item_code')
+                ->selectRaw('COUNT(*) as dispatched_quantity')
+                ->selectRaw('SUM(COALESCE(total_value, 0)) as dispatched_value')
+                ->groupBy('item_code')
+                ->get()
+                ->keyBy('item_code');
+
+            $totalBattery = (int) optional($inventorySummary->get('SL03'))->total_quantity;
+            $totalBatteryValue = number_format((float) optional($inventorySummary->get('SL03'))->total_value, 2);
+            $batteryDispatch = (int) optional($dispatchSummary->get('SL03'))->dispatched_quantity;
+            $availableBattery = max($totalBattery - $batteryDispatch, 0);
+            $dispatchAmountBattery = number_format((float) optional($dispatchSummary->get('SL03'))->dispatched_value, 2);
+
+            $totalLuminary = (int) optional($inventorySummary->get('SL02'))->total_quantity;
+            $totalLuminaryValue = number_format((float) optional($inventorySummary->get('SL02'))->total_value, 2);
+            $luminaryDispatch = (int) optional($dispatchSummary->get('SL02'))->dispatched_quantity;
+            $availableLuminary = max($totalLuminary - $luminaryDispatch, 0);
+            $dispatchAmountLuminary = number_format((float) optional($dispatchSummary->get('SL02'))->dispatched_value, 2);
 
             // Linking Battery to Structure
             $totalStructure = $totalBattery;
@@ -630,21 +502,19 @@ class InventoryController extends Controller
             $availableStructure = $availableBattery;
 
             // Module Data
-            $moduleQuery = $inventoryModel::where('project_id', $projectId)
-                ->where('store_id', $storeId)
-                ->where('item_code', 'SL01');
-            $totalModule = $moduleQuery->count();
-            $ModuleRate = $moduleQuery->value('rate') ?? 0;
-            $totalModuleValue = $moduleQuery->sum(DB::raw('quantity * rate'));
-            $totalModuleValue = number_format($totalModuleValue, 2);
-            // Module Dispatch data
-            $moduleDispatch = $dispatch->where('item_code', 'SL01')->count();
-            $availableModule = $totalModule - $moduleDispatch;
-            $dispatchAmountModule = $dispatch->where('item_code', 'SL01')->sum('total_value');
-            $dispatchAmountModule = number_format($dispatchAmountModule, 2);
+            $totalModule = (int) optional($inventorySummary->get('SL01'))->total_quantity;
+            $totalModuleValue = number_format((float) optional($inventorySummary->get('SL01'))->total_value, 2);
+            $moduleDispatch = (int) optional($dispatchSummary->get('SL01'))->dispatched_quantity;
+            $availableModule = max($totalModule - $moduleDispatch, 0);
+            $dispatchAmountModule = number_format((float) optional($dispatchSummary->get('SL01'))->dispatched_value, 2);
 
             // Get distinct item codes for filter
-            $itemCodes = $allInventory->pluck('item_code')->unique()->sort()->values();
+            $itemCodes = (clone $inventoryBaseQuery)
+                ->select('item_code')
+                ->distinct()
+                ->orderBy('item_code')
+                ->pluck('item_code')
+                ->values();
 
             return view('inventory.view', compact(
                 'inventory',
@@ -676,7 +546,14 @@ class InventoryController extends Controller
                 'availableLuminary',
             ));
         } catch (Exception $e) {
-            Log::error($e->getMessage());
+            Log::error('Unable to render inventory view.', [
+                'project_id' => $request->project_id,
+                'store_id' => $request->store_id,
+                'exception' => $e,
+            ]);
+
+            return redirect()->route('projects.index')
+                ->with('error', 'Unable to load inventory for the selected store.');
         }
     }
 

@@ -1,8 +1,29 @@
 # Current Task Tracking
 
-**Last Updated**: 2025-12-16
+**Last Updated**: 2026-05-19  
+**Path**: `.cursor/.memory/current_task.md` (workflow anchor — see `.cursorrules`)
 
 This file tracks all pending and in-progress tasks across the Laravel CRM project. Tasks are organized by module and priority.
+
+---
+
+## Active focus (May 2026)
+
+**Canonical task board:** [`docs/PROJECT_TRACKER.md`](../../docs/PROJECT_TRACKER.md) (Jira-style tickets + evidence)  
+**Narrative audit:** [`docs/PROJECT_AUDIT.md`](../../docs/PROJECT_AUDIT.md)
+
+| Priority | Key | Item | Status |
+|----------|-----|------|--------|
+| 1 | CRM-DASH-006 | Hide Combined Metrics when rooftop sites = 0 | DONE |
+| 2 | CRM-STAFF-023 | Defer DataTable init on inactive staff project tabs | OPEN |
+| 3 | CRM-DT-002 | DataTable `updatePaginationInfo` on init/tab/length | PARTIAL |
+| 4 | CRM-DASH-017 | Consolidate overlapping dashboard sections | OPEN |
+| 5 | CRM-API-006 | Vendor sites API tests green (fix 401 in tests) | DONE |
+| 6 | CRM-INV-302 | Fix `/inventory/view` redirect host | DONE |
+| 7 | CRM-UI-001 | UI layout branch — browser pass mobile/tablet | NOT_TESTED |
+| 8 | CRM-PERF-001 | StaffController::show performance split | BACKLOG |
+
+After each fix: update the ticket row in `PROJECT_TRACKER.md`, then this table.
 
 ---
 
@@ -565,7 +586,7 @@ This file tracks all pending and in-progress tasks across the Laravel CRM projec
     -   Use Log::info() with structured arrays for debugging
 
 -   Testing Requirements:
-    -   Follow TESTING_RULES.md strictly
+    -   Follow `.cursor/.memory/TESTING_RULES.md` strictly
     -   Use binary status: DONE or NOT DONE
     -   Provide concrete evidence for all status reports
     -   No guess words - only report what is actually observed

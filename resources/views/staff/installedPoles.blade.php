@@ -98,12 +98,20 @@
 
         // Custom date range validation
         function filterTasks() {
-            let selectedFilter = document.getElementById('taskFilter').value;
+            const taskFilter = document.getElementById('taskFilter');
+            if (!taskFilter) {
+                return;
+            }
+
+            let selectedFilter = taskFilter.value;
 
             if (selectedFilter === 'custom') {
                 // Show the custom date range modal
-                var customDateModal = new bootstrap.Modal(document.getElementById('customDateModal'));
-                customDateModal.show();
+                const customDateModalElement = document.getElementById('customDateModal');
+                if (customDateModalElement) {
+                    var customDateModal = new bootstrap.Modal(customDateModalElement);
+                    customDateModal.show();
+                }
             } else {
                 // Redirect with the selected filter
                 let url = new URL(window.location.href);
@@ -118,9 +126,13 @@
         }
         // Update the minimum date for the end date input based on the start date
         function updateEndDateMin() {
-            const startDate = document.getElementById('start_date').value;
+            const startDateInput = document.getElementById('start_date');
             const endDateInput = document.getElementById('end_date');
+            if (!startDateInput || !endDateInput) {
+                return;
+            }
 
+            const startDate = startDateInput.value;
             if (startDate) {
                 endDateInput.min = startDate;
 
@@ -132,17 +144,22 @@
         }
 
         function validateDateRange() {
-            const startDate = document.getElementById('start_date').value;
-            const endDate = document.getElementById('end_date').value;
+            const startDateInput = document.getElementById('start_date');
+            const endDateInput = document.getElementById('end_date');
             const dateError = document.getElementById('dateError');
+            if (!startDateInput || !endDateInput || !dateError) {
+                return true;
+            }
 
+            const startDate = startDateInput.value;
+            const endDate = endDateInput.value;
             if (startDate && endDate && endDate < startDate) {
                 dateError.textContent = 'End date cannot be earlier than start date';
-                document.getElementById('end_date').classList.add('is-invalid');
+                endDateInput.classList.add('is-invalid');
                 return false;
             }
 
-            document.getElementById('end_date').classList.remove('is-invalid');
+            endDateInput.classList.remove('is-invalid');
             return true;
         }
         // Check if we should show the date modal on page load
@@ -150,11 +167,15 @@
             // Set up initial min date for end date
             updateEndDateMin();
 
-            if (document.getElementById('taskFilter').value === 'custom') {
+            const taskFilter = document.getElementById('taskFilter');
+            if (taskFilter && taskFilter.value === 'custom') {
                 // Only show if we're not already seeing results (i.e., no date params yet)
                 if (!new URLSearchParams(window.location.search).has('start_date')) {
-                    var customDateModal = new bootstrap.Modal(document.getElementById('customDateModal'));
-                    customDateModal.show();
+                    const customDateModalElement = document.getElementById('customDateModal');
+                    if (customDateModalElement) {
+                        var customDateModal = new bootstrap.Modal(customDateModalElement);
+                        customDateModal.show();
+                    }
                 }
             }
         });

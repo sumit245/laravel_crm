@@ -6,7 +6,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>{{ $title ?? 'Sugs Lloyd Ltd | Admin Panel' }}</title>
+    @php
+        $panelTitle = ($organizationBranding?->company_name ?? 'Sugs Lloyd Ltd') . ' | Admin Panel';
+    @endphp
+    <title>@yield('title', $title ?? $panelTitle)</title>
 
     <!-- plugins: icon css -->
     <link rel="stylesheet" href="{{ asset('vendors/mdi/css/materialdesignicons.min.css') }}">
@@ -25,7 +28,7 @@
 
     {{-- select2 css --}}
     <link rel="stylesheet" href="{{ asset('vendors/select2/select2.min.css') }}">
-    <link rel="shortcut icon" href="{{ asset('images/favicon.png') }}">
+    <link rel="shortcut icon" href="{{ $organizationBranding?->favicon_url ?? asset('images/favicon.png') }}">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
     @stack('styles')
@@ -56,22 +59,27 @@
 
     <!-- Custom js for this page -->
     <script src="{{ asset('js/dashboard.js') }}"></script>
+    <script src="{{ asset('js/notification-center.js') }}"></script>
     {{-- <script src="{{ asset("js/Chart.roundedBarCharts.js") }}"></script> --}}
     <!-- End custom js for this page -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
-    <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
-    <script src="https://cdn.datatables.net/select/1.6.3/js/dataTables.select.min.js"></script>
-    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @unless(request()->routeIs('staff.profile') || request()->routeIs('dashboard'))
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/pdfmake.min.js"></script>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.53/vfs_fonts.js"></script>
+        <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.print.min.js"></script>
+        <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+        <script src="https://cdn.datatables.net/select/1.6.3/js/dataTables.select.min.js"></script>
+        <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @endunless
     <!-- Place this just before </body> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://unpkg.com/tldraw@3.15.4/files/dist-cjs/index.js"></script>
+    @unless(request()->routeIs('staff.profile') || request()->routeIs('dashboard'))
+        <script src="https://unpkg.com/tldraw@3.15.4/files/dist-cjs/index.js"></script>
+    @endunless
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/fontawesome.min.js"></script> --}}
 
     @stack('scripts') <!-- For page-specific scripts -->

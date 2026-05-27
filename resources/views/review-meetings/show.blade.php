@@ -105,13 +105,6 @@
                         <div class="action-buttons">
                             <button id="save-notes-btn" class="btn btn-info">Save Notes</button>
                             <button id="export-pdf-btn" class="btn btn-danger">Export as PDF</button>
-                            @if ($meet->status === 'Completed')
-                                <form action="{{ route('meets.share', $meet->id) }}" method="POST"
-                                    onsubmit="return confirm('Are you sure you want to email these notes to all participants?');">
-                                    @csrf
-                                    <button type="submit" class="btn btn-success">Share Notes via Email</button>
-                                </form>
-                            @endif
                         </div>
                     </div>
 

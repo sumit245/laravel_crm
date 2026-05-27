@@ -122,7 +122,7 @@ class InventoryController extends Controller
 
         try {
             Excel::import(new InventoryImport($request->project_id, $request->storeId), $request->file('file'));
-            return redirect()->route('inventory.index')->with('success', 'Inventory imported successfully!');
+            return redirect()->route('projects.index')->with('success', 'Inventory imported successfully!');
         } catch (\Exception $e) {
             return redirect()->back()->withErrors(['error' => $e->getMessage()]);
         }

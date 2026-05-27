@@ -25,7 +25,7 @@
                 <div class="card" style="border: 1px solid #dee2e6; border-radius: 4px; background: white;">
                     <div class="card-body text-center" style="padding: 16px;">
                         <h6 style="font-weight: 600; color: #495057; font-size: 0.85rem; margin-bottom: 8px;">Pending Approval</h6>
-                        <h4 class="mb-0" style="font-weight: 700; color: #ffc107; font-size: 1.2rem;">₹{{ number_format($tada_analytics['financial_overview']['pending_amount'] ?? 0, 2) }}</h4>
+                        <h4 class="mb-0" style="font-weight: 700; color: #9a6700; font-size: 1.2rem;">₹{{ number_format($tada_analytics['financial_overview']['pending_amount'] ?? 0, 2) }}</h4>
                     </div>
                 </div>
             </div>
@@ -163,6 +163,7 @@
                         <h6 class="mb-0" style="font-weight: 600; font-size: 0.9rem; color: #495057;">By Vehicle</h6>
                     </div>
                     <div class="card-body" style="padding: 12px;">
+                        <div id="travelBreakdownVehicle">
                         @if(isset($tada_analytics['travel_breakdown']['by_vehicle']) && count($tada_analytics['travel_breakdown']['by_vehicle']) > 0)
                             @foreach($tada_analytics['travel_breakdown']['by_vehicle'] as $vehicle)
                                 <div class="mb-2">
@@ -171,7 +172,10 @@
                                         <span style="font-size: 0.85rem; font-weight: 500;">{{ number_format($vehicle['percentage'], 1) }}%</span>
                                     </div>
                                     <div class="progress" style="height: 18px; border-radius: 4px;">
-                                        <div class="progress-bar bg-primary" style="width: {{ $vehicle['percentage'] }}%">
+                                        <div class="progress-bar bg-primary" role="progressbar"
+                                            style="width: {{ $vehicle['percentage'] }}%"
+                                            aria-label="Travel share for {{ $vehicle['category'] ?? 'Unknown' }}"
+                                            aria-valuenow="{{ $vehicle['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
                                             <small style="font-size: 0.7rem;">{{ $vehicle['count'] }}</small>
                                         </div>
                                     </div>
@@ -179,10 +183,14 @@
                             @endforeach
                         @else
                             <div class="text-center text-muted py-3">
-                                <i class="mdi mdi-information-outline" style="font-size: 1.5rem; opacity: 0.4;"></i>
-                                <p class="mt-2 mb-0" style="font-size: 0.85rem;">No vehicle data available.</p>
+                                <i class="mdi mdi-car-off" style="font-size: 1.5rem; opacity: 0.5;"></i>
+                                <p class="mt-2 mb-1" style="font-size: 0.85rem;">No TA/DA travel entries were logged this month, so vehicle trends are not available yet.</p>
+                                <a href="{{ route('tasks.index') }}" class="btn btn-sm btn-link p-0 text-decoration-none" style="font-size: 0.8rem;">
+                                    View tasks <i class="mdi mdi-arrow-right"></i>
+                                </a>
                             </div>
                         @endif
+                        </div>
                     </div>
                 </div>
             </div>
@@ -192,6 +200,7 @@
                         <h6 class="mb-0" style="font-weight: 600; font-size: 0.9rem; color: #495057;">By Status</h6>
                     </div>
                     <div class="card-body" style="padding: 12px;">
+                        <div id="travelBreakdownStatus">
                         @if(isset($tada_analytics['travel_breakdown']['by_status']) && count($tada_analytics['travel_breakdown']['by_status']) > 0)
                             @foreach($tada_analytics['travel_breakdown']['by_status'] as $status)
                                 <div class="mb-2">
@@ -206,7 +215,10 @@
                                             @elseif($status['status'] == 'Rejected') bg-danger
                                             @else bg-secondary
                                             @endif" 
-                                            style="width: {{ $status['percentage'] }}%">
+                                            role="progressbar"
+                                            style="width: {{ $status['percentage'] }}%"
+                                            aria-label="Travel share for {{ ucfirst($status['status']) }}"
+                                            aria-valuenow="{{ $status['percentage'] }}" aria-valuemin="0" aria-valuemax="100">
                                             <small style="font-size: 0.7rem;">{{ $status['count'] }}</small>
                                         </div>
                                     </div>
@@ -218,6 +230,7 @@
                                 <p class="mt-2 mb-0" style="font-size: 0.85rem;">No status data available.</p>
                             </div>
                         @endif
+                        </div>
                     </div>
                 </div>
             </div>

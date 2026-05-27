@@ -12,7 +12,7 @@
             ['title' => 'Phone', 'width' => '10%'],
             ['title' => 'Address', 'width' => '11%'],
         ]" :addRoute="route('staff.create')" addButtonText="Add New Staff"
-            :exportEnabled="true" :importEnabled="true" :importRoute="route('import.staff')" :importFormatUrl="null" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('staff.bulkDelete')"
+            :exportEnabled="true" :importEnabled="true" :importRoute="route('import.staff')" :importFormatUrl="route('staff.importFormat')" :bulkDeleteEnabled="true" :bulkDeleteRoute="route('staff.bulkDelete')"
             :deleteRoute="route('staff.destroy', ':id')" :editRoute="route('staff.edit', ':id')" :viewRoute="route('staff.show', ':id')" pageLength="50" searchPlaceholder="Search Staff..."
             :filters="[
                 [

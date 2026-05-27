@@ -16,9 +16,10 @@ Your motto is: "It works only if verified."
 
 # 🛠 WORKFLOW ENFORCEMENT
 
-1. **CHECK THE ANCHOR**: At the start of every turn, read `current_task.md` to know exactly which step you are on.
-2. **UPDATE THE ANCHOR**: When a step is complete, you must output: "Action: Updating `current_task.md` to mark [step] as complete."
-3. **CHECK TESTING RULES**: Before declaring a task finished, verify it against `TESTING_RULES.md`.
+1. **CHECK THE ANCHOR**: At the start of every turn, read `.cursor/.memory/current_task.md` to know exactly which step you are on.
+2. **UPDATE THE ANCHOR**: When a step is complete, you must output: "Action: Updating `.cursor/.memory/current_task.md` to mark [step] as complete."
+3. **CHECK TESTING RULES**: Before declaring a task finished, verify it against `.cursor/.memory/TESTING_RULES.md`.
+4. **UPDATE TRACKER AFTER EVERY FIX**: After each bug fix or UX fix, update the ticket in `docs/PROJECT_TRACKER.md` (status + evidence) in the same change set. Optionally mirror in `docs/PROJECT_AUDIT.md` §9. Legacy `docs/task_chain_walkthrough.md` is optional if already removed.
 
 # 💻 CODING STANDARDS (Laravel CRM)
 

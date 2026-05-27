@@ -366,11 +366,13 @@ class SiteController extends Controller
         if ($projectType == 1) {
             $site = Streetlight::with('streetlightTasks')->findOrFail($id);
 
-            $streetlightTask = StreetlightTask::with(['engineer', 'vendor', 'manager'])
+            $streetlightTasks = StreetlightTask::with(['engineer', 'vendor', 'manager'])
                 ->where('site_id', $site->id)
-                ->first();
+                ->get();
 
-            $poles = Pole::where('task_id', $streetlightTask->id ?? null)
+            $streetlightTask = $streetlightTasks->first();
+
+            $poles = Pole::whereIn('task_id', $streetlightTasks->pluck('id'))
                 ->get();
 
             $engineerName = optional($streetlightTask?->engineer)->firstName . " " . optional($streetlightTask?->engineer)->lastName ?? 'N/A';

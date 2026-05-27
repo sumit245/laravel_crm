@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\View\Composers\OrganizationBrandingComposer;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\View;
 use App\Models\State;
@@ -37,6 +38,8 @@ class AppServiceProvider extends ServiceProvider
         // This prevents accidental coupling of tests to production data.
         if (app()->environment('testing')) {
             View::share('states', collect());
+            View::share('organizationBranding', null);
+
             return;
         }
 
@@ -45,5 +48,10 @@ class AppServiceProvider extends ServiceProvider
         });
 
         View::share('states', $states);
+
+        View::composer(
+            ['partials.header', 'layouts.main'],
+            OrganizationBrandingComposer::class
+        );
     }
 }

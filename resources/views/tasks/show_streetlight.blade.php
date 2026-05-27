@@ -96,41 +96,71 @@
 <!-- Manager Card -->
 
 <div class="col-md-4 mb-4">
-<a href="{{ route('staff.show', $streetlightTask->manager->id) }}">
-  <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
-    <img src="{{ $streetlightTask->manager->image }}" alt="{{ $streetlightTask->manager->firstName }}" class="rounded-circle" width="60" height="60">
-    <div class="ms-3">
-      <h5 class="mb-0">{{ $streetlightTask->manager->firstName }} {{ $streetlightTask->manager->lastName }}</h5>
-      <small class="text-muted">Manager</small>
+  @if($manager)
+    <a href="{{ route('staff.show', $manager->id) }}">
+      <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
+        <img src="{{ $manager->image ?? asset('images/faces/face8.jpg') }}" alt="{{ $manager->firstName ?? $manager->name }}" class="rounded-circle" width="60" height="60">
+        <div class="ms-3">
+          <h5 class="mb-0">{{ trim(($manager->firstName ?? '') . ' ' . ($manager->lastName ?? '')) ?: $manager->name }}</h5>
+          <small class="text-muted">Manager</small>
+        </div>
+      </div>
+    </a>
+  @else
+    <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
+      <img src="{{ asset('images/faces/face8.jpg') }}" alt="Unassigned manager" class="rounded-circle" width="60" height="60">
+      <div class="ms-3">
+        <h5 class="mb-0">Unassigned</h5>
+        <small class="text-muted">Manager</small>
+      </div>
     </div>
-  </div>
-  </a>
+  @endif
 </div>
 
 <!-- Vendor Card -->
 <div class="col-md-4 mb-4">
-<a href="{{ route('staff.show', $streetlightTask->vendor->id) }}">
-  <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
-    <img src="{{ $vendor->image }}" alt="{{ $vendor->name }}" class="rounded-circle" width="60" height="60">
-    <div class="ms-3">
-      <h5 class="mb-0">{{ $vendor->name }}</h5>
-      <small class="text-muted">Vendor</small>
+  @if($vendor)
+    <a href="{{ route('staff.show', $vendor->id) }}">
+      <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
+        <img src="{{ $vendor->image ?? asset('images/faces/face8.jpg') }}" alt="{{ $vendor->name }}" class="rounded-circle" width="60" height="60">
+        <div class="ms-3">
+          <h5 class="mb-0">{{ $vendor->name }}</h5>
+          <small class="text-muted">Vendor</small>
+        </div>
+      </div>
+    </a>
+  @else
+    <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
+      <img src="{{ asset('images/faces/face8.jpg') }}" alt="Unassigned vendor" class="rounded-circle" width="60" height="60">
+      <div class="ms-3">
+        <h5 class="mb-0">Unassigned</h5>
+        <small class="text-muted">Vendor</small>
+      </div>
     </div>
-  </div>
-</a>
+  @endif
 </div>
 
 <!-- Engineer Card -->
 <div class="col-md-4 mb-4">
-<a href="{{ route('staff.show', $streetlightTask->engineer->id) }}">
-  <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
-    <img src="{{ $streetlightTask->engineer->image }}" alt="{{ $streetlightTask->engineer->firstName }}" class="rounded-circle" width="60" height="60">
-    <div class="ms-3">
-      <h5 class="mb-0">{{ $streetlightTask->engineer->firstName }} {{ $streetlightTask->engineer->lastName }}</h5>
-      <small class="text-muted">Engineer</small>
+  @if($engineer)
+    <a href="{{ route('staff.show', $engineer->id) }}">
+      <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
+        <img src="{{ $engineer->image ?? asset('images/faces/face8.jpg') }}" alt="{{ $engineer->firstName ?? $engineer->name }}" class="rounded-circle" width="60" height="60">
+        <div class="ms-3">
+          <h5 class="mb-0">{{ trim(($engineer->firstName ?? '') . ' ' . ($engineer->lastName ?? '')) ?: $engineer->name }}</h5>
+          <small class="text-muted">Engineer</small>
+        </div>
+      </div>
+    </a>
+  @else
+    <div class="card d-flex flex-row align-items-center p-3 shadow-sm">
+      <img src="{{ asset('images/faces/face8.jpg') }}" alt="Unassigned engineer" class="rounded-circle" width="60" height="60">
+      <div class="ms-3">
+        <h5 class="mb-0">Unassigned</h5>
+        <small class="text-muted">Engineer</small>
+      </div>
     </div>
-  </div>
-  </a>
+  @endif
 </div>
 
 </div>
@@ -291,11 +321,12 @@
     document.addEventListener('DOMContentLoaded', function() {
         // Example: Add click event listener to vendor name
         const vendorName = document.querySelector('.vendor-name');
-        vendorName.addEventListener('click', function() {
-            // The modal is already triggered by Bootstrap data attributes
-            // This is just an example if you need additional functionality
-            console.log('Vendor modal opened');
-        });
+        if (vendorName) {
+            vendorName.addEventListener('click', function() {
+                // The modal is already triggered by Bootstrap data attributes.
+                console.log('Vendor modal opened');
+            });
+        }
     });
 </script>
 @endpush

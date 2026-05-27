@@ -385,7 +385,7 @@ class PoleController extends Controller
                 'description' => "Deleted pole {$pole->complete_pole_number} (#{$id})"
             ]);
 
-            return redirect()->route('poles.index')
+            return redirect()->back()
                 ->with('success', 'Pole deleted successfully.');
         } catch (\Exception $e) {
             Log::error('Failed to delete pole', ['error' => $e->getMessage()]);

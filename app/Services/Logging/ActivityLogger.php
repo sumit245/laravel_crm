@@ -3,6 +3,7 @@
 namespace App\Services\Logging;
 
 use App\Models\ActivityLog;
+use App\Services\Notification\EventNotificationService;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -24,6 +25,7 @@ use Illuminate\Support\Facades\Auth;
 class ActivityLogger
 {
     private ?Request $request;
+    private ?EventNotificationService $eventNotificationService = null;
 
     /**
      * Create a new ActivityLogger instance.
@@ -35,6 +37,11 @@ class ActivityLogger
     public function __construct(?Request $request = null)
     {
         $this->request = $request ?? request();
+        try {
+            $this->eventNotificationService = app(EventNotificationService::class);
+        } catch (\Throwable) {
+            $this->eventNotificationService = null;
+        }
     }
 
     /**
@@ -72,7 +79,19 @@ class ActivityLogger
             'batch_id' => $data['batch_id'] ?? null,
         ];
 
-        return ActivityLog::create($attributes);
+        $activityLog = ActivityLog::create($attributes);
+
+        // Keep in-app notifications best-effort so logging never fails.
+        try {
+            $this->eventNotificationService?->notifyForActivity($module, $action, $entity, [
+                ...$data,
+                'project_id' => $attributes['project_id'],
+            ]);
+        } catch (\Throwable) {
+            // Never block core request flow for notification side effects.
+        }
+
+        return $activityLog;
     }
 
     /**

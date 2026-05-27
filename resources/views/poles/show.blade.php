@@ -76,9 +76,18 @@
                 <div class="card-body text-center">
                     <i class="mdi mdi-map-marker mdi-36px text-danger mb-2"></i>
                     <h6 class="text-muted mb-1">Location</h6>
-                    <button type="button" class="btn btn-sm btn-link text-primary p-0" onclick="locateOnMap({{ $pole->lat }}, {{ $pole->lng }})">
-                        View on Map
-                    </button>
+                    @if ($pole->lat && $pole->lng)
+                        <a href="https://www.google.com/maps?q={{ urlencode($pole->lat . ',' . $pole->lng) }}"
+                           target="_blank"
+                           rel="noopener"
+                           class="btn btn-sm btn-link text-primary p-0">
+                            View on Map
+                        </a>
+                    @else
+                        <button type="button" class="btn btn-sm btn-link text-muted p-0" disabled>
+                            View on Map
+                        </button>
+                    @endif
                 </div>
             </div>
         </div>
@@ -344,15 +353,6 @@
 
 @push("scripts")
 <script>
-    function locateOnMap(lat, lng) {
-        if (lat && lng) {
-            const url = `https://www.google.com/maps?q=${lat},${lng}`;
-            window.open(url, '_blank');
-        } else {
-            alert('Location coordinates not available.');
-        }
-    }
-
     function goBackWithFallback() {
         if (window.history.length > 1) {
             window.history.back();

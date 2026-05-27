@@ -156,6 +156,10 @@ class StaffImport implements ToCollection, WithHeadingRow, WithCalculatedFormula
                         'vertical_head_id' => $verticalHeadId,
                     ];
 
+                    if (!empty($projectId) && is_numeric($projectId)) {
+                        $userData['project_id'] = (int) $projectId;
+                    }
+
                     // Only update password if user is new or password is explicitly provided
                     if (!$isUpdate || (!empty($password) && strpos($password, '=') !== 0)) {
                         $userData['password'] = bcrypt($plainPassword);

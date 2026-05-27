@@ -36,6 +36,11 @@ class StreetlightTask extends Model
         'allotted_wards',
     ];
 
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date' => 'date',
+    ];
+
     /**
      * Get the project this task belongs to
      * Relationship: StreetlightTask belongs to Project

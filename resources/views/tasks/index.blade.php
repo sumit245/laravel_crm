@@ -102,7 +102,7 @@
               </a>
               <!-- Edit Button -->
               @if($project->project_type == 1)
-                <a href="{{ route("tasks.edit", ['id' => $member->id, 'project_id' => $project->id]) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
+                <a href="{{ route("tasks.edit", ['task' => $member->id, 'project_id' => $project->id]) }}" class="btn btn-icon btn-warning" data-toggle="tooltip"
                   title="Edit Task">
                   <i class="mdi mdi-pencil"></i>
                 </a>

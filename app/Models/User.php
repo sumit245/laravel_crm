@@ -3,9 +3,11 @@
 namespace App\Models;
 
 use App\Enums\UserRole;
+use App\Models\UserEventNotification;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Schema;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles;
 
@@ -129,9 +131,33 @@ class User extends Authenticatable
      */
     public function projects()
     {
-        return $this->belongsToMany(Project::class, 'project_user')
-            ->withPivot('role', 'district_id')
-            ->withTimestamps();
+        $relation = $this->belongsToMany(Project::class, 'project_user');
+        $pivotColumns = [];
+
+        if (!Schema::hasTable('project_user')) {
+            return $relation;
+        }
+
+        if (Schema::hasColumn('project_user', 'role')) {
+            $pivotColumns[] = 'role';
+        }
+
+        if (Schema::hasColumn('project_user', 'district_id')) {
+            $pivotColumns[] = 'district_id';
+        }
+
+        if (!empty($pivotColumns)) {
+            $relation->withPivot($pivotColumns);
+        }
+
+        if (
+            Schema::hasColumn('project_user', 'created_at') &&
+            Schema::hasColumn('project_user', 'updated_at')
+        ) {
+            $relation->withTimestamps();
+        }
+
+        return $relation;
     }
     /**
      * Usercategory.
@@ -276,7 +302,7 @@ class User extends Authenticatable
      */
     public function getAssignedProjects()
     {
-        return $this->projects()->get();
+        return $this->projects()->get()->unique('id')->values();
     }
 
     /**
@@ -331,5 +357,13 @@ class User extends Authenticatable
         
         // Set primary project_id to first project
         $this->update(['project_id' => !empty($projectIds) ? $projectIds[0] : null]);
+    }
+
+    /**
+     * In-app event notifications delivered to the user.
+     */
+    public function eventNotifications()
+    {
+        return $this->hasMany(UserEventNotification::class);
     }
 }

@@ -142,28 +142,20 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link disabled" href="#">
+                <span class="nav-link disabled" aria-disabled="true">
                     <i class="menu-icon mdi mdi-store"></i>
                     <span class="menu-title">Users</span>
-                </a>
+                </span>
             </li>
             <li class="nav-item">
-                <a class="nav-link js-partial-link {{ sidebar_active(['billing.settings', 'billing.*']) }}"
-                    href="{{ route('billing.settings') }}">
+                <a class="nav-link js-partial-link {{ sidebar_active(['billing.settings', 'settings.section', 'settings.billing.*']) }}"
+                    href="{{ route('settings.section', 'billing') }}">
                     <i class="menu-icon mdi mdi-store"></i>
-                    <span class="menu-title">Settings</span>
+                    <span class="menu-title">TA/DA rates</span>
                 </a>
             </li>
             <!-- Billing management ends -->
 
-            <li class="nav-item nav-category">Inventory</li>
-            <li class="nav-item">
-                <a class="nav-link disabled js-partial-link {{ sidebar_active(['inventory.*']) }}"
-                    href="{{ route('inventory.index') }}">
-                    <i class="menu-icon mdi mdi-store"></i>
-                    <span class="menu-title">Inventory Management</span>
-                </a>
-            </li>
             <hr />
         @endif
 
@@ -192,13 +184,14 @@
 
         @if (!$isRestrictedUser)
             <hr />
-            <li class="nav-item">
-                <a class="nav-link" href="">
-                    <i class="menu-icon mdi mdi-cogs"></i>
-                    <span class="menu-title">Setting</span>
-                </a>
-            </li>
-            @if (auth()->user()->role == 0)
+            @if (auth()->user()->role == \App\Enums\UserRole::ADMIN->value)
+                <li class="nav-item">
+                    <a class="nav-link js-partial-link {{ sidebar_active(['settings.*']) }}"
+                        href="{{ route('settings.section', 'organization') }}">
+                        <i class="menu-icon mdi mdi-cog"></i>
+                        <span class="menu-title">Admin Settings</span>
+                    </a>
+                </li>
                 <li class="nav-item">
                     <a class="nav-link js-partial-link {{ sidebar_active(['backup.index']) }}"
                         href="{{ route('backup.index') }}">
@@ -219,5 +212,17 @@
 
     .sidebar:hover .nav {
         overflow: auto;
+    }
+
+    .sidebar .nav .nav-link.active {
+        background-color: rgba(52, 152, 219, 0.12);
+        border-left: 3px solid #3498db;
+        font-weight: 700;
+    }
+
+    .sidebar .nav .nav-link.active .menu-title,
+    .sidebar .nav .nav-link.active .menu-icon {
+        color: #1f2937;
+        font-weight: 700;
     }
 </style>

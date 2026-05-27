@@ -216,4 +216,25 @@ class CandidateController extends Controller
         return redirect()->back()->with('success', 'Candidate deleted.');
     }
 
+    public function bulkDelete(Request $request)
+    {
+        $ids = collect($request->input('ids', []))
+            ->filter(fn($id) => is_numeric($id))
+            ->map(fn($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return response()->json(['message' => 'No candidates selected.'], 422);
+        }
+
+        $deleted = Candidate::whereIn('id', $ids)->delete();
+
+        $this->activityLogger->log('candidate', 'bulk_deleted', null, [
+            'description' => "Deleted {$deleted} candidate(s)"
+        ]);
+
+        return response()->json(['message' => "Deleted {$deleted} candidate(s)."]);
+    }
+
 }

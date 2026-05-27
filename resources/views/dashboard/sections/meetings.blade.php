@@ -130,7 +130,7 @@
                 <div class="card" style="border: 1px solid #dee2e6; border-radius: 4px; background: white;">
                     <div class="card-body text-center" style="padding: 16px;">
                         <h6 style="font-weight: 600; color: #495057; font-size: 0.85rem; margin-bottom: 8px;">Pending</h6>
-                        <h3 class="mb-0" style="font-weight: 700; color: #ffc107;">{{ $meeting_analytics['discussion_points']['pending'] ?? 0 }}</h3>
+                        <h3 class="mb-0" style="font-weight: 700; color: #9a6700;">{{ $meeting_analytics['discussion_points']['pending'] ?? 0 }}</h3>
                     </div>
                 </div>
             </div>
@@ -157,8 +157,11 @@
                                 <td style="padding: 10px 12px;">
                                     <div class="d-flex align-items-center gap-2">
                                         <div class="progress" style="height: 18px; width: 150px;">
-                                            <div class="progress-bar {{ $topic['resolution_rate'] >= 80 ? 'bg-success' : ($topic['resolution_rate'] >= 50 ? 'bg-warning' : 'bg-danger') }}" 
-                                                 style="width: {{ $topic['resolution_rate'] }}%">
+                                            <div class="progress-bar {{ $topic['resolution_rate'] >= 80 ? 'bg-success' : ($topic['resolution_rate'] >= 50 ? 'bg-warning' : 'bg-danger') }}"
+                                                 role="progressbar"
+                                                 style="width: {{ $topic['resolution_rate'] }}%"
+                                                 aria-label="Resolution rate for {{ $topic['topic'] }}"
+                                                 aria-valuenow="{{ $topic['resolution_rate'] }}" aria-valuemin="0" aria-valuemax="100">
                                             </div>
                                         </div>
                                         <span style="font-size: 0.85rem; font-weight: 500;">{{ number_format($topic['resolution_rate'], 1) }}%</span>

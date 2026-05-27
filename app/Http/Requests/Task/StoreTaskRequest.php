@@ -38,6 +38,8 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'project_id' => ['required', 'exists:projects,id'],
+            'sites' => ['required', 'array', 'min:1'],
+            'sites.*' => ['integer'],
             'site_id' => ['nullable', 'integer'],
             'engineer_id' => ['nullable', 'exists:users,id'],
             'vendor_id' => ['nullable', 'exists:users,id'],

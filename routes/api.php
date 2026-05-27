@@ -3,6 +3,7 @@
 use App\Http\Controllers\API\ConveyanceController;
 use App\Http\Controllers\API\DropdownController;
 use App\Http\Controllers\API\InventoryController;
+use App\Http\Controllers\RmsSyncController;
 use App\Http\Controllers\InventoryController as WebInventoryController;
 use App\Http\Controllers\API\LoginController;
 use App\Http\Controllers\API\ProjectController;
@@ -61,6 +62,7 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Route to send all data to RMS at once
     Route::post('send-to-rms', [TaskController::class, 'sendDataToRMS']);
+    Route::get('rms-sync/{batch}', [RmsSyncController::class, 'show'])->name('api.rms.sync.status');
 
     // Conveyance
     Route::apiResource('tadas', ConveyanceController::class);

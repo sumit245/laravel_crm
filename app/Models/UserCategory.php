@@ -28,6 +28,12 @@ class UserCategory extends Model
         'allowed_vehicles',
         'room_min_price',
         'room_max_price',
+        'city_category',
+        'dailyamount',
+    ];
+
+    protected $casts = [
+        'dailyamount' => 'decimal:2',
     ];
 
     public $timestamps = true;

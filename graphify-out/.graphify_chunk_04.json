@@ -1,0 +1,701 @@
+{
+  "nodes": [
+    {
+      "id": "discussionpoint_model",
+      "label": "DiscussionPoint Model",
+      "file_type": "code",
+      "source_file": "app/Models/DiscussionPoint.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "streetlight_model",
+      "label": "Streetlight Model",
+      "file_type": "code",
+      "source_file": "app/Models/Streetlight.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "meetingnotehistory_model",
+      "label": "MeetingNoteHistory Model",
+      "file_type": "code",
+      "source_file": "app/Models/MeetingNoteHistory.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "city_model",
+      "label": "City Model",
+      "file_type": "code",
+      "source_file": "app/Models/City.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "pole_model",
+      "label": "Pole Model",
+      "file_type": "code",
+      "source_file": "app/Models/Pole.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "whiteboard_model",
+      "label": "Whiteboard Model",
+      "file_type": "code",
+      "source_file": "app/Models/Whiteboard.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "user_model",
+      "label": "User Model",
+      "file_type": "code",
+      "source_file": "app/Models/User.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "role_model",
+      "label": "Role Model",
+      "file_type": "code",
+      "source_file": "app/Models/Role.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "tada_model",
+      "label": "Tada Model",
+      "file_type": "code",
+      "source_file": "app/Models/Tada.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "travelfare_model",
+      "label": "Travelfare Model",
+      "file_type": "code",
+      "source_file": "app/Models/travelfare.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "rmspushlog_model",
+      "label": "RmsPushLog Model",
+      "file_type": "code",
+      "source_file": "app/Models/RmsPushLog.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "task_model",
+      "label": "Task Model",
+      "file_type": "code",
+      "source_file": "app/Models/Task.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "usercategory_model",
+      "label": "UserCategory Model",
+      "file_type": "code",
+      "source_file": "app/Models/UserCategory.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "state_model",
+      "label": "State Model",
+      "file_type": "code",
+      "source_file": "app/Models/State.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "conveyance_model",
+      "label": "Conveyance Model",
+      "file_type": "code",
+      "source_file": "app/Models/Conveyance.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "project_model",
+      "label": "Project Model",
+      "file_type": "code",
+      "source_file": "app/Models/Project.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "candidate_model",
+      "label": "Candidate Model",
+      "file_type": "code",
+      "source_file": "app/Models/Candidate.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "streetlighttask_model",
+      "label": "StreetlightTask Model",
+      "file_type": "code",
+      "source_file": "app/Models/StreetlightTask.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "activitylog_model",
+      "label": "ActivityLog Model",
+      "file_type": "code",
+      "source_file": "app/Models/ActivityLog.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventroystreetlightmodel_model",
+      "label": "InventroyStreetLightModel Model",
+      "file_type": "code",
+      "source_file": "app/Models/InventroyStreetLightModel.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "inventoryhistory_model",
+      "label": "InventoryHistory Model",
+      "file_type": "code",
+      "source_file": "app/Models/InventoryHistory.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    },
+    {
+      "id": "districtcode_model",
+      "label": "DistrictCode Model",
+      "file_type": "code",
+      "source_file": "app/Models/DistrictCode.php",
+      "source_location": null,
+      "source_url": null,
+      "captured_at": null,
+      "author": null,
+      "contributor": null
+    }
+  ],
+  "edges": [
+    {
+      "source": "discussionpoint_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/DiscussionPoint.php",
+      "source_location": "assignee(), assignedToUser(), assignedUsers()",
+      "weight": 1.0
+    },
+    {
+      "source": "discussionpoint_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/DiscussionPoint.php",
+      "source_location": "project()",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlight_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Streetlight.php",
+      "source_location": "project()",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlight_model",
+      "target": "streetlighttask_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Streetlight.php",
+      "source_location": "streetlightTasks(), poles() via hasManyThrough",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlight_model",
+      "target": "pole_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Streetlight.php",
+      "source_location": "poles() hasManyThrough(Pole, StreetlightTask)",
+      "weight": 1.0
+    },
+    {
+      "source": "city_model",
+      "target": "usercategory_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/City.php",
+      "source_location": "usercategory()",
+      "weight": 1.0
+    },
+    {
+      "source": "pole_model",
+      "target": "streetlighttask_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Pole.php",
+      "source_location": "task() belongsTo StreetlightTask",
+      "weight": 1.0
+    },
+    {
+      "source": "pole_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Pole.php",
+      "source_location": "vendor() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "whiteboard_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "app/Models/Whiteboard.php",
+      "source_location": "@depends-on User, Project",
+      "weight": 0.7
+    },
+    {
+      "source": "user_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/User.php",
+      "source_location": "projects() belongsToMany via project_user pivot",
+      "weight": 1.0
+    },
+    {
+      "source": "user_model",
+      "target": "usercategory_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/User.php",
+      "source_location": "usercategory() belongsTo UserCategory",
+      "weight": 1.0
+    },
+    {
+      "source": "user_model",
+      "target": "task_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/User.php",
+      "source_location": "managerTasks(), engineerTasks(), vendorTasks()",
+      "weight": 1.0
+    },
+    {
+      "source": "user_model",
+      "target": "streetlighttask_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/User.php",
+      "source_location": "streetlightTasks(), streetlightEngineerTasks(), streetlightVendorTasks()",
+      "weight": 1.0
+    },
+    {
+      "source": "tada_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Tada.php",
+      "source_location": "user() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "tada_model",
+      "target": "usercategory_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Tada.php",
+      "source_location": "usercategory() belongsTo UserCategory",
+      "weight": 1.0
+    },
+    {
+      "source": "travelfare_model",
+      "target": "tada_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/travelfare.php",
+      "source_location": "tada() belongsTo Tada",
+      "weight": 1.0
+    },
+    {
+      "source": "rmspushlog_model",
+      "target": "pole_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/RmsPushLog.php",
+      "source_location": "pole() belongsTo Pole",
+      "weight": 1.0
+    },
+    {
+      "source": "rmspushlog_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/RmsPushLog.php",
+      "source_location": "pushedBy() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "task_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Task.php",
+      "source_location": "project() belongsTo Project",
+      "weight": 1.0
+    },
+    {
+      "source": "task_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Task.php",
+      "source_location": "vendor(), engineer(), manager() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "usercategory_model",
+      "target": "city_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/UserCategory.php",
+      "source_location": "cities() hasMany City",
+      "weight": 1.0
+    },
+    {
+      "source": "usercategory_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/UserCategory.php",
+      "source_location": "users() hasMany User",
+      "weight": 1.0
+    },
+    {
+      "source": "conveyance_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Conveyance.php",
+      "source_location": "user() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "project_model",
+      "target": "streetlight_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Project.php",
+      "source_location": "streetlights() hasMany Streetlight",
+      "weight": 1.0
+    },
+    {
+      "source": "project_model",
+      "target": "task_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Project.php",
+      "source_location": "tasks() hasMany Task",
+      "weight": 1.0
+    },
+    {
+      "source": "project_model",
+      "target": "streetlighttask_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Project.php",
+      "source_location": "streetlightTasks() hasMany StreetlightTask",
+      "weight": 1.0
+    },
+    {
+      "source": "project_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Project.php",
+      "source_location": "users() belongsToMany via project_user pivot",
+      "weight": 1.0
+    },
+    {
+      "source": "project_model",
+      "target": "state_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Project.php",
+      "source_location": "stateRelation() belongsTo State",
+      "weight": 1.0
+    },
+    {
+      "source": "project_model",
+      "target": "city_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/Project.php",
+      "source_location": "districtRelation() belongsTo City",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlighttask_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/StreetlightTask.php",
+      "source_location": "project() belongsTo Project",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlighttask_model",
+      "target": "streetlight_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/StreetlightTask.php",
+      "source_location": "site(), streetlight() belongsTo Streetlight",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlighttask_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/StreetlightTask.php",
+      "source_location": "engineer(), vendor(), manager() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "streetlighttask_model",
+      "target": "pole_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/StreetlightTask.php",
+      "source_location": "poles() hasMany Pole",
+      "weight": 1.0
+    },
+    {
+      "source": "activitylog_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/ActivityLog.php",
+      "source_location": "user() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "activitylog_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/ActivityLog.php",
+      "source_location": "project() belongsTo Project",
+      "weight": 1.0
+    },
+    {
+      "source": "inventroystreetlightmodel_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/InventroyStreetLightModel.php",
+      "source_location": "project() belongsTo Project",
+      "weight": 1.0
+    },
+    {
+      "source": "inventoryhistory_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/InventoryHistory.php",
+      "source_location": "user() belongsTo User",
+      "weight": 1.0
+    },
+    {
+      "source": "inventoryhistory_model",
+      "target": "project_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/InventoryHistory.php",
+      "source_location": "project() belongsTo Project",
+      "weight": 1.0
+    },
+    {
+      "source": "inventoryhistory_model",
+      "target": "inventroystreetlightmodel_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/InventoryHistory.php",
+      "source_location": "inventory() polymorphic belongsTo when inventory_type=streetlight",
+      "weight": 1.0
+    },
+    {
+      "source": "user_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/User.php",
+      "source_location": "siteEngineers(), projectManager(), vendors(), siteEngineer(), verticalHead(), verticalHeadUsers() - self-referential hierarchy",
+      "weight": 1.0
+    },
+    {
+      "source": "task_model",
+      "target": "streetlighttask_model",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.85,
+      "source_file": "app/Models/Task.php",
+      "source_location": "parallel structure: both have project_id, site_id, engineer_id, vendor_id, manager_id, status, materials_consumed",
+      "weight": 0.85
+    },
+    {
+      "source": "rmspushlog_model",
+      "target": "pole_model",
+      "relation": "shares_data_with",
+      "confidence": "EXTRACTED",
+      "confidence_score": 1.0,
+      "source_file": "app/Models/RmsPushLog.php",
+      "source_location": "shares district, block, panchayat fields with Pole/Streetlight domain",
+      "weight": 1.0
+    },
+    {
+      "source": "districtcode_model",
+      "target": "pole_model",
+      "relation": "shares_data_with",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "app/Models/DistrictCode.php",
+      "source_location": "district codes used in complete_pole_number generation for Pole records",
+      "weight": 0.8
+    },
+    {
+      "source": "travelfare_model",
+      "target": "conveyance_model",
+      "relation": "semantically_similar_to",
+      "confidence": "INFERRED",
+      "confidence_score": 0.75,
+      "source_file": "app/Models/travelfare.php",
+      "source_location": "both model travel claim data: from/to/distance/amount/vehicle; travelfare belongs to Tada while Conveyance is standalone daily claim",
+      "weight": 0.75
+    },
+    {
+      "source": "meetingnotehistory_model",
+      "target": "user_model",
+      "relation": "references",
+      "confidence": "INFERRED",
+      "confidence_score": 0.7,
+      "source_file": "app/Models/MeetingNoteHistory.php",
+      "source_location": "@depends-on Meet, User",
+      "weight": 0.7
+    }
+  ],
+  "hyperedges": [],
+  "input_tokens": 0,
+  "output_tokens": 0
+}

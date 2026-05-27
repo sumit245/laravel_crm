@@ -252,7 +252,7 @@
                                             <h6 class="text-muted mb-1">Project Earnings</h6>
                                             <h4 class="mb-0 text-primary">₹{{ number_format($earningsByProject[$project->id]['earnings'], 2) }}</h4>
                                             @if ($isStreetlight)
-                                                <small class="text-muted">Based on {{ $earningsByProject[$project->id]['installed_poles'] }} installed poles @ ₹500 per pole</small>
+                                                <small class="text-muted">Based on {{ $earningsByProject[$project->id]['installed_poles'] }} installed poles @ ₹{{ number_format($earningsByProject[$project->id]['pole_rate'] ?? 500, 2) }} per pole</small>
                                             @else
                                                 <small class="text-muted">Based on completed sites</small>
                                             @endif

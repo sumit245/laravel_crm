@@ -7,6 +7,7 @@ use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
 use App\Services\Inventory\InventoryService;
 use App\Services\Inventory\InventoryHistoryService;
+use App\Services\Rms\RmsSyncService;
 use App\Models\InventoryDispatch;
 use App\Models\Site;
 use App\Models\Streetlight;
@@ -276,15 +277,38 @@ class TaskController extends Controller
 
     public function getSitesForVendor($vendorId)
     {
-        // Fetch tasks where the given vendor_id matches and eager load the site relationship
-        $tasks = Task::with('site')
+        $tasks = StreetlightTask::with('site')
             ->where('vendor_id', $vendorId)
             ->get();
 
-        // Extract unique sites from the tasks
-        $sites = $tasks->pluck('site')->unique('id')->values();
+        $sites = $tasks
+            ->filter(fn ($task) => $task->site !== null)
+            ->map(function ($task) {
+                $site = $task->site;
 
-        // Return the response
+                return [
+                    'id' => $site->id,
+                    'task_id' => $task->id,
+                    'project_id' => $task->project_id,
+                    'state' => $site->state,
+                    'district' => $site->district,
+                    'block' => $site->block,
+                    'panchayat' => $site->panchayat,
+                    'ward' => $task->allotted_wards,
+                    'district_code' => $site->district_code,
+                    'block_code' => $site->block_code,
+                    'panchayat_code' => $site->panchayat_code,
+                    'mukhiya_contact' => $site->mukhiya_contact,
+                    'number_of_surveyed_poles' => $site->number_of_surveyed_poles,
+                    'number_of_installed_poles' => $site->number_of_installed_poles,
+                    'total_poles' => $site->total_poles,
+                    'status' => $task->status,
+                    'start_date' => optional($task->start_date)->format('d/m/Y'),
+                    'end_date' => optional($task->end_date)->format('d/m/Y'),
+                ];
+            })
+            ->values();
+
         return response()->json([
             'status' => 'success',
             'vendor_id' => $vendorId,
@@ -623,47 +647,72 @@ class TaskController extends Controller
             return redirect()->route('login')->with('error', 'Please log in first.');
         }
 
-        $user = auth()->user();
-        $query = Pole::where('isSurveyDone', 1);
-        // Apply filters based on request parameters
-        if ($request->has('search')) {
+        $query = Pole::with(['task.site', 'task.engineer', 'task.vendor', 'task.manager', 'rmsLogs'])
+            ->where('isSurveyDone', 1);
+
+        if ($request->filled('search')) {
             $query->where('complete_pole_number', 'like', '%' . $request->search . '%');
         }
-        if ($request->has('district')) {
+
+        if ($request->filled('project_id')) {
             $query->whereHas('task', function ($q) use ($request) {
-                $q->where('district_id', $request->district);
+                $q->where('project_id', $request->project_id);
             });
         }
 
-        if ($request->has('block')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('block_id', $request->block);
-            });
-        }
-        if ($request->has('panchayat')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('panchayat_id', $request->panchayat);
+        if ($request->filled('district')) {
+            $query->whereHas('task.site', function ($q) use ($request) {
+                $q->where('district', $request->district);
             });
         }
 
-        if ($request->has('project_manager')) {
+        if ($request->filled('block')) {
+            $query->whereHas('task.site', function ($q) use ($request) {
+                $q->where('block', $request->block);
+            });
+        }
+
+        if ($request->filled('panchayat')) {
+            $query->whereHas('task.site', function ($q) use ($request) {
+                $q->where('panchayat', $request->panchayat);
+            });
+        }
+
+        if ($request->filled('project_manager')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('manager_id', $request->project_manager);
             });
         }
 
-        if ($request->has('site_engineer')) {
+        if ($request->filled('site_engineer')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('engineer_id', $request->site_engineer);
             });
         }
 
-        if ($request->has('vendor')) {
+        if ($request->filled('vendor')) {
             $query->whereHas('task', function ($q) use ($request) {
                 $q->where('vendor_id', $request->vendor);
             });
         }
-        $poles = $query->with(['task.site', 'task.engineer', 'task.vendor', 'task.manager'])->get();
+
+        if ($request->filled('filter_installed')) {
+            $query->where('isInstallationDone', $request->filter_installed == '1' ? 1 : 0);
+        }
+
+        if ($request->filled('filter_billed')) {
+            $query->whereHas('task', function ($q) use ($request) {
+                if ($request->filter_billed == '1') {
+                    $q->where('billed', 1);
+                } elseif ($request->filter_billed == '0') {
+                    $q->where(function ($billedQuery) {
+                        $billedQuery->where('billed', 0)->orWhereNull('billed');
+                    });
+                }
+            });
+        }
+
+        $poles = $query->get();
         $totalSurveyed = $poles->count();
         $districts = [];
         $blocks = [];
@@ -674,7 +723,7 @@ class TaskController extends Controller
     // Fetch Installed Poles based on user role
     public function getInstalledPoles(Request $request)
     {
-        $query = Pole::with(['task.streetlight', 'task'])
+        $query = Pole::with(['task.site', 'task'])
             ->where('isInstallationDone', 1);
 
         // Apply URL parameter filters
@@ -697,19 +746,19 @@ class TaskController extends Controller
         }
 
         if ($request->filled('project_id')) {
-            $query->whereHas('task.streetlight', function ($q) use ($request) {
+            $query->whereHas('task', function ($q) use ($request) {
                 $q->where('project_id', $request->project_id);
             });
         }
 
         if ($request->filled('panchayat')) {
-            $query->whereHas('task.streetlight', function ($q) use ($request) {
+            $query->whereHas('task.site', function ($q) use ($request) {
                 $q->where('panchayat', $request->panchayat);
             });
         }
 
         if ($request->filled('ward')) {
-            $query->whereHas('task.streetlight', function ($q) use ($request) {
+            $query->whereHas('task.site', function ($q) use ($request) {
                 $q->where('ward', 'like', '%' . $request->ward . '%');
             });
         }
@@ -743,125 +792,15 @@ class TaskController extends Controller
             }
         }
 
-        $poles = $query->orderBy('complete_pole_number', 'asc')->get();
+        $totalInstalled = (clone $query)->count();
+        $installedPolesAjaxUrl = route('installed.poles.data', $request->query());
 
-        return view('poles.installed', compact('poles'));
+        return view('poles.installed', compact('installedPolesAjaxUrl', 'totalInstalled'));
     }
 
-    // AJAX endpoint for DataTables server-side processing
-    // public function getInstalledPolesData(Request $request)
-    // {
-    //     $query = Pole::with(['task.streetlight'])
-    //         ->where('isInstallationDone', 1);
-
-    //     // Apply filters
-    //     if ($request->filled('project_manager')) {
-    //         $query->whereHas('task', function ($q) use ($request) {
-    //             $q->where('manager_id', $request->project_manager);
-    //         });
-    //     }
-
-    //     if ($request->filled('site_engineer')) {
-    //         $query->whereHas('task', function ($q) use ($request) {
-    //             $q->where('engineer_id', $request->site_engineer);
-    //         });
-    //     }
-
-    //     if ($request->filled('vendor')) {
-    //         $query->whereHas('task', function ($q) use ($request) {
-    //             $q->where('vendor_id', $request->vendor);
-    //         });
-    //     }
-
-    //     if ($request->filled('project_id')) {
-    //         $query->whereHas('task.streetlight', function ($q) use ($request) {
-    //             $q->where('project_id', $request->project_id);
-    //         });
-    //     }
-
-    //     // Get total count before filtering
-    //     $totalRecords = $query->count();
-
-    //     // Search functionality
-    //     if ($request->filled('search.value')) {
-    //         $search = $request->input('search.value');
-    //         $query->where(function ($q) use ($search) {
-    //             $q->where('complete_pole_number', 'like', "%{$search}%")
-    //                 ->orWhere('luminary_qr', 'like', "%{$search}%")
-    //                 ->orWhere('sim_number', 'like', "%{$search}%")
-    //                 ->orWhere('battery_qr', 'like', "%{$search}%")
-    //                 ->orWhere('panel_qr', 'like', "%{$search}%")
-    //                 ->orWhereHas('task.streetlight', function ($sq) use ($search) {
-    //                     $sq->where('block', 'like', "%{$search}%")
-    //                         ->orWhere('panchayat', 'like', "%{$search}%");
-    //                 });
-    //         });
-    //     }
-
-    //     // Get filtered count
-    //     $filteredRecords = $query->count();
-
-    //     // Ordering
-    //     $orderColumn = $request->input('order.0.column', 3); // Default to pole number
-    //     $orderDirection = $request->input('order.0.dir', 'asc');
-    //     $columns = ['id', 'block', 'panchayat', 'complete_pole_number', 'luminary_qr', 'sim_number', 'battery_qr', 'panel_qr'];
-
-    //     if (isset($columns[$orderColumn])) {
-    //         if (in_array($columns[$orderColumn], ['block', 'panchayat'])) {
-    //             $query->join('streetlight_tasks', 'poles.task_id', '=', 'streetlight_tasks.id')
-    //                 ->join('streetlights', 'streetlight_tasks.streetlight_id', '=', 'streetlights.id')
-    //                 ->orderBy('streetlights.' . $columns[$orderColumn], $orderDirection)
-    //                 ->select('poles.*');
-    //         } else {
-    //             $query->orderBy($columns[$orderColumn], $orderDirection);
-    //         }
-    //     }
-
-    //     // Pagination
-    //     $start = $request->input('start', 0);
-    //     $length = $request->input('length', 50);
-    //     $poles = $query->skip($start)->take($length)->get();
-
-    //     // Format data for DataTables
-    //     $data = $poles->map(function ($pole) {
-    //         return [
-    //             'checkbox' => '<input type="checkbox" class="pole-checkbox" value="' . $pole->id . '" />',
-    //             'block' => $pole->task?->streetlight?->block ?? 'N/A',
-    //             'panchayat' => $pole->task?->streetlight?->panchayat ?? 'N/A',
-    //             'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . $pole->lat . ', ' . $pole->lng . ')">' . ($pole->complete_pole_number ?? 'N/A') . '</span>',
-    //             'imei' => $pole->luminary_qr ?? 'N/A',
-    //             'sim_number' => $pole->sim_number ?? 'N/A',
-    //             'battery' => $pole->battery_qr ?? 'N/A',
-    //             'panel' => $pole->panel_qr ?? 'N/A',
-    //             'bill_raised' => '0',
-    //             'rms' => $pole->rms_status ?? 'N/A',
-    //             'actions' => '
-    //                 <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
-    //                     <i class="mdi mdi-eye"></i>
-    //                 </a>
-    //                 <a href="' . route('poles.edit', $pole->id) . '" class="btn btn-icon btn-warning">
-    //                     <i class="mdi mdi-pencil"></i>
-    //                 </a>
-    //                 <button type="button" class="btn btn-icon btn-danger delete-pole-btn" data-toggle="tooltip"
-    //                     title="Delete Pole" data-id="' . $pole->id . '"
-    //                     data-name="' . ($pole->complete_pole_number ?? 'this pole') . '"
-    //                     data-url="' . route('poles.destroy', $pole->id) . '">
-    //                     <i class="mdi mdi-delete"></i>
-    //                 </button>
-    //             '
-    //         ];
-    //     });
-
-    //     return response()->json([
-    //         'draw' => intval($request->input('draw')),
-    //         'recordsTotal' => $totalRecords,
-    //         'recordsFiltered' => $filteredRecords,
-    //         'data' => $data
-    //     ]);
-    // }
     public function getInstalledPolesData(Request $request)
     {
-        $query = Pole::with(['task.streetlight'])
+        $query = Pole::with(['task.site'])
             ->where('isInstallationDone', 1);
 
         if ($request->filled('project_manager')) {
@@ -883,9 +822,49 @@ class TaskController extends Controller
         }
 
         if ($request->filled('project_id')) {
-            $query->whereHas('task.streetlight', function ($q) use ($request) {
+            $query->whereHas('task', function ($q) use ($request) {
                 $q->where('project_id', $request->project_id);
             });
+        }
+
+        if ($request->filled('panchayat')) {
+            $query->whereHas('task.site', function ($q) use ($request) {
+                $q->where('panchayat', $request->panchayat);
+            });
+        }
+
+        if ($request->filled('ward')) {
+            $query->whereHas('task.site', function ($q) use ($request) {
+                $q->where('ward', 'like', '%' . $request->ward . '%');
+            });
+        }
+
+        if ($request->filled('filter_surveyed')) {
+            if ($request->filter_surveyed == '1') {
+                $query->where('isSurveyDone', 1);
+            } elseif ($request->filter_surveyed == '0') {
+                $query->where('isSurveyDone', 0);
+            }
+        }
+
+        if ($request->filled('filter_installed')) {
+            if ($request->filter_installed == '1') {
+                $query->where('isInstallationDone', 1);
+            } elseif ($request->filter_installed == '0') {
+                $query->where('isInstallationDone', 0);
+            }
+        }
+
+        if ($request->filled('filter_billed')) {
+            if ($request->filter_billed == '1') {
+                $query->whereHas('task', function ($q) {
+                    $q->where('billed', 1);
+                });
+            } elseif ($request->filter_billed == '0') {
+                $query->whereHas('task', function ($q) {
+                    $q->where('billed', 0)->orWhereNull('billed');
+                });
+            }
         }
 
         // total before search
@@ -900,7 +879,7 @@ class TaskController extends Controller
                     ->orWhere('sim_number', 'like', "%{$search}%")
                     ->orWhere('battery_qr', 'like', "%{$search}%")
                     ->orWhere('panel_qr', 'like', "%{$search}%")
-                    ->orWhereHas('task.streetlight', function ($sq) use ($search) {
+                    ->orWhereHas('task.site', function ($sq) use ($search) {
                         $sq->where('block', 'like', "%{$search}%")
                             ->orWhere('panchayat', 'like', "%{$search}%");
                     });
@@ -912,18 +891,21 @@ class TaskController extends Controller
         // ordering
         $orderColumn = $request->input('order.0.column', 3);
         $orderDirection = $request->input('order.0.dir', 'asc');
-        $columns = ['id', 'block', 'panchayat', 'complete_pole_number', 'luminary_qr', 'sim_number', 'battery_qr', 'panel_qr'];
+        $columns = [
+            'id',
+            'complete_pole_number',
+            'beneficiary',
+            'beneficiary_contact',
+            'luminary_qr',
+            'sim_number',
+            'battery_qr',
+            'panel_qr',
+            'billed',
+            'rms',
+        ];
 
         if (isset($columns[$orderColumn])) {
-            if (in_array($columns[$orderColumn], ['block', 'panchayat'])) {
-                // Join for ordering by streetlight fields
-                $poleTable = (new Pole())->getTable();
-                $query->join('streetlight_tasks', $poleTable . '.task_id', '=', 'streetlight_tasks.id')
-                    ->join('streetlights', 'streetlight_tasks.site_id', '=', 'streetlights.id')
-                    ->groupBy($poleTable . '.id') // Prevent duplicates from join
-                    ->orderBy('streetlights.' . $columns[$orderColumn], $orderDirection)
-                    ->select($poleTable . '.*');
-            } else {
+            if (!in_array($columns[$orderColumn], ['billed', 'rms'], true)) {
                 $poleTable = (new Pole())->getTable();
                 $query->orderBy($poleTable . '.' . $columns[$orderColumn], $orderDirection);
             }
@@ -940,24 +922,32 @@ class TaskController extends Controller
             $poles = $query->skip($start)->take($length)->get();
         }
 
-        // Reload relationships after join (join can interfere with eager loading)
-        $poles->load(['task.streetlight']);
+        $poles->load(['task.site']);
 
         // shape data to match DataTables columns config
         $data = $poles->map(function ($pole) {
+            $poleNumber = e($pole->complete_pole_number ?? 'N/A');
+
+            if ($pole->lat && $pole->lng) {
+                $poleNumber = '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . (float) $pole->lat . ', ' . (float) $pole->lng . ')">' . $poleNumber . '</span>';
+            }
+
+            $billRaised = $pole->task && $pole->task->billed
+                ? '<span class="badge badge-success">Yes</span>'
+                : '<span class="badge badge-readable badge-no">No</span>';
+
             return [
-                'checkbox' => '<input type="checkbox" class="pole-checkbox" value="' . $pole->id . '" />',
-                'district' => $pole->task?->streetlight?->district ?? 'N/A',
-                'block' => $pole->task?->streetlight?->block ?? 'N/A',
-                'panchayat' => $pole->task?->streetlight?->panchayat ?? 'N/A',
-                'pole_number' => '<span class="text-primary" style="cursor:pointer;" onclick="locateOnMap(' . $pole->lat . ', ' . $pole->lng . ')">' . ($pole->complete_pole_number ?? 'N/A') . '</span>',
-                'imei' => $pole->luminary_qr ?? 'N/A',
-                'sim_number' => $pole->sim_number ?? 'N/A',
-                'battery' => $pole->battery_qr ?? 'N/A',
-                'panel' => $pole->panel_qr ?? 'N/A',
-                'bill_raised' => '0',
-                'rms' => $pole->rms_status ?? 'N/A',
-                'actions' => '
+                '<input type="checkbox" class="row-checkbox" value="' . (int) $pole->id . '" />',
+                $poleNumber,
+                e($pole->beneficiary ?? 'N/A'),
+                e($pole->beneficiary_contact ?? 'N/A'),
+                e($pole->luminary_qr ?? 'N/A'),
+                e($pole->sim_number ?? 'N/A'),
+                e($pole->battery_qr ?? 'N/A'),
+                e($pole->panel_qr ?? 'N/A'),
+                $billRaised,
+                '<span class="badge badge-readable badge-not-pushed">Not Pushed</span>',
+                '
                 <a href="' . route('poles.show', $pole->id) . '" class="btn btn-icon btn-info" data-toggle="tooltip" title="View Details">
                     <i class="mdi mdi-eye"></i>
                 </a>
@@ -984,57 +974,15 @@ class TaskController extends Controller
 
     // Get Pole Details by ID 'Original'
 
-    /*public function viewPoleDetails($id)
-    {
-        // Fetch the pole with the given ID along with its relationships
-        $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
-        Log::info($pole);
-
-        // Decode survey images JSON (ensure it's an array)
-        $surveyImages = [];
-        if (!empty($pole->survey_image)) {
-            $surveyImagesArray = json_decode($pole->survey_image, true); // Decode JSON string into an array
-
-            if (is_array($surveyImagesArray)) { // Ensure it's an array before looping
-                foreach ($surveyImagesArray as $image) {
-                    $surveyImages[] = Storage::disk('s3')->url($image);
-                }
-            }
-        }
-
-        // Decode survey images JSON (ensure it's an array)
-        $submissionImages = [];
-        if (!empty($pole->submission_image)) {
-            $submissionImagesArray = json_decode($pole->submission_image, true); // Decode JSON string into an array
-
-            if (is_array($submissionImagesArray)) { // Ensure it's an array before looping
-                foreach ($submissionImagesArray as $image) {
-                    $submissionImages[] = Storage::disk('s3')->url($image);
-                }
-            }
-        }
-
-        // Fetch related users (Installer, Project Manager, Site Engineer) from the latest task
-        $latestTask = $pole->task()->first(); // Get latest assigned task
-        Log::info($latestTask);
-
-        $installer = $latestTask?->vendor;    // Installer
-        $projectManager = $latestTask?->manager; // Project Manager
-        $siteEngineer = $latestTask?->engineer;  // Site Engineer
-
-        // Return the view with the pole details
-        return view('poles.show', compact('pole', 'surveyImages', 'submissionImages', 'installer', 'projectManager', 'siteEngineer'));
-    }
-    */
     // Get Pole Details by ID 'Y'
     public function viewPoleDetails($id)
     {
         // Fetch the pole with the given ID along with its relationships
-        $pole = Pole::with(['streetlight', 'task'])->findOrFail($id);
+        $pole = Pole::with(['task.streetlight', 'task.vendor', 'task.manager', 'task.engineer'])->findOrFail($id);
         $surveyImages = $this->processImagesFromJson($pole->survey_image);
         $submissionImages = $this->processImagesFromJson($pole->submission_image);
         // Fetch related users from the latest task
-        $latestTask = $pole->task()->first();
+        $latestTask = $pole->task;
         $installer = $latestTask?->vendor;
         $projectManager = $latestTask?->manager;
         $siteEngineer = $latestTask?->engineer;
@@ -1078,18 +1026,35 @@ class TaskController extends Controller
 
 
     // Api to export poles in excel in vendor/staff app
-    public function exportPoles($vendor_id)
+    public function exportPoles(Request $request, $vendorId = null)
     {
-        $vendor = User::find($vendor_id);
+        $vendorId = $vendorId ?? $request->query('vendor') ?? $request->query('vendor_id');
+
+        if (!$vendorId) {
+            return redirect()->back()->with('error', 'Please select a vendor before exporting poles.');
+        }
+
+        $vendor = User::find($vendorId);
         $vendorName = $vendor ? $vendor->name : 'Unknown';
 
         // Fetch surveyed poles
-        $surveyed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
-            $query->where('vendor_id', $vendor_id);
+        $surveyedQuery = Pole::whereHas('task', function ($query) use ($vendorId, $request) {
+            $query->where('vendor_id', $vendorId);
+
+            if ($request->filled('project_id')) {
+                $query->where('project_id', $request->project_id);
+            }
+
+            if ($request->filled('panchayat')) {
+                $query->whereHas('site', function ($siteQuery) use ($request) {
+                    $siteQuery->where('panchayat', $request->panchayat);
+                });
+            }
         })->where('isSurveyDone', 1)
             ->where('isInstallationDone', 0)
-            ->with(['task.site', 'task.engineer', 'task.manager'])
-            ->get();
+            ->with(['task.site', 'task.engineer', 'task.manager']);
+
+        $surveyed_poles = $surveyedQuery->get();
 
         $surveyed_data = $surveyed_poles->map(function ($pole) {
             return [
@@ -1114,11 +1079,22 @@ class TaskController extends Controller
         });
 
         // Fetch installed poles
-        $installed_poles = Pole::whereHas('task', function ($query) use ($vendor_id) {
-            $query->where('vendor_id', $vendor_id);
+        $installedQuery = Pole::whereHas('task', function ($query) use ($vendorId, $request) {
+            $query->where('vendor_id', $vendorId);
+
+            if ($request->filled('project_id')) {
+                $query->where('project_id', $request->project_id);
+            }
+
+            if ($request->filled('panchayat')) {
+                $query->whereHas('site', function ($siteQuery) use ($request) {
+                    $siteQuery->where('panchayat', $request->panchayat);
+                });
+            }
         })->where('isInstallationDone', 1)
-            ->with(['task.site', 'task.engineer', 'task.manager'])
-            ->get();
+            ->with(['task.site', 'task.engineer', 'task.manager']);
+
+        $installed_poles = $installedQuery->get();
 
         $installed_data = $installed_poles->map(function ($pole) {
             return [
@@ -1151,65 +1127,28 @@ class TaskController extends Controller
     }
 
     // Api to update all poles to RMS at once
-    public function sendDataToRMS(Request $request)
+    public function sendDataToRMS(Request $request, RmsSyncService $rmsSyncService)
     {
-        // Optional filters if you want to limit by installed or surveyed poles
         $validated = $request->validate([
             'filter' => 'nullable|string|in:all,surveyed,installed',
         ]);
 
-        $query = Pole::query();
+        $scope = [
+            'source' => 'api_task_send_to_rms',
+            'filter' => $validated['filter'] ?? 'all',
+        ];
 
-        if ($validated['filter'] ?? null) {
-            switch ($validated['filter']) {
-                case 'surveyed':
-                    $query->where('isSurveyDone', true);
-                    break;
-                case 'installed':
-                    $query->where('isInstallationDone', true);
-                    break;
-                case 'all':
-                default:
-                    // No filter
-                    break;
-            }
-        }
+        $batch = $rmsSyncService->queueSync($scope, Auth::id());
 
-        $poles = $query->get();
-        $responses = [];
-
-        foreach ($poles as $pole) {
-            try {
-
-                $task = StreetlightTask::findOrFail($pole->task_id);
-                $streetlight = Streetlight::findOrFail($task->site_id);
-                $engineer = $task->engineer;
-                $approved_by = $engineer->firstName . ' ' . $engineer->lastName;
-                Log::info("Sending data now");
-                RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
-
-                $responses[] = [
-                    'pole_id' => $pole->id,
-                    'status' => 'success',
-                ];
-            } catch (\Exception $e) {
-                Log::error("Failed to send pole data to RMS", [
-                    'pole_id' => $pole->id,
-                    'error' => $e->getMessage(),
-                ]);
-
-                $responses[] = [
-                    'pole_id' => $pole->id,
-                    'status' => 'error',
-                    'message' => $e->getMessage(),
-                ];
-            }
-        }
-
-        return response()->json([
-            'message' => 'Pole data sync process completed.',
-            'result' => $responses,
-        ]);
+        return response()->json(
+            [
+                'message' => 'RMS sync queued successfully.',
+                'batch_id' => $batch->id,
+                'status' => $batch->status,
+                'status_url' => route('api.rms.sync.status', $batch),
+            ],
+            202
+        );
     }
 
     public function editPoleDetails(Request $request, $id)
@@ -1217,12 +1156,5 @@ class TaskController extends Controller
         // Return view to update pole
         $data = $request->all();
         return view('poles.edit', compact('data'));
-    }
-
-    public function updatePoleDetails(Request $request, $id)
-    {
-        // Apply logic and return to show pole details
-        // $id=Auth()->id();
-
     }
 }

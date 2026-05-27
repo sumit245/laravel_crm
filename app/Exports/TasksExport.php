@@ -106,8 +106,8 @@ class TasksExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSiz
                 $task->vendor ? $task->vendor->name : 'N/A',
                 $task->manager ? ($task->manager->firstName . ' ' . $task->manager->lastName) : 'N/A',
                 $task->status ?? 'N/A',
-                $task->start_date ? $task->start_date->format('Y-m-d') : 'N/A',
-                $task->end_date ? $task->end_date->format('Y-m-d') : 'N/A',
+                $this->formatDate($task->start_date),
+                $this->formatDate($task->end_date),
                 $task->billed ? 'Yes' : 'No',
                 $task->description ?? 'N/A',
             ];
@@ -122,11 +122,24 @@ class TasksExport implements FromQuery, WithHeadings, WithMapping, ShouldAutoSiz
                 $task->vendor ? $task->vendor->name : 'N/A',
                 $task->manager ? ($task->manager->firstName . ' ' . $task->manager->lastName) : 'N/A',
                 $task->status ?? 'N/A',
-                $task->start_date ? $task->start_date->format('Y-m-d') : 'N/A',
-                $task->end_date ? $task->end_date->format('Y-m-d') : 'N/A',
+                $this->formatDate($task->start_date),
+                $this->formatDate($task->end_date),
                 $task->approved_by ?? 'N/A',
                 $task->description ?? 'N/A',
             ];
         }
+    }
+
+    private function formatDate($value): string
+    {
+        if (empty($value)) {
+            return 'N/A';
+        }
+
+        if ($value instanceof \DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        return \Carbon\Carbon::parse($value)->format('Y-m-d');
     }
 }

@@ -108,8 +108,7 @@
                         ]" 
                       :exportEnabled="true" 
                       :importEnabled="false" 
-                      :bulkDeleteEnabled="true"
-                      :bulkDeleteRoute="route('billing.bulkDeleteUsers')"
+                      :bulkDeleteEnabled="false"
                       pageLength="50" 
                       searchPlaceholder="Search users...">
                       @foreach ($users as $user)
@@ -222,8 +221,7 @@
                         ]" 
                       :exportEnabled="true" 
                       :importEnabled="false" 
-                      :bulkDeleteEnabled="true"
-                      :bulkDeleteRoute="route('billing.bulkDeleteCities')"
+                      :bulkDeleteEnabled="false"
                       pageLength="50" 
                       searchPlaceholder="Search cities...">
                       @foreach($cities as $city)
