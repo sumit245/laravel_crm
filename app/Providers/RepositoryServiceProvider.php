@@ -102,7 +102,8 @@ class RepositoryServiceProvider extends ServiceProvider
         $this->app->bind(TaskServiceInterface::class, function ($app) {
             return new TaskManagementService(
                 $app->make(TaskRepositoryInterface::class),
-                $app->make(TaskStateMachineInterface::class)
+                $app->make(TaskStateMachineInterface::class),
+                $app->make(\App\Services\Streetlight\SiteWardService::class)
             );
         });
 

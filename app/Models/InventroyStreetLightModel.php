@@ -6,9 +6,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * Streetlight inventory item. Stores solar equipment with item codes: SL01 (Panel), SL02
- * (Luminary with SIM), SL03 (Battery), SL04 (Structure). Tracks serial number, make, model, rate,
- * and quantity. SL02 items carry SIM numbers for remote monitoring.
+ * Streetlight inventory item. Stores solar equipment with customer-defined item codes. Item
+ * behavior is inferred from item names such as module/panel, luminary, battery, and structure.
+ * Luminary items carry SIM numbers for remote monitoring.
  *
  * Data Flow:
  *   GRN Excel import → Validate serial/SIM uniqueness → Store with quantity=1 per serial
@@ -32,7 +32,7 @@ class InventroyStreetLightModel extends Model
         'make',             // Make of the item
         'model',            // Model of the item
         'serial_number',    // Serial number of the item
-        'sim_number',       // SIM number (for luminary items only - SL02)
+        'sim_number',       // SIM number for luminary items
         'hsn',              // HSN code
         'unit',             // Unit of measurement
         'rate',             // Unit rate

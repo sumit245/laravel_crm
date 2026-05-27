@@ -24,7 +24,10 @@
                     <br>
                     <small>
                         {{ session('import_errors_count') }} row(s) were skipped during import.
-                        <a href="{{ session('import_errors_url') }}" target="_blank">Download error details</a>
+                        @if (session('import_first_error'))
+                            First issue: {{ session('import_first_error') }}
+                        @endif
+                        <a href="{{ session('import_errors_url') }}" target="_blank" download>Download error details</a>
                     </small>
                 @endif
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
@@ -237,20 +240,30 @@
 
                                 <div class="row">
                                     <div class="col-md-3 mb-3">
-                                        <label for="item_combined" class="form-label">
+                                        <label for="item_code" class="form-label">
+                                            Item Code <span class="text-danger">*</span>
+                                        </label>
+                                        <input type="text" id="item_code" name="code"
+                                            class="form-control form-control-sm @error('code') is-invalid @enderror"
+                                            value="{{ old('code') }}" required>
+                                        @error('code')
+                                            <div class="invalid-feedback d-block">{{ $message }}</div>
+                                        @enderror
+                                        <div class="invalid-feedback d-none">Please enter an item code.</div>
+                                    </div>
+                                    <div class="col-md-3 mb-3">
+                                        <label for="item_name" class="form-label">
                                             Item <span class="text-danger">*</span>
                                         </label>
-                                        <select id="item_combined"
-                                            class="form-select form-select-sm @error('code') is-invalid @enderror" required>
+                                        <select id="item_name" name="dropdown"
+                                            class="form-select form-select-sm @error('dropdown') is-invalid @enderror" required>
                                             <option value="">-- Select Item --</option>
-                                            <option value="SL01|Module">SL01 - Module</option>
-                                            <option value="SL02|Luminary">SL02 - Luminary</option>
-                                            <option value="SL03|Battery">SL03 - Battery</option>
-                                            <option value="SL04|Structure">SL04 - Structure</option>
+                                            <option value="Module" @selected(old('dropdown') === 'Module')>Module / Panel</option>
+                                            <option value="Luminary" @selected(old('dropdown') === 'Luminary')>Luminary</option>
+                                            <option value="Battery" @selected(old('dropdown') === 'Battery')>Battery</option>
+                                            <option value="Structure" @selected(old('dropdown') === 'Structure')>Structure</option>
                                         </select>
-                                        <input type="hidden" name="code" id="item_code">
-                                        <input type="hidden" name="dropdown" id="item_name">
-                                        @error('code')
+                                        @error('dropdown')
                                             <div class="invalid-feedback d-block">{{ $message }}</div>
                                         @enderror
                                         <div class="invalid-feedback d-none">Please select an item.</div>
@@ -457,6 +470,7 @@
                 <x-datatable id="unifiedInventoryTable" :serverSide="true" :ajaxUrl="route('store.inventory.data', $store->id)" ajaxData="unifiedInventoryTableAjaxData" :columns="$columns" :order="$orderArray"
                     :bulkDeleteEnabled="$isAdmin" :bulkDeleteRoute="route('inventory.bulkDelete')"
                     :bulkReturnEnabled="$isAdmin" :bulkReturnRoute="route('inventory.bulkReturn')" :exportEnabled="true"
+                    :exportRoute="route('store.inventory.export', $store->id)"
                     :importEnabled="false" :availabilityColumnIndex="5" :vendorColumnIndex="6" :serialColumnIndex="3"
                     pageLength="50" searchPlaceholder="Search inventory..." :deferLoading="$inventoryTotal ?? null"
                     :filters="[
@@ -487,12 +501,7 @@
                 'label' => 'Item',
                 'column' => 1,
                 'width' => 3,
-                'options' => [
-                    'SL01' => 'Panel Module (SL01 Panel)',
-                    'SL02' => 'Luminary (SL02 Luminary)',
-                    'SL03' => 'Battery (SL03 Battery)',
-                    // Note: SL04 (Structure) is excluded from filter as it's mapped to SL03 and not shown in table
-                ],
+                'options' => collect($itemCodes)->mapWithKeys(fn($code) => [$code => $code])->toArray(),
             ],
         ]">
                     {{-- Render initial rows (fast first paint). DataTables will use the DOM rows
@@ -516,7 +525,7 @@
                                 : ($item->created_at
                                     ? \Carbon\Carbon::parse($item->created_at)->format('d/m/Y')
                                     : '-');
-                            $simNumber = (($item->item_code ?? '') === 'SL02' && trim((string) ($item->sim_number ?? '')) !== '') ? $item->sim_number : '-';
+                            $simNumber = (\App\Support\StreetlightInventoryItems::isLuminary($item->item ?? null, $item->item_code ?? null) && trim((string) ($item->sim_number ?? '')) !== '') ? $item->sim_number : '-';
                         @endphp
                         <tr>
                             <td><input type="checkbox" class="row-checkbox" value="{{ $item->id }}" data-id="{{ $item->id }}"
@@ -581,32 +590,6 @@
                                         return;
                                     }
                                 }
-
-                                // Custom Excel export - use server-side export endpoint with filters
-                                $('#unifiedInventoryTable_excel').off('click').on('click', function () {
-                                    var filterContainer = $('#datatable-wrapper-unifiedInventoryTable');
-                                    var availability = filterContainer.find('.filter-select[data-filter="availability"]')
-                                        .val() || '';
-                                    var itemCode = filterContainer.find('.filter-select[data-filter="item"]').val() || '';
-                                    var vendorSelect = filterContainer.find('.filter-select2[data-filter="vendor"]');
-                                    var vendorName = '';
-                                    if (vendorSelect.length && vendorSelect.hasClass('select2-hidden-accessible')) {
-                                        vendorName = vendorSelect.select2('val') || '';
-                                    } else {
-                                        vendorName = vendorSelect.val() || '';
-                                    }
-                                    var search = $('#unifiedInventoryTable_search').val() || '';
-
-                                    var exportUrl = '{{ route('store.inventory.export', $store->id) }}?';
-                                    var params = [];
-                                    if (availability) params.push('availability=' + encodeURIComponent(availability));
-                                    if (itemCode) params.push('item_code=' + encodeURIComponent(itemCode));
-                                    if (vendorName) params.push('vendor_name=' + encodeURIComponent(vendorName));
-                                    if (search) params.push('search=' + encodeURIComponent(search));
-
-                                    exportUrl += params.join('&');
-                                    window.location.href = exportUrl;
-                                });
 
                                 // Handle delete item buttons
                                 $(document).on('click', '#unifiedInventoryTable .delete-item', function () {
@@ -701,7 +684,7 @@
                                             <p class="mb-1"><strong>Bulk Upload Format:</strong></p>
                                             <p class="mb-1 small"><strong>Columns:</strong> ITEM_CODE, ITEM NAME (or item),
                                                 serial_number (or SERIAL_NUMBER)</p>
-                                            <p class="mb-1 small"><strong>For Luminary (SL02):</strong> Include sim_number
+                                            <p class="mb-1 small"><strong>For Luminary:</strong> Include sim_number
                                                 (or SIM_NUMBER) column</p>
                                             <p class="mb-0 small"><strong>Note:</strong> Each row should have quantity = 1
                                                 for each serial number</p>
@@ -886,12 +869,7 @@
                 'label' => 'Item Code',
                 'column' => 0,
                 'width' => 3,
-                'options' => [
-                    'SL01' => 'SL01 - Panel',
-                    'SL02' => 'SL02 - Luminary',
-                    'SL03' => 'SL03 - Battery',
-                    'SL04' => 'SL04 - Structure',
-                ],
+                'options' => collect($itemCodes)->mapWithKeys(fn($code) => [$code => $code])->toArray(),
             ],
             [
                 'type' => 'select',
@@ -1058,16 +1036,22 @@
             }
 
             // Handle item selection
-            const itemCombined = document.getElementById('item_combined');
+            const itemCodeField = document.getElementById('item_code');
+            const itemNameField = document.getElementById('item_name');
             const simNumberWrapper = document.getElementById('sim_number_wrapper');
             const simNumberField = document.getElementById('sim_number');
             const serialField = document.getElementById('serialnumber');
             const importForm = document.getElementById('importInventoryForm');
             const importOverlay = document.getElementById('importOverlay');
 
-            function toggleSimNumberField(itemCode) {
+            function isLuminaryItem(itemName) {
+                return (itemName || '').toLowerCase().includes('luminary') ||
+                    (itemName || '').toLowerCase().includes('luminaire');
+            }
+
+            function toggleSimNumberField(itemName) {
                 if (simNumberWrapper && simNumberField) {
-                    if (itemCode === 'SL02') {
+                    if (isLuminaryItem(itemName)) {
                         // Show and make required for Luminary
                         simNumberWrapper.style.display = 'block';
                         simNumberField.setAttribute('required', 'required');
@@ -1081,14 +1065,9 @@
                 }
             }
 
-            if (itemCombined) {
-                itemCombined.addEventListener('change', function () {
-                    const [code, name] = this.value.split('|');
-                    document.getElementById('item_code').value = code || '';
-                    document.getElementById('item_name').value = name || '';
-
-                    // Toggle SIM number field visibility
-                    toggleSimNumberField(code);
+            if (itemNameField) {
+                itemNameField.addEventListener('change', function () {
+                    toggleSimNumberField(this.value);
 
                     // Clear validation state when item changes
                     this.classList.remove('is-invalid', 'is-valid');
@@ -1099,10 +1078,7 @@
                 });
 
                 // Initialize SIM number field visibility on page load
-                if (itemCombined.value) {
-                    const [code] = itemCombined.value.split('|');
-                    toggleSimNumberField(code);
-                }
+                toggleSimNumberField(itemNameField.value);
             }
 
             // Show overlay during bulk import to smooth transitions
@@ -1218,10 +1194,10 @@
                         }
                     });
 
-                    // Validate item selection
-                    if (itemCombined && !itemCombined.value) {
-                        itemCombined.classList.add('is-invalid');
-                        const feedback = itemCombined.parentElement.querySelector('.invalid-feedback');
+                    // Validate item code
+                    if (itemCodeField && !itemCodeField.value.trim()) {
+                        itemCodeField.classList.add('is-invalid');
+                        const feedback = itemCodeField.parentElement.querySelector('.invalid-feedback');
                         if (feedback) {
                             feedback.classList.remove('d-none');
                             feedback.classList.add('d-block');
@@ -1229,8 +1205,19 @@
                         isValid = false;
                     }
 
-                    // Validate SIM number if SL02 is selected
-                    if (itemCombined && itemCombined.value.includes('SL02')) {
+                    // Validate item selection
+                    if (itemNameField && !itemNameField.value) {
+                        itemNameField.classList.add('is-invalid');
+                        const feedback = itemNameField.parentElement.querySelector('.invalid-feedback');
+                        if (feedback) {
+                            feedback.classList.remove('d-none');
+                            feedback.classList.add('d-block');
+                        }
+                        isValid = false;
+                    }
+
+                    // Validate SIM number if luminary is selected
+                    if (itemNameField && isLuminaryItem(itemNameField.value)) {
                         if (simNumberField && (!simNumberField.value || !simNumberField.value.trim())) {
                             simNumberField.classList.add('is-invalid');
                             const simFeedback = simNumberField.parentElement.querySelector(
@@ -1518,13 +1505,14 @@
                             return;
                         }
 
-                        const selectedItemCode = currentRow.querySelector('.item-select').value;
+                        const selectedItem = currentRow.querySelector('.item-select');
+                        const selectedItemCode = selectedItem.value;
                         if (!selectedItemCode) {
                             showError('Please select an item first before scanning QR codes!', 'qr_error');
                             return;
                         }
 
-                        if (selectedItemCode === "SL02") {
+                        if (isLuminaryItem(selectedItem.selectedOptions[0]?.dataset.item || '')) {
                             scannedCode = scannedCode.split(';')[0];
                         }
 

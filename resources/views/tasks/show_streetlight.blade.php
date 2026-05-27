@@ -55,7 +55,20 @@
       <strong>Panchayat</strong> <p>{{ $streetlightTask->site->panchayat }}</p>
     </div>
     <div class="col-md-4 mb-3">
-      <strong>Alloted Wards</strong><p> {{ $streetlightTask->allotted_wards }}</p>
+      <strong>Alloted Wards</strong>
+      <p>
+        @if($streetlightTask->siteWards->isNotEmpty())
+          @foreach($streetlightTask->siteWards->sortBy(fn($w) => [(int)$w->ward_number, $w->ward_type]) as $ward)
+            @if($ward->ward_type === 'gp')
+              GP Ward {{ $ward->ward_number }} ({{ $ward->planned_poles }} poles)
+            @else
+              Ward {{ $ward->ward_number }}
+            @endif@if(!$loop->last), @endif
+          @endforeach
+        @else
+          {{ $streetlightTask->allotted_wards ?: 'N/A' }}
+        @endif
+      </p>
     </div>
     <div class="col-md-4 mb-3">
       <strong>Mukhiya Contact</strong> <p>{{ $streetlightTask->site->mukhiya_contact }}</p>

@@ -2,6 +2,7 @@
 
 namespace App\Exports;
 
+use App\Support\StreetlightInventoryItems;
 use Maatwebsite\Excel\Concerns\FromCollection;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
@@ -33,11 +34,17 @@ class InventoryImportFormatExport implements FromCollection, WithHeadings, Shoul
     }
 
     /**
-     * Return empty collection (template only, no data)
+     * Return sample rows so users can import without guessing valid codes.
      */
     public function collection()
     {
-        return new Collection([]);
+        if ($this->projectType == 1) {
+            return new Collection(StreetlightInventoryItems::defaultTemplateRows());
+        }
+
+        return new Collection([
+            ['Solar Panel 540W', 'Module', 'Panel', 'Nos', 1, 10000, 10000],
+        ]);
     }
 
     /**
@@ -54,7 +61,7 @@ class InventoryImportFormatExport implements FromCollection, WithHeadings, Shoul
                 'make',
                 'model',
                 'serial_number',
-                'sim_number', // Only for luminary items (SL02)
+                'sim_number', // Only for luminary items
                 'hsn',
                 'unit',
                 'unit_rate',

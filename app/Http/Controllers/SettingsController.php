@@ -6,6 +6,7 @@ use App\Enums\UserRole;
 use App\Models\City;
 use App\Models\Project;
 use App\Models\Settings\OrganizationSetting;
+use App\Models\Settings\PoleNumberFormat;
 use App\Models\Settings\SettingsChangeLog;
 use App\Models\User;
 use App\Models\UserCategory;
@@ -16,6 +17,7 @@ use App\Services\Settings\ImportExportSettingsService;
 use App\Services\Settings\NotificationSettingsService;
 use App\Services\Settings\OrganizationSettingsService;
 use App\Services\Settings\PermissionSettingsService;
+use App\Services\Settings\PoleNumberFormatService;
 use App\Services\Settings\RmsSettingsService;
 use App\Services\Settings\VendorEarningsSettingsService;
 use Illuminate\Http\Request;
@@ -32,7 +34,8 @@ class SettingsController extends Controller
         private NotificationSettingsService $notificationSettings,
         private ImportExportSettingsService $importExportSettings,
         private RmsSettingsService $rmsSettings,
-        private DashboardSettingsService $dashboardSettings
+        private DashboardSettingsService $dashboardSettings,
+        private PoleNumberFormatService $poleNumberFormats
     ) {
     }
 
@@ -101,6 +104,32 @@ class SettingsController extends Controller
             'dashboard' => [
                 'dashboardSetting' => $this->dashboardSettings->get(),
                 'dashboardWidgets' => DashboardSettingsService::WIDGETS,
+            ],
+            'pole-number-format' => [
+                'poleNumberFormats' => $this->poleNumberFormats->formats(),
+                'poleTokenTypes' => PoleNumberFormatService::TOKEN_TYPES,
+                'poleTokenDefaults' => PoleNumberFormatService::defaultTokenFormState(),
+                'poleFormatEditorPayload' => $this->poleNumberFormats->formats()
+                    ->mapWithKeys(function (PoleNumberFormat $format) {
+                        $tokens = collect($format->tokens ?? [])
+                            ->filter(fn ($token) => ! empty($token['type']))
+                            ->keyBy('type');
+
+                        return [
+                            $format->id => [
+                                'id' => $format->id,
+                                'project_id' => $format->project_id,
+                                'ward_type' => $format->ward_type,
+                                'name' => $format->name,
+                                'is_active' => (bool) $format->is_active,
+                                'tokens' => $tokens->all(),
+                            ],
+                        ];
+                    })
+                    ->all(),
+                'projects' => Project::orderBy('project_name')->get(['id', 'project_name']),
+                'preview' => session('pole_number_preview'),
+                'latestBatch' => $this->latestPoleNumberBatch(session('pole_number_preview')),
             ],
             'audit-log' => [
                 'auditLogs' => SettingsChangeLog::with('changedBy')
@@ -328,6 +357,72 @@ class SettingsController extends Controller
         return redirect()->route('settings.section', 'dashboard')->with('success', 'Dashboard settings updated.');
     }
 
+    public function updatePoleNumberFormat(Request $request)
+    {
+        $this->authorize('update', OrganizationSetting::class);
+
+        $validated = $request->validate([
+            'format_id' => 'nullable|integer|exists:pole_number_formats,id',
+            'project_id' => 'nullable|integer|exists:projects,id',
+            'ward_type' => 'required|in:normal,gp',
+            'name' => 'required|string|max:255',
+            'is_active' => 'nullable|boolean',
+            'tokens' => 'array',
+        ]);
+
+        $format = $this->poleNumberFormats->update($validated, $request->user()->id);
+
+        return redirect()
+            ->route('settings.section', 'pole-number-format')
+            ->with('success', "Pole number format saved for {$format->ward_type} wards.");
+    }
+
+    public function previewPoleNumberFormat(Request $request, PoleNumberFormat $format)
+    {
+        $this->authorize('update', OrganizationSetting::class);
+
+        return redirect()
+            ->route('settings.section', 'pole-number-format')
+            ->with('pole_number_preview', [
+                'format_id' => $format->id,
+                'format_name' => $format->name,
+                ...$this->poleNumberFormats->preview($format),
+            ]);
+    }
+
+    public function applyPoleNumberFormat(Request $request, PoleNumberFormat $format)
+    {
+        $this->authorize('update', OrganizationSetting::class);
+
+        $batch = $this->poleNumberFormats->createRegenerationBatch($format, $request->user()->id);
+
+        return redirect()
+            ->route('settings.section', 'pole-number-format')
+            ->with('success', $this->poleRegenerationFlashMessage($batch));
+    }
+
+    private function poleRegenerationFlashMessage(\App\Models\Settings\PoleNumberRegenerationBatch $batch): string
+    {
+        return match ($batch->status) {
+            'completed' => "Pole numbers updated for {$batch->processed_count} of {$batch->affected_count} pole(s). Check your notifications for confirmation.",
+            'failed' => 'Pole number update failed: '.($batch->error_message ?? 'Unknown error'),
+            'running' => "Pole number update is running ({$batch->processed_count}/{$batch->affected_count}). Refresh this page for progress.",
+            default => "Pole number update queued for {$batch->affected_count} pole(s). Ensure a queue worker is running (`php artisan queue:work`). You will be notified when it completes.",
+        };
+    }
+
+    private function latestPoleNumberBatch(?array $preview): ?\App\Models\Settings\PoleNumberRegenerationBatch
+    {
+        if (! empty($preview['format_id'])) {
+            return \App\Models\Settings\PoleNumberRegenerationBatch::query()
+                ->where('pole_number_format_id', $preview['format_id'])
+                ->latest()
+                ->first();
+        }
+
+        return null;
+    }
+
     private function validateCategory(Request $request): array
     {
         return $this->validateBilling($request, [
@@ -383,6 +478,7 @@ class SettingsController extends Controller
             'import-export' => 'Import / Export',
             'rms' => 'RMS Integration',
             'dashboard' => 'Dashboard',
+            'pole-number-format' => 'Pole Number Format',
             'audit-log' => 'Audit Log',
         ];
     }

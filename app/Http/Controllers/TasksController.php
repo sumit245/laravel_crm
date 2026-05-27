@@ -10,6 +10,7 @@ use App\Http\Requests\Task\UpdateTaskRequest;
 use App\Models\Project;
 use Illuminate\Http\Request;
 use App\Services\Logging\ActivityLogger;
+use App\Services\Streetlight\SiteWardService;
 
 /**
  * Target / Task Assignment Management — manages work targets assigned to field staff. Targets
@@ -31,7 +32,8 @@ class TasksController extends Controller
 {
     public function __construct(
         protected TaskServiceInterface $taskService,
-        protected ActivityLogger $activityLogger
+        protected ActivityLogger $activityLogger,
+        protected SiteWardService $siteWardService
     ) {
     }
     /**
@@ -468,6 +470,13 @@ class TasksController extends Controller
 
                     $beforeAfter = $this->activityLogger->diff($task);
                     $task->update($validData);
+                    if ($request->has('allotted_wards') || $request->filled('target_gp_wards')) {
+                        $this->siteWardService->syncTaskWards(
+                            $task,
+                            $request->input('allotted_wards'),
+                            $request->input('target_gp_wards')
+                        );
+                    }
 
                     $this->activityLogger->log('task', 'updated', $task, array_merge([
                         'description' => "Updated streetlight target #{$id}"

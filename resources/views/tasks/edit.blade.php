@@ -299,6 +299,24 @@
                                                     <small class="text-muted d-block mt-1">Select the wards this vendor is responsible for.</small>
                                                 @endif
                                             </div>
+                                            @if(!isset($tasks->status) || $tasks->status !== 'Completed')
+                                                <div class="mt-3">
+                                                    <label class="form-label fw-semibold">Add GP Ward</label>
+                                                    <div class="row g-2 align-items-end">
+                                                        <div class="col-md-4">
+                                                            <input type="number" class="form-control" id="editGpWardNumber" min="1" placeholder="GP ward number">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <input type="number" class="form-control" id="editGpWardPoles" min="1" max="10" placeholder="Poles (1 to 10)">
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <button type="button" class="btn btn-outline-primary" id="addEditGpWard">Add GP Ward</button>
+                                                        </div>
+                                                    </div>
+                                                    <input type="hidden" name="target_gp_wards" id="editGpWardsInput" value="">
+                                                    <small class="text-muted d-block mt-1">New GP wards are also saved to the site.</small>
+                                                </div>
+                                            @endif
                                         @endif
                                     </div>
                                 @endif
@@ -456,11 +474,11 @@
                         // Populate Select2
                         if (wards && wards.length > 0) {
                             wards.forEach(function(wardData) {
-                                const option = new Option(wardData.ward, wardData.ward, false, false);
+                                const option = new Option(wardData.ward, wardData.key || wardData.ward, false, false);
                                 $wardsSelect.append(option);
                                 
                                 if (wardData.is_currently_allotted) {
-                                    selectedWards.push(wardData.ward);
+                                    selectedWards.push(wardData.key || wardData.ward);
                                 }
                             });
                             
@@ -487,6 +505,27 @@
             $wardsSelect.on('change', function() {
                 const selected = $(this).val();
                 $('#allotted_wards_hidden').val(selected ? selected.join(',') : '');
+            });
+
+            const editGpWards = {};
+            $('#addEditGpWard').on('click', function() {
+                const ward = parseInt($('#editGpWardNumber').val(), 10);
+                const poles = parseInt($('#editGpWardPoles').val(), 10);
+                if (!ward || ward < 1 || !poles || poles < 1 || poles > 10) {
+                    Swal.fire('Invalid GP ward', 'Enter a ward number and 1 to 10 poles.', 'error');
+                    return;
+                }
+
+                editGpWards[String(ward)] = poles;
+                $('#editGpWardsInput').val(Object.keys(editGpWards).map(key => `${key}:${editGpWards[key]}`).join(','));
+
+                const key = `gp:${ward}`;
+                if (!$wardsSelect.find(`option[value="${key}"]`).length) {
+                    $wardsSelect.append(new Option(`GP Ward ${ward}`, key, true, true));
+                }
+                $wardsSelect.trigger('change');
+                $('#editGpWardNumber').val('');
+                $('#editGpWardPoles').val('');
             });
         }
 

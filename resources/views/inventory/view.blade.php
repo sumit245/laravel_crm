@@ -32,9 +32,7 @@
                     <div class="card-body">
                         <p>Total Quantity: <span>{{ $totalBattery }}</span></p>
                         <p>Total Value: <span>₹{{ $totalBatteryValue }}</span></p>
-                        <p><a style="color:black;"
-                                href='{{ route('inventory.showDispatchInventory', ['item_code' => 'SL03', 'store_id' => $storeId]) }}'>Dispatched
-                                Quantity</a></p>
+                        <p>Dispatched Quantity</p>
                         <p>Available Quantity: <span>{{ $availableBattery }}</span></p>
                     </div>
                 </div>
@@ -50,9 +48,7 @@
                     <div class="card-body">
                         <p>Total Quantity: <span>{{ $totalLuminary }}</span> </p>
                         <p>Total Value: <span>₹{{ $totalLuminaryValue }}</span></p>
-                        <p><a style="color:black;"
-                                href='{{ route('inventory.showDispatchInventory', ['item_code' => 'SL02', 'store_id' => $storeId]) }}'>Dispatched
-                                Quantity</a></p>
+                        <p>Dispatched Quantity</p>
                         <p>Available Quantity: <span>{{ $availableLuminary }}</span></p>
                     </div>
                 </div>
@@ -70,9 +66,7 @@
                     <div class="card-body">
                         <p>Total Quantity: <span>{{ $totalStructure }}</span></p>
                         <p>Total Value: <span>₹{{ $totalStructureValue }}</span></p>
-                        <p><a style="color:black;"
-                                href='{{ route('inventory.showDispatchInventory', ['item_code' => 'SL04', 'store_id' => $storeId]) }}'>Dispatched
-                                Quantity</a></p>
+                        <p>Dispatched Quantity</p>
                         <p>Available Quantity: <span>{{ $availableStructure }}</span></p>
                     </div>
                 </div>
@@ -88,9 +82,7 @@
                     <div class="card-body">
                         <p>Total Quantity: <span>{{ $totalModule }}</span> </p>
                         <p>Total Value: <span>₹{{ $totalModuleValue }}</span></p>
-                        <p><a style="color:black;"
-                                href='{{ route('inventory.showDispatchInventory', ['item_code' => 'SL01', 'store_id' => $storeId]) }}'>Dispatched
-                                Quantity</a></p>
+                        <p>Dispatched Quantity</p>
                         <p>Available Quantity: <span>{{ $availableModule }}</span></p>
                     </div>
                 </div>

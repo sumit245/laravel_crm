@@ -205,7 +205,7 @@ class TargetDeletionService extends BaseService
             }
         }
 
-        // Handle SL02 (luminary) with sim_number
+        // Handle luminary inventory with sim_number.
         if ($pole->luminary_qr && $pole->sim_number) {
             // Find by serial number first
             $luminaryBySerial = InventoryDispatch::where('serial_number', $pole->luminary_qr)
@@ -221,8 +221,11 @@ class TargetDeletionService extends BaseService
 
             // Also find by sim_number in inventory_streetlight
             $luminaryBySim = InventoryDispatch::whereHas('inventoryStreetLight', function ($q) use ($pole) {
-                    $q->where('item_code', 'SL02')
-                      ->where('sim_number', $pole->sim_number);
+                    $q->where('sim_number', $pole->sim_number)
+                      ->where(function ($itemQuery) {
+                          $itemQuery->where('item', 'like', '%luminary%')
+                              ->orWhere('item', 'like', '%luminaire%');
+                      });
                 })
                 ->whereNotIn('id', $processedDispatchIds)
                 ->get();
@@ -333,4 +336,3 @@ class TargetDeletionService extends BaseService
         }
     }
 }
-

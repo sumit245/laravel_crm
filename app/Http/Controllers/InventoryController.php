@@ -15,6 +15,7 @@ use App\Models\Stores;
 use App\Models\User;
 use App\Services\Inventory\InventoryHistoryService;
 use App\Services\Logging\ActivityLogger;
+use App\Support\StreetlightInventoryItems;
 use Carbon\Carbon;
 use Exception;
 use Illuminate\Http\Request;
@@ -29,7 +30,7 @@ use Maatwebsite\Excel\Facades\Excel;
  * stock via Excel GRN imports (both rooftop and streetlight types), adding individual items with
  * serial number & SIM uniqueness validation, dispatching items to field vendors (decrementing
  * store quantity), tracking dispatch history, and supporting item return/replacement flows. Item
- * codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).
+ * codes are customer-defined; item behavior is inferred from item name/category.
  *
  * Data Flow:
  *   GRN Excel Upload → Validation (serial/SIM uniqueness) → InventoryService → DB Insert
@@ -122,8 +123,12 @@ class InventoryController extends Controller
                     $serial = $err['serial_number'] ?? '';
                     $item = $err['item'] ?? '';
                     $sim = $err['sim_number'] ?? '';
+                    $message = $err['message'] ?? null;
 
                     $lines[] = "Reason: {$reason}";
+                    if ($message) {
+                        $lines[] = "  Message: {$message}";
+                    }
                     $lines[] = "  Item Code: {$itemCode}";
                     $lines[] = "  Item: {$item}";
                     $lines[] = "  Serial: {$serial}";
@@ -162,7 +167,8 @@ class InventoryController extends Controller
 
             $redirect = redirect()->to(route('store.show', $storeId).'#view')
                 ->with('import_errors_url', $errorFileUrl)
-                ->with('import_errors_count', count($errors));
+                ->with('import_errors_count', count($errors))
+                ->with('import_first_error', $errors[0]['message'] ?? null);
 
             if ($importedCount > 0) {
                 $message = "Inventory imported successfully! Imported rows: {$importedCount}";
@@ -189,18 +195,10 @@ class InventoryController extends Controller
     {
         try {
             $projectType = (int) $request->project_type;
-            $itemCode = $request->input('code') ?? $request->input('item_code');
+            $itemCode = StreetlightInventoryItems::normalizeCode($request->input('code') ?? $request->input('item_code'));
             $serialNumber = $request->input('serialnumber') ?? $request->input('serial_number');
 
-            // Validate streetlight item code restrictions
-            if ($projectType == 1) {
-                $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
-                if (! in_array($itemCode, $validItemCodes)) {
-                    return redirect()->back()
-                        ->withErrors(['code' => 'Invalid item code for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).'])
-                        ->withInput();
-                }
-            }
+            $itemName = $request->input('dropdown') ?? $request->input('item');
 
             // Validate serial_number uniqueness
             if ($projectType == 1 && $serialNumber) {
@@ -214,10 +212,9 @@ class InventoryController extends Controller
                 }
             }
 
-            // Validate sim_number uniqueness for luminary items (SL02) only
-            if ($projectType == 1 && $itemCode === 'SL02' && $request->filled('sim_number')) {
+            // Validate sim_number uniqueness for luminary items only.
+            if ($projectType == 1 && StreetlightInventoryItems::isLuminary($itemName, $itemCode) && $request->filled('sim_number')) {
                 $existingSim = InventroyStreetLightModel::where('sim_number', $request->sim_number)
-                    ->where('item_code', 'SL02')
                     ->exists();
 
                 if ($existingSim) {
@@ -464,14 +461,6 @@ class InventoryController extends Controller
             // For backward compatibility with the existing blade view.
             $inventory = collect($unifiedInventory);
 
-            $inventorySummary = (clone $inventoryBaseQuery)
-                ->select('item_code')
-                ->selectRaw('COUNT(*) as total_quantity')
-                ->selectRaw('SUM(COALESCE(quantity, 0) * COALESCE(rate, 0)) as total_value')
-                ->groupBy('item_code')
-                ->get()
-                ->keyBy('item_code');
-
             $dispatchSummary = InventoryDispatch::query()
                 ->where('isDispatched', true)
                 ->where('store_id', $storeId)
@@ -483,30 +472,53 @@ class InventoryController extends Controller
                 ->get()
                 ->keyBy('item_code');
 
-            $totalBattery = (int) optional($inventorySummary->get('SL03'))->total_quantity;
-            $totalBatteryValue = number_format((float) optional($inventorySummary->get('SL03'))->total_value, 2);
-            $batteryDispatch = (int) optional($dispatchSummary->get('SL03'))->dispatched_quantity;
+            $summaryByCategory = [
+                StreetlightInventoryItems::CATEGORY_BATTERY => ['quantity' => 0, 'value' => 0.0, 'dispatch' => 0, 'dispatch_value' => 0.0],
+                StreetlightInventoryItems::CATEGORY_LUMINARY => ['quantity' => 0, 'value' => 0.0, 'dispatch' => 0, 'dispatch_value' => 0.0],
+                StreetlightInventoryItems::CATEGORY_PANEL => ['quantity' => 0, 'value' => 0.0, 'dispatch' => 0, 'dispatch_value' => 0.0],
+                StreetlightInventoryItems::CATEGORY_STRUCTURE => ['quantity' => 0, 'value' => 0.0, 'dispatch' => 0, 'dispatch_value' => 0.0],
+            ];
+
+            foreach ($allInventory->groupBy('item_code') as $code => $itemsForCode) {
+                $firstItem = $itemsForCode->first();
+                $category = StreetlightInventoryItems::category($firstItem->item ?? null, $code);
+                if (! isset($summaryByCategory[$category])) {
+                    continue;
+                }
+
+                $dispatch = $dispatchSummary->get($code);
+                $summaryByCategory[$category]['quantity'] += $itemsForCode->count();
+                $summaryByCategory[$category]['value'] += $itemsForCode->sum(fn($item) => (float) ($item->quantity ?? 0) * (float) ($item->rate ?? 0));
+                $summaryByCategory[$category]['dispatch'] += (int) optional($dispatch)->dispatched_quantity;
+                $summaryByCategory[$category]['dispatch_value'] += (float) optional($dispatch)->dispatched_value;
+            }
+
+            $batterySummary = $summaryByCategory[StreetlightInventoryItems::CATEGORY_BATTERY];
+            $totalBattery = $batterySummary['quantity'];
+            $totalBatteryValue = number_format($batterySummary['value'], 2);
+            $batteryDispatch = $batterySummary['dispatch'];
             $availableBattery = max($totalBattery - $batteryDispatch, 0);
-            $dispatchAmountBattery = number_format((float) optional($dispatchSummary->get('SL03'))->dispatched_value, 2);
+            $dispatchAmountBattery = number_format($batterySummary['dispatch_value'], 2);
 
-            $totalLuminary = (int) optional($inventorySummary->get('SL02'))->total_quantity;
-            $totalLuminaryValue = number_format((float) optional($inventorySummary->get('SL02'))->total_value, 2);
-            $luminaryDispatch = (int) optional($dispatchSummary->get('SL02'))->dispatched_quantity;
+            $luminarySummary = $summaryByCategory[StreetlightInventoryItems::CATEGORY_LUMINARY];
+            $totalLuminary = $luminarySummary['quantity'];
+            $totalLuminaryValue = number_format($luminarySummary['value'], 2);
+            $luminaryDispatch = $luminarySummary['dispatch'];
             $availableLuminary = max($totalLuminary - $luminaryDispatch, 0);
-            $dispatchAmountLuminary = number_format((float) optional($dispatchSummary->get('SL02'))->dispatched_value, 2);
+            $dispatchAmountLuminary = number_format($luminarySummary['dispatch_value'], 2);
 
-            // Linking Battery to Structure
-            $totalStructure = $totalBattery;
-            $totalStructureValue = $totalBattery * 400;
-            $structureDispatch = $batteryDispatch;
-            $availableStructure = $availableBattery;
+            $structureSummary = $summaryByCategory[StreetlightInventoryItems::CATEGORY_STRUCTURE];
+            $totalStructure = $structureSummary['quantity'] ?: $totalBattery;
+            $totalStructureValue = $structureSummary['value'] > 0 ? number_format($structureSummary['value'], 2) : $totalBattery * 400;
+            $structureDispatch = $structureSummary['dispatch'] ?: $batteryDispatch;
+            $availableStructure = max($totalStructure - $structureDispatch, 0);
 
-            // Module Data
-            $totalModule = (int) optional($inventorySummary->get('SL01'))->total_quantity;
-            $totalModuleValue = number_format((float) optional($inventorySummary->get('SL01'))->total_value, 2);
-            $moduleDispatch = (int) optional($dispatchSummary->get('SL01'))->dispatched_quantity;
+            $moduleSummary = $summaryByCategory[StreetlightInventoryItems::CATEGORY_PANEL];
+            $totalModule = $moduleSummary['quantity'];
+            $totalModuleValue = number_format($moduleSummary['value'], 2);
+            $moduleDispatch = $moduleSummary['dispatch'];
             $availableModule = max($totalModule - $moduleDispatch, 0);
-            $dispatchAmountModule = number_format((float) optional($dispatchSummary->get('SL01'))->dispatched_value, 2);
+            $dispatchAmountModule = number_format($moduleSummary['dispatch_value'], 2);
 
             // Get distinct item codes for filter
             $itemCodes = (clone $inventoryBaseQuery)
@@ -776,7 +788,7 @@ class InventoryController extends Controller
             // First pass: Detect duplicates within the uploaded file and collect serial numbers
             foreach ($data as $row) {
                 $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
-                $itemCode = $row['item_code'] ?? $row['ITEM_CODE'] ?? null;
+                $itemCode = StreetlightInventoryItems::normalizeCode($row['item_code'] ?? $row['ITEM_CODE'] ?? null);
                 if ($serialNumber) {
                     if (isset($seenSerials[$serialNumber])) {
                         $seenSerials[$serialNumber]++;
@@ -811,10 +823,11 @@ class InventoryController extends Controller
 
             // Second pass: Categorize items
             foreach ($data as $row) {
-                $itemCode = $row['item_code'] ?? $row['ITEM_CODE'] ?? null;
+                $itemCode = StreetlightInventoryItems::normalizeCode($row['item_code'] ?? $row['ITEM_CODE'] ?? null);
                 $itemName = $row['item'] ?? $row['ITEM NAME'] ?? $row['item_name'] ?? null;
                 $serialNumber = $row['serial_number'] ?? $row['SERIAL_NUMBER'] ?? null;
-                $simNumber = ($itemCode === 'SL02') ? ($row['sim_number'] ?? $row['SIM_NUMBER'] ?? null) : null;
+                $isLuminary = StreetlightInventoryItems::isLuminary($itemName, $itemCode);
+                $simNumber = $isLuminary ? ($row['sim_number'] ?? $row['SIM_NUMBER'] ?? null) : null;
 
                 if (! $itemCode || ! $itemName || ! $serialNumber) {
                     $nonExisting[] = [
@@ -881,9 +894,8 @@ class InventoryController extends Controller
                 }
 
                 // Validate SIM number for luminary items
-                if ($itemCode === 'SL02' && $simNumber) {
+                if ($isLuminary && $simNumber) {
                     $existingSim = InventroyStreetLightModel::where('sim_number', $simNumber)
-                        ->where('item_code', 'SL02')
                         ->where('id', '!=', $inventoryItem->id)
                         ->exists();
 
@@ -1210,11 +1222,8 @@ class InventoryController extends Controller
      */
     private function fetchDispatchesChunked($vendorId, string $itemCode, ?int $isConsumed): array
     {
-        $isLuminary = $itemCode === 'SL02';
         $dispatches = [];
 
-        // For luminary we need to batch-load sim_numbers; collect all serials first
-        // then do a single lookup per chunk rather than per row.
         $query = InventoryDispatch::where('vendor_id', $vendorId)
             ->where('item_code', $itemCode)
             ->select('dispatch_date', 'serial_number', 'total_quantity', 'is_consumed');
@@ -1224,8 +1233,7 @@ class InventoryController extends Controller
         }
 
         $query->orderBy('dispatch_date')
-              ->chunk(500, function ($rows) use ($isLuminary, &$dispatches) {
-                  if ($isLuminary) {
+              ->chunk(500, function ($rows) use (&$dispatches) {
                       $allSerials = [];
                       $parsedRows = [];
 
@@ -1251,17 +1259,6 @@ class InventoryController extends Controller
                               ], $serials),
                           ];
                       }
-                  } else {
-                      foreach ($rows as $row) {
-                          $serials = collect(json_decode($row->serial_number, true) ?? [$row->serial_number])
-                              ->filter()->values()->all();
-                          $dispatches[] = [
-                              'dispatch_date' => $row->dispatch_date,
-                              'quantity'      => $row->total_quantity,
-                              'serial_number' => $serials,
-                          ];
-                      }
-                  }
               });
 
         return $dispatches;
@@ -1485,16 +1482,10 @@ class InventoryController extends Controller
             }
 
             if ($pole) {
-                switch ($newDispatch->item_code) {
-                    case 'SL01':
-                        $pole->panel_qr = $newSerial;
-                        break;
-                    case 'SL02':
-                        $pole->luminary_qr = $newSerial;
-                        break;
-                    case 'SL03':
-                        $pole->battery_qr = $newSerial;
-                        break;
+                $newItemName = isset($newStreet) ? $newStreet->item : ($newDispatch->item ?? null);
+                $qrColumn = StreetlightInventoryItems::poleQrColumn($newItemName, $newDispatch->item_code);
+                if ($qrColumn) {
+                    $pole->{$qrColumn} = $newSerial;
                 }
                 $pole->save();
             }

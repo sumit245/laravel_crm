@@ -138,4 +138,9 @@ class Streetlight extends Model
     {
         return $this->hasMany(StreetlightTask::class, 'site_id');
     }
+
+    public function siteWards()
+    {
+        return $this->hasMany(StreetlightSiteWard::class, 'streetlight_id');
+    }
 }

@@ -21,6 +21,7 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Controllers\Concerns\HandlesColumnFilters;
@@ -30,6 +31,7 @@ class TaskController extends Controller
     use HandlesColumnFilters;
     protected InventoryService $inventoryService;
     protected InventoryHistoryService $historyService;
+    private ?array $streelightPoleColumns = null;
 
     public function __construct(InventoryService $inventoryService, InventoryHistoryService $historyService)
     {
@@ -384,14 +386,10 @@ class TaskController extends Controller
                         ]);
                     }
 
-                    $pole = Pole::create([
+                    $poleAttributes = [
                         'task_id'             => $validated['task_id'],
-                        'streetlight_site_ward_id' => $siteWard?->id,
                         'complete_pole_number'=> $validated['complete_pole_number'],
                         'ward_name'           => $validated['ward_name'] ?? null,
-                        'ward_type'           => $siteWard?->ward_type,
-                        'ward_number'         => $siteWard?->ward_number,
-                        'pole_sequence'       => $this->extractPoleSequence($validated['complete_pole_number']),
                         'beneficiary'         => $validated['beneficiary'] ?? null,
                         'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
                         'remarks'             => $validated['remarks'] ?? null,
@@ -399,7 +397,25 @@ class TaskController extends Controller
                         'isInstallationDone'  => false,
                         'lat'                 => $validated['lat'] ?? null,
                         'lng'                 => $validated['lng'] ?? null,
-                    ]);
+                    ];
+
+                    if ($this->streelightPoleHasColumn('streetlight_site_ward_id')) {
+                        $poleAttributes['streetlight_site_ward_id'] = $siteWard?->id;
+                    }
+
+                    if ($this->streelightPoleHasColumn('ward_type')) {
+                        $poleAttributes['ward_type'] = $siteWard?->ward_type;
+                    }
+
+                    if ($this->streelightPoleHasColumn('ward_number')) {
+                        $poleAttributes['ward_number'] = $siteWard?->ward_number;
+                    }
+
+                    if ($this->streelightPoleHasColumn('pole_sequence')) {
+                        $poleAttributes['pole_sequence'] = $this->extractPoleSequence($validated['complete_pole_number']);
+                    }
+
+                    $pole = Pole::create($poleAttributes);
                     if ($isSurveyDone) {
                         $streetlight->increment('number_of_surveyed_poles');
                     }
@@ -1138,6 +1154,10 @@ class TaskController extends Controller
 
     private function resolveSiteWardForPole(Streetlight $site, ?string $wardName, ?string $completePoleNumber): ?StreetlightSiteWard
     {
+        if (!Schema::hasTable('streetlight_site_wards')) {
+            return null;
+        }
+
         $wardType = str_contains(strtoupper((string) $wardName), 'GP') ? StreetlightSiteWard::TYPE_GP : StreetlightSiteWard::TYPE_NORMAL;
         $wardNumber = preg_replace('/\D/', '', (string) $wardName);
 
@@ -1163,6 +1183,17 @@ class TaskController extends Controller
                 'source' => 'api',
             ]
         );
+    }
+
+    private function streelightPoleHasColumn(string $column): bool
+    {
+        if ($this->streelightPoleColumns === null) {
+            $this->streelightPoleColumns = Schema::hasTable('streelight_poles')
+                ? array_flip(Schema::getColumnListing('streelight_poles'))
+                : [];
+        }
+
+        return isset($this->streelightPoleColumns[$column]);
     }
 
     private function toApiBoolean(mixed $value): bool

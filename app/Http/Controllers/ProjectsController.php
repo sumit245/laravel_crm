@@ -16,6 +16,7 @@ use App\Models\TargetDeletionJob;
 use App\Models\Task;
 use App\Models\User;
 use App\Jobs\ProcessTargetDeletionChunk;
+use App\Services\Streetlight\ProjectPoleListingService;
 use App\Services\Task\TargetDeletionService;
 use App\Services\Logging\ActivityLogger;
 use Illuminate\Http\Request;
@@ -120,7 +121,7 @@ class ProjectsController extends Controller
     /**
      * Display the specified Project
      */
-    public function show(string $id)
+    public function show(Request $request, string $id)
     {
         $project = Project::with(['stores', 'sites.districtRelation', 'sites.stateRelation'])->findOrFail($id);
         $user = auth()->user();
@@ -405,6 +406,20 @@ class ProjectsController extends Controller
                 ->mapWithKeys(fn($name) => [$name => $name])
                 ->prepend('All', '')
                 ->toArray();
+
+            $poleListing = app(ProjectPoleListingService::class);
+            $data['poleDistricts'] = $poleListing->districtsForProject((int) $project->id);
+            $data['poleGeoFilters'] = $poleListing->activeGeoFilters($request);
+            $data['poleDeepLinkParams'] = $poleListing->preserveDeepLinkParams($request);
+            $installedCountQuery = $poleListing->installedQuery($request, (int) $project->id);
+            $poleListing->applyRmsFilter($installedCountQuery, $request);
+            $data['installedPolesCount'] = $installedCountQuery->count();
+            $surveyedCountQuery = $poleListing->surveyedQuery($request, (int) $project->id);
+            $poleListing->applyRmsFilter($surveyedCountQuery, $request);
+            $data['surveyedPolesCount'] = $surveyedCountQuery->count();
+            $filterQuery = $poleListing->queryStringExceptHash($request);
+            $data['projectInstalledPolesDataUrl'] = route('projects.installedPoles.data', $project) . $filterQuery;
+            $data['projectSurveyedPolesDataUrl'] = route('projects.surveyedPoles.data', $project) . $filterQuery;
         } else {
             $data['sites'] = $project->sites()->when($isProjectManager, fn($q) => $q->whereHas('tasks', fn($t) => $t->where('manager_id', $user->id)))
                 ->get();

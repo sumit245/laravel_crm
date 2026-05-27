@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use App\Enums\UserRole;
 use App\Services\Logging\ActivityLogger;
 use App\Http\Controllers\Concerns\HandlesColumnFilters;
+use App\Support\StreetlightInventoryItems;
 
 /**
  * Warehouse / Store Management — each project has physical stores (warehouses) where inventory
@@ -130,11 +131,9 @@ class StoreController extends Controller
         // OPTIMIZATION 1: Get Total Count separately (Fast, No Joins)
         // This is passed to 'deferLoading' so DataTables knows there are 1M+ rows
         // without us actually loading them all.
-        // Note: Exclude SL04 from count as it's not shown in table
         $inventoryTotal = DB::table($inventoryTableName)
             ->where('project_id', $project->id)
             ->where('store_id', $store->id)
-            ->where('item_code', '!=', 'SL04') // Exclude SL04 from table count
             ->count();
         Log::info('Inventory Total: ' . $inventoryTotal);
 
@@ -152,7 +151,6 @@ class StoreController extends Controller
             ->groupBy('serial_number', 'store_id', 'project_id');
 
         // OPTIMIZATION 2: Initial Data Load (Fast) - Only load exactly paginated rows
-        // Note: SL04 (Structure) items are excluded from the table as they are mapped to SL03 (Battery)
         $unifiedInventory = DB::table($inventoryTableName . ' as inv')
             ->leftJoinSub($dispSubInit, 'disp_best', function ($join) {
                 $join->on('inv.serial_number', '=', 'disp_best.serial_number')
@@ -164,7 +162,6 @@ class StoreController extends Controller
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
-            ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from table display
             ->select(array_merge(
                 [
                     'inv.id',
@@ -181,7 +178,7 @@ class StoreController extends Controller
                     DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name'),
                 ],
                 $inventoryTableName === 'inventory_streetlight'
-                ? [DB::raw('CASE WHEN inv.item_code = "SL02" THEN COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) ELSE NULL END as sim_number')]
+                ? [DB::raw('COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) as sim_number')]
                 : [DB::raw('NULL as sim_number')]
             ))
             ->orderBy('inv.created_at', 'desc')
@@ -211,49 +208,30 @@ class StoreController extends Controller
 
             $inStoreStockValue = max(0, (float) $initialStockValue - (float) $dispatchedStockValue);
 
-            // Item Stats (Single optimized query)
-            // Note: SL04 (Structure) stats are mapped to SL03 (Battery) - they should match
-            $items = ['SL01' => 'Panel', 'SL02' => 'Luminary', 'SL03' => 'Battery', 'SL04' => 'Structure'];
-
-            // Get stats for SL01, SL02, SL03 (exclude SL04 from query as it's mapped to SL03)
             $statsData = DB::table($inventoryTableName)
                 ->where('project_id', $project->id)
                 ->where('store_id', $store->id)
-                ->whereIn('item_code', ['SL01', 'SL02', 'SL03'])
                 ->select(
                     'item_code',
+                    DB::raw('MAX(item) as item_name'),
                     DB::raw('COUNT(*) as total_received'),
-                    // Assuming quantity 1 is in-stock, 0 is dispatched
                     DB::raw('SUM(CASE WHEN quantity > 0 THEN 1 ELSE 0 END) as current_stock')
                 )
                 ->groupBy('item_code')
-                ->get()
-                ->keyBy('item_code');
+                ->get();
 
-            // Calculate stats for SL01, SL02, SL03
-            foreach (['SL01', 'SL02', 'SL03'] as $code) {
-                $stat = $statsData->get($code);
-                $total = $stat ? $stat->total_received : 0;
-                $stock = $stat ? $stat->current_stock : 0;
-
-                $itemStats[$code] = [
-                    'name' => $items[$code],
+            foreach ($statsData as $stat) {
+                $total = (int) $stat->total_received;
+                $stock = (int) $stat->current_stock;
+                $itemStats[$stat->item_code] = [
+                    'name' => trim(($stat->item_name ?: 'Item') . ' (' . $stat->item_code . ')'),
                     'total' => $total,
                     'in_stock' => $stock,
-                    'dispatched' => $total - $stock
+                    'dispatched' => $total - $stock,
                 ];
             }
 
-            // Map SL04 (Structure) stats to match SL03 (Battery) stats
-            $sl03Stats = $itemStats['SL03'] ?? ['total' => 0, 'in_stock' => 0, 'dispatched' => 0];
-            $itemStats['SL04'] = [
-                'name' => $items['SL04'],
-                'total' => $sl03Stats['total'],
-                'in_stock' => $sl03Stats['in_stock'],
-                'dispatched' => $sl03Stats['dispatched']
-            ];
-
-            // Calculate total quantities for pie chart (sum across all items including SL04)
+            // Calculate total quantities for pie chart.
             $inStoreStockQuantity = array_sum(array_column($itemStats, 'in_stock'));
             $dispatchedStockQuantity = array_sum(array_column($itemStats, 'dispatched'));
         }
@@ -273,21 +251,17 @@ class StoreController extends Controller
 
         $assignedVendors = User::whereIn('id', $assignedVendorIds)->get();
 
-        // Distinct Item Codes for Filters (exclude SL04 as it's not in table)
         $itemCodes = DB::table($inventoryTableName)
             ->where('project_id', $project->id)
             ->where('store_id', $store->id)
-            ->where('item_code', '!=', 'SL04') // Exclude SL04 from filter options
             ->distinct()
             ->pluck('item_code');
 
-        // Inventory Items for Dispatch Form (exclude SL04 as it's not manually dispatched)
         $inventoryItems = collect([]);
         if ($project->project_type == 1) {
             $inventoryItems = DB::table($inventoryTableName)
                 ->where('project_id', $project->id)
                 ->where('store_id', $store->id)
-                ->where('item_code', '!=', 'SL04') // Exclude SL04 from dispatch form (imported from GRN only)
                 ->select(
                     'item_code',
                     'item',
@@ -387,7 +361,6 @@ class StoreController extends Controller
             ->groupBy('serial_number', 'store_id', 'project_id');
 
         // 1. Base Query Structure - join to single dispatch per inv to prevent duplicate rows on sort
-        // Note: SL04 (Structure) items are excluded from the table as they are mapped to SL03 (Battery)
         $query = DB::table($inventoryTable . ' as inv')
             ->leftJoinSub($dispSub, 'disp_best', function ($join) {
                 $join->on('inv.serial_number', '=', 'disp_best.serial_number')
@@ -399,7 +372,6 @@ class StoreController extends Controller
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
-            ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from table display
             ->select(array_merge(
                 [
                     'inv.id',
@@ -416,16 +388,14 @@ class StoreController extends Controller
                     DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name'),
                 ],
                 $inventoryTable === 'inventory_streetlight'
-                ? [DB::raw('CASE WHEN inv.item_code = "SL02" THEN COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) ELSE NULL END as sim_number')]
+                ? [DB::raw('COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) as sim_number')]
                 : [DB::raw('NULL as sim_number')]
             ));
 
         // 2. Count Total (Fastest way - No Joins for total count)
-        // Note: Exclude SL04 from count as it's not shown in table
         $recordsTotal = DB::table($inventoryTable)
             ->where('project_id', $project->id)
             ->where('store_id', $store->id)
-            ->where('item_code', '!=', 'SL04') // Exclude SL04 from table count
             ->count();
 
         // 3. Filtering
@@ -602,8 +572,7 @@ class StoreController extends Controller
                 $serialCell = '<a href="' . route('poles.show', $item->streetlight_pole_id) . '" class="text-primary" style="text-decoration:none">' . htmlspecialchars($item->serial_number) . '</a>';
             }
 
-            // SIM number only for SL02 (Luminary); SL01/SL03/SL04 always show "-"
-            $simCell = (($item->item_code ?? '') === 'SL02' && trim((string) ($item->sim_number ?? '')) !== '')
+            $simCell = (StreetlightInventoryItems::isLuminary($item->item ?? null, $item->item_code ?? null) && trim((string) ($item->sim_number ?? '')) !== '')
                 ? htmlspecialchars($item->sim_number)
                 : '-';
 
@@ -646,7 +615,7 @@ class StoreController extends Controller
     /**
      * Export inventory to Excel with all filtered data
      */
-    public function exportInventory(Request $request, $storeId)
+    public function exportInventory(\App\Http\Requests\DataTableExportRequest $request, $storeId)
     {
         $store = Stores::with('project')->findOrFail($storeId);
         $project = $store->project;
@@ -669,7 +638,6 @@ class StoreController extends Controller
             ->where('project_id', $project->id)
             ->groupBy('serial_number', 'store_id', 'project_id');
 
-        // Note: SL04 (Structure) items are excluded from export as they are mapped to SL03 (Battery)
         $query = DB::table($inventoryTable . ' as inv')
             ->leftJoinSub($dispSubExport, 'disp_best', function ($join) {
                 $join->on('inv.serial_number', '=', 'disp_best.serial_number')
@@ -681,7 +649,6 @@ class StoreController extends Controller
             ->leftJoin('users as vendor', 'disp.vendor_id', '=', 'vendor.id')
             ->where('inv.project_id', $project->id)
             ->where('inv.store_id', $store->id)
-            ->where('inv.item_code', '!=', 'SL04') // Exclude SL04 from export
             ->select(array_merge(
                 [
                     'inv.item_code',
@@ -697,13 +664,14 @@ class StoreController extends Controller
                     DB::raw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) as vendor_name'),
                 ],
                 $inventoryTable === 'inventory_streetlight'
-                ? [DB::raw('CASE WHEN inv.item_code = "SL02" THEN COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) ELSE NULL END as sim_number')]
+                ? [DB::raw('COALESCE(NULLIF(TRIM(inv.sim_number), ""), NULLIF(TRIM(pole.sim_number), "")) as sim_number')]
                 : [DB::raw('NULL as sim_number')]
             ));
 
         // Apply filters (same as inventoryData)
-        if ($request->filled('search')) {
-            $search = $request->input('search');
+        $searchValue = $request->input('search.value') ?: $request->input('search');
+        if ($searchValue) {
+            $search = $searchValue;
             $searchTerm = '%' . $search . '%';
             $query->where(function ($q) use ($searchTerm) {
                 $q->where('inv.item_code', 'like', $searchTerm)
@@ -734,10 +702,10 @@ class StoreController extends Controller
             $query->whereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', ['%' . $request->input('vendor_name') . '%']);
         }
 
-        // Note: For very large datasets (100k+), standard export might fail due to memory.
-        // Usually, chunking is recommended, but keeping existing structure as requested.
-        // Note: For very large datasets (100k+), standard export might fail due to memory.
-        // Usually, chunking is recommended, but keeping existing structure as requested.
+        $exportService = app(\App\Services\Export\DataTableExportService::class);
+        $query = $exportService->applyExportScope($query, $request);
+        $exportService->assertWithinRowLimit($query);
+
         $query->orderBy('inv.created_at', 'desc');
 
         $date = now()->format('dmY');

@@ -2,24 +2,83 @@
 
 @section('content')
     <div class="content-wrapper p-2">
-        <div class="row mb-3">
-            <div class="col-12">
-                <h3 class="fw-bold">Installed Poles</h3>
+        <div class="row mb-3 align-items-center">
+            <div class="col-12 col-lg">
+                <h3 class="fw-bold mb-1">Installed Poles</h3>
+                <p class="text-muted mb-0">
+                    <strong>{{ number_format($totalInstalled) }}</strong> installed pole{{ $totalInstalled === 1 ? '' : 's' }}
+                    @if (!empty($activeFilters['district']) || !empty($activeFilters['block']) || !empty($activeFilters['panchayat']))
+                        <span class="ms-2">
+                            @if (!empty($activeFilters['district']))
+                                <span class="badge bg-secondary">District: {{ $activeFilters['district'] }}</span>
+                            @endif
+                            @if (!empty($activeFilters['block']))
+                                <span class="badge bg-secondary">Block: {{ $activeFilters['block'] }}</span>
+                            @endif
+                            @if (!empty($activeFilters['panchayat']))
+                                <span class="badge bg-secondary">Panchayat: {{ $activeFilters['panchayat'] }}</span>
+                            @endif
+                        </span>
+                    @endif
+                </p>
+            </div>
+        </div>
+
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title mb-3">Filter by location</h6>
+                <div class="row g-3 align-items-end">
+                    <div class="col-md-3">
+                        <label for="installedDistrict" class="form-label">District</label>
+                        <select id="installedDistrict" class="form-select">
+                            <option value="">All districts</option>
+                            @foreach ($districts as $districtRow)
+                                <option value="{{ $districtRow->district }}"
+                                    @selected(request('district') === $districtRow->district)>
+                                    {{ $districtRow->district }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="installedBlock" class="form-label">Block</label>
+                        <select id="installedBlock" class="form-select" disabled>
+                            <option value="">All blocks</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="installedPanchayat" class="form-label">Panchayat</label>
+                        <select id="installedPanchayat" class="form-select" disabled>
+                            <option value="">All panchayats</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex flex-wrap gap-2">
+                        <button type="button" class="btn btn-primary" id="installedGeoApplyBtn">
+                            <i class="mdi mdi-filter"></i> Apply
+                        </button>
+                        <a href="{{ route('installed.poles') }}" class="btn btn-outline-secondary">
+                            Clear
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
 
         <x-datatable id="installedPole" 
             title="Installed Poles" 
             :columns="[
-                ['title' => 'Pole Number', 'width' => '12%'],
-                ['title' => 'Beneficiary', 'width' => '12%'],
-                ['title' => 'Beneficiary Contact', 'width' => '12%'],
-                ['title' => 'IMEI', 'width' => '10%'],
-                ['title' => 'SIM Number', 'width' => '10%'],
-                ['title' => 'Battery', 'width' => '10%'],
-                ['title' => 'Panel', 'width' => '10%'],
-                ['title' => 'Bill Raised', 'width' => '8%'],
-                ['title' => 'RMS Status', 'width' => '10%'],
+                ['title' => 'Pole Number', 'width' => '10%'],
+                ['title' => 'Beneficiary', 'width' => '9%'],
+                ['title' => 'Beneficiary Contact', 'width' => '9%'],
+                ['title' => 'District', 'width' => '8%', 'orderable' => false, 'searchable' => false],
+                ['title' => 'Block', 'width' => '8%', 'orderable' => false, 'searchable' => false],
+                ['title' => 'Panchayat', 'width' => '9%', 'orderable' => false, 'searchable' => false],
+                ['title' => 'IMEI', 'width' => '8%'],
+                ['title' => 'SIM Number', 'width' => '8%'],
+                ['title' => 'Battery', 'width' => '8%'],
+                ['title' => 'Panel', 'width' => '8%'],
+                ['title' => 'Bill Raised', 'width' => '7%'],
+                ['title' => 'RMS Status', 'width' => '8%'],
             ]" 
             :exportEnabled="true" 
             :importEnabled="false" 
@@ -167,9 +226,130 @@
         }
     }
 
+    const installedPolesBaseUrl = @json(route('installed.poles'));
+    const installedActiveFilters = @json($activeFilters ?? []);
+    const installedProjectId = @json(request('project_id'));
+
+    function installedJicrQuerySuffix() {
+        const params = new URLSearchParams();
+        if (installedProjectId) {
+            params.set('project_id', installedProjectId);
+        }
+        const qs = params.toString();
+        return qs ? '?' + qs : '';
+    }
+
+    function resetInstalledBlockSelect() {
+        $('#installedBlock').prop('disabled', true).empty().append('<option value="">All blocks</option>');
+    }
+
+    function resetInstalledPanchayatSelect() {
+        $('#installedPanchayat').prop('disabled', true).empty().append('<option value="">All panchayats</option>');
+    }
+
+    function loadInstalledBlocks(district, selectedBlock) {
+        return $.ajax({
+            url: '/jicr/blocks/' + encodeURIComponent(district) + installedJicrQuerySuffix(),
+            type: 'GET',
+            dataType: 'json',
+        }).then(function (response) {
+            resetInstalledBlockSelect();
+            $('#installedBlock').prop('disabled', false);
+            $.each(response.blocks || [], function (index, item) {
+                const val = item.block;
+                const selected = selectedBlock && selectedBlock === val ? ' selected' : '';
+                $('#installedBlock').append('<option value="' + val + '"' + selected + '>' + val + '</option>');
+            });
+        });
+    }
+
+    function loadInstalledPanchayats(block, district, selectedPanchayat) {
+        const params = new URLSearchParams(installedJicrQuerySuffix().replace(/^\?/, ''));
+        if (district) {
+            params.set('district', district);
+        }
+        const qs = params.toString();
+        const suffix = qs ? '?' + qs : '';
+
+        return $.ajax({
+            url: '/jicr/panchayats/' + encodeURIComponent(block) + suffix,
+            type: 'GET',
+            dataType: 'json',
+        }).then(function (response) {
+            resetInstalledPanchayatSelect();
+            $('#installedPanchayat').prop('disabled', false);
+            $.each(response.panchayats || [], function (index, item) {
+                const val = item.panchayat;
+                const selected = selectedPanchayat && selectedPanchayat === val ? ' selected' : '';
+                $('#installedPanchayat').append('<option value="' + val + '"' + selected + '>' + val + '</option>');
+            });
+        });
+    }
+
+    function applyInstalledGeoFilters() {
+        const params = new URLSearchParams(window.location.search);
+        const district = $('#installedDistrict').val();
+        const block = $('#installedBlock').val();
+        const panchayat = $('#installedPanchayat').val();
+
+        if (district) {
+            params.set('district', district);
+        } else {
+            params.delete('district');
+        }
+        if (block) {
+            params.set('block', block);
+        } else {
+            params.delete('block');
+        }
+        if (panchayat) {
+            params.set('panchayat', panchayat);
+        } else {
+            params.delete('panchayat');
+        }
+
+        const qs = params.toString();
+        window.location.href = installedPolesBaseUrl + (qs ? '?' + qs : '');
+    }
+
     $(document).ready(function() {
-        // Filters are now handled by the datatable component itself
-        // No need for custom filter code - the component uses useDataAttribute
+        $('#installedDistrict').on('change', function () {
+            const district = $(this).val();
+            resetInstalledBlockSelect();
+            resetInstalledPanchayatSelect();
+            if (district) {
+                loadInstalledBlocks(district, null);
+            }
+        });
+
+        $('#installedBlock').on('change', function () {
+            const block = $(this).val();
+            const district = $('#installedDistrict').val();
+            resetInstalledPanchayatSelect();
+            if (block) {
+                loadInstalledPanchayats(block, district, null);
+            }
+        });
+
+        $('#installedGeoApplyBtn').on('click', function () {
+            applyInstalledGeoFilters();
+        });
+
+        if (installedActiveFilters.district) {
+            loadInstalledBlocks(installedActiveFilters.district, installedActiveFilters.block || null)
+                .then(function () {
+                    if (installedActiveFilters.block) {
+                        return loadInstalledPanchayats(
+                            installedActiveFilters.block,
+                            installedActiveFilters.district,
+                            installedActiveFilters.panchayat || null
+                        );
+                    }
+                })
+                .fail(function (xhr, status, error) {
+                    console.error('Failed to restore location filters:', status, error);
+                });
+        }
 
         // Initialize delete buttons
         function initializeDeleteButtons() {

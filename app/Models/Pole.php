@@ -26,6 +26,7 @@ class Pole extends Model
     protected $fillable = [
         'task_id',
         'vendor_id',
+        'streetlight_site_ward_id',
         'isSurveyDone',
         'isNetworkAvailable',
         'isInstallationDone',
@@ -36,6 +37,10 @@ class Pole extends Model
         'beneficiary',
         'remarks',
         'ward_name',
+        'ward_type',
+        'ward_number',
+        'pole_sequence',
+        'pole_number_format_id',
         'beneficiary_contact',
         'sim_number',
         'submission_image',
@@ -63,6 +68,11 @@ class Pole extends Model
     public function task()
     {
         return $this->belongsTo(StreetlightTask::class, 'task_id');
+    }
+
+    public function siteWard()
+    {
+        return $this->belongsTo(StreetlightSiteWard::class, 'streetlight_site_ward_id');
     }
 
     /**

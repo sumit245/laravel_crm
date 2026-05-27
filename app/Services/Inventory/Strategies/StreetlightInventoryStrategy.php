@@ -4,6 +4,7 @@ namespace App\Services\Inventory\Strategies;
 
 use App\Contracts\InventoryStrategyInterface;
 use App\Models\InventroyStreetLightModel;
+use App\Support\StreetlightInventoryItems;
 
 /**
  * Streetlight Inventory Strategy
@@ -29,17 +30,10 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
         // The prepareForStorage method will map them to the correct database fields
         $itemCode = $data['code'] ?? $data['item_code'] ?? null;
         
-        // Valid streetlight item codes
-        $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
-        
         $rules = [
             'project_id' => 'required|exists:projects,id',
             'store_id' => 'required|exists:stores,id',
-            'code' => ['required', 'string', 'max:255', function ($attribute, $value, $fail) use ($validItemCodes) {
-                if (!in_array($value, $validItemCodes)) {
-                    $fail('Invalid item code for streetlight project. Allowed codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).');
-                }
-            }], // Form field: item_code
+            'code' => 'required|string|max:255', // Form field: item_code
             'dropdown' => 'required|string|max:255', // Form field: item
             'manufacturer' => 'required|string|max:255',
             'model' => 'required|string|max:255',
@@ -54,9 +48,8 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
             'receiveddate' => 'nullable|date', // Form field: received_date
         ];
 
-        // Add sim_number validation for luminary items (SL02) only
-        // Note: Uniqueness will be checked in controller with custom rule to ensure it's only for SL02 items
-        if ($itemCode === 'SL02') {
+        // Add sim_number validation for luminary items only.
+        if (StreetlightInventoryItems::isLuminary($data['dropdown'] ?? $data['item'] ?? null, $itemCode)) {
             $rules['sim_number'] = 'required|string|max:200';
         }
 
@@ -80,12 +73,15 @@ class StreetlightInventoryStrategy implements InventoryStrategyInterface
         $mappedData = [
             'project_id' => $data['project_id'] ?? null,
             'store_id' => $data['store_id'] ?? null,
-            'item_code' => $data['item_code'] ?? $data['code'] ?? null,
+            'item_code' => StreetlightInventoryItems::normalizeCode($data['item_code'] ?? $data['code'] ?? null),
             'item' => $data['item'] ?? $data['dropdown'] ?? null,
             'manufacturer' => $data['manufacturer'] ?? null,
             'model' => $data['model'] ?? null,
             'serial_number' => $data['serial_number'] ?? $data['serialnumber'] ?? null,
-            'sim_number' => ($data['item_code'] ?? $data['code'] ?? '') === 'SL02' ? ($data['sim_number'] ?? null) : null, // Only for luminary items (SL02)
+            'sim_number' => StreetlightInventoryItems::isLuminary(
+                $data['item'] ?? $data['dropdown'] ?? null,
+                $data['item_code'] ?? $data['code'] ?? null
+            ) ? ($data['sim_number'] ?? null) : null,
             'make' => $data['make'] ?? 'Sugs',
             'rate' => $data['rate'] ?? 100,
             'quantity' => $data['quantity'] ?? $data['number'] ?? 1,

@@ -46,7 +46,7 @@
                         <div class="alert alert-info">
                             <strong>Bulk Upload Format:</strong><br>
                             Columns: ITEM_CODE, ITEM NAME (or item), serial_number (or SERIAL_NUMBER)<br>
-                            For Luminary (SL02): Include sim_number (or SIM_NUMBER) column<br>
+                            For Luminary: Include sim_number (or SIM_NUMBER) column<br>
                             Each row should have quantity = 1 for each serial number
                         </div>
                         <div class="form-group">
@@ -239,12 +239,14 @@
                         return;
                     }
                     // Get the selected item ID
-                    const selectedItemCode = document.querySelector('.item-select').value;
+                    const selectedItem = document.querySelector('.item-select');
+                    const selectedItemCode = selectedItem.value;
                     if (!selectedItemCode) {
                         showError('Please select an item first before scanning QR codes!', 'qr_error');
                         return;
                     }
-                    if (selectedItemCode === "SL02") {
+                    const selectedItemName = (selectedItem.selectedOptions[0]?.dataset.item || '').toLowerCase();
+                    if (selectedItemName.includes('luminary') || selectedItemName.includes('luminaire')) {
                         scannedCode = scannedCode.split(';')[0]
                     }
 

@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Route;
 Route::post('/login', [LoginController::class, 'login'])->middleware('throttle:login');
 
 // All other API routes require authentication
-Route::middleware('auth:sanctum')->group(function () {
+// Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('staff', StaffController::class);
     Route::prefix('staff')->group(function () {
         Route::post('/upload-avatar/{id}', [StaffController::class, 'uploadAvatar']);
@@ -75,7 +75,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('check-price', [ConveyanceController::class, 'checkPice']);
     Route::get('allow-expense', [ConveyanceController::class, 'allowExpense']);
     Route::get('users/{id}/allowed-vehicles', [ConveyanceController::class, 'getAllowedVehicles']);
-});
+// });
 
 
 

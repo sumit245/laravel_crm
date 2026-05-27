@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Support\StreetlightInventoryItems;
 
 /**
  * Excel exporter for inventory data with dispatch status. Exports item code, serial number, SIM,
@@ -88,7 +89,7 @@ class InventoryExport implements FromQuery, WithHeadings, WithMapping, ShouldAut
             ? Carbon::parse($item->received_date)->format('d/m/Y')
             : ($item->created_at ? Carbon::parse($item->created_at)->format('d/m/Y') : '-');
 
-        $simNumber = (($item->item_code ?? '') === 'SL02' && trim((string) ($item->sim_number ?? '')) !== '')
+        $simNumber = (StreetlightInventoryItems::isLuminary($item->item ?? null, $item->item_code ?? null) && trim((string) ($item->sim_number ?? '')) !== '')
             ? $item->sim_number
             : '-';
 

@@ -3,6 +3,7 @@
 namespace App\Imports;
 
 use App\Models\InventroyStreetLightModel;
+use App\Support\StreetlightInventoryItems;
 use Maatwebsite\Excel\Concerns\ToModel;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Maatwebsite\Excel\Concerns\WithCalculatedFormulas;
@@ -10,7 +11,7 @@ use Carbon\Carbon;
 
 /**
  * Excel importer for streetlight inventory GRN. Parses item code, item name, serial number, SIM
- * number (for SL02), make, model, and rate. Validates serial/SIM uniqueness and reports errors
+ * number for luminary items, make, model, and rate. Validates serial/SIM uniqueness and reports errors
  * for duplicate entries.
  *
  * Data Flow:
@@ -76,26 +77,14 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
             return null;
         }
 
-        // Normalise item code (case-insensitive, tolerate missing zero: SL1 -> SL01)
-        $itemCodeNormalized = null;
-        if (!empty($itemCodeRaw)) {
-            $upper = strtoupper($itemCodeRaw);
-            // Match SL01, sl01, SL1, sl1 etc.
-            if (preg_match('/^SL0?([1-4])$/i', $upper, $m)) {
-                $itemCodeNormalized = 'SL0' . $m[1];
-            } else {
-                $itemCodeNormalized = $upper;
-            }
-        }
-
-        $validItemCodes = ['SL01', 'SL02', 'SL03', 'SL04'];
-        if (!in_array($itemCodeNormalized, $validItemCodes)) {
-            // Invalid item code: skip this row
+        $itemCodeNormalized = StreetlightInventoryItems::normalizeCode($itemCodeRaw);
+        if ($itemCodeNormalized === null) {
             $this->errors[] = [
-                'reason' => 'invalid_item_code',
+                'reason' => 'missing_item_code',
                 'item_code' => $itemCodeRaw,
                 'serial_number' => $serialRaw,
                 'item' => $itemName,
+                'message' => 'Item code is required. Any non-empty code is allowed.',
             ];
             return null;
         }
@@ -147,9 +136,11 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
             $this->seenSerials[] = $serial;
         }
 
-        // Handle SIM number for luminary items (SL02)
+        $isLuminary = StreetlightInventoryItems::isLuminary($itemName, $itemCodeNormalized);
+
+        // Handle SIM number for luminary items.
         $sim = $row['sim_number'] ?? $row['SIM_NUMBER'] ?? null;
-        if ($itemCodeNormalized === 'SL02' && !empty($sim)) {
+        if ($isLuminary && !empty($sim)) {
             // Skip duplicates within the same file
             if (in_array($sim, $this->seenSimNumbers, true)) {
                 $this->errors[] = [
@@ -164,7 +155,6 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
 
             // Skip if SIM already exists for luminary items in DB
             $existingSim = InventroyStreetLightModel::where('sim_number', $sim)
-                ->where('item_code', 'SL02')
                 ->exists();
             if ($existingSim) {
                 $this->errors[] = [
@@ -203,8 +193,7 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
             'received_date' => $this->parseDate($row['received_date'] ?? null),
         ];
 
-        // Add sim_number only for luminary items (SL02)
-        if ($itemCodeNormalized === 'SL02' && $sim) {
+        if ($isLuminary && $sim) {
             $inventoryData['sim_number'] = $sim;
         }
 
@@ -277,4 +266,5 @@ class InventroyStreetLight implements ToModel, WithHeadingRow, WithCalculatedFor
             return null;
         }
     }
+
 }

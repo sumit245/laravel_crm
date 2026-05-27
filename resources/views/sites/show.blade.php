@@ -32,23 +32,38 @@
       @if (isset($projectType) && $projectType == 1)
         <div style="width: 250px;">
           @php
-            $wards = collect(explode(",", $site->ward))
-                ->map(fn($w) => "Ward " . trim($w))
+            $normalWards = collect(explode(",", $site->ward))
+                ->map(fn($w) => trim($w))
+                ->filter()
+                ->map(fn($w) => "Ward " . $w)
                 ->toArray();
+            $gpWards = $site->siteWards->where('ward_type', 'gp')
+                ->sortBy(fn($w) => (int) $w->ward_number);
           @endphp
-          <div class="card border-dark ward-button active mb-3 cursor-pointer border-2 rounded" 
+          <div class="card border-dark ward-button active mb-3 cursor-pointer border-2 rounded"
                data-ward=""
                onclick="loadWardData(event, '')">
             <div class="card-body p-3 text-center">
               <div class="h5 font-weight-bold">All Wards</div>
             </div>
           </div>
-          @foreach ($wards as $ward)
-            <div class="card border-dark ward-button mb-3 cursor-pointer border-2 rounded" 
+          @foreach ($normalWards as $ward)
+            <div class="card border-dark ward-button mb-3 cursor-pointer border-2 rounded"
                  data-ward="{{ $ward }}"
                  onclick="loadWardData(event, '{{ $ward }}')">
               <div class="card-body p-4 text-center">
                 <div class="h4 font-weight-bold">{{ $ward }}</div>
+              </div>
+            </div>
+          @endforeach
+          @foreach ($gpWards as $gpWard)
+            @php $gpLabel = "GP Ward " . $gpWard->ward_number; @endphp
+            <div class="card border-dark ward-button mb-3 cursor-pointer border-2 rounded"
+                 data-ward="{{ $gpLabel }}"
+                 onclick="loadWardData(event, '{{ $gpLabel }}')">
+              <div class="card-body p-4 text-center">
+                <div class="h4 font-weight-bold">{{ $gpLabel }}</div>
+                <div class="small text-muted">{{ $gpWard->planned_poles }} poles</div>
               </div>
             </div>
           @endforeach

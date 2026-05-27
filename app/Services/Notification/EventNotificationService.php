@@ -68,6 +68,62 @@ class EventNotificationService
     }
 
     /**
+     * Persist in-app notifications for explicit recipient user IDs.
+     *
+     * @param  Collection<int, int>|array<int, int>  $recipientIds
+     * @param  array<string, mixed>  $context
+     */
+    public function notifyUsers(
+        Collection|array $recipientIds,
+        string $module,
+        string $action,
+        string $title,
+        string $message,
+        array $context = [],
+    ): void {
+        if (! Schema::hasTable('user_event_notifications')) {
+            return;
+        }
+
+        $ids = collect($recipientIds)
+            ->filter(fn ($id) => $id !== null && $id !== '')
+            ->map(fn ($id) => (int) $id)
+            ->unique()
+            ->values();
+
+        if ($ids->isEmpty()) {
+            return;
+        }
+
+        $projectId = isset($context['project_id']) ? (int) $context['project_id'] : null;
+        $districtId = isset($context['district_id']) ? (int) $context['district_id'] : null;
+
+        $rows = $ids->map(function (int $userId) use ($module, $action, $title, $message, $projectId, $districtId, $context) {
+            return [
+                'user_id' => $userId,
+                'project_id' => $projectId,
+                'district_id' => $districtId,
+                'module' => $module,
+                'action' => $action,
+                'title' => $title,
+                'message' => $message,
+                'payload' => json_encode([
+                    'entity_type' => $context['entity_type'] ?? null,
+                    'entity_id' => $context['entity_id'] ?? null,
+                    'changes' => Arr::get($context, 'changes'),
+                    'extra' => Arr::get($context, 'extra'),
+                ]),
+                'is_read' => false,
+                'read_at' => null,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        })->all();
+
+        UserEventNotification::insert($rows);
+    }
+
+    /**
      * @param  Model|null  $entity
      * @param  array<string,mixed>  $data
      * @return array{project_id: int|null, district_id: int|null}

@@ -13,6 +13,7 @@ use App\Models\StreetlightTask;
 use App\Models\Streetlight;
 use App\Models\Site;
 use App\Services\BaseService;
+use App\Services\Streetlight\SiteWardService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Validator;
 use InvalidArgumentException;
@@ -33,7 +34,8 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
      */
     public function __construct(
         protected TaskRepositoryInterface $repository,
-        protected TaskStateMachineInterface $stateMachine
+        protected TaskStateMachineInterface $stateMachine,
+        protected SiteWardService $siteWardService
     ) {
     }
 
@@ -467,6 +469,7 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
             if ($project->project_type == 1) {
                 // Get selected wards from form (comma-separated string)
                 $selectedWardsRaw = $taskData['selected_wards'] ?? '';
+                $targetGpWards = $taskData['target_gp_wards'] ?? '';
                 $selectedWards = !empty($selectedWardsRaw)
                     ? array_map('trim', explode(',', $selectedWardsRaw))
                     : [];
@@ -478,6 +481,9 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
                     if (!$streetlight) {
                         throw new InvalidArgumentException("Streetlight site with ID {$siteId} not found");
                     }
+
+                    $this->siteWardService->ensureLegacyBackfill($streetlight);
+                    $this->siteWardService->ensureGpWards($streetlight, $targetGpWards, 'target');
 
                     // Determine wards to allot for this site
                     $wardsToAllot = $selectedWards;
@@ -521,7 +527,8 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
                         'allotted_wards' => implode(',', $availableWards),
                     ];
 
-                    StreetlightTask::create($streetlightTaskData);
+                    $task = StreetlightTask::create($streetlightTaskData);
+                    $this->siteWardService->syncTaskWards($task, implode(',', $availableWards), $targetGpWards);
                 }
             } else {
                 // Handle rooftop projects (project_type == 0)
@@ -575,7 +582,7 @@ class TaskManagementService extends BaseService implements TaskServiceInterface
     public function getTaskDetails(int $taskId, ?int $projectType = null): array
     {
         if ($projectType == 1) {
-            $task = StreetlightTask::with(['engineer', 'vendor', 'manager', 'site', 'poles'])
+            $task = StreetlightTask::with(['engineer', 'vendor', 'manager', 'site', 'poles', 'siteWards'])
                 ->findOrFail($taskId);
 
             return [

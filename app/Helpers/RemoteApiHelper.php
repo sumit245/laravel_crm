@@ -36,15 +36,12 @@ class RemoteApiHelper
         // Fallback to the lookup table if not present.
         $districtCode = $streetlight->district_code ?: DistrictCode::where('district_name', strtoupper(trim($streetlight->district)))->value('district_code');
 
-        $wardType = ($pole->ward_name === 'GP') ? 'GP' : 'W';
-        $wardNumber = $wardType === 'GP'
-            ? null
-            : (preg_replace('/\D/', '', (string) ($pole->ward_name ?? '')) ?: null);
-        $poleName = $wardType === 'GP'
-            ? (($digits = preg_replace('/\D/', '', $pole->complete_pole_number)) && strlen($digits) >= 2
-                ? substr($digits, -2)
-                : substr($pole->complete_pole_number, strrpos($pole->complete_pole_number, '/') + 1))
-            : substr($pole->complete_pole_number, strrpos($pole->complete_pole_number, '/') + 1);
+        $wardType = ($pole->ward_type ?? optional($pole->siteWard)->ward_type) === 'gp' ? 'GP' : 'W';
+        $wardNumber = $pole->ward_number
+            ?: optional($pole->siteWard)->ward_number
+            ?: (preg_replace('/\D/', '', (string) ($pole->ward_name ?? '')) ?: null);
+        $poleName = $pole->pole_sequence
+            ?: substr($pole->complete_pole_number, strrpos($pole->complete_pole_number, '/') + 1);
         $payload = [
             'devId' => $pole->luminary_qr,
             'MfId' => "4",

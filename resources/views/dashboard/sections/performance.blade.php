@@ -341,6 +341,12 @@
                             <small class="text-muted d-block">Installed</small>
                             <strong>{{ number_format($performance_analytics['unified_metrics']['streetlight']['installed_poles'] ?? 0) }}</strong>
                         </div>
+                        @if (!empty($selected_project_id))
+                            <a href="{{ route('projects.show', $selected_project_id) }}#installed-poles"
+                                class="btn btn-sm btn-outline-success mt-2">
+                                <i class="mdi mdi-lightning-bolt me-1" aria-hidden="true"></i>View installed poles
+                            </a>
+                        @endif
                         <div class="progress mt-2" style="height: 8px; border-radius: 4px;">
                             <div class="progress-bar bg-primary" role="progressbar"
                                 style="width: {{ $performance_analytics['unified_metrics']['streetlight']['progress'] ?? 0 }}%"

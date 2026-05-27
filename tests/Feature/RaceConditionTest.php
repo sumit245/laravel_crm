@@ -29,6 +29,8 @@ class RaceConditionTest extends TestCase
         Schema::dropIfExists('personal_access_tokens');
         Schema::dropIfExists('activity_logs');
         Schema::dropIfExists('streelight_poles');
+        Schema::dropIfExists('streetlight_task_wards');
+        Schema::dropIfExists('streetlight_site_wards');
         Schema::dropIfExists('inventory_dispatch');
         Schema::dropIfExists('streetlight_tasks');
         Schema::dropIfExists('streetlights');
@@ -85,12 +87,35 @@ class RaceConditionTest extends TestCase
             $table->timestamps();
         });
 
+        Schema::create('streetlight_site_wards', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('streetlight_id');
+            $table->string('ward_type', 20)->default('normal');
+            $table->string('ward_number', 50);
+            $table->unsignedTinyInteger('planned_poles')->default(10);
+            $table->string('source', 30)->default('site');
+            $table->timestamps();
+            $table->unique(['streetlight_id', 'ward_type', 'ward_number']);
+        });
+
+        Schema::create('streetlight_task_wards', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('streetlight_task_id');
+            $table->unsignedBigInteger('streetlight_site_ward_id');
+            $table->timestamps();
+            $table->unique(['streetlight_task_id', 'streetlight_site_ward_id']);
+        });
+
         Schema::create('streelight_poles', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('task_id')->nullable();
             $table->unsignedBigInteger('vendor_id')->nullable();
+            $table->unsignedBigInteger('streetlight_site_ward_id')->nullable();
             $table->string('complete_pole_number')->nullable();
             $table->string('ward_name')->nullable();
+            $table->string('ward_type', 20)->nullable();
+            $table->string('ward_number', 50)->nullable();
+            $table->unsignedInteger('pole_sequence')->nullable();
             $table->string('beneficiary')->nullable();
             $table->string('beneficiary_contact')->nullable();
             $table->string('remarks')->nullable();
@@ -105,6 +130,17 @@ class RaceConditionTest extends TestCase
             $table->text('submission_image')->nullable();
             $table->decimal('lat', 10, 7)->nullable();
             $table->decimal('lng', 10, 7)->nullable();
+            $table->timestamps();
+        });
+
+        Schema::create('inventory_dispatch', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('project_id')->nullable();
+            $table->unsignedBigInteger('vendor_id')->nullable();
+            $table->string('serial_number')->nullable();
+            $table->boolean('isDispatched')->default(false);
+            $table->boolean('is_consumed')->default(false);
+            $table->unsignedBigInteger('streetlight_pole_id')->nullable();
             $table->timestamps();
         });
 
@@ -197,6 +233,82 @@ class RaceConditionTest extends TestCase
         $this->assertDatabaseHas('streetlights', [
             'id'                       => $this->site->id,
             'number_of_surveyed_poles' => 1,
+        ]);
+    }
+
+    public function test_survey_submission_accepts_json_booleans(): void
+    {
+        $payload = [
+            'task_id' => $this->task->id,
+            'complete_pole_number' => 'POLE-002',
+            'ward_name' => 'Ward 2',
+            'isSurveyDone' => true,
+            'isNetworkAvailable' => true,
+            'beneficiary' => 'Test Beneficiary',
+            'beneficiary_contact' => '9876543210',
+            'remarks' => 'Survey submitted through API',
+            'lat' => 25.1234567,
+            'lng' => 85.7654321,
+        ];
+
+        $response = $this->actingAs($this->engineer, 'sanctum')
+            ->postJson('/api/streetlight/tasks/update', $payload);
+
+        $response->assertStatus(200);
+
+        $this->assertDatabaseHas('streelight_poles', [
+            'task_id' => $this->task->id,
+            'complete_pole_number' => 'POLE-002',
+            'ward_name' => 'Ward 2',
+            'isSurveyDone' => true,
+            'isNetworkAvailable' => true,
+            'beneficiary_contact' => '9876543210',
+        ]);
+
+        $this->assertDatabaseHas('streetlights', [
+            'id' => $this->site->id,
+            'number_of_surveyed_poles' => 1,
+        ]);
+    }
+
+    public function test_failed_installation_does_not_mark_pole_installed(): void
+    {
+        $surveyPayload = [
+            'task_id' => $this->task->id,
+            'complete_pole_number' => 'POLE-003',
+            'ward_name' => 'Ward 3',
+            'isSurveyDone' => true,
+        ];
+
+        $this->actingAs($this->engineer, 'sanctum')
+            ->postJson('/api/streetlight/tasks/update', $surveyPayload)
+            ->assertStatus(200);
+
+        $installPayload = [
+            'task_id' => $this->task->id,
+            'complete_pole_number' => 'POLE-003',
+            'ward_name' => 'Ward 3',
+            'isInstallationDone' => true,
+            'luminary_qr' => 'MISSING-LUMINARY',
+        ];
+
+        $this->actingAs($this->engineer, 'sanctum')
+            ->postJson('/api/streetlight/tasks/update', $installPayload)
+            ->assertStatus(422)
+            ->assertJson([
+                'error' => 'inventory_not_found',
+            ]);
+
+        $this->assertDatabaseHas('streelight_poles', [
+            'task_id' => $this->task->id,
+            'complete_pole_number' => 'POLE-003',
+            'isSurveyDone' => true,
+            'isInstallationDone' => false,
+        ]);
+
+        $this->assertDatabaseHas('streetlights', [
+            'id' => $this->site->id,
+            'number_of_installed_poles' => 0,
         ]);
     }
 }

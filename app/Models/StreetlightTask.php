@@ -107,6 +107,12 @@ class StreetlightTask extends Model
         return $this->hasMany(Pole::class, 'task_id');
     }
 
+    public function siteWards()
+    {
+        return $this->belongsToMany(StreetlightSiteWard::class, 'streetlight_task_wards')
+            ->withTimestamps();
+    }
+
     /**
      * Get the streetlight site this task belongs to (alias for site())
      * Relationship: StreetlightTask belongs to Streetlight (site)

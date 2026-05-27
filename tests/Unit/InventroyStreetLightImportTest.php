@@ -4,10 +4,40 @@ namespace Tests\Unit;
 
 use App\Imports\InventroyStreetLight;
 use App\Models\InventroyStreetLightModel;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class InventroyStreetLightImportTest extends TestCase
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        Schema::dropIfExists('inventory_streetlight');
+        Schema::create('inventory_streetlight', function (Blueprint $table) {
+            $table->id();
+            $table->unsignedBigInteger('project_id');
+            $table->unsignedBigInteger('store_id');
+            $table->string('item_code')->nullable();
+            $table->string('item')->nullable();
+            $table->string('manufacturer')->nullable();
+            $table->string('make')->nullable();
+            $table->string('model')->nullable();
+            $table->string('serial_number')->nullable();
+            $table->string('sim_number')->nullable();
+            $table->string('hsn')->nullable();
+            $table->string('unit')->nullable();
+            $table->decimal('rate', 12, 2)->default(0);
+            $table->integer('quantity')->default(0);
+            $table->decimal('total_value', 12, 2)->default(0);
+            $table->text('description')->nullable();
+            $table->string('eway_bill')->nullable();
+            $table->date('received_date')->nullable();
+            $table->timestamps();
+        });
+    }
+
     /** @test */
     public function it_creates_inventory_for_valid_row()
     {
@@ -47,16 +77,13 @@ class InventroyStreetLightImportTest extends TestCase
     }
 
     /** @test */
-    public function it_rejects_invalid_item_codes()
+    public function it_accepts_customer_defined_item_codes()
     {
         $import = new InventroyStreetLight(projectId: 1, storeId: 2);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Import failed: Invalid item code 'BAD' for streetlight project.");
-
-        $import->model([
-            'item_code' => 'BAD',
-            'item' => 'Invalid',
+        $model = $import->model([
+            'item_code' => 'CUSTOM-BAT-01',
+            'item' => 'Battery',
             'manufacturer' => 'X',
             'make' => 'Y',
             'model' => 'Z',
@@ -68,6 +95,10 @@ class InventroyStreetLightImportTest extends TestCase
             'total_value' => 100,
             'received_date' => now()->format('Y-m-d'),
         ]);
+
+        $this->assertSame('CUSTOM-BAT-01', $model->item_code);
+        $this->assertSame('Battery', $model->item);
+        $this->assertSame([], $import->getErrors());
     }
 
     /** @test */
@@ -75,10 +106,7 @@ class InventroyStreetLightImportTest extends TestCase
     {
         $import = new InventroyStreetLight(projectId: 1, storeId: 2);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Import failed: Quantity cannot be zero for item code 'SL01'");
-
-        $import->model([
+        $model = $import->model([
             'item_code' => 'SL01',
             'item' => 'Module',
             'manufacturer' => 'Test',
@@ -92,6 +120,9 @@ class InventroyStreetLightImportTest extends TestCase
             'total_value' => 0,
             'received_date' => now()->format('Y-m-d'),
         ]);
+
+        $this->assertNull($model);
+        $this->assertSame('zero_quantity', $import->getErrors()[0]['reason']);
     }
 
     /** @test */
@@ -116,10 +147,7 @@ class InventroyStreetLightImportTest extends TestCase
 
         $import = new InventroyStreetLight(projectId: 1, storeId: 2);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Import failed: Duplicate serial number 'SN-DUP-IMP' found.");
-
-        $import->model([
+        $model = $import->model([
             'item_code' => 'SL01',
             'item' => 'Module',
             'manufacturer' => 'New',
@@ -133,6 +161,9 @@ class InventroyStreetLightImportTest extends TestCase
             'total_value' => 100,
             'received_date' => now()->format('Y-m-d'),
         ]);
+
+        $this->assertNull($model);
+        $this->assertSame('duplicate_serial_in_db', $import->getErrors()[0]['reason']);
     }
 
     /** @test */
@@ -159,10 +190,7 @@ class InventroyStreetLightImportTest extends TestCase
 
         $import = new InventroyStreetLight(projectId: 1, storeId: 2);
 
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage("Import failed: Duplicate SIM number 'SIM-IMPORT-1' found for luminary item.");
-
-        $import->model([
+        $model = $import->model([
             'item_code' => 'SL02',
             'item' => 'Luminary',
             'manufacturer' => 'New',
@@ -177,7 +205,66 @@ class InventroyStreetLightImportTest extends TestCase
             'received_date' => now()->format('Y-m-d'),
             'sim_number' => 'SIM-IMPORT-1',
         ]);
+
+        $this->assertNull($model);
+        $this->assertSame('duplicate_sim_in_db', $import->getErrors()[0]['reason']);
+    }
+
+    /** @test */
+    public function it_preserves_external_solar_codes_and_uses_item_name_for_behavior()
+    {
+        $import = new InventroyStreetLight(projectId: 1, storeId: 2);
+
+        $battery = $import->model([
+            'item_code' => 'SOLAR01',
+            'item' => 'Battery',
+            'manufacturer' => 'Test',
+            'make' => 'Sugs',
+            'model' => 'BAT-100',
+            'serial_number' => 'BAT-ALIAS-001',
+            'hsn' => '123456',
+            'unit' => 'PCS',
+            'unit_rate' => 100,
+            'quantity' => 1,
+            'total_value' => 100,
+            'received_date' => now()->format('Y-m-d'),
+        ]);
+
+        $luminary = $import->model([
+            'item_code' => 'SOLAR02',
+            'item' => 'Luminary',
+            'manufacturer' => 'Test',
+            'make' => 'Sugs',
+            'model' => 'LUM-100',
+            'serial_number' => 'LUM-ALIAS-001',
+            'sim_number' => 'SIM-ALIAS-001',
+            'hsn' => '123456',
+            'unit' => 'PCS',
+            'unit_rate' => 100,
+            'quantity' => 1,
+            'total_value' => 100,
+            'received_date' => now()->format('Y-m-d'),
+        ]);
+
+        $panel = $import->model([
+            'item_code' => 'SOLAR03',
+            'item' => 'Panel',
+            'manufacturer' => 'Test',
+            'make' => 'Sugs',
+            'model' => 'PNL-100',
+            'serial_number' => 'PNL-ALIAS-001',
+            'hsn' => '123456',
+            'unit' => 'PCS',
+            'unit_rate' => 100,
+            'quantity' => 1,
+            'total_value' => 100,
+            'received_date' => now()->format('Y-m-d'),
+        ]);
+
+        $this->assertSame('SOLAR01', $battery->item_code);
+        $this->assertSame('SOLAR02', $luminary->item_code);
+        $this->assertSame('SOLAR03', $panel->item_code);
+        $this->assertSame('SIM-ALIAS-001', $luminary->sim_number);
+        $this->assertSame(3, $import->getImportedCount());
     }
 }
-
-

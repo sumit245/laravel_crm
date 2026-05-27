@@ -53,6 +53,7 @@ class StoreTaskRequest extends FormRequest
             'image' => ['nullable', 'string'],
             'materials_consumed' => ['nullable', 'string'],
             'selected_wards' => ['nullable', 'string'],
+            'target_gp_wards' => ['nullable', 'string'],
         ];
     }
 

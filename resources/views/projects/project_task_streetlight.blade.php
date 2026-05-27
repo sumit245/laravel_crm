@@ -10,20 +10,28 @@
             </div>
         </div>
         <div class="col-md-4">
-            <div class="summary-card summary-card-surveyed">
-                <div class="summary-card-body">
-                    <h5 class="summary-card-title mb-0">{{ $totalSurveyedPoles ?? 0 }}</h5>
-                    <p class="summary-card-text mb-0">Surveyed Poles</p>
+            <a href="{{ route('projects.show', $project) }}#surveyed-poles"
+                class="text-decoration-none d-block summary-card-link"
+                title="View all surveyed poles for this project">
+                <div class="summary-card summary-card-surveyed">
+                    <div class="summary-card-body">
+                        <h5 class="summary-card-title mb-0">{{ $totalSurveyedPoles ?? 0 }}</h5>
+                        <p class="summary-card-text mb-0">Surveyed Poles</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
         <div class="col-md-4">
-            <div class="summary-card summary-card-installed">
-                <div class="summary-card-body">
-                    <h5 class="summary-card-title mb-0">{{ $totalInstalledPoles ?? 0 }}</h5>
-                    <p class="summary-card-text mb-0">Installed Poles</p>
+            <a href="{{ route('projects.show', $project) }}#installed-poles"
+                class="text-decoration-none d-block summary-card-link"
+                title="View all installed poles for this project">
+                <div class="summary-card summary-card-installed">
+                    <div class="summary-card-body">
+                        <h5 class="summary-card-title mb-0">{{ $totalInstalledPoles ?? 0 }}</h5>
+                        <p class="summary-card-text mb-0">Installed Poles</p>
+                    </div>
                 </div>
-            </div>
+            </a>
         </div>
     </div>
 
@@ -90,6 +98,22 @@
                                 </div>
                                 <input type="hidden" name="selected_wards" id="selectedWardsInput" value="">
                             </div>
+                        </div>
+                        <div class="mb-3" id="targetGpWardContainer" style="display: none;">
+                            <label class="form-label">Add GP Ward During Target Work</label>
+                            <div class="row g-2 align-items-end">
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control" id="targetGpWardNumber" min="1" placeholder="GP ward number">
+                                </div>
+                                <div class="col-md-4">
+                                    <input type="number" class="form-control" id="targetGpWardPoles" min="1" max="10" placeholder="Poles (1 to 10)">
+                                </div>
+                                <div class="col-md-4">
+                                    <button type="button" class="btn btn-outline-primary" id="addTargetGpWard">Add GP Ward</button>
+                                </div>
+                            </div>
+                            <input type="hidden" name="target_gp_wards" id="targetGpWardsInput" value="">
+                            <div class="ward-checkboxes mt-2" id="targetGpWardChips"></div>
                         </div>
 
                         <div class="mb-3">
@@ -956,13 +980,16 @@
                         if (wards && wards.length > 0) {
                             displayWards(wards);
                             $('#wardSelectionContainer').slideDown(300);
+                            $('#targetGpWardContainer').slideDown(300);
                         } else {
                             $('#wardSelectionContainer').hide();
+                            $('#targetGpWardContainer').slideDown(300);
                         }
                     },
                     error: function (xhr, status, error) {
                         console.error("AJAX Error fetching wards:", status, error);
                         $('#wardSelectionContainer').hide();
+                        $('#targetGpWardContainer').hide();
                     }
                 });
             }
@@ -972,14 +999,15 @@
                 container.empty();
 
                 wards.forEach(function (ward) {
-                    const wardValue = ward.trim();
+                    const wardValue = typeof ward === 'string' ? ward.trim() : ward.key;
+                    const wardLabel = typeof ward === 'string' ? `Ward ${wardValue}` : (ward.label || ward.ward);
                     if (wardValue) {
                         const checkbox = $('<div>').addClass('ward-checkbox-item mb-2');
                         checkbox.html(`
                   <input class="form-check-input ward-checkbox" type="checkbox" 
                          id="ward_${wardValue}" value="${wardValue}" checked>
                   <label class="form-check-label" for="ward_${wardValue}">
-                    Ward ${wardValue}
+                    ${wardLabel}
                   </label>
                 `);
                         container.append(checkbox);
@@ -988,6 +1016,53 @@
 
                 updateSelectedWards();
             }
+
+            const targetGpWards = {};
+            function renderTargetGpWards() {
+                const container = $('#targetGpWardChips');
+                container.empty();
+                Object.keys(targetGpWards).sort((a, b) => parseInt(a, 10) - parseInt(b, 10)).forEach(function(ward) {
+                    container.append(`
+                        <div class="ward-checkbox-item mb-2">
+                            <span>GP Ward ${ward} (${targetGpWards[ward]} poles)</span>
+                            <button type="button" class="btn btn-sm btn-link text-danger remove-target-gp" data-ward="${ward}">Remove</button>
+                        </div>
+                    `);
+                });
+                $('#targetGpWardsInput').val(Object.keys(targetGpWards).map(ward => `${ward}:${targetGpWards[ward]}`).join(','));
+            }
+
+            $('#addTargetGpWard').on('click', function() {
+                const ward = parseInt($('#targetGpWardNumber').val(), 10);
+                const poles = parseInt($('#targetGpWardPoles').val(), 10);
+                if (!ward || ward < 1 || !poles || poles < 1 || poles > 10) {
+                    Swal.fire('Invalid GP ward', 'Enter a ward number and 1 to 10 poles.', 'error');
+                    return;
+                }
+                targetGpWards[String(ward)] = poles;
+                $('#targetGpWardNumber').val('');
+                $('#targetGpWardPoles').val('');
+                renderTargetGpWards();
+
+                const key = `gp:${ward}`;
+                if (!$(`.ward-checkbox[value="${key}"]`).length) {
+                    $('#wardCheckboxes').append(`
+                        <div class="ward-checkbox-item mb-2">
+                            <input class="form-check-input ward-checkbox" type="checkbox" id="ward_gp_${ward}" value="${key}" checked>
+                            <label class="form-check-label" for="ward_gp_${ward}">GP Ward ${ward}</label>
+                        </div>
+                    `);
+                }
+                updateSelectedWards();
+            });
+
+            $(document).on('click', '.remove-target-gp', function() {
+                const ward = $(this).data('ward');
+                delete targetGpWards[ward];
+                $(`.ward-checkbox[value="gp:${ward}"]`).closest('.ward-checkbox-item').remove();
+                renderTargetGpWards();
+                updateSelectedWards();
+            });
 
             // Select/Deselect All Wards
             $('#selectAllWards').on('click', function () {
@@ -1529,6 +1604,12 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
         }
 
+        a.summary-card-link:focus-visible {
+            outline: 2px solid #4da761;
+            outline-offset: 2px;
+            border-radius: 8px;
+        }
+
         .summary-card-total {
             border-color: #28a745;
             background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
@@ -1779,40 +1860,40 @@
             color: #007bff;
         }
 
-        /* Modal styling improvements */
-        .modal-content {
+        /* Add Target modal only — avoid leaking gradient/styles to other modals on project show */
+        #addTargetModal .modal-content {
             border-radius: 12px;
             border: none;
             box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
         }
 
-        .modal-header {
+        #addTargetModal .modal-header {
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             border-radius: 12px 12px 0 0;
             padding: 1.25rem 1.5rem;
         }
 
-        .modal-header .modal-title {
+        #addTargetModal .modal-header .modal-title {
             font-weight: 600;
             font-size: 1.1rem;
         }
 
-        .modal-header .btn-close {
+        #addTargetModal .modal-header .btn-close {
             filter: brightness(0) invert(1);
         }
 
-        .modal-body {
+        #addTargetModal .modal-body {
             padding: 1.5rem;
             overflow: visible;
         }
 
-        .modal-footer {
+        #addTargetModal .modal-footer {
             border-top: 1px solid #dee2e6;
             padding: 1rem 1.5rem;
         }
 
-        .modal-footer .btn {
+        #addTargetModal .modal-footer .btn {
             border-radius: 6px;
             padding: 0.5rem 1.25rem;
             font-weight: 500;

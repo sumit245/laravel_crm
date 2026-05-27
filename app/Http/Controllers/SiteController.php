@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Services\Logging\ActivityLogger;
+use App\Services\Streetlight\SiteWardService;
 
 /**
  * Site / Panchayat Management — manages project sites (locations where work happens). For
@@ -39,7 +40,8 @@ use App\Services\Logging\ActivityLogger;
 class SiteController extends Controller
 {
     public function __construct(
-        protected ActivityLogger $activityLogger
+        protected ActivityLogger $activityLogger,
+        protected SiteWardService $siteWardService
     ) {
     }
     /**
@@ -237,12 +239,16 @@ class SiteController extends Controller
                     'block' => 'required|string|max:255',
                     'panchayat' => 'required|string|max:255',
                     'ward' => 'nullable|string|max:255',
+                    'gp_wards' => 'nullable|string|max:1000',
                     'total_poles' => 'nullable|integer|min:0',
                     'mukhiya_contact' => 'nullable|string|max:255',
                     'district_code' => 'nullable|string|max:255',
                     'block_code' => 'nullable|string|max:255',
                     'panchayat_code' => 'nullable|string|max:255',
                 ]);
+
+                $gpWards = $validatedData['gp_wards'] ?? null;
+                unset($validatedData['gp_wards']);
 
                 // Check for existing site with same District->Block->Panchayat
                 $existingSite = Streetlight::where('project_id', $projectId)
@@ -253,12 +259,8 @@ class SiteController extends Controller
 
                 if ($existingSite) {
                     // Parse wards
-                    $existingWards = !empty($existingSite->ward)
-                        ? array_map('intval', explode(',', $existingSite->ward))
-                        : [];
-                    $newWards = !empty($validatedData['ward'])
-                        ? array_map('intval', explode(',', $validatedData['ward']))
-                        : [];
+                    $existingWards = $this->siteWardService->parseNormalWards($existingSite->ward);
+                    $newWards = $this->siteWardService->parseNormalWards($validatedData['ward'] ?? null);
 
                     // Check if wards are the same
                     sort($existingWards);
@@ -289,6 +291,12 @@ class SiteController extends Controller
                             'block_code' => $validatedData['block_code'] ?? $existingSite->block_code,
                             'panchayat_code' => $validatedData['panchayat_code'] ?? $existingSite->panchayat_code,
                         ]);
+                        $this->siteWardService->syncSiteWards(
+                            $existingSite,
+                            $mergedWardsString,
+                            $gpWards,
+                            'site'
+                        );
 
                         return redirect()->route('projects.show', $projectId)
                             ->with('success', 'Streetlight site updated successfully with merged wards.');
@@ -305,6 +313,12 @@ class SiteController extends Controller
                 }
 
                 $streetlight = Streetlight::create($validatedData);
+                $this->siteWardService->syncSiteWards(
+                    $streetlight,
+                    $validatedData['ward'] ?? null,
+                    $gpWards,
+                    'site'
+                );
 
                 $this->activityLogger->log('site', 'created', $project, [
                     'description' => "Created Streetlight site {$streetlight->panchayat} (Task ID: {$streetlight->task_id})"
@@ -364,7 +378,8 @@ class SiteController extends Controller
         $projectType = $request->query('project_type');
 
         if ($projectType == 1) {
-            $site = Streetlight::with('streetlightTasks')->findOrFail($id);
+            $site = Streetlight::with(['streetlightTasks', 'siteWards'])->findOrFail($id);
+            $this->siteWardService->ensureLegacyBackfill($site);
 
             $streetlightTasks = StreetlightTask::with(['engineer', 'vendor', 'manager'])
                 ->where('site_id', $site->id)
@@ -381,13 +396,18 @@ class SiteController extends Controller
             $stateName = $site->state;
             $districtName = $site->district;
 
-            // Prepare ward options for filter
+            // Prepare ward options for filter (normal + GP wards)
             $wardOptions = [];
             if ($site->ward) {
                 $wards = collect(explode(",", $site->ward))
                     ->map(fn($w) => "Ward " . trim($w))
+                    ->filter()
                     ->toArray();
                 $wardOptions = array_combine($wards, $wards);
+            }
+            foreach ($site->siteWards->where('ward_type', 'gp') as $gpWard) {
+                $label = "GP Ward " . $gpWard->ward_number;
+                $wardOptions[$label] = $label;
             }
 
             return view('sites.show', compact(
@@ -593,7 +613,8 @@ class SiteController extends Controller
         if ($projectId) {
             $project = Project::find($projectId);
             if ($project && $project->project_type == 1) {
-                $streetlight = Streetlight::findOrFail($id);
+                $streetlight = Streetlight::with('siteWards')->findOrFail($id);
+                $this->siteWardService->ensureLegacyBackfill($streetlight);
                 return view('sites.edit', compact('streetlight', 'projectId'));
             }
         }
@@ -634,6 +655,12 @@ class SiteController extends Controller
                         'block_code',
                         'panchayat_code'
                     ]));
+                    $this->siteWardService->syncSiteWards(
+                        $streetlight,
+                        $request->input('ward'),
+                        $request->input('gp_wards'),
+                        'site'
+                    );
                     $this->activityLogger->log('site', 'updated', $streetlight, array_merge([
                         'description' => "Updated Streetlight site {$streetlight->panchayat}"
                     ], $beforeAfter));
@@ -776,8 +803,9 @@ class SiteController extends Controller
                         'Block' => 'Patna Sadar',
                         'Panchayat' => 'Phulwarisharif',
                         'Ward' => '1,2,3',
-                        'Ward Type' => 'Type A', // Optional
-                        'Total Poles' => '30',
+                        'GP Wards' => '3:4,8:2',
+                        'Ward Type' => '', // Optional legacy column
+                        'Total Poles' => '36',
                         'Mukhiya Contact' => '9876543210',
                         'District Code' => 'D001',
                         'Block Code' => 'B001',

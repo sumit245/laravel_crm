@@ -21,7 +21,7 @@ use App\Services\Logging\ActivityLogger;
  * stock via Excel GRN imports (both rooftop and streetlight types), adding individual items with
  * serial number & SIM uniqueness validation, dispatching items to field vendors (decrementing
  * store quantity), tracking dispatch history, and supporting item return/replacement flows. Item
- * codes: SL01 (Panel), SL02 (Luminary), SL03 (Battery), SL04 (Structure).
+ * codes are customer-defined; item behavior is inferred from item name/category.
  *
  * Data Flow:
  *   GRN Excel Upload → Validation (serial/SIM uniqueness) → InventoryService → DB Insert

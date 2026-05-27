@@ -8,6 +8,7 @@ use Maatwebsite\Excel\Concerns\ToCollection;
 use Maatwebsite\Excel\Concerns\WithHeadingRow;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\Streetlight\SiteWardService;
 
 /**
  * Excel importer for streetlight panchayat sites. Parses district, block, panchayat, ward, and
@@ -29,6 +30,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
     protected int $importedCount = 0;
     protected int $updatedCount = 0;
     protected int $skippedCount = 0;
+    protected SiteWardService $siteWardService;
 
     /**
      * Constructor to accept project ID
@@ -38,6 +40,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
     public function __construct($projectId)
     {
         $this->projectId = $projectId;
+        $this->siteWardService = app(SiteWardService::class);
     }
 
     /**
@@ -60,6 +63,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
                 $block = trim($row['block'] ?? '');
                 $panchayat = trim($row['panchayat'] ?? '');
                 $ward = trim($row['ward'] ?? '');
+                $gpWards = trim($row['gp_wards'] ?? '');
                 $totalPoles = isset($row['total_poles']) ? (int) $row['total_poles'] : null;
                 $mukhiyaContact = trim($row['mukhiya_contact'] ?? '');
 
@@ -88,9 +92,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
                     $existingWards = !empty($existingSite->ward)
                         ? array_map('intval', explode(',', $existingSite->ward))
                         : [];
-                    $newWards = !empty($ward)
-                        ? array_map('intval', explode(',', $ward))
-                        : [];
+                    $newWards = $this->siteWardService->parseNormalWards($ward);
 
                     // Check if wards are the same
                     sort($existingWards);
@@ -126,6 +128,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
                             'block_code' => isset($row['block_code']) ? trim($row['block_code']) : $existingSite->block_code,
                             'panchayat_code' => isset($row['panchayat_code']) ? trim($row['panchayat_code']) : $existingSite->panchayat_code,
                         ]);
+                        $this->siteWardService->syncSiteWards($existingSite, $mergedWardsString, $gpWards, 'import');
 
                         $this->updatedCount++;
                         continue;
@@ -158,7 +161,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
                     $totalPoles = $wardCount * 10;
                 }
 
-                Streetlight::create([
+                $streetlight = Streetlight::create([
                     'task_id' => $taskId,
                     'state' => $state,
                     'district' => $district,
@@ -173,6 +176,7 @@ class StreetlightImport implements ToCollection, WithHeadingRow
                     'panchayat_code' => isset($row['panchayat_code']) ? trim($row['panchayat_code']) : null,
                     'ward_type' => isset($row['ward_type']) ? trim($row['ward_type']) : null,
                 ]);
+                $this->siteWardService->syncSiteWards($streetlight, $ward, $gpWards, 'import');
 
                 $this->importedCount++;
             } catch (\Exception $e) {

@@ -32,6 +32,22 @@
                     return 'active';
                 }
             }
+
+            return '';
+        }
+    }
+
+    if (!function_exists('sidebar_active_settings_billing')) {
+        function sidebar_active_settings_billing(): string
+        {
+            if (request()->routeIs(['billing.settings', 'settings.billing.*'])) {
+                return 'active';
+            }
+
+            if (request()->routeIs('settings.section') && request()->route('section') === 'billing') {
+                return 'active';
+            }
+
             return '';
         }
     }
@@ -148,7 +164,7 @@
                 </span>
             </li>
             <li class="nav-item">
-                <a class="nav-link js-partial-link {{ sidebar_active(['billing.settings', 'settings.section', 'settings.billing.*']) }}"
+                <a class="nav-link js-partial-link {{ sidebar_active_settings_billing() }}"
                     href="{{ route('settings.section', 'billing') }}">
                     <i class="menu-icon mdi mdi-store"></i>
                     <span class="menu-title">TA/DA rates</span>

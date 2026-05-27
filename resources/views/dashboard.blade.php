@@ -109,6 +109,14 @@
                         </button>
                     </div>
 
+                    @if (!empty($selected_project_id))
+                        <a href="{{ route('projects.show', $selected_project_id) }}#installed-poles"
+                            class="btn btn-outline-success d-inline-flex align-items-center gap-1">
+                            <i class="mdi mdi-lightning-bolt" aria-hidden="true"></i>
+                            Installed Poles
+                        </a>
+                    @endif
+
                     <!-- Print Action -->
                     <div class="btn-wrapper">
                         <button type="button" class="btn btn-outline-dark d-none d-md-inline-flex"

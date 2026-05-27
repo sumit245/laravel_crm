@@ -14,13 +14,14 @@
         'import-export'  => 'bi-arrow-left-right',
         'rms'            => 'bi-diagram-3',
         'dashboard'      => 'bi-speedometer2',
+        'pole-number-format' => 'bi-upc-scan',
         'audit-log'      => 'bi-clock-history',
     ];
 @endphp
 
 <div class="container-fluid settings-page">
-    <div class="row g-3">
-        <div class="col-lg-3 col-xl-2">
+    <div class="row g-3 g-lg-4 settings-page-layout">
+        <div class="col-lg-3 col-xl-2 settings-nav-col">
             <div class="settings-nav border rounded bg-white">
                 <div class="px-3 py-3 border-bottom d-flex align-items-center gap-2">
                     <i class="bi bi-gear-fill text-muted"></i>
@@ -36,7 +37,7 @@
             </div>
         </div>
 
-        <div class="col-lg-9 col-xl-10">
+        <div class="col-lg-9 col-xl-10 settings-content-col">
             @if(session('success'))
                 <div class="alert alert-success" role="status">{{ session('success') }}</div>
             @endif
@@ -66,6 +67,16 @@
         align-items: flex-start;
     }
 
+    @media (min-width: 992px) {
+        .settings-page .settings-nav-col {
+            padding-right: 1rem;
+        }
+
+        .settings-page .settings-content-col {
+            padding-left: 0.5rem;
+        }
+    }
+
     .settings-page .col-lg-9,
     .settings-page .col-xl-10 {
         min-width: 0;
@@ -87,9 +98,10 @@
     .settings-page .settings-nav .nav-link {
         color: #495057;
         border-radius: 0;
-        padding: 0.75rem 1rem;
+        padding: 0.75rem 1rem 0.75rem 0.875rem;
         font-size: 0.9375rem;
-        border-left: 3px solid transparent;
+        border-left: none;
+        box-shadow: none;
     }
 
     .settings-page .settings-nav .nav-link:hover:not(.active) {
@@ -101,7 +113,7 @@
         color: #1F3BB3;
         background: rgba(31, 59, 179, 0.08);
         font-weight: 600;
-        border-left-color: #1F3BB3;
+        box-shadow: inset 2px 0 0 #1F3BB3;
     }
 
     .settings-page .settings-nav .settings-nav-icon {
@@ -152,6 +164,117 @@
 
     .settings-actions {
         white-space: nowrap;
+    }
+
+    /* Static settings tables — same visual language as the shared datatable component (no DataTables JS) */
+    .settings-page .settings-datatable-wrap {
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #fff;
+    }
+
+    .settings-page .settings-datatable-wrap .table {
+        margin-bottom: 0;
+    }
+
+    .settings-page .settings-datatable-wrap .table thead th {
+        background: #f8f9fa;
+        color: #495057;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.02em;
+        border-bottom: 2px solid #dee2e6;
+        padding: 0.625rem 0.75rem;
+        vertical-align: middle;
+        white-space: nowrap;
+    }
+
+    .settings-page .settings-datatable-wrap .table tbody td {
+        vertical-align: middle;
+        padding: 0.5rem 0.75rem;
+    }
+
+    .settings-page .settings-datatable-wrap .table tbody td.settings-row-actions {
+        text-align: center;
+        white-space: nowrap;
+        width: 140px;
+        min-width: 140px;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-row-actions .btn-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 6px 10px;
+        margin: 0 2px;
+        border-radius: 4px;
+        background-color: transparent !important;
+        border: 1px solid #dee2e6 !important;
+        box-shadow: none !important;
+        vertical-align: middle;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-row-actions .btn-icon i {
+        font-size: 1rem;
+        line-height: 1;
+    }
+
+    /* Row actions — match resources/views/components/datatable.blade.php */
+    .settings-page .settings-datatable-wrap .settings-row-actions .btn-icon.btn-warning {
+        background-color: #ffc107 !important;
+        border-color: #ffc107 !important;
+        color: #212529 !important;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-row-actions .btn-icon.btn-warning:hover {
+        background-color: #e0a800 !important;
+        border-color: #d39e00 !important;
+        color: #212529 !important;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-row-actions .btn-icon.btn-info {
+        background-color: #17a2b8 !important;
+        border-color: #17a2b8 !important;
+        color: #fff !important;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-row-actions .btn-icon.btn-info:hover {
+        background-color: #138496 !important;
+        border-color: #117a8b !important;
+        color: #fff !important;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-scope-badge {
+        display: inline-block;
+        font-size: 0.75rem;
+        font-weight: 600;
+        line-height: 1.2;
+        padding: 0.35em 0.65em;
+        border-radius: 0.25rem;
+        letter-spacing: 0.02em;
+        border: none;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-scope-badge-ward-normal {
+        background-color: #1F3BB3;
+        color: #fff;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-scope-badge-ward-gp {
+        background-color: #087990;
+        color: #fff;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-scope-badge-active {
+        background-color: #198754;
+        color: #fff;
+    }
+
+    .settings-page .settings-datatable-wrap .settings-scope-badge-inactive {
+        background-color: #495057;
+        color: #fff;
     }
 
     /* Billing / TA-DA — matches legacy billing settings & CRM tables */

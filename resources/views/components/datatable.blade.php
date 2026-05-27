@@ -32,6 +32,9 @@
     'vendorColumnIndex' => null,
     'serialColumnIndex' => null,
     'columnFilterEnabled' => true,
+    'exportRoute' => null,
+    'exportConfig' => [],
+    'exportMaxRows' => 50000,
 ])
 
 @php
@@ -40,6 +43,10 @@
     $serialColIdx = $serialColumnIndex ?? ($bulkDeleteEnabled ? 3 : 2);
 @endphp
 @php
+    $exportRouteUrl = $exportRoute ?? null;
+    $exportDateColumns = $exportConfig['dateColumns'] ?? [];
+    $exportDefaultScope = $exportConfig['defaultScope'] ?? 'filtered_all';
+    $exportMaxRowsCap = (int) ($exportConfig['maxRows'] ?? $exportMaxRows);
     // CRITICAL: Sanitize ID for use in JavaScript variable names
     // Replace hyphens, dots, and spaces with underscores to create valid JavaScript identifiers
     // Example: "streetlightTable-11" becomes "streetlightTable_11"
@@ -171,8 +178,9 @@
             @if ($exportEnabled)
                 <div class="btn-group btn-group-sm d-flex flex-wrap" role="group">
                     <button type="button" class="btn btn-success flex-fill flex-sm-auto"
-                        id="{{ $id }}_excel" title="Export to Excel">
-                        <i class="mdi mdi-file-excel"></i> <span class="d-none d-sm-inline">Excel</span>
+                        id="{{ $id }}_excel" title="Export to Excel"
+                        @if($exportRouteUrl) data-export-route="{{ $exportRouteUrl }}" @endif>
+                        <i class="mdi mdi-file-excel"></i> <span class="d-none d-sm-inline">Export</span>
                     </button>
                     <button type="button" class="btn btn-danger flex-fill flex-sm-auto" id="{{ $id }}_pdf"
                         title="Export to PDF">
@@ -191,6 +199,101 @@
         </div>
     </div>
 
+    @if ($exportEnabled && $exportRouteUrl)
+        <div class="modal fade" id="{{ $id }}_exportModal" tabindex="-1" aria-labelledby="{{ $id }}_exportModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header bg-light text-dark border-bottom">
+                        <h5 class="modal-title fw-semibold" id="{{ $id }}_exportModalLabel">Export data</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">What to export</label>
+                            <div class="d-flex flex-column gap-2">
+                                <label class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ $id }}_export_scope"
+                                        value="filtered_all" @checked($exportDefaultScope === 'filtered_all')>
+                                    <span class="form-check-label">All rows matching current filters and search</span>
+                                </label>
+                                @if ($serverSide || $ajaxUrl)
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ $id }}_export_scope"
+                                            value="current_page">
+                                        <span class="form-check-label">Current page only</span>
+                                    </label>
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ $id }}_export_scope"
+                                            value="page_range">
+                                        <span class="form-check-label">Page range</span>
+                                    </label>
+                                    <div class="row g-2 ms-3" id="{{ $id }}_exportPageRange" style="display:none;">
+                                        <div class="col-6">
+                                            <label class="form-label small">From page</label>
+                                            <input type="number" min="1" class="form-control form-control-sm"
+                                                id="{{ $id }}_export_page_from" value="1">
+                                        </div>
+                                        <div class="col-6">
+                                            <label class="form-label small">To page</label>
+                                            <input type="number" min="1" class="form-control form-control-sm"
+                                                id="{{ $id }}_export_page_to" value="1">
+                                        </div>
+                                    </div>
+                                @endif
+                                <label class="form-check">
+                                    <input class="form-check-input" type="radio" name="{{ $id }}_export_scope"
+                                        value="row_limit">
+                                    <span class="form-check-label">First N rows (after filters)</span>
+                                </label>
+                                <div class="ms-3" id="{{ $id }}_exportRowLimit" style="display:none;">
+                                    <input type="number" min="1" max="{{ $exportMaxRowsCap }}"
+                                        class="form-control form-control-sm" id="{{ $id }}_export_max_rows"
+                                        value="1000" placeholder="Max rows">
+                                </div>
+                                @if (!empty($exportDateColumns))
+                                    <label class="form-check">
+                                        <input class="form-check-input" type="radio" name="{{ $id }}_export_scope"
+                                            value="date_range">
+                                        <span class="form-check-label">Date range (additional filter)</span>
+                                    </label>
+                                    <div class="ms-3" id="{{ $id }}_exportDateRange" style="display:none;">
+                                        <label class="form-label small">Date field</label>
+                                        <select class="form-select form-select-sm mb-2" id="{{ $id }}_export_date_column">
+                                            @foreach ($exportDateColumns as $dateCol)
+                                                <option value="{{ $dateCol['key'] }}">{{ $dateCol['label'] }}</option>
+                                            @endforeach
+                                        </select>
+                                        <div class="row g-2">
+                                            <div class="col-6">
+                                                <label class="form-label small">From</label>
+                                                <input type="date" class="form-control form-control-sm"
+                                                    id="{{ $id }}_export_date_from">
+                                            </div>
+                                            <div class="col-6">
+                                                <label class="form-label small">To</label>
+                                                <input type="date" class="form-control form-control-sm"
+                                                    id="{{ $id }}_export_date_to">
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <p class="small text-muted mb-0">Maximum {{ number_format($exportMaxRowsCap) }} rows per export.
+                            Visible columns only (actions excluded).</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-success" id="{{ $id }}_exportSubmit">
+                            <i class="mdi mdi-download"></i> Download Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
+
     {{-- Data Table --}}
     <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table id="{{ $id }}" class="table table-striped table-bordered table-hover"
@@ -206,7 +309,7 @@
                         <th {{ isset($column['width']) ? 'width=' . $column['width'] : '' }}
                             {{ isset($column['orderable']) && !$column['orderable'] ? 'data-orderable=false' : '' }}
                             {{ isset($column['searchable']) && !$column['searchable'] ? 'data-searchable=false' : '' }}
-                            @if ($columnFilterEnabled && !(isset($column['orderable']) && !$column['orderable']))
+                            @if ($columnFilterEnabled && ((isset($column['columnFilter']) && $column['columnFilter']) || !(isset($column['orderable']) && !$column['orderable'])))
                                 data-cf-enabled="1"
                                 data-cf-type="{{ $column['type'] ?? 'text' }}"
                                 data-cf-options="{{ json_encode($column['filterOptions'] ?? []) }}"
@@ -248,8 +351,8 @@
 
 {{-- Per-column filter popup (rendered outside overflow container, positioned via JS) --}}
 @if ($columnFilterEnabled)
-<div id="{{ $id }}_colMenu" class="col-filter-popup" style="display:none;" role="dialog" aria-modal="true" aria-label="Column filter">
-    <div class="col-filter-popup-inner">
+<div id="{{ $id }}_colMenu" class="cfp-popup" style="display:none;" role="dialog" aria-modal="true" aria-label="Column filter">
+    <div class="cfp-popup-inner">
         <div class="cfp-sort-section">
             <button type="button" class="cfp-sort-btn" data-dir="asc">
                 <i class="mdi mdi-sort-ascending me-2" aria-hidden="true"></i>Sort Ascending
@@ -261,25 +364,25 @@
         <div class="cfp-divider"></div>
         <div class="cfp-filter-section">
             <div class="cfp-filter-label">Filter</div>
-            <select class="cfp-type cfp-type-1 form-select form-select-sm" aria-label="Filter condition 1 type"></select>
+            <select class="cfp-type cfp-type-1" aria-label="Filter condition 1 type"></select>
             <div class="cfp-val-wrap cfp-text-wrap cfp-val-wrap-1">
-                <input type="text" class="cfp-val cfp-val-1 form-control form-control-sm" placeholder="Value…" aria-label="Filter value 1">
+                <input type="text" class="cfp-val cfp-val-1" placeholder="Value…" aria-label="Filter value 1">
             </div>
             <div class="cfp-val-wrap cfp-select-wrap cfp-val-wrap-1" style="display:none;">
-                <select class="cfp-val cfp-val-1-sel form-select form-select-sm" aria-label="Filter value 1"></select>
+                <select class="cfp-val cfp-val-1-sel" aria-label="Filter value 1"></select>
             </div>
             <div class="cfp-connector-row">
-                <select class="cfp-connector form-select form-select-sm" aria-label="Connector">
+                <select class="cfp-connector" aria-label="Connector">
                     <option value="and">And</option>
                     <option value="or">Or</option>
                 </select>
             </div>
-            <select class="cfp-type cfp-type-2 form-select form-select-sm" aria-label="Filter condition 2 type"></select>
+            <select class="cfp-type cfp-type-2" aria-label="Filter condition 2 type"></select>
             <div class="cfp-val-wrap cfp-text-wrap cfp-val-wrap-2">
-                <input type="text" class="cfp-val cfp-val-2 form-control form-control-sm" placeholder="Value…" aria-label="Filter value 2">
+                <input type="text" class="cfp-val cfp-val-2" placeholder="Value…" aria-label="Filter value 2">
             </div>
             <div class="cfp-val-wrap cfp-select-wrap cfp-val-wrap-2" style="display:none;">
-                <select class="cfp-val cfp-val-2-sel form-select form-select-sm" aria-label="Filter value 2"></select>
+                <select class="cfp-val cfp-val-2-sel" aria-label="Filter value 2"></select>
             </div>
             <div class="cfp-actions">
                 <button type="button" class="btn btn-sm btn-outline-secondary cfp-clear-btn">Clear</button>
@@ -784,7 +887,7 @@
         }
 
         /* ── Per-column filter: popup ── */
-        .col-filter-popup {
+        .cfp-popup {
             position: fixed;
             z-index: 99999;
             background: #fff;
@@ -796,7 +899,7 @@
             font-size: 0.875rem;
             font-family: 'Manrope', sans-serif;
         }
-        .col-filter-popup-inner { padding: 0.25rem 0; }
+        .cfp-popup-inner { padding: 0.25rem 0; }
         .cfp-sort-section { padding: 0.25rem 0; }
         .cfp-sort-btn {
             display: flex;
@@ -822,17 +925,51 @@
             color: #6c757d;
             margin-bottom: 0.45rem;
         }
-        .cfp-filter-section .form-select,
-        .cfp-filter-section .form-control {
-            margin-bottom: 0.35rem;
+        /* ── Scoped inputs / selects — override theme's oversized padding ── */
+        .cfp-popup select,
+        .cfp-popup input[type="text"] {
+            display: block;
+            width: 100%;
+            height: 32px;
+            padding: 0 0.625rem;
             font-size: 0.8125rem;
+            font-family: 'Manrope', sans-serif;
+            font-weight: 400;
+            line-height: 1.5;
+            color: #212529;
+            background-color: #fff;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            box-shadow: none;
+            margin-bottom: 0.35rem;
+        }
+        .cfp-popup select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%236c757d' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.5rem center;
+            background-size: 12px 9px;
+            padding-right: 1.75rem;
+            cursor: pointer;
+        }
+        .cfp-popup input[type="text"]::placeholder {
+            color: #adb5bd;
+            opacity: 1;
+        }
+        .cfp-popup select:focus,
+        .cfp-popup input[type="text"]:focus {
+            border-color: #1F3BB3;
+            outline: 0;
+            box-shadow: 0 0 0 0.2rem rgba(31,59,179,0.15);
         }
         .cfp-connector-row {
             display: flex;
             gap: 0.5rem;
             margin-bottom: 0.35rem;
         }
-        .cfp-connector-row .cfp-connector { width: auto; }
+        .cfp-connector-row .cfp-connector { width: auto; flex-shrink: 0; }
         .cfp-actions {
             display: flex;
             gap: 0.5rem;
@@ -1346,9 +1483,9 @@
                         ],
                         buttons: [
                             @if ($exportEnabled)
-                                { extend: 'excelHtml5', text: 'Excel', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)' } },
-                                { extend: 'pdfHtml5', text: 'PDF', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)' }, orientation: 'landscape', pageSize: 'A4' },
-                                { extend: 'print', text: 'Print', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)' } },
+                                { extend: 'excelHtml5', text: 'Excel', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)', modifier: { search: 'applied', page: 'all', order: 'applied' } } },
+                                { extend: 'pdfHtml5', text: 'PDF', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)', modifier: { search: 'applied', page: 'all', order: 'applied' } }, orientation: 'landscape', pageSize: 'A4' },
+                                { extend: 'print', text: 'Print', className: 'd-none', exportOptions: { columns: ':visible:not(.no-export)', modifier: { search: 'applied', page: 'all', order: 'applied' } } },
                                 { extend: 'colvis', text: 'Columns', className: 'd-none', columns: ':not(.no-colvis)', collectionLayout: 'three-column', postfixButtons: ['colvisRestore'] }
                             @endif
                         ],
@@ -1770,7 +1907,113 @@
                 });
 
                 @if ($exportEnabled)
-                    $(document).off('click', '#{{ $id }}_excel').on('click', '#{{ $id }}_excel', function() {
+                    const exportRoute_{{ $jsSafeId }} = @json($exportRouteUrl);
+                    const exportMaxRows_{{ $jsSafeId }} = {{ $exportMaxRowsCap }};
+
+                    function syncExportScopePanels_{{ $jsSafeId }}() {
+                        const scope = $('input[name="{{ $id }}_export_scope"]:checked').val();
+                        $('#{{ $id }}_exportPageRange').toggle(scope === 'page_range');
+                        $('#{{ $id }}_exportRowLimit').toggle(scope === 'row_limit');
+                        $('#{{ $id }}_exportDateRange').toggle(scope === 'date_range');
+                    }
+
+                    $('input[name="{{ $id }}_export_scope"]').on('change', syncExportScopePanels_{{ $jsSafeId }});
+                    syncExportScopePanels_{{ $jsSafeId }}();
+
+                    function collectDataTableExportParams_{{ $jsSafeId }}() {
+                        const table = window['table_{{ $jsSafeId }}'] || ($(tableId).length && $.fn.DataTable.isDataTable(tableId) ? $(tableId).DataTable() : null);
+                        const params = new URLSearchParams(window.location.search);
+                        const scope = $('input[name="{{ $id }}_export_scope"]:checked').val() || 'filtered_all';
+
+                        params.set('export_scope', scope);
+                        params.set('format', 'xlsx');
+
+                        if (scope === 'page_range') {
+                            params.set('page_from', $('#{{ $id }}_export_page_from').val() || '1');
+                            params.set('page_to', $('#{{ $id }}_export_page_to').val() || '1');
+                        }
+                        if (scope === 'row_limit') {
+                            params.set('max_rows', $('#{{ $id }}_export_max_rows').val() || '1000');
+                        }
+                        if (scope === 'date_range') {
+                            const dateCol = $('#{{ $id }}_export_date_column').val();
+                            if (dateCol) params.set('date_column', dateCol);
+                            const df = $('#{{ $id }}_export_date_from').val();
+                            const dt = $('#{{ $id }}_export_date_to').val();
+                            if (df) params.set('date_from', df);
+                            if (dt) params.set('date_to', dt);
+                        }
+
+                        if (table && isServerSide) {
+                            const settings = table.settings()[0];
+                            const ajaxData = settings.oAjaxData || {};
+                            if (ajaxData.search && ajaxData.search.value) {
+                                params.set('search[value]', ajaxData.search.value);
+                            }
+                            if (ajaxData.order) {
+                                ajaxData.order.forEach(function(ord, idx) {
+                                    params.set('order[' + idx + '][column]', ord.column);
+                                    params.set('order[' + idx + '][dir]', ord.dir);
+                                });
+                            }
+                            if (ajaxData.column_filters) {
+                                params.set('column_filters', ajaxData.column_filters);
+                            }
+                            params.set('length', ajaxData.length || {{ $pageLength }});
+
+                            if (scope === 'current_page') {
+                                const info = table.page.info();
+                                params.set('start', info.start);
+                                params.set('length', info.length);
+                            } else if (scope === 'filtered_all') {
+                                params.delete('start');
+                            }
+                        } else if (table) {
+                            const searchVal = $('#{{ $id }}_search').val() || table.search();
+                            if (searchVal) params.set('search[value]', searchVal);
+                        }
+
+                        @if (!empty($ajaxData))
+                        try {
+                            const ajaxPayload = {
+                                search: { value: params.get('search[value]') || '' },
+                                length: parseInt(params.get('length') || '{{ $pageLength }}', 10),
+                            };
+                            if (typeof {{ $ajaxData }} === 'function') {
+                                {{ $ajaxData }}(ajaxPayload);
+                                Object.keys(ajaxPayload).forEach(function(key) {
+                                    if (['search', 'order', 'columns', 'draw', 'start', 'column_filters'].indexOf(key) >= 0) {
+                                        return;
+                                    }
+                                    if (ajaxPayload[key] !== undefined && ajaxPayload[key] !== '') {
+                                        params.set(key, ajaxPayload[key]);
+                                    }
+                                });
+                            }
+                        } catch (exportAjaxErr) {
+                            console.warn('Export ajaxData callback failed', exportAjaxErr);
+                        }
+                        @endif
+
+                        return params;
+                    }
+
+                    $(document).off('click', '#{{ $id }}_exportSubmit').on('click', '#{{ $id }}_exportSubmit', function() {
+                        if (!exportRoute_{{ $jsSafeId }}) return;
+                        const params = collectDataTableExportParams_{{ $jsSafeId }}();
+                        const url = exportRoute_{{ $jsSafeId }} + (exportRoute_{{ $jsSafeId }}.indexOf('?') >= 0 ? '&' : '?') + params.toString();
+                        window.location.href = url;
+                    });
+
+                    $(document).off('click', '#{{ $id }}_excel').on('click', '#{{ $id }}_excel', function(e) {
+                        if (exportRoute_{{ $jsSafeId }}) {
+                            e.preventDefault();
+                            const modalEl = document.getElementById('{{ $id }}_exportModal');
+                            if (modalEl && typeof bootstrap !== 'undefined') {
+                                bootstrap.Modal.getOrCreateInstance(modalEl).show();
+                            }
+                            return;
+                        }
                         const table = window['table_{{ $jsSafeId }}'] || $(tableId).DataTable();
                         if (table && typeof table.button === 'function') table.button('.buttons-excel').trigger();
                     });

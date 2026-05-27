@@ -137,6 +137,28 @@
                                 </span>
                             </button>
                         </li>
+                        @if ($project->project_type == 1)
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="installed-poles-tab" data-bs-toggle="tab"
+                                    data-bs-target="#installed-poles" type="button" role="tab"
+                                    aria-controls="installed-poles" aria-selected="false">
+                                    Installed Poles
+                                    <span class="badge bg-light text-dark badge-pill-xs">
+                                        {{ number_format($installedPolesCount ?? 0) }}
+                                    </span>
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="surveyed-poles-tab" data-bs-toggle="tab"
+                                    data-bs-target="#surveyed-poles" type="button" role="tab"
+                                    aria-controls="surveyed-poles" aria-selected="false">
+                                    Surveyed Poles
+                                    <span class="badge bg-light text-dark badge-pill-xs">
+                                        {{ number_format($surveyedPolesCount ?? 0) }}
+                                    </span>
+                                </button>
+                            </li>
+                        @endif
                     </ul>
                     <!-- Sites Tab -->
                     <div class="tab-pane fade show active" id="sites" role="tabpanel" aria-labelledby="sites-tab">
@@ -175,47 +197,60 @@
                             'tasks' => $project->tasks,
                         ])
                     </div>
+
+                    @if ($project->project_type == 1)
+                        <div class="tab-pane fade" id="installed-poles" role="tabpanel"
+                            aria-labelledby="installed-poles-tab">
+                            @include('projects.partials.installed-poles-tab')
+                        </div>
+                        <div class="tab-pane fade" id="surveyed-poles" role="tabpanel"
+                            aria-labelledby="surveyed-poles-tab">
+                            @include('projects.partials.surveyed-poles-tab')
+                        </div>
+                    @endif
                 </div>
             </div>
         </div>
     </div>
 @endsection
 
+@if ($project->project_type == 1)
+    @push('styles')
+        @include('projects.partials.project-poles-styles')
+    @endpush
+@endif
+
 @push('scripts')
     <script>
         $(document).ready(function() {
-            // Handle hash-based tab navigation
             function activateTabFromHash() {
                 const hash = window.location.hash;
-                if (hash) {
-                    // Remove the # symbol
-                    const tabId = hash.substring(1);
-                    // Find the tab button that targets this tab
-                    const tabButton = document.querySelector(`button[data-bs-target="#${tabId}"]`);
-                    if (tabButton) {
-                        // Use Bootstrap's tab API to show the tab
-                        const tab = new bootstrap.Tab(tabButton);
-                        tab.show();
-                    }
+                if (!hash) {
+                    return;
+                }
+
+                const tabId = hash.substring(1);
+                const tabButton = document.querySelector('button[data-bs-target="#' + tabId + '"]');
+                if (tabButton) {
+                    bootstrap.Tab.getOrCreateInstance(tabButton).show();
                 }
             }
 
-            // Delay tab activation to ensure all scripts (including datatable components) are loaded
-            // This prevents datatable initialization issues when page loads with #tasks hash
             setTimeout(function() {
                 activateTabFromHash();
             }, 300);
 
-            // Also handle hash changes (when user clicks browser back/forward)
             window.addEventListener('hashchange', activateTabFromHash);
 
-            // Update hash when tabs are clicked
             $('button[data-bs-toggle="tab"]').on('shown.bs.tab', function(e) {
                 const target = $(e.target).data('bs-target');
                 if (target) {
-                    window.location.hash = target.substring(1); // Remove the # from target
+                    window.location.hash = target.substring(1);
                 }
             });
         });
     </script>
+    @if ($project->project_type == 1)
+        @include('projects.partials.project-poles-scripts')
+    @endif
 @endpush

@@ -198,6 +198,7 @@ companion: docs/PROJECT_AUDIT.md
 | CRM-DT-001 | — | Page length dropdown matches `pageLength` prop | DONE | audit §6 | code | `datatable.blade.php` |
 | CRM-DT-002 | — | `updatePaginationInfo()` on init/change | PARTIAL | code + view cache 2026-05-26 | Removed stale FIXME; wired custom info refresh on draw/page/length/search. Browser length-change QA still pending |
 | CRM-DT-003 | — | Tab switch loads deferred tables | NOT_TESTED | audit §6 | — | Manual QA on `/staff/34` |
+| CRM-DT-004 | P1 | Server-side customizable DataTable export (filtered all, page range, row limit, date range) | PARTIAL | user 2026-05-27 | code + phpunit | `DataTableExportService`, export modal in `datatable.blade.php`, `ProjectPoleController` export routes, store inventory `exportRoute`; scoped `#addTargetModal` modal CSS in `project_task_streetlight.blade.php` so export modal uses Bootstrap `bg-light` (no purple leak); remaining tables need `exportRoute` rollout |
 
 ---
 
@@ -237,6 +238,11 @@ companion: docs/PROJECT_AUDIT.md
 | CRM-MOD-005 | Meetings | Pending verification | PARTIAL | http | `/meets/dashboard` 200; flows not exercised |
 | CRM-MOD-006 | Performance | Pending detailed views | PARTIAL | http | `/dashboard` 200; overlaps CRM-DASH-017 |
 | CRM-MOD-002 | Tasks & Poles | Pending | NOT_TESTED | — | Not in smoke list |
+| CRM-POLE-001 | P1 | Installed poles district/block/panchayat filters + table columns + nav | DONE | plan 2026-05-27 | code + view:cache | `TaskController::getInstalledPoles*`, `poles/installed.blade.php`; nav: sidebar, dashboard, `projects/show`, Target tab cards, `projects/index` |
+| CRM-POLE-002 | P1 | Pole number format settings UI hardening (preview confirm, edit hydrate, a11y) | DONE | plan 2026-05-27 | `php artisan test --filter=PoleNumberFormatSettingsTest` | `pole-number-format.blade.php`, `PoleNumberFormatService::update`, `PoleNumberFormatSettingsTest` (4 green) |
+| CRM-POLE-003 | P0 | Pole regen: sync apply ≤2000 poles + in-app notification on complete/fail | DONE | plan 2026-05-27 | `php artisan test --filter=PoleNumberFormatSettingsTest` | `dispatchSync`, `PoleNumberRegenerationNotificationService`, `EventNotificationService::notifyUsers` |
+| CRM-POLE-004 | P2 | Saved formats table: badge contrast, datatable action colors, ward-type display | DONE | plan 2026-05-27 | browser `/settings/pole-number-format` | `settings/index.blade.php`, `pole-number-format.blade.php`; GP format ward_type data repair |
+| CRM-POLE-004 | P1 | Move installed/surveyed poles into project show tabs; unified project-scoped filters | DONE | plan 2026-05-27 | `php artisan test --filter=GPWardAndPoleFormatTest`; manual `/projects/{id}#installed-poles`; active-filter badges high contrast; district/block/panchayat column filters | `ProjectPoleController`, `ProjectPoleListingService`, `projects/show` + partials; `applyPoleSiteColumnFilters`; `columnFilter` on geo cols; sidebar removed; legacy `/installed-poles?project_id=` redirects |
 | CRM-MOD-003 | Sites | Pending | NOT_TESTED | — | — |
 | CRM-MOD-009 | Backup | Pending | NOT_TESTED | — | — |
 | CRM-MOD-011 | Device Import | Pending | NOT_TESTED | — | — |

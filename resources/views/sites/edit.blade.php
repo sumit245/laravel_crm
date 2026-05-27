@@ -58,6 +58,7 @@
                         @method('PUT')
                         <input type="hidden" name="project_id" value="{{ $projectId }}">
                         <input type="hidden" name="ward" id="ward_hidden" value="{{ old('ward', $streetlight->ward ?? '') }}">
+                        <input type="hidden" name="gp_wards" id="gp_wards_hidden" value="{{ old('gp_wards') }}">
 
                         <h6 class="card-subtitle text-bold text-info">Streetlight Site Details</h6>
                         <div class="form-group row mt-5">
@@ -132,14 +133,14 @@
                         </div>
                         <div class="form-group row">
                             <div class="col-md-6">
-                                <label for="ward_input" class="form-label">Ward:</label>
+                                <label for="ward_input" class="form-label">Normal Wards:</label>
                                 <div class="ward-input-container">
                                     <div class="ward-chips-container mb-2" id="ward_chips_container">
                                         <!-- Chips will be added here dynamically -->
                                     </div>
                                     <input type="text" class="form-control" id="ward_input"
                                         placeholder="Enter ward number and press Space/Tab/Enter" autocomplete="off">
-                                    <small class="form-text text-muted">Enter ward numbers one at a time. Press Space, Tab,
+                                    <small class="form-text text-muted">Normal wards use 10 poles each. Press Space, Tab,
                                         or Enter to add.</small>
                                 </div>
                             </div>
@@ -150,6 +151,23 @@
                                     value="{{ old('total_poles', $streetlight->total_poles ?? '') }}" min="0">
                                 <small class="form-text text-muted">Automatically calculated as 10 poles per ward. You can
                                     edit if the actual count differs.</small>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <div class="col-md-12">
+                                <label class="form-label">GP Wards:</label>
+                                <div class="row g-2 align-items-end">
+                                    <div class="col-md-4">
+                                        <input type="number" class="form-control" id="gp_ward_number" min="1" placeholder="GP ward number">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <input type="number" class="form-control" id="gp_ward_poles" min="1" max="10" placeholder="Poles (1 to 10)">
+                                    </div>
+                                    <div class="col-md-4">
+                                        <button type="button" class="btn btn-outline-primary" id="add_gp_ward_btn">Add GP Ward</button>
+                                    </div>
+                                </div>
+                                <div class="ward-chips-container mt-2" id="gp_ward_chips_container"></div>
                             </div>
                         </div>
                         <div class="form-group row">
@@ -485,20 +503,20 @@
             // Streetlight form ward chip functionality
             @if (isset($streetlight))
                 let wardChips = [];
+                let gpWards = {};
                 const wardInput = document.getElementById('ward_input');
                 const wardChipsContainer = document.getElementById('ward_chips_container');
                 const wardHiddenInput = document.getElementById('ward_hidden');
+                const gpWardsHiddenInput = document.getElementById('gp_wards_hidden');
+                const gpWardNumberInput = document.getElementById('gp_ward_number');
+                const gpWardPolesInput = document.getElementById('gp_ward_poles');
+                const gpWardChipsContainer = document.getElementById('gp_ward_chips_container');
                 const totalPolesInput = document.getElementById('total_poles');
 
-                // Normalize ward value: allow positive integers and "GP"
+                // Normalize ward value: allow positive integers only for normal wards.
                 function normalizeWardValue(rawValue) {
                     if (!rawValue) return null;
-                    let value = String(rawValue).trim().toUpperCase();
-
-                    // Allow special ward code "GP"
-                    if (value === 'GP') {
-                        return 'GP';
-                    }
+                    let value = String(rawValue).trim();
 
                     // Allow only positive integer ward numbers
                     if (/^\d+$/.test(value)) {
@@ -522,6 +540,12 @@
                     });
                 @endif
 
+                @if (isset($streetlight))
+                    @foreach($streetlight->siteWards->where('ward_type', 'gp') as $gpWard)
+                        gpWards['{{ $gpWard->ward_number }}'] = {{ (int) $gpWard->planned_poles }};
+                    @endforeach
+                @endif
+
                     // Initialize from old input if exists (after validation errors)
                     @if (old('ward'))
                         const oldWards = '{{ old('ward') }}'.split(',').map(w => w.trim()).filter(w => w);
@@ -536,21 +560,17 @@
 
                     // Update hidden input and total poles
                     function updateWardData() {
-                        // Sort for display: numeric wards ascending, then non-numeric (like GP)
-                        const sorted = [...wardChips].sort((a, b) => {
-                            const aIsNum = /^\d+$/.test(a);
-                            const bIsNum = /^\d+$/.test(b);
-                            if (aIsNum && bIsNum) {
-                                return parseInt(a, 10) - parseInt(b, 10);
-                            }
-                            if (aIsNum && !bIsNum) return -1;
-                            if (!aIsNum && bIsNum) return 1;
-                            return a.localeCompare(b);
-                        });
+                        const sorted = [...wardChips]
+                            .filter(ward => /^\d+$/.test(ward))
+                            .sort((a, b) => parseInt(a, 10) - parseInt(b, 10));
 
                         wardHiddenInput.value = sorted.join(',');
-                        // Each ward entry (numeric or GP) contributes 10 poles by default
-                        totalPolesInput.value = wardChips.length * 10;
+                        gpWardsHiddenInput.value = Object.keys(gpWards)
+                            .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+                            .map(ward => `${ward}:${gpWards[ward]}`)
+                            .join(',');
+                        const gpPoleTotal = Object.values(gpWards).reduce((sum, value) => sum + parseInt(value, 10), 0);
+                        totalPolesInput.value = sorted.length * 10 + gpPoleTotal;
                     }
 
                 // Show toast notification
@@ -675,8 +695,10 @@
                 // Render all chips
                 function renderChips() {
                     wardChipsContainer.innerHTML = '';
-                    // Keep same visual order as stored in wardChips
-                    wardChips.forEach(ward => {
+                    [...wardChips]
+                        .filter(ward => /^\d+$/.test(ward))
+                        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+                        .forEach(ward => {
                         const chip = document.createElement('div');
                         chip.className = 'ward-chip';
                         chip.dataset.ward = ward;
@@ -694,6 +716,55 @@
                         wardChipsContainer.appendChild(chip);
                     });
                 }
+
+                function renderGpWards() {
+                    gpWardChipsContainer.innerHTML = '';
+                    Object.keys(gpWards)
+                        .sort((a, b) => parseInt(a, 10) - parseInt(b, 10))
+                        .forEach(ward => {
+                            const chip = document.createElement('div');
+                            chip.className = 'ward-chip';
+                            chip.dataset.ward = ward;
+                            chip.innerHTML = `
+                                <span class="ward-chip-value">GP Ward ${ward} (${gpWards[ward]} poles)</span>
+                                <div class="ward-chip-actions">
+                                    <button type="button" class="ward-chip-btn delete-btn" data-action="delete-gp" title="Delete">×</button>
+                                </div>
+                            `;
+                            gpWardChipsContainer.appendChild(chip);
+                        });
+                }
+
+                function addGpWard(wardNumber, poleCount) {
+                    const ward = parseInt(wardNumber, 10);
+                    const poles = parseInt(poleCount, 10);
+
+                    if (!ward || ward < 1 || !poles || poles < 1 || poles > 10) {
+                        showToast('error', 'GP ward needs a ward number and 1 to 10 poles');
+                        return false;
+                    }
+
+                    gpWards[String(ward)] = poles;
+                    renderGpWards();
+                    updateWardData();
+                    return true;
+                }
+
+                document.getElementById('add_gp_ward_btn').addEventListener('click', function () {
+                    if (addGpWard(gpWardNumberInput.value, gpWardPolesInput.value)) {
+                        gpWardNumberInput.value = '';
+                        gpWardPolesInput.value = '';
+                    }
+                });
+
+                gpWardChipsContainer.addEventListener('click', function (e) {
+                    const button = e.target.closest('.ward-chip-btn');
+                    if (!button) return;
+                    const chip = button.closest('.ward-chip');
+                    delete gpWards[chip.dataset.ward];
+                    renderGpWards();
+                    updateWardData();
+                });
 
                 // Event delegation for chip actions
                 wardChipsContainer.addEventListener('click', function (e) {
@@ -786,10 +857,9 @@
                     });
                 }
 
-                // Allow numbers and special code "GP" and filter invalid characters
+                // Allow only numbers for normal wards.
                 wardInput.addEventListener('input', function (e) {
-                    // Allow digits and letters for special ward "GP"
-                    e.target.value = e.target.value.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+                    e.target.value = e.target.value.replace(/[^0-9]/g, '');
 
                     const value = e.target.value.trim();
                     const normalized = value ? normalizeWardValue(value) : null;
@@ -808,7 +878,7 @@
                 wardInput.addEventListener('paste', function (e) {
                     e.preventDefault();
                     const paste = (e.clipboardData || window.clipboardData).getData('text');
-                    const cleaned = paste.replace(/[^0-9a-zA-Z]/g, '').toUpperCase();
+                    const cleaned = paste.replace(/[^0-9]/g, '');
                     if (cleaned) {
                         e.target.value = cleaned;
                         e.target.dispatchEvent(new Event('input'));
@@ -817,6 +887,7 @@
 
                 // Initial render and update
                 renderChips();
+                renderGpWards();
                 updateWardData();
             @endif
                     });

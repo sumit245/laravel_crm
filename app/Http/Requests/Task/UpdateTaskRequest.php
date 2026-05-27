@@ -55,6 +55,7 @@ class UpdateTaskRequest extends FormRequest
             'blocker_description' => ['sometimes', 'nullable', 'string'],
             'extension_reason' => ['sometimes', 'nullable', 'string', 'max:1000'],
             'allotted_wards' => ['sometimes', 'nullable'],
+            'target_gp_wards' => ['sometimes', 'nullable', 'string'],
         ];
     }
 

@@ -1,6 +1,6 @@
 # Current Task Tracking
 
-**Last Updated**: 2026-05-19  
+**Last Updated**: 2026-05-27  
 **Path**: `.cursor/.memory/current_task.md` (workflow anchor — see `.cursorrules`)
 
 This file tracks all pending and in-progress tasks across the Laravel CRM project. Tasks are organized by module and priority.
@@ -16,12 +16,15 @@ This file tracks all pending and in-progress tasks across the Laravel CRM projec
 |----------|-----|------|--------|
 | 1 | CRM-DASH-006 | Hide Combined Metrics when rooftop sites = 0 | DONE |
 | 2 | CRM-STAFF-023 | Defer DataTable init on inactive staff project tabs | OPEN |
-| 3 | CRM-DT-002 | DataTable `updatePaginationInfo` on init/tab/length | PARTIAL |
+| 3 | CRM-DT-004 | Customizable server-side DataTable export (modal + routes) | PARTIAL — export modal theme scoped (no purple leak from targets tab CSS) |
+| 3b | CRM-DT-002 | DataTable `updatePaginationInfo` on init/tab/length | PARTIAL |
 | 4 | CRM-DASH-017 | Consolidate overlapping dashboard sections | OPEN |
 | 5 | CRM-API-006 | Vendor sites API tests green (fix 401 in tests) | DONE |
 | 6 | CRM-INV-302 | Fix `/inventory/view` redirect host | DONE |
-| 7 | CRM-UI-001 | UI layout branch — browser pass mobile/tablet | NOT_TESTED |
-| 8 | CRM-PERF-001 | StaffController::show performance split | BACKLOG |
+| 7 | CRM-POLE-001 | Installed poles district/block/panchayat filters | DONE |
+| 7b | CRM-POLE-004 | Installed/surveyed poles on project show tabs + unified filters | DONE |
+| 8 | CRM-UI-001 | UI layout branch — browser pass mobile/tablet | NOT_TESTED |
+| 9 | CRM-PERF-001 | StaffController::show performance split | BACKLOG |
 
 After each fix: update the ticket row in `PROJECT_TRACKER.md`, then this table.
 

@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{ActivityLogController, API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, CodeDocController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, NotificationController, PerformanceController, PerformanceDebugController, PoleController, ProjectsController, RMSController, RmsSyncController, SettingsController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
+use App\Http\Controllers\{ActivityLogController, API\PreviewController, API\StreetlightController, API\TaskController, BackupController, CandidateController, CodeDocController, ConvenienceController, DeviceController, HomeController, InventoryController, JICRController, MeetController, NotificationController, PerformanceController, PerformanceDebugController, PoleController, ProjectPoleController, ProjectsController, RMSController, RmsSyncController, SettingsController, SiteController, StaffController, StoreController, TasksController, VendorController, WhiteboardController};
 
 Auth::routes(['register' => false]);
 
@@ -156,6 +156,10 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
 
     // Projects
     Route::resource('projects', ProjectsController::class);
+    Route::get('/projects/{project}/installed-poles/data', [ProjectPoleController::class, 'installedData'])->name('projects.installedPoles.data');
+    Route::get('/projects/{project}/installed-poles/export', [ProjectPoleController::class, 'installedExport'])->name('projects.installedPoles.export');
+    Route::get('/projects/{project}/surveyed-poles/data', [ProjectPoleController::class, 'surveyedData'])->name('projects.surveyedPoles.data');
+    Route::get('/projects/{project}/surveyed-poles/export', [ProjectPoleController::class, 'surveyedExport'])->name('projects.surveyedPoles.export');
     Route::post('/projects/bulk-delete', [ProjectsController::class, 'bulkDelete'])->name('projects.bulkDelete');
     Route::post('/projects/import', [ProjectsController::class, 'import'])->name('projects.import');
     Route::get('/projects/import/format', [ProjectsController::class, 'downloadFormat'])->name('projects.importFormat');
@@ -199,6 +203,9 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
             Route::post('/import-export', [SettingsController::class, 'updateImportExport'])->name('import-export.update');
             Route::post('/rms', [SettingsController::class, 'updateRms'])->name('rms.update');
             Route::post('/dashboard', [SettingsController::class, 'updateDashboard'])->name('dashboard.update');
+            Route::post('/pole-number-format', [SettingsController::class, 'updatePoleNumberFormat'])->name('pole-number-format.update');
+            Route::post('/pole-number-format/{format}/preview', [SettingsController::class, 'previewPoleNumberFormat'])->name('pole-number-format.preview');
+            Route::post('/pole-number-format/{format}/apply', [SettingsController::class, 'applyPoleNumberFormat'])->name('pole-number-format.apply');
         });
 
     Route::prefix('billing')
@@ -294,6 +301,8 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::get('/streetlight/search', [StreetlightController::class, 'search'])->name('streetlights.search');
     Route::get('/blocks-by-district/{district}', [StreetlightController::class, 'getBlocksByDistrict']);
     Route::get('/panchayats-by-block/{block}', [StreetlightController::class, 'getPanchayatsByBlock']);
+    Route::get('/wards-by-site/{siteId}', [StreetlightController::class, 'getWardsBySite'])->name('streetlights.wards');
+    Route::get('/wards-for-edit/{siteId}/{taskId}', [StreetlightController::class, 'getWardsForEdit'])->name('streetlights.wards.edit');
 
     // Hiring (using existing candidate routes, only adding authenticated-only routes)
     Route::get('/candidates/{id}/preview', [PreviewController::class, 'adminPreview'])->name('admin-preview');
