@@ -31,6 +31,7 @@
     'availabilityColumnIndex' => null,
     'vendorColumnIndex' => null,
     'serialColumnIndex' => null,
+    'columnFilterEnabled' => true,
 ])
 
 @php
@@ -201,10 +202,15 @@
                             <input type="checkbox" id="{{ $id }}_selectAll" class="select-all-checkbox">
                         </th>
                     @endif
-                    @foreach ($columns as $column)
+                    @foreach ($columns as $colIndex => $column)
                         <th {{ isset($column['width']) ? 'width=' . $column['width'] : '' }}
                             {{ isset($column['orderable']) && !$column['orderable'] ? 'data-orderable=false' : '' }}
-                            {{ isset($column['searchable']) && !$column['searchable'] ? 'data-searchable=false' : '' }}>
+                            {{ isset($column['searchable']) && !$column['searchable'] ? 'data-searchable=false' : '' }}
+                            @if ($columnFilterEnabled && !(isset($column['orderable']) && !$column['orderable']))
+                                data-cf-enabled="1"
+                                data-cf-type="{{ $column['type'] ?? 'text' }}"
+                                data-cf-options="{{ json_encode($column['filterOptions'] ?? []) }}"
+                            @endif>
                             {{ $column['title'] ?? '' }}
                         </th>
                     @endforeach
@@ -239,6 +245,50 @@
         </div>
     </div>
 </div>
+
+{{-- Per-column filter popup (rendered outside overflow container, positioned via JS) --}}
+@if ($columnFilterEnabled)
+<div id="{{ $id }}_colMenu" class="col-filter-popup" style="display:none;" role="dialog" aria-modal="true" aria-label="Column filter">
+    <div class="col-filter-popup-inner">
+        <div class="cfp-sort-section">
+            <button type="button" class="cfp-sort-btn" data-dir="asc">
+                <i class="mdi mdi-sort-ascending me-2" aria-hidden="true"></i>Sort Ascending
+            </button>
+            <button type="button" class="cfp-sort-btn" data-dir="desc">
+                <i class="mdi mdi-sort-descending me-2" aria-hidden="true"></i>Sort Descending
+            </button>
+        </div>
+        <div class="cfp-divider"></div>
+        <div class="cfp-filter-section">
+            <div class="cfp-filter-label">Filter</div>
+            <select class="cfp-type cfp-type-1 form-select form-select-sm" aria-label="Filter condition 1 type"></select>
+            <div class="cfp-val-wrap cfp-text-wrap cfp-val-wrap-1">
+                <input type="text" class="cfp-val cfp-val-1 form-control form-control-sm" placeholder="Value…" aria-label="Filter value 1">
+            </div>
+            <div class="cfp-val-wrap cfp-select-wrap cfp-val-wrap-1" style="display:none;">
+                <select class="cfp-val cfp-val-1-sel form-select form-select-sm" aria-label="Filter value 1"></select>
+            </div>
+            <div class="cfp-connector-row">
+                <select class="cfp-connector form-select form-select-sm" aria-label="Connector">
+                    <option value="and">And</option>
+                    <option value="or">Or</option>
+                </select>
+            </div>
+            <select class="cfp-type cfp-type-2 form-select form-select-sm" aria-label="Filter condition 2 type"></select>
+            <div class="cfp-val-wrap cfp-text-wrap cfp-val-wrap-2">
+                <input type="text" class="cfp-val cfp-val-2 form-control form-control-sm" placeholder="Value…" aria-label="Filter value 2">
+            </div>
+            <div class="cfp-val-wrap cfp-select-wrap cfp-val-wrap-2" style="display:none;">
+                <select class="cfp-val cfp-val-2-sel form-select form-select-sm" aria-label="Filter value 2"></select>
+            </div>
+            <div class="cfp-actions">
+                <button type="button" class="btn btn-sm btn-outline-secondary cfp-clear-btn">Clear</button>
+                <button type="button" class="btn btn-sm btn-primary cfp-apply-btn">Filter</button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif
 
 @push('styles')
     <style>
@@ -689,6 +739,105 @@
         table#{{ $id }} tbody td:last-child .btn-icon,
         .datatable-wrapper #{{ $id }} tbody td:last-child .btn-icon {
             display: inline-flex !important; flex-shrink: 0 !important; margin: 0 2px !important; padding: 6px 10px !important; min-width: auto !important; max-width: none !important; width: auto !important;
+        }
+
+        /* ── Per-column filter: trigger button (injected post-init, absolutely positioned) ── */
+        #{{ $id }} thead th[data-cf-enabled] {
+            position: relative !important;
+            padding-right: 20px !important;
+        }
+        #{{ $id }} thead th .col-menu-trigger {
+            position: absolute;
+            right: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            padding: 2px 3px;
+            color: transparent;
+            font-size: 1rem;
+            line-height: 1;
+            cursor: pointer;
+            border-radius: 3px;
+            transition: color 0.12s ease, background 0.12s ease;
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 18px;
+            height: 20px;
+        }
+        #{{ $id }} thead th[data-cf-enabled]:hover .col-menu-trigger,
+        #{{ $id }} thead th.sorting_asc .col-menu-trigger,
+        #{{ $id }} thead th.sorting_desc .col-menu-trigger {
+            color: #adb5bd;
+        }
+        #{{ $id }} thead th .col-menu-trigger:hover { color: #1F3BB3 !important; background: rgba(31,59,179,0.1); }
+        #{{ $id }} thead th .col-menu-trigger.has-filter { color: #1F3BB3 !important; }
+        #{{ $id }} thead th .col-menu-trigger.has-filter::after {
+            content: '';
+            position: absolute;
+            top: 1px; right: 1px;
+            width: 5px; height: 5px;
+            border-radius: 50%;
+            background: #1F3BB3;
+        }
+
+        /* ── Per-column filter: popup ── */
+        .col-filter-popup {
+            position: fixed;
+            z-index: 99999;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.13);
+            min-width: 220px;
+            max-width: 280px;
+            font-size: 0.875rem;
+            font-family: 'Manrope', sans-serif;
+        }
+        .col-filter-popup-inner { padding: 0.25rem 0; }
+        .cfp-sort-section { padding: 0.25rem 0; }
+        .cfp-sort-btn {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            padding: 0.5rem 1rem;
+            background: none;
+            border: none;
+            color: #212529;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: background 0.12s;
+        }
+        .cfp-sort-btn:hover { background: rgba(31,59,179,0.06); color: #1F3BB3; }
+        .cfp-divider { border-top: 1px solid #dee2e6; margin: 0.25rem 0; }
+        .cfp-filter-section { padding: 0.5rem 0.875rem 0.75rem; }
+        .cfp-filter-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #6c757d;
+            margin-bottom: 0.45rem;
+        }
+        .cfp-filter-section .form-select,
+        .cfp-filter-section .form-control {
+            margin-bottom: 0.35rem;
+            font-size: 0.8125rem;
+        }
+        .cfp-connector-row {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 0.35rem;
+        }
+        .cfp-connector-row .cfp-connector { width: auto; }
+        .cfp-actions {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: flex-end;
+            margin-top: 0.6rem;
         }
     </style>
 @endpush
@@ -1858,5 +2007,301 @@
                 }
             }, 500);
         }
+
+        @if ($columnFilterEnabled)
+        /* ── SAP-style per-column filter ───────────────────────────────────── */
+        (function() {
+            var TABLE_ID   = '{{ $id }}';
+            var JS_SAFE_ID = '{{ $jsSafeId }}';
+            var IS_SERVER  = {{ $serverSide ? 'true' : 'false' }};
+            var menuEl     = document.getElementById('{{ $id }}_colMenu');
+            if (!menuEl) return;
+
+            var activeColFilters = {};   // { colIdx: {type1,val1,connector,type2,val2} }
+            var openColIdx       = null;
+
+            /* ── Inject trigger buttons into header cells after DT init ── */
+            function injectTriggers() {
+                document.querySelectorAll('#{{ $id }} thead tr th[data-cf-enabled]').forEach(function(th) {
+                    // Remove any stale empty buttons (left by a previous aborted inject)
+                    th.querySelectorAll('.col-menu-trigger').forEach(function(old) { old.remove(); });
+
+                    // Compute real DT column index (th position in row)
+                    var allThs = th.closest('tr').querySelectorAll('th');
+                    var colIdx = Array.prototype.indexOf.call(allThs, th);
+
+                    var icon = document.createElement('i');
+                    icon.className = 'mdi mdi-dots-vertical';
+
+                    var btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'col-menu-trigger';
+                    btn.setAttribute('data-table-id', TABLE_ID);
+                    btn.setAttribute('data-col-idx', colIdx);
+                    btn.setAttribute('data-col-type', th.getAttribute('data-cf-type') || 'text');
+                    btn.setAttribute('data-col-options', th.getAttribute('data-cf-options') || '[]');
+                    btn.setAttribute('aria-label', 'Column options');
+                    btn.setAttribute('tabindex', '-1');
+                    btn.appendChild(icon);
+                    // Restore active-filter indicator if this column has a filter
+                    if (activeColFilters[colIdx]) {
+                        btn.classList.add('has-filter');
+                    }
+                    th.appendChild(btn);
+                });
+            }
+
+            // Run once immediately (handles non-deferred init) and re-run after any draw
+            // so buttons survive DataTables' header adjustments
+            setTimeout(injectTriggers, 50);
+            $(document).on('draw.dt', '#{{ $id }}', function() {
+                setTimeout(injectTriggers, 0);
+            });
+
+            var OPERATORS = {
+                text:   ['contains','starts_with','ends_with','equals','not_equals','gt','gte','lt','lte','is_empty','is_not_empty'],
+                number: ['eq','neq','gt','gte','lt','lte'],
+                date:   ['date_equals','before','after'],
+                select: ['is','is_not'],
+            };
+            var OPERATOR_LABELS = {
+                contains:'Contains', starts_with:'Starts with', ends_with:'Ends with',
+                equals:'= Equals', not_equals:'≠ Not equals',
+                gt:'> Greater than', gte:'≥ Greater than or equal',
+                lt:'< Less than', lte:'≤ Less than or equal',
+                is_empty:'Is empty', is_not_empty:'Is not empty',
+                eq:'= Equals', neq:'≠ Not equals',
+                date_equals:'Equals', before:'Before', after:'After',
+                is:'Is', is_not:'Is not',
+            };
+
+            function evalCondition(cellRaw, op, value) {
+                var cell = String(cellRaw || '').toLowerCase().trim();
+                var val  = String(value  || '').toLowerCase().trim();
+                if (op === 'is_empty')     return cell === '';
+                if (op === 'is_not_empty') return cell !== '';
+                if (!val) return true;
+                switch (op) {
+                    case 'contains':    return cell.indexOf(val) !== -1;
+                    case 'starts_with': return cell.indexOf(val) === 0;
+                    case 'ends_with':   return cell.slice(-val.length) === val;
+                    case 'equals': case 'date_equals': case 'is': return cell === val;
+                    case 'not_equals':  case 'is_not':             return cell !== val;
+                    case 'gt':  return parseFloat(cell) > parseFloat(val);
+                    case 'gte': return parseFloat(cell) >= parseFloat(val);
+                    case 'lt':  return parseFloat(cell) < parseFloat(val);
+                    case 'lte': return parseFloat(cell) <= parseFloat(val);
+                    case 'before': return new Date(cell) < new Date(val);
+                    case 'after':  return new Date(cell) > new Date(val);
+                }
+                return true;
+            }
+
+            /* ── Register client-side search function ── */
+            if (!IS_SERVER) {
+                $.fn.dataTable.ext.search.push(function(settings, data) {
+                    if (settings.nTable.id !== TABLE_ID) return true;
+                    for (var idx in activeColFilters) {
+                        if (!activeColFilters.hasOwnProperty(idx)) continue;
+                        var f    = activeColFilters[idx];
+                        var cell = data[idx] !== undefined ? data[idx] : '';
+                        var m1   = evalCondition(cell, f.type1, f.val1);
+                        var hasSecond = f.val2 || f.type2 === 'is_empty' || f.type2 === 'is_not_empty';
+                        if (!hasSecond) {
+                            if (!m1) return false;
+                        } else {
+                            var m2 = evalCondition(cell, f.type2, f.val2);
+                            var pass = f.connector === 'or' ? (m1 || m2) : (m1 && m2);
+                            if (!pass) return false;
+                        }
+                    }
+                    return true;
+                });
+            }
+
+            /* ── Server-side: inject column_filters into AJAX request ── */
+            if (IS_SERVER) {
+                $(document).on('preXhr.dt', '#{{ $id }}', function(e, settings, data) {
+                    data.column_filters = JSON.stringify(activeColFilters);
+                });
+            }
+
+            /* ── Build operator <select> ── */
+            function buildTypeSelect(sel, colType, selectedVal) {
+                var ops = OPERATORS[colType] || OPERATORS.text;
+                sel.innerHTML = '';
+                for (var i = 0; i < ops.length; i++) {
+                    var opt = document.createElement('option');
+                    opt.value       = ops[i];
+                    opt.textContent = OPERATOR_LABELS[ops[i]] || ops[i];
+                    if (ops[i] === selectedVal) opt.selected = true;
+                    sel.appendChild(opt);
+                }
+            }
+
+            /* ── Show/hide text vs select value widget ── */
+            function setValueWidget(condNum, colType, colOptions) {
+                var textWrap = menuEl.querySelector('.cfp-text-wrap.cfp-val-wrap-' + condNum);
+                var selWrap  = menuEl.querySelector('.cfp-select-wrap.cfp-val-wrap-' + condNum);
+                var selEl    = menuEl.querySelector('.cfp-val-' + condNum + '-sel');
+                if (colType === 'select' && colOptions && colOptions.length) {
+                    textWrap.style.display = 'none';
+                    selWrap.style.display  = '';
+                    selEl.innerHTML = '<option value="">Any</option>';
+                    for (var i = 0; i < colOptions.length; i++) {
+                        var o = document.createElement('option');
+                        o.value = o.textContent = colOptions[i];
+                        selEl.appendChild(o);
+                    }
+                } else {
+                    textWrap.style.display = '';
+                    selWrap.style.display  = 'none';
+                }
+            }
+
+            /* ── Position popup below trigger ── */
+            function positionMenu(trigger) {
+                var rect = trigger.getBoundingClientRect();
+                menuEl.style.left = Math.min(rect.left, window.innerWidth - 290) + 'px';
+                menuEl.style.top  = (rect.bottom + 4 + window.scrollY) + 'px';
+            }
+
+            /* ── Click: open popup ── */
+            document.addEventListener('click', function(e) {
+                var trigger = e.target.closest
+                    ? e.target.closest('.col-menu-trigger[data-table-id="{{ $id }}"]')
+                    : null;
+
+                /* close on outside click */
+                if (!trigger) {
+                    if (menuEl && !menuEl.contains(e.target)) {
+                        menuEl.style.display = 'none';
+                        openColIdx = null;
+                    }
+                    return;
+                }
+
+                e.stopPropagation();
+                var colIdx  = parseInt(trigger.dataset.colIdx, 10);
+                var colType = trigger.dataset.colType || 'text';
+                var colOpts = JSON.parse(trigger.dataset.colOptions || '[]');
+
+                /* toggle closed if same trigger */
+                if (openColIdx === colIdx && menuEl.style.display !== 'none') {
+                    menuEl.style.display = 'none';
+                    openColIdx = null;
+                    return;
+                }
+                openColIdx = colIdx;
+
+                var existing = activeColFilters[colIdx] || {};
+                var defaultOp = (OPERATORS[colType] || OPERATORS.text)[0];
+
+                buildTypeSelect(menuEl.querySelector('.cfp-type-1'), colType, existing.type1 || defaultOp);
+                buildTypeSelect(menuEl.querySelector('.cfp-type-2'), colType, existing.type2 || defaultOp);
+                setValueWidget(1, colType, colOpts);
+                setValueWidget(2, colType, colOpts);
+
+                menuEl.querySelector('.cfp-val-1').value     = existing.val1 || '';
+                menuEl.querySelector('.cfp-val-2').value     = existing.val2 || '';
+                menuEl.querySelector('.cfp-connector').value = existing.connector || 'and';
+                if (existing.val1Sel !== undefined) menuEl.querySelector('.cfp-val-1-sel').value = existing.val1Sel;
+                if (existing.val2Sel !== undefined) menuEl.querySelector('.cfp-val-2-sel').value = existing.val2Sel;
+
+                menuEl.dataset.activeColIdx  = colIdx;
+                menuEl.dataset.activeColType = colType;
+
+                menuEl.style.position = 'fixed';
+                menuEl.style.display  = '';
+                var rect = trigger.getBoundingClientRect();
+                menuEl.style.left = Math.min(rect.left, window.innerWidth - 290) + 'px';
+                menuEl.style.top  = (rect.bottom + 4) + 'px';
+            }, true);
+
+            /* ── Popup button clicks ── */
+            menuEl.addEventListener('click', function(e) {
+                /* Sort */
+                var sortBtn = e.target.closest ? e.target.closest('.cfp-sort-btn') : null;
+                if (sortBtn) {
+                    var dir = sortBtn.dataset.dir;
+                    var idx = parseInt(menuEl.dataset.activeColIdx, 10);
+                    var dt  = window['table_' + JS_SAFE_ID];
+                    if (dt) dt.column(idx).order(dir).draw();
+                    menuEl.style.display = 'none'; openColIdx = null;
+                    return;
+                }
+
+                /* Apply */
+                var applyBtn = e.target.closest ? e.target.closest('.cfp-apply-btn') : null;
+                if (applyBtn) {
+                    var idx     = parseInt(menuEl.dataset.activeColIdx, 10);
+                    var colType = menuEl.dataset.activeColType || 'text';
+                    var isSel   = colType === 'select';
+                    var val1    = isSel ? menuEl.querySelector('.cfp-val-1-sel').value
+                                       : menuEl.querySelector('.cfp-val-1').value.trim();
+                    var val2    = isSel ? menuEl.querySelector('.cfp-val-2-sel').value
+                                       : menuEl.querySelector('.cfp-val-2').value.trim();
+                    var connector = menuEl.querySelector('.cfp-connector').value;
+                    var type1   = menuEl.querySelector('.cfp-type-1').value;
+                    var type2   = menuEl.querySelector('.cfp-type-2').value;
+
+                    var hasFilter = val1 || type1 === 'is_empty' || type1 === 'is_not_empty';
+                    if (hasFilter) {
+                        activeColFilters[idx] = { type1: type1, val1: val1, connector: connector, type2: type2, val2: val2 };
+                    } else {
+                        delete activeColFilters[idx];
+                    }
+
+                    var trig = document.querySelector('.col-menu-trigger[data-table-id="{{ $id }}"][data-col-idx="' + idx + '"]');
+                    if (trig) trig.classList.toggle('has-filter', !!activeColFilters[idx]);
+
+                    menuEl.style.display = 'none'; openColIdx = null;
+
+                    var dt = window['table_' + JS_SAFE_ID];
+                    if (dt) {
+                        if (IS_SERVER) dt.ajax.reload(null, false);
+                        else dt.draw();
+                    }
+                    return;
+                }
+
+                /* Clear */
+                var clearBtn = e.target.closest ? e.target.closest('.cfp-clear-btn') : null;
+                if (clearBtn) {
+                    var idx = parseInt(menuEl.dataset.activeColIdx, 10);
+                    delete activeColFilters[idx];
+                    menuEl.querySelector('.cfp-val-1').value = '';
+                    menuEl.querySelector('.cfp-val-2').value = '';
+                    var trig = document.querySelector('.col-menu-trigger[data-table-id="{{ $id }}"][data-col-idx="' + idx + '"]');
+                    if (trig) trig.classList.remove('has-filter');
+                    menuEl.style.display = 'none'; openColIdx = null;
+                    var dt = window['table_' + JS_SAFE_ID];
+                    if (dt) {
+                        if (IS_SERVER) dt.ajax.reload(null, false);
+                        else dt.draw();
+                    }
+                }
+            });
+
+            /* ── Reposition on scroll ── */
+            window.addEventListener('scroll', function() {
+                if (menuEl.style.display !== 'none' && openColIdx !== null) {
+                    var trig = document.querySelector('.col-menu-trigger[data-table-id="{{ $id }}"][data-col-idx="' + openColIdx + '"]');
+                    if (trig) {
+                        var rect = trig.getBoundingClientRect();
+                        menuEl.style.left = Math.min(rect.left, window.innerWidth - 290) + 'px';
+                        menuEl.style.top  = (rect.bottom + 4) + 'px';
+                    }
+                }
+            }, true);
+
+            window.addEventListener('resize', function() {
+                menuEl.style.display = 'none';
+                openColIdx = null;
+            });
+
+        })();
+        @endif
+
     </script>
 @endpush

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Enums\UserRole;
 use App\Services\Logging\ActivityLogger;
+use App\Http\Controllers\Concerns\HandlesColumnFilters;
 
 /**
  * Warehouse / Store Management — each project has physical stores (warehouses) where inventory
@@ -30,6 +31,8 @@ use App\Services\Logging\ActivityLogger;
  */
 class StoreController extends Controller
 {
+    use HandlesColumnFilters;
+
     public function __construct(
         protected ActivityLogger $activityLogger
     ) {
@@ -466,6 +469,50 @@ class StoreController extends Controller
             $query->whereRaw('CONCAT(COALESCE(vendor.firstName, ""), " ", COALESCE(vendor.lastName, "")) LIKE ?', ['%' . $request->input('vendor_name') . '%']);
         }
 
+        // ── Per-column filters from the SAP-style filter popup ──────────────
+        // Admin DOM layout: 0=checkbox, 1=Item Code, 2=Item, 3=Serial, 4=SIM,
+        //                   5=Availability (computed, skip), 6=Vendor (raw expr),
+        //                   7=Dispatch Date, 8=In Date, 9=Actions
+        // User  DOM layout: 0=Item Code, 1=Item, 2=Serial, 3=SIM,
+        //                   4=Availability (skip), 5=Vendor (raw expr),
+        //                   6=Dispatch Date, 7=In Date, 8=Actions
+        $columnFilters = $this->parseColumnFilters($request);
+        if ($columnFilters) {
+            $cfColMap = $isAdmin ? [
+                1 => 'inv.item_code',
+                2 => 'inv.item',
+                3 => 'inv.serial_number',
+                4 => 'inv.sim_number',
+                // 5 = availability (computed from dispatch state — skip generic handling)
+                // 6 = vendor_name (handled below via raw expr)
+                7 => 'disp.dispatch_date',
+                8 => 'inv.received_date',
+            ] : [
+                0 => 'inv.item_code',
+                1 => 'inv.item',
+                2 => 'inv.serial_number',
+                3 => 'inv.sim_number',
+                // 4 = availability (skip)
+                // 5 = vendor_name (handled below via raw expr)
+                6 => 'disp.dispatch_date',
+                7 => 'inv.received_date',
+            ];
+
+            if ($this->applyColumnFilters($query, $columnFilters, $cfColMap)) {
+                $isFiltered = true;
+            }
+
+            // vendor_name is a computed expression — handle it separately
+            $vendorColIdx = $isAdmin ? 6 : 5;
+            if (isset($columnFilters[$vendorColIdx])) {
+                $vendorExpr = "CONCAT(COALESCE(vendor.firstName,''),' ',COALESCE(vendor.lastName,''))";
+                if ($this->applyColumnFilterRaw($query, $vendorExpr, $columnFilters[$vendorColIdx])) {
+                    $isFiltered = true;
+                }
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
         // 4. Count Filtered (Only run expensive count if filtered)
         $recordsFiltered = $isFiltered ? $query->count() : $recordsTotal;
 
@@ -791,6 +838,44 @@ class StoreController extends Controller
             $isFiltered = true;
             $query->whereDate('disp.dispatch_date', $request->input('dispatch_date'));
         }
+
+        // ── Per-column filters from the SAP-style filter popup ──────────────
+        // Admin DOM layout: 0=checkbox, 1=Item Code, 2=Item, 3=Serial,
+        //                   4=Vendor (raw expr), 5=Dispatch Date, 6=Value, 7=Actions
+        // User  DOM layout: 0=Item Code, 1=Item, 2=Serial,
+        //                   3=Vendor (raw expr), 4=Dispatch Date, 5=Value, 6=Actions
+        $columnFilters = $this->parseColumnFilters($request);
+        if ($columnFilters) {
+            $cfColMap = $isAdmin ? [
+                1 => 'disp.item_code',
+                2 => 'disp.item',
+                3 => 'disp.serial_number',
+                // 4 = vendor_name (handled below via raw expr)
+                5 => 'disp.dispatch_date',
+                6 => 'disp.total_value',
+            ] : [
+                0 => 'disp.item_code',
+                1 => 'disp.item',
+                2 => 'disp.serial_number',
+                // 3 = vendor_name (handled below)
+                4 => 'disp.dispatch_date',
+                5 => 'disp.total_value',
+            ];
+
+            if ($this->applyColumnFilters($query, $columnFilters, $cfColMap)) {
+                $isFiltered = true;
+            }
+
+            // vendor_name is a computed expression — handle separately
+            $vendorColIdx = $isAdmin ? 4 : 3;
+            if (isset($columnFilters[$vendorColIdx])) {
+                $vendorExpr = "CONCAT(COALESCE(vendor.firstName,''),' ',COALESCE(vendor.lastName,''))";
+                if ($this->applyColumnFilterRaw($query, $vendorExpr, $columnFilters[$vendorColIdx])) {
+                    $isFiltered = true;
+                }
+            }
+        }
+        // ─────────────────────────────────────────────────────────────────────
 
         $recordsFiltered = $isFiltered ? $query->count() : $recordsTotal;
 

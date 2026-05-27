@@ -5,6 +5,8 @@ namespace App\Http\Controllers\API;
 use App\Helpers\ExcelHelper;
 use App\Helpers\RemoteApiHelper;
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\ProjectPoleController;
+use App\Models\Project;
 use App\Services\Inventory\InventoryService;
 use App\Services\Inventory\InventoryHistoryService;
 use App\Services\Rms\RmsSyncService;
@@ -12,6 +14,7 @@ use App\Models\InventoryDispatch;
 use App\Models\Site;
 use App\Models\Streetlight;
 use App\Models\Pole;
+use App\Models\StreetlightSiteWard;
 use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
@@ -20,9 +23,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use App\Http\Controllers\Concerns\HandlesColumnFilters;
 
 class TaskController extends Controller
 {
+    use HandlesColumnFilters;
     protected InventoryService $inventoryService;
     protected InventoryHistoryService $historyService;
 
@@ -333,171 +338,212 @@ class TaskController extends Controller
     // Update poles survey or install
     public function submitStreetlightTasks(Request $request)
     {
-        // ✅ Step 1: Validation
-        $validated = $request->validate([
-            'task_id' => 'required|exists:streetlight_tasks,id',
-            'complete_pole_number' => 'required|string|max:255',
-            'ward_name' => 'nullable|string|max:255',
-            'survey_image' => 'nullable|array',
-            'isSurveyDone' => 'nullable|string|in:true,false',
-            'isNetworkAvailable' => 'nullable|string|in:true,false',
-            'isInstallationDone' => 'nullable|string|in:true,false',
-            'beneficiary' => 'nullable|string|max:255',
-            'beneficiary_contact' => 'nullable|string|max:20',
-            'remarks' => 'nullable|string',
-            'luminary_qr' => 'nullable|string|max:255',
-            'sim_number' => 'nullable|string|max:200',
-            'panel_qr' => 'nullable|string|max:255',
-            'battery_qr' => 'nullable|string|max:255',
-            'submission_image' => 'nullable|array',
-            'lat' => 'nullable|numeric',
-            'lng' => 'nullable|numeric',
-        ]);
+        try {
+            // ✅ Step 1: Validation
+            $validated = $request->validate([
+                'task_id' => 'required|exists:streetlight_tasks,id',
+                'complete_pole_number' => 'required|string|max:255',
+                'ward_name' => 'nullable|string|max:255',
+                'survey_image' => 'nullable',
+                'isSurveyDone' => 'nullable',
+                'isNetworkAvailable' => 'nullable',
+                'isInstallationDone' => 'nullable',
+                'beneficiary' => 'nullable|string|max:255',
+                'beneficiary_contact' => 'nullable|string|max:20',
+                'remarks' => 'nullable|string',
+                'luminary_qr' => 'nullable|string|max:255',
+                'sim_number' => 'nullable|string|max:200',
+                'panel_qr' => 'nullable|string|max:255',
+                'battery_qr' => 'nullable|string|max:255',
+                'submission_image' => 'nullable',
+                'lat' => 'nullable|numeric',
+                'lng' => 'nullable|numeric',
+            ]);
 
-        $isSurveyDone = ($validated['isSurveyDone'] ?? null) === 'true';
-        $isInstallationDone = ($validated['isInstallationDone'] ?? null) === 'true';
+            $isSurveyDone = $this->toApiBoolean($validated['isSurveyDone'] ?? null);
+            $isNetworkAvailable = $this->toApiBoolean($validated['isNetworkAvailable'] ?? null);
+            $isInstallationDone = $this->toApiBoolean($validated['isInstallationDone'] ?? null);
 
-        // ✅ Step 2: Fetch task & site
-        $task = StreetlightTask::findOrFail($validated['task_id']);
-        $approved_by = $task->engineer->firstName . " " . $task->engineer->lastName;
-        $streetlight = Streetlight::findOrFail($task->site_id);
+            // ✅ Step 2: Fetch task & site
+            $task = StreetlightTask::findOrFail($validated['task_id']);
+            $approved_by = trim(($task->engineer?->firstName ?? '') . ' ' . ($task->engineer?->lastName ?? ''));
+            $streetlight = Streetlight::findOrFail($task->site_id);
+            $siteWard = $this->resolveSiteWardForPole($streetlight, $validated['ward_name'] ?? null, $validated['complete_pole_number']);
 
-        // ✅ Step 3: Create or get pole (locked to prevent race conditions)
-        $pole = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $streetlight, $isSurveyDone, $isInstallationDone) {
-            $pole = Pole::where('task_id', $validated['task_id'])
-                ->where('complete_pole_number', $validated['complete_pole_number'])
-                ->lockForUpdate()
-                ->first();
+            // ✅ Step 3: Create or get pole (locked to prevent race conditions)
+            $pole = \Illuminate\Support\Facades\DB::transaction(function () use ($validated, $streetlight, $siteWard, $isSurveyDone, $isInstallationDone) {
+                $pole = Pole::where('task_id', $validated['task_id'])
+                    ->where('complete_pole_number', $validated['complete_pole_number'])
+                    ->lockForUpdate()
+                    ->first();
 
-            if (!$pole) {
-                if ($isInstallationDone) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
-                        'complete_pole_number' => ['Pole not found. Survey must be submitted before installation.'],
+                if (!$pole) {
+                    if ($isInstallationDone) {
+                        throw \Illuminate\Validation\ValidationException::withMessages([
+                            'complete_pole_number' => ['Pole not found. Survey must be submitted before installation.'],
+                        ]);
+                    }
+
+                    $pole = Pole::create([
+                        'task_id'             => $validated['task_id'],
+                        'streetlight_site_ward_id' => $siteWard?->id,
+                        'complete_pole_number'=> $validated['complete_pole_number'],
+                        'ward_name'           => $validated['ward_name'] ?? null,
+                        'ward_type'           => $siteWard?->ward_type,
+                        'ward_number'         => $siteWard?->ward_number,
+                        'pole_sequence'       => $this->extractPoleSequence($validated['complete_pole_number']),
+                        'beneficiary'         => $validated['beneficiary'] ?? null,
+                        'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
+                        'remarks'             => $validated['remarks'] ?? null,
+                        'isSurveyDone'        => $isSurveyDone,
+                        'isInstallationDone'  => false,
+                        'lat'                 => $validated['lat'] ?? null,
+                        'lng'                 => $validated['lng'] ?? null,
                     ]);
-                }
-
-                $pole = Pole::create([
-                    'task_id'             => $validated['task_id'],
-                    'complete_pole_number'=> $validated['complete_pole_number'],
-                    'ward_name'           => $validated['ward_name'] ?? null,
-                    'beneficiary'         => $validated['beneficiary'] ?? null,
-                    'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
-                    'remarks'             => $validated['remarks'] ?? null,
-                    'isSurveyDone'        => $isSurveyDone,
-                    'isInstallationDone'  => false,
-                    'lat'                 => $validated['lat'] ?? null,
-                    'lng'                 => $validated['lng'] ?? null,
-                ]);
-                if ($isSurveyDone) {
-                    $streetlight->increment('number_of_surveyed_poles');
-                }
-            }
-
-            return $pole;
-        });
-
-        // ✅ Step 4: Upload images
-        foreach (['survey_image' => 'survey', 'submission_image' => 'installation'] as $field => $folder) {
-            if ($request->hasFile($field)) {
-                $images = collect($request->file($field))->map(
-                    fn($img) =>
-                    $this->uploadToS3($img, "streetlights/{$folder}/{$pole->id}")
-                );
-                $pole->update([$field => json_encode($images)]);
-            }
-        }
-
-        // ✅ Step 5: Update survey data
-        if ($isSurveyDone && !$pole->isSurveyDone) {
-            $pole->update([
-                'isSurveyDone' => true,
-                'beneficiary' => $validated['beneficiary'] ?? null,
-                'remarks' => $validated['remarks'] ?? null,
-                'isNetworkAvailable' => $validated['isNetworkAvailable'] ?? 0,
-            ]);
-            $streetlight->increment('number_of_surveyed_poles');
-        }
-
-        // ✅ Step 6: Update installation data
-        if ($isInstallationDone && !$pole->isInstallationDone) {
-            $pole->update([
-                'isInstallationDone' => true,
-                'vendor_id' => $task->vendor_id, // Set vendor_id from task when pole is installed
-                'luminary_qr' => $validated['luminary_qr'] ?? null,
-                'sim_number' => $validated['sim_number'] ?? null,
-                'panel_qr' => $validated['panel_qr'] ?? null,
-                'battery_qr' => $validated['battery_qr'] ?? null,
-            ]);
-
-            $streetlight->increment('number_of_installed_poles');
-
-            // ✅ Step 7: Mark inventory as consumed with district validation
-            $serials = array_filter([
-                $validated['luminary_qr'] ?? null,
-                $validated['panel_qr'] ?? null,
-                $validated['battery_qr'] ?? null,
-            ]);
-
-            if (!empty($serials)) {
-                // Get pole's district
-                $poleDistrict = $streetlight->district;
-
-                // Validate each serial number's dispatch district matches pole's district
-                $dispatches = InventoryDispatch::whereIn('serial_number', $serials)
-                    ->where('vendor_id', $task->vendor_id)
-                    ->where('isDispatched', true)
-                    ->where('is_consumed', false)
-                    ->get();
-
-                $missingSerials = array_values(array_diff($serials, $dispatches->pluck('serial_number')->all()));
-                if (!empty($missingSerials)) {
-                    return response()->json([
-                        'message' => 'One or more installation items were not found in dispatch (or already consumed).',
-                        'error' => 'inventory_not_found',
-                        'missing_serials' => $missingSerials,
-                    ], 422);
-                }
-
-                foreach ($dispatches as $dispatch) {
-                    // Get project's districts
-                    $projectDistricts = $this->inventoryService->getProjectDistricts($dispatch->project_id);
-
-                    // Check if pole's district is in project's districts
-                    if (!in_array($poleDistrict, $projectDistricts)) {
-                        $project = \App\Models\Project::find($dispatch->project_id);
-                        return response()->json([
-                            'message' => "Inventory dispatched for {$project->project_name} cannot be used in district {$poleDistrict}",
-                            'error' => 'district_mismatch',
-                            'pole_district' => $poleDistrict,
-                            'project_name' => $project->project_name ?? 'Unknown Project',
-                        ], 400);
+                    if ($isSurveyDone) {
+                        $streetlight->increment('number_of_surveyed_poles');
                     }
                 }
 
-                // All validations passed, mark as consumed
-                foreach ($dispatches as $dispatch) {
-                    $dispatch->update([
-                        'is_consumed' => true,
-                        'streetlight_pole_id' => $pole->id,
-                    ]);
+                return $pole;
+            });
 
-                    // Log history
-                    $project = \App\Models\Project::find($dispatch->project_id);
-                    $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
-                    $this->historyService->logConsumed($dispatch, $inventoryType, $pole);
+            // ✅ Step 4: Upload images
+            foreach (['survey_image' => 'survey', 'submission_image' => 'installation'] as $field => $folder) {
+                if ($request->hasFile($field)) {
+                    $files = $request->file($field);
+                    $files = is_array($files) ? $files : [$files];
+                    $images = collect($files)->filter()->map(
+                        fn($img) =>
+                        $this->uploadToS3($img, "streetlights/{$folder}/{$pole->id}")
+                    )->values();
+                    $pole->update([$field => json_encode($images)]);
                 }
             }
-            $site = Streetlight::findOrFail($task->site_id);
-            RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
+
+            // ✅ Step 5: Update survey data
+            if ($isSurveyDone && !$pole->isSurveyDone) {
+                $pole->update([
+                    'isSurveyDone' => true,
+                    'beneficiary' => $validated['beneficiary'] ?? null,
+                    'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
+                    'remarks' => $validated['remarks'] ?? null,
+                    'isNetworkAvailable' => $isNetworkAvailable,
+                    'lat' => $validated['lat'] ?? $pole->lat,
+                    'lng' => $validated['lng'] ?? $pole->lng,
+                ]);
+                $streetlight->increment('number_of_surveyed_poles');
+            } elseif ($isSurveyDone) {
+                $pole->update([
+                    'beneficiary' => $validated['beneficiary'] ?? $pole->beneficiary,
+                    'beneficiary_contact' => $validated['beneficiary_contact'] ?? $pole->beneficiary_contact,
+                    'remarks' => $validated['remarks'] ?? $pole->remarks,
+                    'isNetworkAvailable' => $isNetworkAvailable,
+                    'lat' => $validated['lat'] ?? $pole->lat,
+                    'lng' => $validated['lng'] ?? $pole->lng,
+                ]);
+            }
+
+            // ✅ Step 6: Update installation data
+            if ($isInstallationDone && !$pole->isInstallationDone) {
+                $pole->update([
+                    'isInstallationDone' => true,
+                    'vendor_id' => $task->vendor_id, // Set vendor_id from task when pole is installed
+                    'luminary_qr' => $validated['luminary_qr'] ?? null,
+                    'sim_number' => $validated['sim_number'] ?? null,
+                    'panel_qr' => $validated['panel_qr'] ?? null,
+                    'battery_qr' => $validated['battery_qr'] ?? null,
+                ]);
+
+                $streetlight->increment('number_of_installed_poles');
+
+                // ✅ Step 7: Mark inventory as consumed with district validation
+                $serials = array_filter([
+                    $validated['luminary_qr'] ?? null,
+                    $validated['panel_qr'] ?? null,
+                    $validated['battery_qr'] ?? null,
+                ]);
+
+                if (!empty($serials)) {
+                    // Get pole's district
+                    $poleDistrict = $streetlight->district;
+
+                    // Validate each serial number's dispatch district matches pole's district
+                    $dispatches = InventoryDispatch::whereIn('serial_number', $serials)
+                        ->where('vendor_id', $task->vendor_id)
+                        ->where('isDispatched', true)
+                        ->where('is_consumed', false)
+                        ->get();
+
+                    $missingSerials = array_values(array_diff($serials, $dispatches->pluck('serial_number')->all()));
+                    if (!empty($missingSerials)) {
+                        return response()->json([
+                            'message' => 'One or more installation items were not found in dispatch (or already consumed).',
+                            'error' => 'inventory_not_found',
+                            'missing_serials' => $missingSerials,
+                        ], 422);
+                    }
+
+                    foreach ($dispatches as $dispatch) {
+                        // Get project's districts
+                        $projectDistricts = $this->inventoryService->getProjectDistricts($dispatch->project_id);
+
+                        // Check if pole's district is in project's districts
+                        if (!in_array($poleDistrict, $projectDistricts)) {
+                            $project = \App\Models\Project::find($dispatch->project_id);
+                            return response()->json([
+                                'message' => "Inventory dispatched for {$project->project_name} cannot be used in district {$poleDistrict}",
+                                'error' => 'district_mismatch',
+                                'pole_district' => $poleDistrict,
+                                'project_name' => $project->project_name ?? 'Unknown Project',
+                            ], 400);
+                        }
+                    }
+
+                    // All validations passed, mark as consumed
+                    foreach ($dispatches as $dispatch) {
+                        $dispatch->update([
+                            'is_consumed' => true,
+                            'streetlight_pole_id' => $pole->id,
+                        ]);
+
+                        // Log history
+                        $project = \App\Models\Project::find($dispatch->project_id);
+                        $inventoryType = ($project && $project->project_type == 1) ? 'streetlight' : 'rooftop';
+                        $this->historyService->logConsumed($dispatch, $inventoryType, $pole);
+                    }
+                }
+                $site = Streetlight::findOrFail($task->site_id);
+                RemoteApiHelper::sendPoleDataToRemoteServer($pole, $streetlight, $approved_by);
+            }
+
+            Log::info('Pole Submitted:', $pole->toArray());
+
+            return response()->json([
+                'message' => 'Pole details submitted successfully!',
+                'pole' => $pole,
+                'task' => $task,
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $exception) {
+            Log::warning('Streetlight task submission validation failed', [
+                'task_id' => $request->input('task_id'),
+                'complete_pole_number' => $request->input('complete_pole_number'),
+                'errors' => $exception->errors(),
+            ]);
+
+            throw $exception;
+        } catch (\Throwable $exception) {
+            Log::error('Streetlight task submission failed', [
+                'task_id' => $request->input('task_id'),
+                'complete_pole_number' => $request->input('complete_pole_number'),
+                'message' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'message' => 'Failed to submit pole details due to an internal error.',
+            ], 500);
         }
-
-        Log::info('Pole Submitted:', $pole->toArray());
-
-        return response()->json([
-            'message' => 'Pole details submitted successfully!',
-            'pole' => $pole,
-            'task' => $task,
-        ]);
     }
 
     // Controller to get details of pole by Id
@@ -647,159 +693,45 @@ class TaskController extends Controller
             return redirect()->route('login')->with('error', 'Please log in first.');
         }
 
-        $query = Pole::with(['task.site', 'task.engineer', 'task.vendor', 'task.manager', 'rmsLogs'])
-            ->where('isSurveyDone', 1);
-
-        if ($request->filled('search')) {
-            $query->where('complete_pole_number', 'like', '%' . $request->search . '%');
-        }
-
         if ($request->filled('project_id')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('project_id', $request->project_id);
-            });
+            $query = $request->except(['project_id']);
+            $qs = http_build_query($query);
+
+            return redirect()->to(
+                route('projects.show', $request->project_id) . ($qs ? '?' . $qs : '') . '#surveyed-poles'
+            );
         }
 
-        if ($request->filled('district')) {
-            $query->whereHas('task.site', function ($q) use ($request) {
-                $q->where('district', $request->district);
-            });
-        }
-
-        if ($request->filled('block')) {
-            $query->whereHas('task.site', function ($q) use ($request) {
-                $q->where('block', $request->block);
-            });
-        }
-
-        if ($request->filled('panchayat')) {
-            $query->whereHas('task.site', function ($q) use ($request) {
-                $q->where('panchayat', $request->panchayat);
-            });
-        }
-
-        if ($request->filled('project_manager')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('manager_id', $request->project_manager);
-            });
-        }
-
-        if ($request->filled('site_engineer')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('engineer_id', $request->site_engineer);
-            });
-        }
-
-        if ($request->filled('vendor')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('vendor_id', $request->vendor);
-            });
-        }
-
-        if ($request->filled('filter_installed')) {
-            $query->where('isInstallationDone', $request->filter_installed == '1' ? 1 : 0);
-        }
-
-        if ($request->filled('filter_billed')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                if ($request->filter_billed == '1') {
-                    $q->where('billed', 1);
-                } elseif ($request->filter_billed == '0') {
-                    $q->where(function ($billedQuery) {
-                        $billedQuery->where('billed', 0)->orWhereNull('billed');
-                    });
-                }
-            });
-        }
-
-        $poles = $query->get();
-        $totalSurveyed = $poles->count();
-        $districts = [];
-        $blocks = [];
-        $panchayats = [];
-        return view('poles.surveyed', compact('poles', 'totalSurveyed', 'districts', 'blocks', 'panchayats'));
+        return redirect()
+            ->route('projects.index')
+            ->with('warning', 'Select a project, then open Surveyed Poles from the project overview.');
     }
 
     // Fetch Installed Poles based on user role
     public function getInstalledPoles(Request $request)
     {
-        $query = Pole::with(['task.site', 'task'])
-            ->where('isInstallationDone', 1);
-
-        // Apply URL parameter filters
-        if ($request->filled('project_manager')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('manager_id', $request->project_manager);
-            });
-        }
-
-        if ($request->filled('site_engineer')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('engineer_id', $request->site_engineer);
-            });
-        }
-
-        if ($request->filled('vendor')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('vendor_id', $request->vendor);
-            });
-        }
-
         if ($request->filled('project_id')) {
-            $query->whereHas('task', function ($q) use ($request) {
-                $q->where('project_id', $request->project_id);
-            });
+            $query = $request->except(['project_id']);
+            $qs = http_build_query($query);
+
+            return redirect()->to(
+                route('projects.show', $request->project_id) . ($qs ? '?' . $qs : '') . '#installed-poles'
+            );
         }
 
-        if ($request->filled('panchayat')) {
-            $query->whereHas('task.site', function ($q) use ($request) {
-                $q->where('panchayat', $request->panchayat);
-            });
-        }
-
-        if ($request->filled('ward')) {
-            $query->whereHas('task.site', function ($q) use ($request) {
-                $q->where('ward', 'like', '%' . $request->ward . '%');
-            });
-        }
-
-        // Apply status filters
-        if ($request->filled('filter_surveyed')) {
-            if ($request->filter_surveyed == '1') {
-                $query->where('isSurveyDone', 1);
-            } elseif ($request->filter_surveyed == '0') {
-                $query->where('isSurveyDone', 0);
-            }
-        }
-
-        if ($request->filled('filter_installed')) {
-            if ($request->filter_installed == '1') {
-                $query->where('isInstallationDone', 1);
-            } elseif ($request->filter_installed == '0') {
-                $query->where('isInstallationDone', 0);
-            }
-        }
-
-        if ($request->filled('filter_billed')) {
-            if ($request->filter_billed == '1') {
-                $query->whereHas('task', function ($q) {
-                    $q->where('billed', 1);
-                });
-            } elseif ($request->filter_billed == '0') {
-                $query->whereHas('task', function ($q) {
-                    $q->where('billed', 0)->orWhereNull('billed');
-                });
-            }
-        }
-
-        $totalInstalled = (clone $query)->count();
-        $installedPolesAjaxUrl = route('installed.poles.data', $request->query());
-
-        return view('poles.installed', compact('installedPolesAjaxUrl', 'totalInstalled'));
+        return redirect()
+            ->route('projects.index')
+            ->with('warning', 'Select a project, then open Installed Poles from the project overview.');
     }
 
     public function getInstalledPolesData(Request $request)
     {
+        if ($request->filled('project_id')) {
+            $project = Project::findOrFail($request->project_id);
+
+            return app(ProjectPoleController::class)->installedData($project, $request);
+        }
+
         $query = Pole::with(['task.site'])
             ->where('isInstallationDone', 1);
 
@@ -832,6 +764,8 @@ class TaskController extends Controller
                 $q->where('panchayat', $request->panchayat);
             });
         }
+
+        $this->applyInstalledPolesGeoFilters($query, $request);
 
         if ($request->filled('ward')) {
             $query->whereHas('task.site', function ($q) use ($request) {
@@ -880,11 +814,29 @@ class TaskController extends Controller
                     ->orWhere('battery_qr', 'like', "%{$search}%")
                     ->orWhere('panel_qr', 'like', "%{$search}%")
                     ->orWhereHas('task.site', function ($sq) use ($search) {
-                        $sq->where('block', 'like', "%{$search}%")
+                        $sq->where('district', 'like', "%{$search}%")
+                            ->orWhere('block', 'like', "%{$search}%")
                             ->orWhere('panchayat', 'like', "%{$search}%");
                     });
             });
         }
+
+        // ── Per-column filters from the SAP-style filter popup ──────────────
+        // DOM layout (bulkDelete ON): 0=checkbox, 1=Pole Number, 2=Beneficiary,
+        // 3=Beneficiary Contact, 4-6=District/Block/Panchayat (site, skipped),
+        // 7=IMEI, 8=SIM, 9=Battery, 10=Panel, 11=Bill Raised (skipped), 12=RMS (skipped)
+        $cfColMap = [
+            1 => 'complete_pole_number',
+            2 => 'beneficiary',
+            3 => 'beneficiary_contact',
+            7 => 'luminary_qr',
+            8 => 'sim_number',
+            9 => 'battery_qr',
+            10 => 'panel_qr',
+        ];
+        $columnFilters = $this->parseColumnFilters($request);
+        $this->applyColumnFilters($query, $columnFilters, $cfColMap);
+        // ─────────────────────────────────────────────────────────────────────
 
         $filteredRecords = $query->count();
 
@@ -941,6 +893,9 @@ class TaskController extends Controller
                 $poleNumber,
                 e($pole->beneficiary ?? 'N/A'),
                 e($pole->beneficiary_contact ?? 'N/A'),
+                e($pole->task?->site?->district ?? 'N/A'),
+                e($pole->task?->site?->block ?? 'N/A'),
+                e($pole->task?->site?->panchayat ?? 'N/A'),
                 e($pole->luminary_qr ?? 'N/A'),
                 e($pole->sim_number ?? 'N/A'),
                 e($pole->battery_qr ?? 'N/A'),
@@ -970,6 +925,17 @@ class TaskController extends Controller
             'recordsFiltered' => $filteredRecords,
             'data' => $data,
         ]);
+    }
+
+    private function applyInstalledPolesGeoFilters($query, Request $request): void
+    {
+        if ($request->filled('district')) {
+            $query->whereHas('task.site', fn ($q) => $q->where('district', $request->district));
+        }
+
+        if ($request->filled('block')) {
+            $query->whereHas('task.site', fn ($q) => $q->where('block', $request->block));
+        }
     }
 
     // Get Pole Details by ID 'Original'
@@ -1156,5 +1122,59 @@ class TaskController extends Controller
         // Return view to update pole
         $data = $request->all();
         return view('poles.edit', compact('data'));
+    }
+
+    private function resolveSiteWardForPole(Streetlight $site, ?string $wardName, ?string $completePoleNumber): ?StreetlightSiteWard
+    {
+        $wardType = str_contains(strtoupper((string) $wardName), 'GP') ? StreetlightSiteWard::TYPE_GP : StreetlightSiteWard::TYPE_NORMAL;
+        $wardNumber = preg_replace('/\D/', '', (string) $wardName);
+
+        if ($wardNumber === '') {
+            $parts = collect(explode('/', (string) $completePoleNumber))->filter()->values();
+            $wardPart = $parts->count() >= 2 ? $parts[$parts->count() - 2] : '';
+            $wardType = str_contains(strtoupper($wardPart), 'GP') ? StreetlightSiteWard::TYPE_GP : $wardType;
+            $wardNumber = preg_replace('/\D/', '', (string) $wardPart);
+        }
+
+        if ($wardNumber === '') {
+            return null;
+        }
+
+        return StreetlightSiteWard::firstOrCreate(
+            [
+                'streetlight_id' => $site->id,
+                'ward_type' => $wardType,
+                'ward_number' => $wardNumber,
+            ],
+            [
+                'planned_poles' => $wardType === StreetlightSiteWard::TYPE_GP ? 10 : 10,
+                'source' => 'api',
+            ]
+        );
+    }
+
+    private function toApiBoolean(mixed $value): bool
+    {
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_int($value)) {
+            return $value === 1;
+        }
+
+        if (is_string($value)) {
+            return in_array(strtolower(trim($value)), ['1', 'true', 'yes', 'on'], true);
+        }
+
+        return false;
+    }
+
+    private function extractPoleSequence(?string $completePoleNumber): ?int
+    {
+        $last = collect(explode('/', (string) $completePoleNumber))->filter()->last();
+        $digits = preg_replace('/\D/', '', (string) $last);
+
+        return $digits === '' ? null : (int) $digits;
     }
 }
