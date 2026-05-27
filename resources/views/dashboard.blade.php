@@ -410,8 +410,6 @@
     border-radius: var(--dashboard-radius-control) !important;
 }
 
-.dashboard-page #topEngineers,
-.dashboard-page #topVendors,
 .dashboard-page #travelBreakdownVehicle,
 .dashboard-page #travelBreakdownStatus {
     min-height: 142px;
@@ -420,19 +418,56 @@
     justify-content: center;
 }
 
-.dashboard-page #topEngineers > .text-center,
-.dashboard-page #topVendors > .text-center,
 .dashboard-page #travelBreakdownVehicle > .text-center,
 .dashboard-page #travelBreakdownStatus > .text-center {
     width: 100%;
 }
 
 .dashboard-page #topEngineers,
-.dashboard-page #topVendors,
+.dashboard-page #topVendors {
+    min-height: 142px;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+}
+
+.dashboard-page #topEngineers > *,
+.dashboard-page #topVendors > * {
+    flex: 0 0 auto;
+    min-width: 0;
+}
+
+.dashboard-page #topEngineers > .text-center,
+.dashboard-page #topVendors > .text-center {
+    flex: 1 1 auto;
+    width: 100%;
+    display: flex;
+    min-height: 142px;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.dashboard-page #topEngineers .d-flex,
+.dashboard-page #topVendors .d-flex,
+.dashboard-page #topEngineers .flex-grow-1,
+.dashboard-page #topVendors .flex-grow-1 {
+    min-width: 0;
+}
+
+.dashboard-page #topEngineers strong,
+.dashboard-page #topVendors strong {
+    overflow-wrap: anywhere;
+}
+
+.dashboard-page #topEngineers .btn,
+.dashboard-page #topVendors .btn {
+    flex: 0 0 auto;
+}
+
 .dashboard-page #travelBreakdownVehicle,
 .dashboard-page #travelBreakdownStatus,
-.dashboard-page #topEngineers > *,
-.dashboard-page #topVendors > *,
 .dashboard-page #travelBreakdownVehicle > *,
 .dashboard-page #travelBreakdownStatus > * {
     flex: 1 1 auto;
