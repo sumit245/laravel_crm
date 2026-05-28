@@ -47,10 +47,14 @@ class Pole extends Model
         'survey_image',
         'lat',
         'lng',
-        'file'
+        'file',
+        'surveyed_at',
+        'installed_at',
     ];
     protected $casts = [
         'survey_image' => 'array',
+        'surveyed_at'  => 'datetime',
+        'installed_at' => 'datetime',
     ];
 
     /**

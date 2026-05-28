@@ -226,6 +226,24 @@
             'options' => $filterVendors ?? ['All' => ''],
             'select2' => true,
         ],
+        [
+            'type' => 'select',
+            'name' => 'filter_district',
+            'label' => 'District',
+            'column' => -1,
+            'width' => 3,
+            'options' => $filterDistricts ?? ['' => 'All'],
+            'select2' => true,
+        ],
+        [
+            'type' => 'select',
+            'name' => 'filter_block',
+            'label' => 'Block',
+            'column' => -1,
+            'width' => 3,
+            'options' => $filterBlocks ?? ['' => 'All'],
+            'select2' => true,
+        ],
     ]">
         @foreach ($targets as $target)
             @php
@@ -237,10 +255,13 @@
                 $engineerName = trim(
                     ($target->engineer->firstName ?? 'N/A') . ' ' . ($target->engineer->lastName ?? ''),
                 );
-                $vendorName = $target->vendor->name ?? 'N/A';
+                $vendorName   = $target->vendor->name ?? 'N/A';
+                $districtName = $target->site->district ?? '';
+                $blockName    = $target->site->block ?? '';
             @endphp
             <tr data-status="{{ $statusValue }}" data-id="{{ $target->id }}" data-panchayat="{{ $panchayatName }}"
-                data-engineer="{{ $engineerName }}" data-vendor="{{ $vendorName }}">
+                data-engineer="{{ $engineerName }}" data-vendor="{{ $vendorName }}"
+                data-district="{{ $districtName }}" data-block="{{ $blockName }}">
                 <td>
                     <input type="checkbox" class="row-checkbox" value="{{ $target->id }}">
                 </td>
@@ -371,6 +392,14 @@
                                 '.filter-select[data-filter="filter_vendor"]');
                             const vendorFilter = vendorSelect.hasClass('select2-hidden-accessible') ?
                                 vendorSelect.select2('val') : vendorSelect.val();
+                            const districtSelect = filterContainer.find(
+                                '.filter-select[data-filter="filter_district"]');
+                            const districtFilter = districtSelect.hasClass('select2-hidden-accessible') ?
+                                districtSelect.select2('val') : districtSelect.val();
+                            const blockSelect = filterContainer.find(
+                                '.filter-select[data-filter="filter_block"]');
+                            const blockFilter = blockSelect.hasClass('select2-hidden-accessible') ?
+                                blockSelect.select2('val') : blockSelect.val();
 
                             // Create filter functions
                             if (statusFilter) {
@@ -415,6 +444,28 @@
                                 };
                                 $.fn.dataTable.ext.search.push(vendorFilterFn);
                                 filterFunctions.push(vendorFilterFn);
+                            }
+
+                            if (districtFilter) {
+                                const districtFilterFn = function (settings, data, dataIndex) {
+                                    if (settings.nTable.id !== 'targetsTable') return true;
+                                    const $row = $(table.row(dataIndex).node());
+                                    const rowDistrict = $row.data('district') || '';
+                                    return rowDistrict === districtFilter;
+                                };
+                                $.fn.dataTable.ext.search.push(districtFilterFn);
+                                filterFunctions.push(districtFilterFn);
+                            }
+
+                            if (blockFilter) {
+                                const blockFilterFn = function (settings, data, dataIndex) {
+                                    if (settings.nTable.id !== 'targetsTable') return true;
+                                    const $row = $(table.row(dataIndex).node());
+                                    const rowBlock = $row.data('block') || '';
+                                    return rowBlock === blockFilter;
+                                };
+                                $.fn.dataTable.ext.search.push(blockFilterFn);
+                                filterFunctions.push(blockFilterFn);
                             }
 
                             // Apply filters and redraw

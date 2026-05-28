@@ -142,7 +142,10 @@
         </div>
     </div>
 
+    @php $visibleWidgets = $visible_widgets ?? []; @endphp
+
     <!-- Section 1: Project Performance Analytics -->
+    @if(in_array('performance', $visibleWidgets))
     <div class="row my-2" id="dashboardPerformanceSection">
         <div class="col-12">
             <div class="card dashboard-panel" style="border: 1px solid #dee2e6; border-radius: 4px;">
@@ -157,8 +160,10 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Section 2: Meeting Summary Analytics -->
+    @if(in_array('meetings', $visibleWidgets))
     <div class="row my-2" id="dashboardMeetingSection">
         <div class="col-12">
             <div class="card dashboard-panel" style="border: 1px solid #dee2e6; border-radius: 4px;">
@@ -173,8 +178,10 @@
             </div>
         </div>
     </div>
+    @endif
 
     <!-- Section 3: TA/DA Bills Analytics -->
+    @if(in_array('tada', $visibleWidgets))
     <div class="row my-2" id="dashboardTadaSection">
         <div class="col-12">
             <div class="card dashboard-panel" style="border: 1px solid #dee2e6; border-radius: 4px;">
@@ -189,6 +196,25 @@
             </div>
         </div>
     </div>
+    @endif
+
+    <!-- Section 4: Inventory Analytics -->
+    @if(in_array('inventory', $visibleWidgets))
+    <div class="row my-2" id="dashboardInventorySection">
+        <div class="col-12">
+            <div class="card dashboard-panel" style="border: 1px solid #dee2e6; border-radius: 4px;">
+                <div class="card-header dashboard-panel-header" style="background: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 12px 16px;">
+                    <h5 class="mb-0" style="font-weight: 600; font-size: 1rem; color: #495057;">
+                        <i class="mdi mdi-package-variant me-2"></i>Inventory Overview
+                    </h5>
+                </div>
+                <div class="card-body dashboard-panel-body" style="padding: 16px;">
+                    @include('dashboard.sections.inventory')
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </main>
 
 <div class="dashboard-mobile-actions d-md-none">

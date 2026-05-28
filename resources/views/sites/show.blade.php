@@ -120,6 +120,8 @@
                   ['title' => 'Beneficiary'],
                   ['title' => 'Beneficiary Contact'],
                   ['title' => 'Ward'],
+                  ['title' => 'Surveyed At'],
+                  ['title' => 'Installed At'],
               ];
 
               // Prepare filters
@@ -207,6 +209,8 @@
                       <td>{{ $pole->beneficiary ?? "N/A" }}</td>
                       <td>{{ $pole->beneficiary_contact ?? "N/A" }}</td>
                       <td>{{ $pole->ward_name ?? "N/A" }}</td>
+                      <td>{{ $pole->surveyed_at ? $pole->surveyed_at->format('d M Y') : '—' }}</td>
+                      <td>{{ $pole->installed_at ? $pole->installed_at->format('d M Y') : '—' }}</td>
                       <td class="text-center">
                         <a href="{{ route('poles.show', $pole->id) }}" 
                            class="btn btn-icon btn-info" 

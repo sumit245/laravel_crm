@@ -259,6 +259,7 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
             Route::post('dispatchweb', [InventoryController::class, 'dispatchInventory'])->name('dispatchweb');
             Route::get('view', [InventoryController::class, 'viewInventory'])->name('view');
             Route::post('replace', [InventoryController::class, 'replaceItem'])->name('replace');
+            Route::post('swap', [InventoryController::class, 'swapInventory'])->name('swap');
             Route::post('bulk-delete', [InventoryController::class, 'bulkDelete'])->name('bulkDelete');
             Route::get('dispatch', [InventoryController::class, 'showDispatchInventory'])->name('showDispatchInventory');
             Route::post('return', [InventoryController::class, 'returnInventory'])->name('return');

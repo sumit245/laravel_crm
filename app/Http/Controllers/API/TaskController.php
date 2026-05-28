@@ -441,6 +441,7 @@ class TaskController extends Controller
             if ($isSurveyDone && !$pole->isSurveyDone) {
                 $pole->update([
                     'isSurveyDone' => true,
+                    'surveyed_at' => now(),
                     'beneficiary' => $validated['beneficiary'] ?? null,
                     'beneficiary_contact' => $validated['beneficiary_contact'] ?? null,
                     'remarks' => $validated['remarks'] ?? null,
@@ -516,6 +517,7 @@ class TaskController extends Controller
 
                     $lockedPole->update([
                         'isInstallationDone' => true,
+                        'installed_at' => now(),
                         'vendor_id' => $task->vendor_id,
                         'luminary_qr' => $validated['luminary_qr'] ?? null,
                         'sim_number' => $validated['sim_number'] ?? null,

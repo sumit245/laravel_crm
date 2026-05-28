@@ -976,6 +976,16 @@
             justify-content: flex-end;
             margin-top: 0.6rem;
         }
+
+        /* ── Horizontal scroll + resizable columns ── */
+        .datatable-wrapper { overflow-x: auto; }
+        .dataTables_wrapper { overflow-x: auto; }
+        table.dataTable thead th {
+            resize: horizontal;
+            overflow: hidden;
+            min-width: 50px;
+            position: relative;
+        }
     </style>
 @endpush
 
@@ -1535,6 +1545,7 @@
                         searching: true,
                         ordering: true,
                         order: {!! json_encode($order) !!},
+                        colReorder: true,
                         @if ($responsive)
                             responsive: { details: { type: 'column', target: 'tr' } },
                         @endif

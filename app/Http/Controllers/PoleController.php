@@ -177,6 +177,14 @@ class PoleController extends Controller
                 'isNetworkAvailable' => $validated['isNetworkAvailable'] ?? $pole->isNetworkAvailable,
             ];
 
+            // Stamp timestamps only on the first transition (0 → 1)
+            if (!empty($validated['isSurveyDone']) && !$pole->isSurveyDone) {
+                $updateData['surveyed_at'] = now();
+            }
+            if (!empty($validated['isInstallationDone']) && !$pole->isInstallationDone) {
+                $updateData['installed_at'] = now();
+            }
+
             // Process survey images - handle deletions and new uploads
             $existingSurveyImages = $request->input('existing_survey_images', []);
             $deletedSurveyImages = $request->input('deleted_survey_images', []);

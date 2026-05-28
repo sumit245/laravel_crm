@@ -10,6 +10,7 @@ use App\Imports\InventroyStreetLight;
 use App\Models\Inventory;
 use App\Models\InventoryDispatch;
 use App\Models\InventroyStreetLightModel;
+use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Stores;
 use App\Models\User;
@@ -1670,6 +1671,140 @@ class InventoryController extends Controller
             Log::error('Error downloading inventory import format: '.$e->getMessage());
 
             return redirect()->back()->with('error', 'Failed to download import format template.');
+        }
+    }
+
+    /**
+     * Swap two inventory items.
+     *
+     * Pole swap  (both consumed)  : swap streetlight_pole_id on both dispatches + swap the QR
+     *                               field on both Pole records. Admin-only.
+     * Vendor swap (both dispatched, not consumed): swap vendor_id on both dispatches. Admin-only.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function swapInventory(Request $request)
+    {
+        $request->validate([
+            'serial_number_1' => 'required|string',
+            'serial_number_2' => 'required|string|different:serial_number_1',
+        ]);
+
+        // Admin only
+        if (auth()->user()->role !== \App\Enums\UserRole::ADMIN->value) {
+            return response()->json(['success' => false, 'message' => 'Unauthorized. Admin only.'], 403);
+        }
+
+        $serial1 = trim($request->serial_number_1);
+        $serial2 = trim($request->serial_number_2);
+
+        $dispatch1 = InventoryDispatch::where('serial_number', $serial1)->first();
+        $dispatch2 = InventoryDispatch::where('serial_number', $serial2)->first();
+
+        if (! $dispatch1) {
+            return response()->json(['success' => false, 'message' => "Item not found: {$serial1}"], 422);
+        }
+        if (! $dispatch2) {
+            return response()->json(['success' => false, 'message' => "Item not found: {$serial2}"], 422);
+        }
+        if ($dispatch1->item_code !== $dispatch2->item_code) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Items must be of the same type (same item code) to swap.',
+            ], 422);
+        }
+
+        $both_consumed   = $dispatch1->is_consumed  && $dispatch2->is_consumed;
+        $both_dispatched = $dispatch1->isDispatched  && $dispatch2->isDispatched
+                           && ! $dispatch1->is_consumed && ! $dispatch2->is_consumed;
+
+        if (! $both_consumed && ! $both_dispatched) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Both items must be in the same state: either both consumed (pole swap) or both dispatched but not consumed (vendor swap).',
+            ], 422);
+        }
+
+        try {
+            DB::transaction(function () use ($dispatch1, $dispatch2, $both_consumed, $serial1, $serial2) {
+
+                if ($both_consumed) {
+                    // ── Pole swap ──
+                    $poleId1 = $dispatch1->streetlight_pole_id;
+                    $poleId2 = $dispatch2->streetlight_pole_id;
+
+                    if (! $poleId1 || ! $poleId2) {
+                        throw new \RuntimeException('One or both consumed items are not linked to a pole.');
+                    }
+
+                    $pole1 = Pole::findOrFail($poleId1);
+                    $pole2 = Pole::findOrFail($poleId2);
+
+                    // Determine which QR field holds each serial number
+                    $qrFields = ['luminary_qr', 'panel_qr', 'battery_qr'];
+                    $field1 = collect($qrFields)->first(fn($f) => $pole1->$f === $serial1);
+                    $field2 = collect($qrFields)->first(fn($f) => $pole2->$f === $serial2);
+
+                    if (! $field1 || ! $field2) {
+                        throw new \RuntimeException('Could not match serial numbers to QR fields on the poles.');
+                    }
+
+                    // Swap pole IDs on dispatches
+                    $dispatch1->streetlight_pole_id = $poleId2;
+                    $dispatch1->save();
+                    $dispatch2->streetlight_pole_id = $poleId1;
+                    $dispatch2->save();
+
+                    // Swap QR values on poles (field type must be same since item_code matches)
+                    $pole1->$field1 = $serial2;
+                    $pole1->save();
+                    $pole2->$field2 = $serial1;
+                    $pole2->save();
+
+                } else {
+                    // ── Vendor swap ──
+                    $vendorId1 = $dispatch1->vendor_id;
+                    $vendorId2 = $dispatch2->vendor_id;
+
+                    $dispatch1->vendor_id = $vendorId2;
+                    $dispatch1->save();
+                    $dispatch2->vendor_id = $vendorId1;
+                    $dispatch2->save();
+                }
+
+                // Log both swaps to inventory history
+                $swapType  = $both_consumed ? 'pole_swap' : 'vendor_swap';
+                $this->historyService->log('swapped', [
+                    'serial_number'    => $serial1,
+                    'project_id'       => $dispatch1->project_id,
+                    'store_id'         => $dispatch1->store_id,
+                    'metadata'         => ['swap_type' => $swapType, 'swapped_with' => $serial2],
+                ]);
+                $this->historyService->log('swapped', [
+                    'serial_number'    => $serial2,
+                    'project_id'       => $dispatch2->project_id,
+                    'store_id'         => $dispatch2->store_id,
+                    'metadata'         => ['swap_type' => $swapType, 'swapped_with' => $serial1],
+                ]);
+
+                $this->activityLogger->log('inventory', 'swapped', null, [
+                    'description' => "Swapped {$serial1} ↔ {$serial2} ({$swapType})",
+                ]);
+            });
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Items swapped successfully.',
+            ]);
+
+        } catch (\Throwable $e) {
+            Log::error('Inventory swap failed', ['error' => $e->getMessage()]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Swap failed: '.$e->getMessage(),
+            ], 500);
         }
     }
 }

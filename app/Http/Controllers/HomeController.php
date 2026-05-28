@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Enums\UserRole;
+use App\Models\InventoryDispatch;
+use App\Models\InventroyStreetLightModel;
 use App\Models\Pole;
 use App\Models\Project;
 use App\Models\Site;
@@ -11,6 +13,7 @@ use App\Models\StreetlightTask;
 use App\Models\Task;
 use App\Models\User;
 use App\Services\Dashboard\DashboardAnalyticsService;
+use App\Services\Settings\DashboardSettingsService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Log;
@@ -33,16 +36,18 @@ use Illuminate\Support\Facades\Log;
 class HomeController extends Controller
 {
     protected DashboardAnalyticsService $analyticsService;
+    protected DashboardSettingsService $dashboardSettings;
 
     /**
      * Create a new controller instance.
      *
      * @return void
      */
-    public function __construct(DashboardAnalyticsService $analyticsService)
+    public function __construct(DashboardAnalyticsService $analyticsService, DashboardSettingsService $dashboardSettings)
     {
         $this->middleware('auth');
         $this->analyticsService = $analyticsService;
+        $this->dashboardSettings = $dashboardSettings;
     }
 
     /**
@@ -73,9 +78,14 @@ class HomeController extends Controller
             return redirect()->route('dashboard', ['project_id' => $projects->first()->id]);
         }
 
+        // Determine which widgets are visible from admin settings
+        $visibleWidgets = $this->dashboardSettings->get()->visible_widgets ?? [];
+
         // Get all analytics data with error handling
         try {
-            $performanceAnalytics = $this->analyticsService->getProjectPerformanceAnalytics($user, $filters);
+            $performanceAnalytics = in_array('performance', $visibleWidgets)
+                ? $this->analyticsService->getProjectPerformanceAnalytics($user, $filters)
+                : [];
         } catch (\Exception $e) {
             \Log::error('Dashboard Performance Analytics Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
@@ -96,7 +106,9 @@ class HomeController extends Controller
         }
 
         try {
-            $meetingAnalytics = $this->analyticsService->getMeetingAnalytics($user, $filters);
+            $meetingAnalytics = in_array('meetings', $visibleWidgets)
+                ? $this->analyticsService->getMeetingAnalytics($user, $filters)
+                : [];
         } catch (\Exception $e) {
             \Log::error('Dashboard Meeting Analytics Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
@@ -113,7 +125,9 @@ class HomeController extends Controller
         }
 
         try {
-            $tadaAnalytics = $this->analyticsService->getTadaAnalytics($user, $filters);
+            $tadaAnalytics = in_array('tada', $visibleWidgets)
+                ? $this->analyticsService->getTadaAnalytics($user, $filters)
+                : [];
         } catch (\Exception $e) {
             \Log::error('Dashboard TADA Analytics Error: ' . $e->getMessage(), [
                 'trace' => $e->getTraceAsString(),
@@ -140,6 +154,12 @@ class HomeController extends Controller
         $project = $selectedProjectId ? Project::find($selectedProjectId) : null;
         $isStreetLightProject = $project ? $project->project_type == 1 : false;
 
+        // Inventory analytics (only computed when the widget is enabled)
+        $inventoryAnalytics = [];
+        if (in_array('inventory', $visibleWidgets)) {
+            $inventoryAnalytics = $this->getInventoryAnalytics($selectedProjectId);
+        }
+
         return view('dashboard', [
             'user' => $user,
             'project' => $project,
@@ -150,7 +170,44 @@ class HomeController extends Controller
             'meeting_analytics' => $meetingAnalytics,
             'tada_analytics' => $tadaAnalytics,
             'is_streetlight_project' => $isStreetLightProject,
+            'visible_widgets' => $visibleWidgets,
+            'inventory_analytics' => $inventoryAnalytics,
         ]);
+    }
+
+    /**
+     * Build inventory summary for the dashboard inventory widget.
+     */
+    private function getInventoryAnalytics(?int $projectId): array
+    {
+        try {
+            $dispatchQuery = InventoryDispatch::query()
+                ->when($projectId, fn($q) => $q->where('project_id', $projectId));
+
+            $inventoryQuery = InventroyStreetLightModel::query()
+                ->when($projectId, fn($q) => $q->where('project_id', $projectId));
+
+            $totalStock    = (clone $inventoryQuery)->sum('quantity');
+            $totalDispatched = (clone $dispatchQuery)->where('isDispatched', true)->where('is_consumed', false)->count();
+            $totalConsumed   = (clone $dispatchQuery)->where('is_consumed', true)->count();
+
+            $recentDispatches = (clone $dispatchQuery)
+                ->with(['vendor:id,name', 'project:id,project_name'])
+                ->where('isDispatched', true)
+                ->latest('dispatch_date')
+                ->take(5)
+                ->get(['id', 'vendor_id', 'project_id', 'item', 'serial_number', 'dispatch_date']);
+
+            return compact('totalStock', 'totalDispatched', 'totalConsumed', 'recentDispatches');
+        } catch (\Exception $e) {
+            Log::error('Dashboard Inventory Analytics Error: ' . $e->getMessage());
+            return [
+                'totalStock' => 0,
+                'totalDispatched' => 0,
+                'totalConsumed' => 0,
+                'recentDispatches' => collect(),
+            ];
+        }
     }
 
     /**

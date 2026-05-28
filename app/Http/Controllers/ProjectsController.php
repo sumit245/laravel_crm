@@ -407,6 +407,22 @@ class ProjectsController extends Controller
                 ->prepend('All', '')
                 ->toArray();
 
+            $data['filterDistricts'] = $data['targets']->pluck('site.district')
+                ->filter()
+                ->unique()
+                ->sort()
+                ->mapWithKeys(fn($d) => [$d => $d])
+                ->prepend('All', '')
+                ->toArray();
+
+            $data['filterBlocks'] = $data['targets']->pluck('site.block')
+                ->filter()
+                ->unique()
+                ->sort()
+                ->mapWithKeys(fn($b) => [$b => $b])
+                ->prepend('All', '')
+                ->toArray();
+
             $poleListing = app(ProjectPoleListingService::class);
             $data['poleDistricts'] = $poleListing->districtsForProject((int) $project->id);
             $data['poleGeoFilters'] = $poleListing->activeGeoFilters($request);

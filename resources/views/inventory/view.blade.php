@@ -190,13 +190,27 @@
                                         <i class="mdi mdi-undo"></i>
                                     </button>
                                 </form>
+                                @if(Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                                <button type="button" class="btn btn-sm btn-secondary swap-item"
+                                        data-serial="{{ $item['serial_number'] }}"
+                                        title="Swap (Vendor)">
+                                    <i class="mdi mdi-swap-horizontal"></i>
+                                </button>
+                                @endif
                             @elseif($item['availability'] === 'Consumed')
-                                <button type="button" class="btn btn-sm btn-primary replace-item" 
+                                <button type="button" class="btn btn-sm btn-primary replace-item"
                                         data-dispatch-id="{{ $item['dispatch_id'] }}"
                                         data-serial-number="{{ $item['serial_number'] }}"
                                         title="Replace">
                                     <i class="mdi mdi-swap-horizontal"></i>
                                 </button>
+                                @if(Auth::user()->role === \App\Enums\UserRole::ADMIN->value)
+                                <button type="button" class="btn btn-sm btn-secondary swap-item"
+                                        data-serial="{{ $item['serial_number'] }}"
+                                        title="Swap (Pole)">
+                                    <i class="mdi mdi-swap-vertical"></i>
+                                </button>
+                                @endif
                             @endif
                         </td>
                     </tr>
@@ -243,6 +257,45 @@
                         <button type="submit" class="btn btn-primary">Replace Item</button>
                     </div>
                 </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Swap Item Modal -->
+    <div class="modal fade" id="swapItemModal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="mdi mdi-swap-horizontal me-2"></i>Swap Inventory Items</h5>
+                    <button type="button" class="close" data-bs-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-muted small mb-3">
+                        Both items must be of the <strong>same type</strong> and in the <strong>same state</strong>
+                        (both consumed for a pole swap, or both dispatched for a vendor swap).
+                    </p>
+                    <div class="form-group mb-3">
+                        <label for="swap_serial_1">Serial Number 1:</label>
+                        <input type="text" class="form-control" id="swap_serial_1" placeholder="Enter first serial number">
+                    </div>
+                    <div class="form-group mb-3">
+                        <label for="swap_serial_2">Serial Number 2:</label>
+                        <input type="text" class="form-control" id="swap_serial_2" placeholder="Enter second serial number">
+                    </div>
+                    <div class="form-check mb-2">
+                        <input type="checkbox" class="form-check-input" id="swap_agreement" required>
+                        <label class="form-check-label" for="swap_agreement">
+                            I confirm this swap is intentional and irreversible without a second swap.
+                        </label>
+                    </div>
+                    <div id="swapErrorMsg" class="alert alert-danger d-none mt-2"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-dark" id="confirmSwapBtn">
+                        <i class="mdi mdi-swap-horizontal me-1"></i> Confirm Swap
+                    </button>
+                </div>
             </div>
         </div>
     </div>
@@ -345,11 +398,21 @@ document.addEventListener('DOMContentLoaded', function() {
                 '<input type="hidden" name="serial_number" value="' + item.serial_number + '">' +
                 '<button type="submit" class="btn btn-sm btn-warning" title="Return"><i class="mdi mdi-undo"></i></button>' +
                 '</form>';
+            if (isAdmin) {
+                actionButtons += '<button type="button" class="btn btn-sm btn-secondary swap-item" ' +
+                    'data-serial="' + item.serial_number + '" ' +
+                    'title="Swap (Vendor)"><i class="mdi mdi-swap-horizontal"></i></button>';
+            }
         } else if (item.availability === 'Consumed') {
             actionButtons = '<button type="button" class="btn btn-sm btn-primary replace-item" ' +
                 'data-dispatch-id="' + (item.dispatch_id || '') + '" ' +
                 'data-serial-number="' + item.serial_number + '" ' +
                 'title="Replace"><i class="mdi mdi-swap-horizontal"></i></button>';
+            if (isAdmin) {
+                actionButtons += '<button type="button" class="btn btn-sm btn-secondary swap-item" ' +
+                    'data-serial="' + item.serial_number + '" ' +
+                    'title="Swap (Pole)"><i class="mdi mdi-swap-vertical"></i></button>';
+            }
         }
 
         const dispatchDate = item.dispatch_date 
@@ -455,10 +518,69 @@ document.addEventListener('DOMContentLoaded', function() {
     $(document).on('click', '.replace-item', function() {
         const dispatchId = $(this).data('dispatch-id');
         const serialNumber = $(this).data('serial-number');
-        
+
         $('#replace_dispatch_id').val(dispatchId);
         $('#replace_old_serial').val(serialNumber);
         $('#replaceItemModal').modal('show');
+    });
+
+    // Swap item handler — pre-fill serial 1 and open modal
+    $(document).on('click', '.swap-item', function() {
+        const serial = $(this).data('serial');
+        $('#swap_serial_1').val(serial);
+        $('#swap_serial_2').val('');
+        $('#swap_agreement').prop('checked', false);
+        $('#swapErrorMsg').addClass('d-none').text('');
+        $('#swapItemModal').modal('show');
+    });
+
+    // Confirm swap
+    $('#confirmSwapBtn').on('click', function() {
+        const serial1 = $('#swap_serial_1').val().trim();
+        const serial2 = $('#swap_serial_2').val().trim();
+        const agreed  = $('#swap_agreement').is(':checked');
+        const $err    = $('#swapErrorMsg');
+
+        $err.addClass('d-none').text('');
+
+        if (!serial1 || !serial2) {
+            $err.removeClass('d-none').text('Both serial numbers are required.');
+            return;
+        }
+        if (serial1 === serial2) {
+            $err.removeClass('d-none').text('Serial numbers must be different.');
+            return;
+        }
+        if (!agreed) {
+            $err.removeClass('d-none').text('Please confirm the swap by checking the agreement box.');
+            return;
+        }
+
+        const $btn = $(this).prop('disabled', true).text('Swapping…');
+
+        $.ajax({
+            url: '{{ route('inventory.swap') }}',
+            method: 'POST',
+            data: {
+                _token: $('meta[name="csrf-token"]').attr('content'),
+                serial_number_1: serial1,
+                serial_number_2: serial2,
+            },
+            success: function(res) {
+                $('#swapItemModal').modal('hide');
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Swapped!',
+                    text: res.message || 'Items swapped successfully.',
+                    confirmButtonColor: '#28a745',
+                }).then(() => location.reload());
+            },
+            error: function(xhr) {
+                const msg = xhr.responseJSON?.message || 'Swap failed. Please try again.';
+                $err.removeClass('d-none').text(msg);
+                $btn.prop('disabled', false).html('<i class="mdi mdi-swap-horizontal me-1"></i> Confirm Swap');
+            },
+        });
     });
 
     // Session messages

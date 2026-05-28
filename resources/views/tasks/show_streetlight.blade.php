@@ -57,13 +57,21 @@
     <div class="col-md-4 mb-3">
       <strong>Alloted Wards</strong>
       <p>
-        @if($streetlightTask->siteWards->isNotEmpty())
-          @foreach($streetlightTask->siteWards->sortBy(fn($w) => [(int)$w->ward_number, $w->ward_type]) as $ward)
+        @php
+          $allottedSiteWards = $streetlightTask->siteWards
+              ->sortBy(function ($ward) {
+                  return sprintf('%05d-%s', (int) $ward->ward_number, $ward->ward_type);
+              })
+              ->values();
+        @endphp
+        @if($allottedSiteWards->isNotEmpty())
+          @foreach($allottedSiteWards as $ward)
             @if($ward->ward_type === 'gp')
               GP Ward {{ $ward->ward_number }} ({{ $ward->planned_poles }} poles)
             @else
               Ward {{ $ward->ward_number }}
-            @endif@if(!$loop->last), @endif
+            @endif
+            @if(!$loop->last), @endif
           @endforeach
         @else
           {{ $streetlightTask->allotted_wards ?: 'N/A' }}
