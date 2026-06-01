@@ -163,7 +163,8 @@
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-              $.each(data, function (index, block) {
+              var blocks = data.blocks || data;
+              $.each(blocks, function (index, block) {
                 $('#blockSelect').append('<option value="' + block.block + '">' + block.block +
                   '</option>');
               });
@@ -187,8 +188,9 @@
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-              $.each(data, function (index, block) {
-                $('#panchayatSelect').append('<option value="' + block.panchayat + '">' + block
+              var panchayats = data.panchayats || data;
+              $.each(panchayats, function (index, item) {
+                $('#panchayatSelect').append('<option value="' + item.panchayat + '">' + item
                   .panchayat +
                   '</option>');
               });
@@ -212,10 +214,10 @@
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-              $.each(data, function (index, block) {
-                $('#wardSelect').append('<option value="Ward ' + block.ward + '">Ward ' + block.ward +
+              var wards = data.wards || data;
+              $.each(wards, function (index, item) {
+                $('#wardSelect').append('<option value="Ward ' + item.ward + '">Ward ' + item.ward +
                   '</option>');
-
               });
             },
             error: function (xhr, status, error) {
