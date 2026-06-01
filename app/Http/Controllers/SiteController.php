@@ -400,8 +400,11 @@ class SiteController extends Controller
             $wardOptions = [];
             if ($site->ward) {
                 $wards = collect(explode(",", $site->ward))
-                    ->map(fn($w) => "Ward " . trim($w))
+                    ->map(fn($w) => trim($w))
                     ->filter()
+                    ->map(fn($w) => ctype_digit($w) ? "Ward " . $w : $w)
+                    ->unique()
+                    ->values()
                     ->toArray();
                 $wardOptions = array_combine($wards, $wards);
             }

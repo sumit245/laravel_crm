@@ -50,6 +50,13 @@
     <!-- plugins:js -->
     {{-- <script src="{{ asset("vendors/js/vendor.bundle.base.js") }}"></script> --}}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $.ajaxSetup({
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            }
+        });
+    </script>
     <script src="{{ asset('vendors/select2/select2.min.js') }}"></script>
     <script src="{{ asset('js/off-canvas.js') }}"></script>
     <script src="{{ asset('js/hoverable-collapse.js') }}"></script>
@@ -78,9 +85,6 @@
     @endunless
     <!-- Place this just before </body> -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    @unless(request()->routeIs('staff.profile') || request()->routeIs('dashboard'))
-        <script src="https://unpkg.com/tldraw@3.15.4/files/dist-cjs/index.js"></script>
-    @endunless
     {{-- <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/js/fontawesome.min.js"></script> --}}
 
     @stack('scripts') <!-- For page-specific scripts -->

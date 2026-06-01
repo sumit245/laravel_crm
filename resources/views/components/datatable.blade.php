@@ -847,11 +847,11 @@
         /* ── Per-column filter: trigger button (injected post-init, absolutely positioned) ── */
         #{{ $id }} thead th[data-cf-enabled] {
             position: relative !important;
-            padding-right: 20px !important;
+            padding-right: 28px !important;  /* 8px resize zone + 2px gap + 18px trigger width */
         }
         #{{ $id }} thead th .col-menu-trigger {
             position: absolute;
-            right: 2px;
+            right: 8px;   /* moved left to leave 8 px resize zone at far right */
             top: 50%;
             transform: translateY(-50%);
             background: none;
@@ -977,15 +977,31 @@
             margin-top: 0.6rem;
         }
 
-        /* ── Horizontal scroll + resizable columns ── */
+        /* ── Horizontal scroll ── */
         .datatable-wrapper { overflow-x: auto; }
         .dataTables_wrapper { overflow-x: auto; }
-        table.dataTable thead th {
-            resize: horizontal;
-            overflow: hidden;
-            min-width: 50px;
-            position: relative;
+        table.dataTable { min-width: max-content; }
+
+        /* ── Column resize: Excel-style edge detection ── */
+        /* No handle div needed; JS watches mousemove distance to the right border of each <th> */
+        table.dataTable thead th { position: relative; min-width: 40px; }
+
+        /* col-resize cursor + blue edge flash when within EDGE_ZONE px of right border */
+        #{{ $id }} thead th.dt-resize-ready {
+            cursor: col-resize !important;
+            box-shadow: inset -3px 0 0 rgba(31,59,179,.45) !important;
         }
+        /* grab cursor signals drag-to-reorder availability (ColReorder)
+           Excludes: checkbox col (.select-checkbox), non-sortable cols (.no-sort),
+           actions col (.no-export), and any col currently in resize-ready state */
+        #{{ $id }} thead th:not(.select-checkbox):not(.no-sort):not(.no-export):not(.dt-resize-ready) {
+            cursor: grab !important;
+        }
+        #{{ $id }} thead th:not(.select-checkbox):not(.no-export).dt-resize-ready {
+            cursor: col-resize !important;
+        }
+        /* suppress grab during active ColReorder drag (ColReorder sets cursor:move on clone) */
+        .DTCR_clonedTable thead th { cursor: move !important; }
     </style>
 @endpush
 
@@ -1393,6 +1409,10 @@
                     filterContainer_{{ $jsSafeId }}.find('.filter-select2').each(function() {
                         $(this).val(null).trigger('change');
                     });
+                    /* Also clear per-column filters (3-dot popup) */
+                    if (typeof window['dt_cfp_clearAll_{{ $jsSafeId }}'] === 'function') {
+                        window['dt_cfp_clearAll_{{ $jsSafeId }}']();
+                    }
 
                     const currentSearchFunctions = $.fn.dataTable.ext.search || [];
                     const tableFilterFunctions = window['filterFunctions_{{ $jsSafeId }}'] || [];
@@ -1546,6 +1566,26 @@
                         ordering: true,
                         order: {!! json_encode($order) !!},
                         colReorder: true,
+                        /* ── Persist sort order, column order, search, page length across reloads ── */
+                        stateSave: true,
+                        stateDuration: -1,   /* never expire; user must explicitly clear */
+                        stateSaveCallback: function(settings, data) {
+                            try {
+                                /* Only save layout preferences — NOT column visibility (handled manually) */
+                                localStorage.setItem('dt_state_{{ $jsSafeId }}', JSON.stringify({
+                                    order:      data.order,
+                                    length:     data.length,
+                                    search:     data.search,
+                                    ColReorder: data.ColReorder
+                                }));
+                            } catch(e) {}
+                        },
+                        stateLoadCallback: function(settings) {
+                            try {
+                                var s = localStorage.getItem('dt_state_{{ $jsSafeId }}');
+                                return s ? JSON.parse(s) : null;
+                            } catch(e) { return null; }
+                        },
                         @if ($responsive)
                             responsive: { details: { type: 'column', target: 'tr' } },
                         @endif
@@ -1675,6 +1715,146 @@
                         window['table_{{ $jsSafeId }}'] = table;
                         window['datatable_{{ $jsSafeId }}'] = table;
                         table.on('draw page length search', updatePaginationInfo);
+
+                        // ── Column resize: Excel-style edge detection ──
+                        // No injected handle div. Watches mouse distance to <th> right border.
+                        // Cursor changes to col-resize, blue inset flash confirms the zone.
+                        // Widths are frozen on drag start and persisted to localStorage on drag end.
+                        // Double-click on the edge auto-fits back to natural content width.
+                        var _colResizeBound = false;  // only bind body listeners once
+
+                        function _initColResize() {
+                            var $table  = $(tableId);
+                            var wKey    = 'dt_col_widths_{{ $jsSafeId }}';
+                            var EDGE    = 8;   // px from right border → col-resize zone
+                            var isResizing = false;
+
+                            // ── Restore persisted column widths ──
+                            try {
+                                var savedW = localStorage.getItem(wKey);
+                                if (savedW) {
+                                    var widths = JSON.parse(savedW);
+                                    var ths = $table.find('thead th').toArray();
+                                    widths.forEach(function(w, i) {
+                                        if (ths[i] && w) {
+                                            ths[i].style.width    = w;
+                                            ths[i].style.minWidth = w;
+                                        }
+                                    });
+                                    if (widths.some(function(w){ return !!w; }))
+                                        $table[0].style.tableLayout = 'fixed';
+                                }
+                            } catch(e) {}
+
+                            // Remove stale per-th events before re-binding (draw.dt re-renders thead)
+                            $table.find('thead th').off('.dtresize');
+
+                            $table.find('thead th').each(function() {
+                                var th  = this;
+                                var $th = $(th);
+                                if ($th.hasClass('select-checkbox')) return;
+                                // Skip the Actions column (no-export + last-child)
+                                if ($th.hasClass('no-export') && $th.index() === $table.find('thead th').length - 1) return;
+
+                                // ── Cursor: col-resize near right edge ──
+                                $th.on('mousemove.dtresize', function(e) {
+                                    if (isResizing) return;
+                                    // Don't interfere when hovering the 3-dot column-filter trigger
+                                    if ($(e.target).hasClass('col-menu-trigger') ||
+                                        $(e.target).closest('.col-menu-trigger').length) {
+                                        $th.removeClass('dt-resize-ready');
+                                        return;
+                                    }
+                                    var rect = th.getBoundingClientRect();
+                                    if (e.clientX >= rect.right - EDGE && e.clientX <= rect.right + 4) {
+                                        $th.addClass('dt-resize-ready');
+                                    } else {
+                                        $th.removeClass('dt-resize-ready');
+                                    }
+                                });
+
+                                $th.on('mouseleave.dtresize', function() {
+                                    if (!isResizing) $th.removeClass('dt-resize-ready');
+                                });
+
+                                // ── Start drag resize ──
+                                $th.on('mousedown.dtresize', function(e) {
+                                    // Let 3-dot trigger handle its own click
+                                    if ($(e.target).hasClass('col-menu-trigger') ||
+                                        $(e.target).closest('.col-menu-trigger').length) return;
+
+                                    var rect = th.getBoundingClientRect();
+                                    if (!(e.clientX >= rect.right - EDGE && e.clientX <= rect.right + 4)) return;
+
+                                    e.preventDefault();
+                                    e.stopPropagation();  // stop ColReorder from stealing the drag
+
+                                    isResizing  = true;
+                                    $th.addClass('dt-resize-ready');
+                                    var startX  = e.pageX;
+                                    var startW  = th.offsetWidth;
+
+                                    // Freeze ALL column widths so DT stops redistributing space
+                                    $table.find('thead th').each(function() {
+                                        this.style.width    = this.offsetWidth + 'px';
+                                        this.style.minWidth = this.offsetWidth + 'px';
+                                    });
+                                    $table[0].style.tableLayout = 'fixed';
+                                    document.body.style.cursor  = 'col-resize';
+
+                                    function onMove(ev) {
+                                        var delta = ev.pageX - startX;
+                                        var newW  = Math.max(40, startW + delta);
+                                        th.style.width    = newW + 'px';
+                                        th.style.minWidth = newW + 'px';
+                                    }
+                                    function onUp() {
+                                        isResizing = false;
+                                        $th.removeClass('dt-resize-ready');
+                                        document.body.style.cursor = '';
+                                        document.removeEventListener('mousemove', onMove);
+                                        document.removeEventListener('mouseup',   onUp);
+                                        $table.closest('.dataTables_wrapper').css('overflow-x', 'auto');
+                                        // ── Persist widths ──
+                                        try {
+                                            var ws = [];
+                                            $table.find('thead th').each(function() { ws.push(this.style.width || ''); });
+                                            localStorage.setItem(wKey, JSON.stringify(ws));
+                                        } catch(e2) {}
+                                    }
+                                    document.addEventListener('mousemove', onMove);
+                                    document.addEventListener('mouseup',   onUp);
+                                });
+
+                                // ── Double-click on edge: reset column to natural content width ──
+                                $th.on('dblclick.dtresize', function(e) {
+                                    if ($(e.target).hasClass('col-menu-trigger') ||
+                                        $(e.target).closest('.col-menu-trigger').length) return;
+                                    var rect = th.getBoundingClientRect();
+                                    if (!(e.clientX >= rect.right - EDGE && e.clientX <= rect.right + 4)) return;
+                                    e.preventDefault(); e.stopPropagation();
+                                    // Release fixed width so browser can calculate natural width
+                                    th.style.width    = '';
+                                    th.style.minWidth = '40px';
+                                    setTimeout(function() {
+                                        // Re-freeze at the natural width DT just computed
+                                        var nat = th.offsetWidth;
+                                        th.style.width    = nat + 'px';
+                                        th.style.minWidth = nat + 'px';
+                                        $table[0].style.tableLayout = 'fixed';
+                                        try {
+                                            var ws = [];
+                                            $table.find('thead th').each(function() { ws.push(this.style.width || ''); });
+                                            localStorage.setItem(wKey, JSON.stringify(ws));
+                                        } catch(e2) {}
+                                    }, 50);
+                                });
+                            });
+                        }
+                        // First run after DataTables renders its <thead>
+                        setTimeout(_initColResize, 300);
+                        // Re-run on every draw (sort / filter / pagination re-renders <thead> icons)
+                        table.on('draw.dt', function() { setTimeout(_initColResize, 50); });
                     }
 
                 } catch (err) {
@@ -2273,6 +2453,36 @@
 
             var activeColFilters = {};   // { colIdx: {type1,val1,connector,type2,val2} }
             var openColIdx       = null;
+            var cfpKey           = 'dt_cfp_{{ $jsSafeId }}';
+
+            /* ── Restore persisted column filters from previous session ── */
+            try {
+                var cfpSaved = localStorage.getItem(cfpKey);
+                if (cfpSaved) activeColFilters = JSON.parse(cfpSaved) || {};
+            } catch(eCfpLoad) {}
+
+            /* Apply restored filters after the DataTable has fully initialised */
+            setTimeout(function() {
+                if (Object.keys(activeColFilters).length === 0) return;
+                var dt = window['table_' + JS_SAFE_ID];
+                if (!dt) return;
+                if (IS_SERVER) dt.ajax.reload(null, false);
+                else dt.draw();
+            }, 1400);
+
+            /* Expose a global clear-all so the "Clear Filters" bar button can wipe cfp state too */
+            window['dt_cfp_clearAll_{{ $jsSafeId }}'] = function() {
+                activeColFilters = {};
+                try { localStorage.removeItem(cfpKey); } catch(e) {}
+                document.querySelectorAll('#{{ $id }} .col-menu-trigger.has-filter').forEach(function(el) {
+                    el.classList.remove('has-filter');
+                });
+                var dt = window['table_' + JS_SAFE_ID];
+                if (dt) {
+                    if (IS_SERVER) dt.ajax.reload(null, false);
+                    else dt.draw();
+                }
+            };
 
             /* ── Inject trigger buttons into header cells after DT init ── */
             function injectTriggers() {
@@ -2508,6 +2718,8 @@
 
                     var trig = document.querySelector('.col-menu-trigger[data-table-id="{{ $id }}"][data-col-idx="' + idx + '"]');
                     if (trig) trig.classList.toggle('has-filter', !!activeColFilters[idx]);
+                    /* ── Persist ── */
+                    try { localStorage.setItem(cfpKey, JSON.stringify(activeColFilters)); } catch(eCfpSave) {}
 
                     menuEl.style.display = 'none'; openColIdx = null;
 
@@ -2528,6 +2740,8 @@
                     menuEl.querySelector('.cfp-val-2').value = '';
                     var trig = document.querySelector('.col-menu-trigger[data-table-id="{{ $id }}"][data-col-idx="' + idx + '"]');
                     if (trig) trig.classList.remove('has-filter');
+                    /* ── Persist ── */
+                    try { localStorage.setItem(cfpKey, JSON.stringify(activeColFilters)); } catch(eCfpSave) {}
                     menuEl.style.display = 'none'; openColIdx = null;
                     var dt = window['table_' + JS_SAFE_ID];
                     if (dt) {

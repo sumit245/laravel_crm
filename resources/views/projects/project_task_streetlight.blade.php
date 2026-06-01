@@ -1139,6 +1139,25 @@
                 $('#selectedWardsInput').val(selectedWards.join(','));
             }
 
+            function currentCsrfToken() {
+                return $('meta[name="csrf-token"]').attr('content') || $('#targetForm input[name="_token"]').val() || '';
+            }
+
+            function refreshTargetFormCsrf() {
+                const token = currentCsrfToken();
+                let tokenInput = $('#targetForm input[name="_token"]');
+
+                if (!tokenInput.length) {
+                    tokenInput = $('<input>', {
+                        type: 'hidden',
+                        name: '_token'
+                    }).prependTo('#targetForm');
+                }
+
+                tokenInput.val(token);
+                return token;
+            }
+
             // Helper function to clear all error states
             function clearFormErrors() {
                 $('.form-control, .form-select').removeClass('is-invalid');
@@ -1226,6 +1245,7 @@
 
             // Clear errors when modal is opened
             $('#addTargetModal').on('show.bs.modal', function () {
+                refreshTargetFormCsrf();
                 clearFormErrors();
             });
 
@@ -1280,6 +1300,7 @@
             }
 
             // Get form data
+            const csrfToken = refreshTargetFormCsrf();
             const formData = new FormData(this);
             const submitButton = $(this).find('button[type="submit"]');
             const originalButtonText = submitButton.html();
@@ -1296,6 +1317,7 @@
                 processData: false,
                 contentType: false,
                 headers: {
+                    'X-CSRF-TOKEN': csrfToken,
                     'X-Requested-With': 'XMLHttpRequest'
                 },
                 success: function (response) {

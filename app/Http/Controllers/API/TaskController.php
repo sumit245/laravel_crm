@@ -343,7 +343,7 @@ class TaskController extends Controller
         try {
             // ✅ Step 1: Validation
             $validated = $request->validate([
-                'task_id' => 'required|exists:streetlight_tasks,id',
+                'task_id' => 'required|integer',
                 'complete_pole_number' => 'required|string|max:255',
                 'ward_name' => 'nullable|string|max:255',
                 'survey_image' => 'nullable',
@@ -367,7 +367,19 @@ class TaskController extends Controller
             $isInstallationDone = $this->toApiBoolean($validated['isInstallationDone'] ?? null);
 
             // ✅ Step 2: Fetch task & site
-            $task = StreetlightTask::findOrFail($validated['task_id']);
+            $task = $this->resolveStreetlightSubmissionTask(
+                (int) $validated['task_id'],
+                $validated['complete_pole_number'],
+                $validated['ward_name'] ?? null
+            );
+
+            if (!$task) {
+                throw \Illuminate\Validation\ValidationException::withMessages([
+                    'task_id' => ['The selected task id is invalid.'],
+                ]);
+            }
+
+            $validated['task_id'] = $task->id;
             $approved_by = trim(($task->engineer?->firstName ?? '') . ' ' . ($task->engineer?->lastName ?? ''));
             $streetlight = Streetlight::findOrFail($task->site_id);
             $siteWard = $this->resolveSiteWardForPole($streetlight, $validated['ward_name'] ?? null, $validated['complete_pole_number']);
@@ -1213,6 +1225,70 @@ class TaskController extends Controller
         }
 
         return false;
+    }
+
+    private function resolveStreetlightSubmissionTask(int $submittedId, string $completePoleNumber, ?string $wardName): ?StreetlightTask
+    {
+        $task = StreetlightTask::find($submittedId);
+
+        if ($task) {
+            return $task;
+        }
+
+        $existingPole = Pole::where('complete_pole_number', $completePoleNumber)->first();
+
+        if ($existingPole?->task) {
+            return $existingPole->task;
+        }
+
+        $siteTasks = StreetlightTask::where('site_id', $submittedId)
+            ->orderByRaw("FIELD(status, 'In Progress', 'Pending', 'Blocked', 'Completed')")
+            ->get();
+
+        if ($siteTasks->count() === 1) {
+            return $siteTasks->first();
+        }
+
+        if ($siteTasks->isNotEmpty()) {
+            $wardNumber = $this->extractWardNumber($wardName, $completePoleNumber);
+
+            if ($wardNumber !== null) {
+                $wardTask = $siteTasks->first(function (StreetlightTask $task) use ($wardNumber) {
+                    $allottedWards = collect(explode(',', (string) $task->allotted_wards))
+                        ->map(fn ($ward) => preg_replace('/\D/', '', trim((string) $ward)))
+                        ->filter()
+                        ->map(fn ($ward) => (int) $ward)
+                        ->all();
+
+                    return in_array($wardNumber, $allottedWards, true);
+                });
+
+                if ($wardTask) {
+                    return $wardTask;
+                }
+            }
+
+            return $siteTasks->first();
+        }
+
+        $submittedPole = Pole::find($submittedId);
+
+        return $submittedPole?->task;
+    }
+
+    private function extractWardNumber(?string $wardName, ?string $completePoleNumber): ?int
+    {
+        $wardDigits = preg_replace('/\D/', '', (string) $wardName);
+
+        if ($wardDigits !== '') {
+            return (int) $wardDigits;
+        }
+
+        $parts = collect(explode('/', (string) $completePoleNumber))->filter()->values();
+        $wardPart = $parts->count() >= 2 ? $parts[$parts->count() - 2] : '';
+        $wardDigits = preg_replace('/\D/', '', (string) $wardPart);
+
+        return $wardDigits === '' ? null : (int) $wardDigits;
     }
 
     private function extractPoleSequence(?string $completePoleNumber): ?int

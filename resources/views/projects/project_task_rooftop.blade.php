@@ -229,8 +229,28 @@
                 return isValid;
             }
 
+            function currentCsrfToken() {
+                return $('meta[name="csrf-token"]').attr('content') || $('#rooftopTargetForm input[name="_token"]').val() || '';
+            }
+
+            function refreshRooftopTargetFormCsrf() {
+                const token = currentCsrfToken();
+                let tokenInput = $('#rooftopTargetForm input[name="_token"]');
+
+                if (!tokenInput.length) {
+                    tokenInput = $('<input>', {
+                        type: 'hidden',
+                        name: '_token'
+                    }).prependTo('#rooftopTargetForm');
+                }
+
+                tokenInput.val(token);
+                return token;
+            }
+
             // Clear errors when modal is opened
             $('#addTargetModal').on('show.bs.modal', function() {
+                refreshRooftopTargetFormCsrf();
                 clearFormErrors();
             });
 
@@ -269,6 +289,7 @@
                 }
 
                 // Get form data
+                const csrfToken = refreshRooftopTargetFormCsrf();
                 const formData = new FormData(this);
                 const submitButton = $(this).find('button[type="submit"]');
                 const originalButtonText = submitButton.html();
@@ -284,6 +305,7 @@
                     processData: false,
                     contentType: false,
                     headers: {
+                        'X-CSRF-TOKEN': csrfToken,
                         'X-Requested-With': 'XMLHttpRequest'
                     },
                     success: function(response) {
