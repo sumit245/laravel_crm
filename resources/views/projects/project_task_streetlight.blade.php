@@ -350,7 +350,14 @@
 
             // Custom filters - integrate with datatable component's filter system
             setTimeout(function () {
-                const table = $('#targetsTable').DataTable();
+                // Use the component's properly-initialized instance.
+                // DO NOT call $('#targetsTable').DataTable() with no options here —
+                // that bare call would initialize the table with DataTables defaults
+                // (no ColReorder, no stateSave, no search binding) if the component
+                // hasn't finished its own initialization yet.
+                const table = window.table_targetsTable ||
+                              ($.fn.DataTable.isDataTable('#targetsTable')
+                                ? $('#targetsTable').DataTable() : null);
                 if (table) {
                     let filterFunctions = [];
 

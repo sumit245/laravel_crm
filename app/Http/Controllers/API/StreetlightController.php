@@ -309,6 +309,22 @@ class StreetlightController extends Controller
     public function getEngineerTasks(Request $request)
     {
         $tasks = StreetlightTask::where('engineer_id', $request->id)->with('site')->get();
+
+        // When the same panchayat has multiple targets (tasks) with different ward allotments,
+        // all tasks share the same Streetlight row, so site.ward would contain the full ward
+        // list for the panchayat. Override site.ward with the per-task allotted_wards so the
+        // mobile app (which reads site.ward) only sees the wards assigned to this specific task.
+        //
+        // IMPORTANT: clone the site before mutating — Eloquent eager-loading gives all tasks
+        // that share the same site_id a reference to the SAME in-memory model instance. Without
+        // cloning, the last iteration would overwrite every previous task's ward value.
+        $tasks->each(function ($task) {
+            if ($task->site && !empty($task->allotted_wards)) {
+                $task->setRelation('site', clone $task->site);
+                $task->site->ward = $task->allotted_wards;
+            }
+        });
+
         return response()->json($tasks);
     }
 
@@ -318,11 +334,20 @@ class StreetlightController extends Controller
      * Data flow: HTTP Request → Processing → Response
      *
      * @param  Request  $request  The incoming HTTP request
-     * @return void  
+     * @return void
      */
     public function getVendorTasks(Request $request)
     {
         $tasks = StreetlightTask::where('vendor_id', $request->id)->with('site')->get();
+
+        // Same ward-scoping fix as getEngineerTasks — see comment there (including the clone).
+        $tasks->each(function ($task) {
+            if ($task->site && !empty($task->allotted_wards)) {
+                $task->setRelation('site', clone $task->site);
+                $task->site->ward = $task->allotted_wards;
+            }
+        });
+
         return response()->json($tasks);
     }
 

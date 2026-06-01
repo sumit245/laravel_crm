@@ -112463,3 +112463,7 @@ DST Off\">2026-05-26 16:08:48.0 UTC (+00:00)</span>
 "} 
 [2026-06-01 08:48:24] local.INFO: Raw ward string: 4,5,6,GP  
 [2026-06-01 08:48:24] local.INFO: Wards for Pilkhi Gay Patti {"wards":[{"ward":"4"},{"ward":"5"},{"ward":"6"},{"ward":"GP"}]} 
+[2026-06-01 09:38:32] local.INFO: Target date extended {"task_id":"1552","project_id":"19","original_end_date":"2026-06-05 00:00:00","new_end_date":"2026-06-05","extension_reason":null,"extended_by":11} 
+[2026-06-01 09:38:32] local.INFO: Task stakeholder reassignment {"task_id":"1552","project_id":"19","reassignments":{"vendor":{"old":767,"new":"127","reassigned_at":"2026-06-01 09:38:32"}},"reason":null,"reassigned_by":11} 
+[2026-06-01 09:38:53] local.INFO: Target date extended {"task_id":"1533","project_id":"19","original_end_date":"2026-05-23 00:00:00","new_end_date":"2026-05-23","extension_reason":null,"extended_by":11} 
+[2026-06-01 09:38:53] local.INFO: Task stakeholder reassignment {"task_id":"1533","project_id":"19","reassignments":{"vendor":{"old":767,"new":"127","reassigned_at":"2026-06-01 09:38:53"}},"reason":null,"reassigned_by":11} 

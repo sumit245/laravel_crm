@@ -1059,6 +1059,28 @@
                 return;
             }
 
+            // ── Bind search handler unconditionally at outer scope ──────────────────
+            // This runs immediately on document ready, regardless of tab visibility or
+            // initializeDataTable() timing. The handler resolves the DT instance at
+            // fire-time so it works even when the table initialises after this binding.
+            (function() {
+                var _searchId = '#{{ $id }}_search';
+                $(document).off('keyup.dtsearch_{{ $jsSafeId }}', _searchId)
+                           .on('keyup.dtsearch_{{ $jsSafeId }}', _searchId, function() {
+                    var dt = window['table_{{ $jsSafeId }}'] ||
+                             ($.fn.DataTable.isDataTable(tableId) ? $(tableId).DataTable() : null);
+                    if (dt && typeof dt.search === 'function') dt.search($(this).val()).draw();
+                });
+                $(document).off('keypress.dtsearch_{{ $jsSafeId }}', _searchId)
+                           .on('keypress.dtsearch_{{ $jsSafeId }}', _searchId, function(e) {
+                    if (e.which === 13) {
+                        var dt = window['table_{{ $jsSafeId }}'] ||
+                                 ($.fn.DataTable.isDataTable(tableId) ? $(tableId).DataTable() : null);
+                        if (dt && typeof dt.search === 'function') dt.search($(this).val()).draw();
+                    }
+                });
+            })();
+
             function isTableVisible() {
                 console.log("isTableVisible function called");
                 const $table = $(tableId);
