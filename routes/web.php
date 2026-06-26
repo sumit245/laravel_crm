@@ -270,6 +270,10 @@ if (app()->environment('local') || config('app.debug') || env('ALLOW_DEV_TEST'))
     Route::get('/store/{store}/inventory/data', [StoreController::class, 'inventoryData'])->name('store.inventory.data');
     Route::get('/store/{store}/inventory/export', [StoreController::class, 'exportInventory'])->name('store.inventory.export');
     Route::get('/store/{store}/dispatched/data', [StoreController::class, 'dispatchedData'])->name('store.dispatched.data');
+    Route::get('/store/{store}/inventory/{serial}/history', [StoreController::class, 'inventoryHistory'])->name('store.inventory.history');
+    Route::get('/store/transfer/sample', [StoreController::class, 'transferSample'])->name('store.transfer.sample');
+    Route::post('/store/{store}/transfer/preview', [StoreController::class, 'transferPreview'])->name('store.transfer.preview');
+    Route::post('/store/{store}/transfer/confirm', [StoreController::class, 'transferConfirm'])->name('store.transfer.confirm');
     Route::delete('/store/{store}', [StoreController::class, 'destroy'])->name('store.destroy');
 
     // Tasks

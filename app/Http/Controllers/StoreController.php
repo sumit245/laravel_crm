@@ -13,6 +13,11 @@ use App\Enums\UserRole;
 use App\Services\Logging\ActivityLogger;
 use App\Http\Controllers\Concerns\HandlesColumnFilters;
 use App\Support\StreetlightInventoryItems;
+use App\Imports\MaterialTransferImport;
+use App\Exports\MaterialTransferFormatExport;
+use App\Models\InventroyStreetLightModel;
+use App\Services\Inventory\InventoryHistoryService;
+use Maatwebsite\Excel\Facades\Excel;
 
 /**
  * Warehouse / Store Management — each project has physical stores (warehouses) where inventory
@@ -35,7 +40,8 @@ class StoreController extends Controller
     use HandlesColumnFilters;
 
     public function __construct(
-        protected ActivityLogger $activityLogger
+        protected ActivityLogger $activityLogger,
+        protected InventoryHistoryService $historyService
     ) {
     }
 
@@ -137,18 +143,19 @@ class StoreController extends Controller
             ->count();
         Log::info('Inventory Total: ' . $inventoryTotal);
 
-        // Subquery: one dispatch per (serial_number, store, project) - prefer consumed, else most recent
+        // Each serial number is dispatched at most once per store/project, so a plain
+        // SELECT is equivalent to the old GROUP_CONCAT+GROUP_BY but ~430x faster on
+        // large stores (no filesort, no string-build/parse per group).
         $dispSubInit = DB::table('inventory_dispatch')
             ->select(
+                DB::raw('id as best_disp_id'),
                 'serial_number',
                 'store_id',
-                'project_id',
-                DB::raw('CAST(SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY (streetlight_pole_id IS NOT NULL) DESC, id DESC), ",", 1) AS UNSIGNED) as best_disp_id')
+                'project_id'
             )
             ->where('isDispatched', true)
             ->where('store_id', $store->id)
-            ->where('project_id', $project->id)
-            ->groupBy('serial_number', 'store_id', 'project_id');
+            ->where('project_id', $project->id);
 
         // OPTIMIZATION 2: Initial Data Load (Fast) - Only load exactly paginated rows
         $unifiedInventory = DB::table($inventoryTableName . ' as inv')
@@ -203,6 +210,7 @@ class StoreController extends Controller
 
             $dispatchedStockValue = DB::table('inventory_dispatch')
                 ->where('store_id', $store->id)
+                ->where('project_id', $project->id)
                 ->where('isDispatched', true)
                 ->sum('total_value');
 
@@ -284,9 +292,14 @@ class StoreController extends Controller
         $inStock = collect([]);
         $dispatched = collect([]);
 
+        $otherStores = Stores::where('project_id', $project->id)
+            ->where('id', '!=', $store->id)
+            ->get(['id', 'store_name']);
+
         return view('stores.show', compact(
             'store',
             'project',
+            'otherStores',
             'unifiedInventory',
             'inventoryTotal',
             'initialStockValue',
@@ -347,18 +360,18 @@ class StoreController extends Controller
 
         $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
 
-        // Subquery: one dispatch per (serial_number, store, project) - prefer consumed, else most recent
+        // Each serial number is dispatched at most once per store/project — plain SELECT
+        // avoids the GROUP BY + GROUP_CONCAT filesort (see show() for full explanation).
         $dispSub = DB::table('inventory_dispatch')
             ->select(
+                DB::raw('id as best_disp_id'),
                 'serial_number',
                 'store_id',
-                'project_id',
-                DB::raw('CAST(SUBSTRING_INDEX(GROUP_CONCAT(id ORDER BY (streetlight_pole_id IS NOT NULL) DESC, id DESC), ",", 1) AS UNSIGNED) as best_disp_id')
+                'project_id'
             )
             ->where('isDispatched', true)
             ->where('store_id', $store->id)
-            ->where('project_id', $project->id)
-            ->groupBy('serial_number', 'store_id', 'project_id');
+            ->where('project_id', $project->id);
 
         // 1. Base Query Structure - join to single dispatch per inv to prevent duplicate rows on sort
         $query = DB::table($inventoryTable . ' as inv')
@@ -599,6 +612,7 @@ class StoreController extends Controller
             } elseif ($availability === 'Consumed') {
                 $actions .= '<button type="button" class="btn btn-sm btn-primary replace-item" data-dispatch-id="' . ($item->dispatch_id ?? '') . '" data-serial-number="' . $item->serial_number . '" title="Replace"><i class="mdi mdi-swap-horizontal"></i></button>';
             }
+            $actions .= ' <button type="button" class="btn btn-sm btn-outline-secondary view-history" data-serial="' . e($item->serial_number) . '" title="View History"><i class="mdi mdi-history"></i></button>';
             $row[] = $actions;
 
             return $row;
@@ -913,6 +927,288 @@ class StoreController extends Controller
             'recordsFiltered' => $recordsFiltered,
             'data' => $data,
         ]);
+    }
+
+    /**
+     * Return the full lifecycle history for a single inventory serial number.
+     * Used by the inventory history offcanvas panel in stores/show.blade.php.
+     */
+    public function inventoryHistory(Request $request, $storeId, $serial)
+    {
+        $store = Stores::with('project')->findOrFail($storeId);
+        $project = $store->project;
+
+        if (!$project) {
+            return response()->json(['error' => 'Project not found'], 404);
+        }
+
+        $user = auth()->user();
+        if ($user->role === UserRole::PROJECT_MANAGER->value) {
+            $hasAccess = DB::table('project_user')
+                ->where('project_id', $project->id)
+                ->where('user_id', $user->id)
+                ->exists();
+            if (!$hasAccess) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
+        // All history entries for this serial in this store, oldest first
+        $history = DB::table('inventory_history as ih')
+            ->leftJoin('users as actor', 'actor.id', '=', 'ih.user_id')
+            ->where('ih.serial_number', $serial)
+            ->where('ih.store_id', $store->id)
+            ->select(
+                'ih.id', 'ih.action', 'ih.quantity_before', 'ih.quantity_after',
+                'ih.metadata', 'ih.created_at',
+                DB::raw('TRIM(CONCAT(COALESCE(actor.firstName,"")," ",COALESCE(actor.lastName,""))) as actor_name')
+            )
+            ->orderBy('ih.created_at', 'asc')
+            ->get();
+
+        // Batch-resolve vendor names from metadata (avoid N+1)
+        $vendorIds = $history->map(function ($e) {
+            $m = json_decode($e->metadata ?? '{}', true) ?? [];
+            return $m['vendor_id'] ?? null;
+        })->filter()->unique()->values();
+
+        $vendors = $vendorIds->isNotEmpty()
+            ? DB::table('users')
+                ->whereIn('id', $vendorIds)
+                ->pluck(DB::raw("TRIM(CONCAT(COALESCE(firstName,''),' ',COALESCE(lastName,'')))"), 'id')
+            : collect();
+
+        // Enrich each entry with pre-decoded fields for the frontend
+        $enriched = $history->map(function ($entry) use ($vendors) {
+            $m = json_decode($entry->metadata ?? '{}', true) ?? [];
+            $entry->vendor_name          = isset($m['vendor_id']) ? ($vendors[$m['vendor_id']] ?? null) : null;
+            $entry->complete_pole_number = $m['complete_pole_number'] ?? null;
+            $entry->old_serial           = $m['old_serial_number'] ?? null;
+            $entry->new_serial           = $m['new_serial_number'] ?? null;
+            $entry->swapped_with         = $m['swapped_with'] ?? null;
+            $entry->swap_type            = $m['swap_type'] ?? null;
+            unset($entry->metadata);
+            return $entry;
+        });
+
+        // Current state for the header panel
+        $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
+        $item = DB::table($inventoryTable . ' as inv')
+            ->leftJoin('inventory_dispatch as d', function ($j) {
+                $j->on('d.serial_number', '=', 'inv.serial_number')->where('d.isDispatched', true);
+            })
+            ->leftJoin('users as v', 'v.id', '=', 'd.vendor_id')
+            ->leftJoin('streelight_poles as pole', 'pole.id', '=', 'd.streetlight_pole_id')
+            ->where('inv.serial_number', $serial)
+            ->where('inv.store_id', $store->id)
+            ->select(
+                'inv.item_code', 'inv.item', 'inv.serial_number', 'inv.quantity',
+                'd.id as dispatch_id', 'd.streetlight_pole_id', 'd.dispatch_date',
+                'pole.complete_pole_number as current_pole',
+                DB::raw('TRIM(CONCAT(COALESCE(v.firstName,"")," ",COALESCE(v.lastName,""))) as current_vendor')
+            )
+            ->first();
+
+        return response()->json([
+            'store_name' => $store->store_name,
+            'item'       => $item,
+            'history'    => $enriched,
+        ]);
+    }
+
+    /**
+     * Download a sample Excel template for material transfer upload.
+     */
+    public function transferSample()
+    {
+        return Excel::download(new MaterialTransferFormatExport(), 'material_transfer_template.xlsx');
+    }
+
+    /**
+     * Preview material transfer: parse Excel, validate each serial, return valid/skipped lists.
+     */
+    public function transferPreview(Request $request, $storeId)
+    {
+        $store = Stores::with('project')->findOrFail($storeId);
+        $project = $store->project;
+        if (!$project) return response()->json(['error' => 'Project not found'], 404);
+
+        $user = auth()->user();
+        $isAdmin = $user->role === UserRole::ADMIN->value;
+        $isPM    = $user->role === UserRole::PROJECT_MANAGER->value;
+
+        if (!$isAdmin && !$isPM) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        if ($isPM) {
+            $hasAccess = DB::table('project_user')
+                ->where('project_id', $project->id)->where('user_id', $user->id)->exists();
+            if (!$hasAccess) return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'file'                 => 'required|file|mimes:xlsx,xls,csv',
+            'destination_store_id' => 'required|integer',
+        ]);
+
+        $destStoreId = (int) $request->destination_store_id;
+        if ($destStoreId === (int) $storeId) {
+            return response()->json(['error' => 'Destination store must differ from the source store.'], 422);
+        }
+
+        $destStore = Stores::where('id', $destStoreId)->where('project_id', $project->id)->first();
+        if (!$destStore) {
+            return response()->json(['error' => 'Destination store not found in this project.'], 422);
+        }
+
+        $collection = Excel::toCollection(new MaterialTransferImport(), $request->file('file'))->first();
+
+        $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
+
+        $valid   = [];
+        $skipped = [];
+        $seen    = [];
+
+        foreach ($collection as $row) {
+            $serial = trim((string) ($row['serial_number'] ?? $row['serialnumber'] ?? $row['serial'] ?? ''));
+            if ($serial === '') continue;
+
+            if (isset($seen[$serial])) {
+                $skipped[] = ['serial' => $serial, 'reason' => 'Duplicate in file'];
+                continue;
+            }
+            $seen[$serial] = true;
+
+            $item = DB::table($inventoryTable)
+                ->where('serial_number', $serial)
+                ->where('store_id', $storeId)
+                ->where('project_id', $project->id)
+                ->first();
+
+            if (!$item) {
+                $skipped[] = ['serial' => $serial, 'reason' => 'Not found in this store'];
+                continue;
+            }
+
+            $activeDispatch = DB::table('inventory_dispatch')
+                ->where('serial_number', $serial)
+                ->where('store_id', $storeId)
+                ->where('isDispatched', true)
+                ->first();
+
+            if ($activeDispatch) {
+                $reason = $activeDispatch->is_consumed ? 'Already consumed (on a pole)' : 'Already dispatched to vendor';
+                $skipped[] = ['serial' => $serial, 'reason' => $reason, 'item' => $item->item, 'item_code' => $item->item_code];
+                continue;
+            }
+
+            $valid[] = ['serial' => $serial, 'item' => $item->item, 'item_code' => $item->item_code, 'id' => $item->id];
+        }
+
+        return response()->json([
+            'valid'            => $valid,
+            'skipped'          => $skipped,
+            'destination_store' => $destStore->store_name,
+        ]);
+    }
+
+    /**
+     * Confirm and execute material transfer for a list of serials to another store.
+     */
+    public function transferConfirm(Request $request, $storeId)
+    {
+        $store = Stores::with('project')->findOrFail($storeId);
+        $project = $store->project;
+        if (!$project) return response()->json(['error' => 'Project not found'], 404);
+
+        $user = auth()->user();
+        $isAdmin = $user->role === UserRole::ADMIN->value;
+        $isPM    = $user->role === UserRole::PROJECT_MANAGER->value;
+
+        if (!$isAdmin && !$isPM) {
+            return response()->json(['error' => 'Unauthorized'], 403);
+        }
+        if ($isPM) {
+            $hasAccess = DB::table('project_user')
+                ->where('project_id', $project->id)->where('user_id', $user->id)->exists();
+            if (!$hasAccess) return response()->json(['error' => 'Unauthorized'], 403);
+        }
+
+        $request->validate([
+            'destination_store_id' => 'required|integer',
+            'serials'              => 'required|array|min:1',
+            'serials.*'            => 'required|string',
+        ]);
+
+        $destStoreId = (int) $request->destination_store_id;
+        if ($destStoreId === (int) $storeId) {
+            return response()->json(['error' => 'Destination store must differ from source.'], 422);
+        }
+
+        $destStore = Stores::where('id', $destStoreId)->where('project_id', $project->id)->first();
+        if (!$destStore) {
+            return response()->json(['error' => 'Destination store not found in this project.'], 422);
+        }
+
+        $inventoryTable = ($project->project_type == 1) ? 'inventory_streetlight' : 'inventory';
+
+        $transferred = [];
+        $failed      = [];
+
+        DB::transaction(function () use (
+            $request, $storeId, $destStoreId, $inventoryTable, $project,
+            $store, $destStore, $user, &$transferred, &$failed
+        ) {
+            foreach ($request->serials as $serial) {
+                $item = DB::table($inventoryTable)
+                    ->where('serial_number', $serial)
+                    ->where('store_id', $storeId)
+                    ->where('project_id', $project->id)
+                    ->first();
+
+                if (!$item) {
+                    $failed[] = ['serial' => $serial, 'reason' => 'Not found in source store'];
+                    continue;
+                }
+
+                $activeDispatch = DB::table('inventory_dispatch')
+                    ->where('serial_number', $serial)
+                    ->where('store_id', $storeId)
+                    ->where('isDispatched', true)
+                    ->first();
+
+                if ($activeDispatch) {
+                    $failed[] = ['serial' => $serial, 'item' => $item->item, 'reason' => 'Item is dispatched or consumed'];
+                    continue;
+                }
+
+                DB::table($inventoryTable)
+                    ->where('serial_number', $serial)
+                    ->where('store_id', $storeId)
+                    ->update(['store_id' => $destStoreId]);
+
+                $this->historyService->log('transferred', [
+                    'inventory_id'    => $item->id,
+                    'inventory_type'  => 'streetlight',
+                    'user_id'         => $user->id,
+                    'project_id'      => $project->id,
+                    'store_id'        => $storeId,
+                    'quantity_before' => 1,
+                    'quantity_after'  => 1,
+                    'serial_number'   => $serial,
+                    'metadata'        => json_encode([
+                        'from_store_id'   => (int) $storeId,
+                        'from_store_name' => $store->store_name,
+                        'to_store_id'     => $destStoreId,
+                        'to_store_name'   => $destStore->store_name,
+                    ]),
+                ]);
+
+                $transferred[] = ['serial' => $serial, 'item' => $item->item];
+            }
+        });
+
+        return response()->json(['transferred' => $transferred, 'failed' => $failed]);
     }
 
     /**

@@ -11,9 +11,16 @@
                     {{ $store->storeIncharge->lastName ?? '' }}
                 </p>
             </div>
-            <a href="{{ route('projects.show', $project->id) }}#inventory" class="btn btn-secondary btn-sm">
-                <i class="mdi mdi-arrow-left"></i> Back to Project
-            </a>
+            <div class="d-flex gap-2">
+                @if(auth()->user()->role === \App\Enums\UserRole::ADMIN->value || auth()->user()->role === \App\Enums\UserRole::PROJECT_MANAGER->value)
+                <button type="button" class="btn btn-outline-primary btn-sm" id="openTransferBtn">
+                    <i class="mdi mdi-transfer"></i> Transfer Items
+                </button>
+                @endif
+                <a href="{{ route('projects.show', $project->id) }}#inventory" class="btn btn-secondary btn-sm">
+                    <i class="mdi mdi-arrow-left"></i> Back to Project
+                </a>
+            </div>
         </div>
 
         @if (session('success') || session('error') || $errors->any())
@@ -566,6 +573,9 @@
                                         data-serial-number="{{ $item->serial_number }}" title="Replace"><i
                                             class="mdi mdi-swap-horizontal"></i></button>
                                 @endif
+                                <button type="button" class="btn btn-sm btn-outline-secondary view-history ms-1"
+                                    data-serial="{{ $item->serial_number }}" title="View History"><i
+                                        class="mdi mdi-history"></i></button>
                             </td>
                         </tr>
                     @endforeach
@@ -980,6 +990,195 @@
                     </form>
                 </div>
             </div>
+        </div>
+    </div>
+
+    {{-- Inventory History Offcanvas --}}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="inventoryHistoryCanvas" style="width:440px">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title mb-0">
+                <i class="mdi mdi-history me-2 text-primary"></i>Item History
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+            <div id="historyPanelLoading" class="text-center py-5">
+                <div class="spinner-border text-primary" role="status"></div>
+                <p class="mt-2 text-muted small">Loading history…</p>
+            </div>
+            <div id="historyPanelContent" style="display:none">
+                {{-- Item summary header --}}
+                <div class="inv-hp-summary">
+                    <div class="inv-hp-row">
+                        <div class="inv-hp-field">
+                            <span class="inv-hp-label">Store</span>
+                            <span class="inv-hp-value" id="hpStore"></span>
+                        </div>
+                        <span id="hpStatus"></span>
+                    </div>
+                    <div class="inv-hp-field">
+                        <span class="inv-hp-label">Item</span>
+                        <span class="inv-hp-value" id="hpItem"></span>
+                    </div>
+                    <div class="inv-hp-field">
+                        <span class="inv-hp-label">Serial</span>
+                        <code class="inv-hp-serial" id="hpSerial"></code>
+                    </div>
+                </div>
+                {{-- Timeline --}}
+                <div style="padding:14px 16px">
+                    <div id="historyTimeline"></div>
+                    <div id="historyEmpty" class="text-center text-muted py-4" style="display:none">
+                        <i class="mdi mdi-timeline-outline d-block mb-2" style="font-size:2.5rem"></i>
+                        <p class="mb-0">No history records found for this item.</p>
+                        <p class="small">This item may have been added before history logging was enabled.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {{-- Material Transfer Offcanvas --}}
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="materialTransferCanvas" style="width:520px">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title mb-0">
+                <i class="mdi mdi-transfer me-2 text-primary"></i>Transfer Items
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        </div>
+        <div class="offcanvas-body p-0">
+
+            {{-- Step 1: Form --}}
+            <div id="mtStep1" class="p-4">
+                <div class="d-flex align-items-center justify-content-between mb-4">
+                    <p class="text-muted small mb-0">Upload an Excel file with a <code>serial_number</code> column. Only in-stock items will be moved.</p>
+                    <a href="{{ route('store.transfer.sample') }}" class="btn btn-outline-secondary btn-sm ms-3 flex-shrink-0" download>
+                        <i class="mdi mdi-download me-1"></i>Sample
+                    </a>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Transfer To</label>
+                    <select id="mtDestStore" class="form-select">
+                        <option value="">— Select destination store —</option>
+                        @forelse($otherStores as $os)
+                            <option value="{{ $os->id }}">{{ $os->store_name }}</option>
+                        @empty
+                            <option value="" disabled>No other stores in this project</option>
+                        @endforelse
+                    </select>
+                    <div id="mtDestStoreError" class="invalid-feedback">Please select a destination store.</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label fw-semibold">Excel File</label>
+                    <div class="mt-file-drop" id="mtFileDrop">
+                        <i class="mdi mdi-file-excel-outline mt-drop-icon"></i>
+                        <div class="mt-drop-text">Drag &amp; drop your Excel file here</div>
+                        <div class="mt-drop-sub">or click to browse — .xlsx / .xls</div>
+                        <input type="file" id="mtFileInput" accept=".xlsx,.xls" style="display:none">
+                    </div>
+                    <div id="mtFileName" class="mt-file-name" style="display:none">
+                        <i class="mdi mdi-file-check-outline text-success me-1"></i>
+                        <span id="mtFileNameText"></span>
+                        <button type="button" class="btn-clear-file ms-2" id="mtFileClear" title="Remove">×</button>
+                    </div>
+                    <div id="mtFileError" class="text-danger small mt-1" style="display:none"></div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="mtReset">Reset</button>
+                    <button type="button" class="btn btn-primary btn-sm px-4" id="mtPreviewBtn">
+                        <span id="mtPreviewSpinner" class="spinner-border spinner-border-sm me-1" style="display:none" role="status"></span>
+                        Preview Transfer
+                    </button>
+                </div>
+            </div>
+
+            {{-- Step 2: Preview --}}
+            <div id="mtStep2" style="display:none" class="p-4">
+                <div id="mtPreviewBanner" class="mt-preview-banner mb-4"></div>
+
+                <div id="mtValidSection" style="display:none" class="mb-4">
+                    <div class="mt-section-header mt-section-valid">
+                        <i class="mdi mdi-check-circle-outline me-1"></i>
+                        <span id="mtValidCount"></span> items will be transferred
+                    </div>
+                    <div class="mt-table-wrap">
+                        <table class="table table-sm table-borderless mt-preview-table">
+                            <thead><tr><th>Serial Number</th><th>Item</th><th>Code</th></tr></thead>
+                            <tbody id="mtValidBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div id="mtSkippedSection" style="display:none" class="mb-4">
+                    <div class="mt-section-header mt-section-skipped">
+                        <i class="mdi mdi-alert-circle-outline me-1"></i>
+                        <span id="mtSkippedCount"></span> items will be skipped
+                    </div>
+                    <div class="mt-table-wrap">
+                        <table class="table table-sm table-borderless mt-preview-table">
+                            <thead><tr><th>Serial Number</th><th>Reason</th></tr></thead>
+                            <tbody id="mtSkippedBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="mtBackBtn">
+                        <i class="mdi mdi-arrow-left me-1"></i>Back
+                    </button>
+                    <button type="button" class="btn btn-success btn-sm px-4" id="mtConfirmBtn">
+                        <i class="mdi mdi-transfer me-1"></i>Confirm Transfer
+                    </button>
+                </div>
+            </div>
+
+            {{-- Step 3: Results --}}
+            <div id="mtStep3" style="display:none" class="p-4">
+                <div id="mtTransferring" class="text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status"></div>
+                    <p class="text-muted" id="mtTransferringMsg">Transferring items…</p>
+                </div>
+                <div id="mtResults" style="display:none">
+                    <div id="mtResultBanner" class="mt-result-banner mb-4"></div>
+
+                    <div id="mtResultTransferredSection" style="display:none" class="mb-4">
+                        <div class="mt-section-header mt-section-valid">
+                            <i class="mdi mdi-check-circle-outline me-1"></i>
+                            <span id="mtResultTransferredCount"></span> transferred successfully
+                        </div>
+                        <div class="mt-table-wrap">
+                            <table class="table table-sm table-borderless mt-preview-table">
+                                <thead><tr><th>Serial Number</th><th>Item</th></tr></thead>
+                                <tbody id="mtResultTransferredBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div id="mtResultFailedSection" style="display:none" class="mb-4">
+                        <div class="mt-section-header mt-section-skipped">
+                            <i class="mdi mdi-alert-circle-outline me-1"></i>
+                            <span id="mtResultFailedCount"></span> failed
+                        </div>
+                        <div class="mt-table-wrap">
+                            <table class="table table-sm table-borderless mt-preview-table">
+                                <thead><tr><th>Serial Number</th><th>Reason</th></tr></thead>
+                                <tbody id="mtResultFailedBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="mtTransferAgainBtn">
+                            <i class="mdi mdi-transfer me-1"></i>Transfer Again
+                        </button>
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="offcanvas">Close</button>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 @endsection
@@ -2470,6 +2669,378 @@
     </script>
 @endpush
 
+@push('scripts')
+    <script>
+    (function () {
+        // Move both offcanvas panels to <body> to escape overflow:hidden container-scroller
+        var _canvas = document.getElementById('inventoryHistoryCanvas');
+        if (_canvas) document.body.appendChild(_canvas);
+        var _mtCanvas = document.getElementById('materialTransferCanvas');
+        if (_mtCanvas) document.body.appendChild(_mtCanvas);
+
+        var INV_HISTORY_COLORS = {
+            created: '#6c757d', dispatched: '#0d6efd', consumed: '#198754',
+            returned: '#fd7e14', replaced: '#dc3545', swapped: '#6f42c1',
+            locked: '#495057', unlocked: '#20c997'
+        };
+        var INV_HISTORY_BG = {
+            created: '#f4f5f6', dispatched: '#eef3ff', consumed: '#eaf7ef',
+            returned: '#fff5ec', replaced: '#fef0f0', swapped: '#f4eeff',
+            locked: '#f4f5f6', unlocked: '#eafaf5'
+        };
+        var INV_HISTORY_ICONS = {
+            created: 'mdi-plus-circle', dispatched: 'mdi-truck-delivery',
+            consumed: 'mdi-lightning-bolt', returned: 'mdi-arrow-u-left-top',
+            replaced: 'mdi-swap-horizontal', swapped: 'mdi-swap-vertical',
+            locked: 'mdi-lock', unlocked: 'mdi-lock-open-variant'
+        };
+        var INV_HISTORY_LABELS = {
+            created: 'Added to Store', dispatched: 'Dispatched',
+            consumed: 'Installed on Pole', returned: 'Returned to Store',
+            replaced: 'Replaced', swapped: 'Swapped',
+            locked: 'Locked', unlocked: 'Unlocked'
+        };
+
+        var storeId = '{{ $store->id }}';
+
+        $(document).on('click', '.view-history', function () {
+            var serial = $(this).data('serial');
+
+            // Reset panel
+            $('#hpSerial').text(serial);
+            $('#hpStore, #hpItem, #hpStatus').text('');
+            $('#historyTimeline').empty();
+            $('#historyEmpty').hide();
+            $('#historyPanelLoading').show();
+            $('#historyPanelContent').hide();
+
+            bootstrap.Offcanvas.getOrCreateInstance(
+                document.getElementById('inventoryHistoryCanvas')
+            ).show();
+
+            $.getJSON('/store/' + storeId + '/inventory/' + encodeURIComponent(serial) + '/history')
+                .done(function (data) {
+                    $('#historyPanelLoading').hide();
+                    $('#historyPanelContent').show();
+
+                    // Header
+                    $('#hpStore').text(data.store_name || '—');
+                    var it = data.item;
+                    $('#hpItem').text(it ? (it.item + ' (' + it.item_code + ')') : '—');
+
+                    var status = 'In Stock', badgeCls = 'bg-success';
+                    if (it && it.streetlight_pole_id) { status = 'Consumed'; badgeCls = 'bg-danger'; }
+                    else if (it && it.dispatch_id)    { status = 'Dispatched'; badgeCls = 'bg-warning text-dark'; }
+                    $('#hpStatus').html('<span class="badge ' + badgeCls + '">' + status + '</span>');
+
+                    // Timeline
+                    if (!data.history || !data.history.length) {
+                        $('#historyEmpty').show();
+                        return;
+                    }
+
+                    var html = '<div class="inv-timeline">';
+                    data.history.forEach(function (e) {
+                        var color  = INV_HISTORY_COLORS[e.action] || '#6c757d';
+                        var icon   = INV_HISTORY_ICONS[e.action]  || 'mdi-circle';
+                        var label  = INV_HISTORY_LABELS[e.action] || e.action;
+
+                        var d = new Date(e.created_at);
+                        var dt = d.getDate().toString().padStart(2,'0') + ' '
+                               + ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()]
+                               + ' ' + d.getFullYear() + ', '
+                               + d.getHours().toString().padStart(2,'0') + ':'
+                               + d.getMinutes().toString().padStart(2,'0');
+
+                        var actor = (e.actor_name || '').trim();
+                        var meta  = actor ? ' &middot; ' + actor : '';
+
+                        var detail = '';
+                        if (e.action === 'dispatched') {
+                            detail = e.vendor_name
+                                ? 'Dispatched to <strong>' + e.vendor_name + '</strong>'
+                                : 'Dispatched to vendor';
+                        } else if (e.action === 'consumed') {
+                            detail = 'Installed on pole <strong>' + (e.complete_pole_number || '—') + '</strong>';
+                            if (e.vendor_name) detail += ' via ' + e.vendor_name;
+                        } else if (e.action === 'returned') {
+                            detail = e.vendor_name
+                                ? 'Returned by <strong>' + e.vendor_name + '</strong>'
+                                : 'Returned to store';
+                        } else if (e.action === 'replaced') {
+                            if (e.old_serial === serial) {
+                                detail = 'Replaced by <strong>' + (e.new_serial || '—') + '</strong>';
+                                if (e.complete_pole_number) detail += ' on pole ' + e.complete_pole_number;
+                            } else {
+                                detail = 'Replaced <strong>' + (e.old_serial || '—') + '</strong>'
+                                       + (e.complete_pole_number ? ' on pole ' + e.complete_pole_number : '');
+                            }
+                        } else if (e.action === 'swapped') {
+                            var kind = e.swap_type === 'pole_swap' ? 'Pole swap' : 'Vendor swap';
+                            detail = kind + ' with <strong>' + (e.swapped_with || '—') + '</strong>';
+                        } else if (e.action === 'created') {
+                            detail = 'Added to store (qty ' + (e.quantity_after != null ? e.quantity_after : 1) + ')';
+                        }
+
+                        var bg = INV_HISTORY_BG[e.action] || '#f4f5f6';
+                        html += '<div class="inv-tl-item" style="--dot-color:' + color + '">'
+                              +   '<div class="inv-tl-dot"></div>'
+                              +   '<div class="inv-tl-time">' + dt + meta + '</div>'
+                              +   '<div class="inv-tl-card" style="background:' + bg + '">'
+                              +     '<div class="inv-tl-label">'
+                              +       '<i class="mdi ' + icon + '" style="color:' + color + ';font-size:.95rem;margin-right:5px"></i>'
+                              +       '<span style="color:' + color + ';font-weight:600;font-size:.8rem;letter-spacing:.02em;text-transform:uppercase">' + label + '</span>'
+                              +     '</div>'
+                              +     (detail ? '<div class="inv-tl-detail">' + detail + '</div>' : '')
+                              +   '</div>'
+                              + '</div>';
+                    });
+                    html += '</div>';
+                    $('#historyTimeline').html(html);
+                })
+                .fail(function () {
+                    $('#historyPanelLoading').hide();
+                    $('#historyPanelContent').show();
+                    $('#historyTimeline').html(
+                        '<div class="alert alert-danger">Failed to load history. Please try again.</div>'
+                    );
+                });
+        });
+    }());
+    </script>
+@endpush
+
+@push('scripts')
+<script>
+(function () {
+    var STORE_ID   = '{{ $store->id }}';
+    var CSRF_TOKEN = '{{ csrf_token() }}';
+
+    var mtCanvas = document.getElementById('materialTransferCanvas');
+    var mtOffcanvas = null;
+
+    var mtFile      = null;
+    var mtDestId    = null;
+    var mtValidRows = [];
+
+    function getMtOffcanvas() {
+        if (!mtOffcanvas) mtOffcanvas = bootstrap.Offcanvas.getOrCreateInstance(mtCanvas);
+        return mtOffcanvas;
+    }
+
+    function showStep(n) {
+        ['mtStep1','mtStep2','mtStep3'].forEach(function(id, i) {
+            document.getElementById(id).style.display = (i === n - 1) ? 'block' : 'none';
+        });
+    }
+
+    function resetForm() {
+        mtFile      = null;
+        mtDestId    = null;
+        mtValidRows = [];
+        document.getElementById('mtDestStore').value   = '';
+        document.getElementById('mtFileInput').value   = '';
+        document.getElementById('mtFileNameText').textContent = '';
+        document.getElementById('mtFileName').style.display   = 'none';
+        document.getElementById('mtFileDrop').style.display   = 'flex';
+        document.getElementById('mtFileError').style.display  = 'none';
+        document.getElementById('mtDestStoreError').style.display = 'none';
+        document.getElementById('mtPreviewSpinner').style.display = 'none';
+        document.getElementById('mtPreviewBtn').disabled = false;
+        showStep(1);
+    }
+
+    document.getElementById('openTransferBtn')?.addEventListener('click', function () {
+        resetForm();
+        getMtOffcanvas().show();
+    });
+
+    document.getElementById('mtReset')?.addEventListener('click', resetForm);
+    document.getElementById('mtBackBtn')?.addEventListener('click', function () { showStep(1); });
+    document.getElementById('mtTransferAgainBtn')?.addEventListener('click', function () {
+        resetForm();
+        getMtOffcanvas().show();
+    });
+
+    // File drop zone
+    var dropZone = document.getElementById('mtFileDrop');
+    dropZone?.addEventListener('click', function () { document.getElementById('mtFileInput').click(); });
+    dropZone?.addEventListener('dragover', function (e) { e.preventDefault(); dropZone.classList.add('dragover'); });
+    dropZone?.addEventListener('dragleave', function () { dropZone.classList.remove('dragover'); });
+    dropZone?.addEventListener('drop', function (e) {
+        e.preventDefault(); dropZone.classList.remove('dragover');
+        handleFile(e.dataTransfer.files[0]);
+    });
+    document.getElementById('mtFileInput')?.addEventListener('change', function () {
+        handleFile(this.files[0]);
+    });
+    document.getElementById('mtFileClear')?.addEventListener('click', function () {
+        mtFile = null;
+        document.getElementById('mtFileInput').value = '';
+        document.getElementById('mtFileName').style.display  = 'none';
+        document.getElementById('mtFileDrop').style.display  = 'flex';
+        document.getElementById('mtFileError').style.display = 'none';
+    });
+
+    function handleFile(file) {
+        if (!file) return;
+        var ext = file.name.split('.').pop().toLowerCase();
+        if (!['xlsx','xls','csv'].includes(ext)) {
+            document.getElementById('mtFileError').textContent = 'Please upload an .xlsx or .xls file.';
+            document.getElementById('mtFileError').style.display = 'block';
+            return;
+        }
+        mtFile = file;
+        document.getElementById('mtFileNameText').textContent = file.name;
+        document.getElementById('mtFileName').style.display  = 'flex';
+        document.getElementById('mtFileDrop').style.display  = 'none';
+        document.getElementById('mtFileError').style.display = 'none';
+    }
+
+    // Preview
+    document.getElementById('mtPreviewBtn')?.addEventListener('click', function () {
+        var destId = document.getElementById('mtDestStore').value;
+        var valid  = true;
+
+        if (!destId) {
+            document.getElementById('mtDestStoreError').style.display = 'block';
+            document.getElementById('mtDestStore').classList.add('is-invalid');
+            valid = false;
+        } else {
+            document.getElementById('mtDestStoreError').style.display = 'none';
+            document.getElementById('mtDestStore').classList.remove('is-invalid');
+        }
+        if (!mtFile) {
+            document.getElementById('mtFileError').textContent = 'Please select an Excel file.';
+            document.getElementById('mtFileError').style.display = 'block';
+            valid = false;
+        }
+        if (!valid) return;
+
+        mtDestId = destId;
+        document.getElementById('mtPreviewSpinner').style.display = 'inline-block';
+        document.getElementById('mtPreviewBtn').disabled = true;
+
+        var formData = new FormData();
+        formData.append('_token', CSRF_TOKEN);
+        formData.append('file', mtFile);
+        formData.append('destination_store_id', destId);
+
+        fetch('/store/' + STORE_ID + '/transfer/preview', { method: 'POST', body: formData })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                document.getElementById('mtPreviewSpinner').style.display = 'none';
+                document.getElementById('mtPreviewBtn').disabled = false;
+
+                if (data.error) {
+                    document.getElementById('mtFileError').textContent = data.error;
+                    document.getElementById('mtFileError').style.display = 'block';
+                    return;
+                }
+
+                mtValidRows = data.valid || [];
+                var skipped = data.skipped || [];
+
+                document.getElementById('mtPreviewBanner').innerHTML =
+                    '<strong>' + mtValidRows.length + '</strong> items ready to transfer to <strong>' + escHtml(data.destination_store) + '</strong>' +
+                    (skipped.length ? ', <strong>' + skipped.length + '</strong> will be skipped.' : '.');
+
+                var validBody = document.getElementById('mtValidBody');
+                validBody.innerHTML = '';
+                mtValidRows.forEach(function (row) {
+                    validBody.insertAdjacentHTML('beforeend',
+                        '<tr><td><code>' + escHtml(row.serial) + '</code></td><td>' + escHtml(row.item) + '</td><td>' + escHtml(row.item_code) + '</td></tr>');
+                });
+
+                var skippedBody = document.getElementById('mtSkippedBody');
+                skippedBody.innerHTML = '';
+                skipped.forEach(function (row) {
+                    skippedBody.insertAdjacentHTML('beforeend',
+                        '<tr><td><code>' + escHtml(row.serial) + '</code></td><td class="text-danger">' + escHtml(row.reason) + '</td></tr>');
+                });
+
+                document.getElementById('mtValidSection').style.display   = mtValidRows.length ? 'block' : 'none';
+                document.getElementById('mtValidCount').textContent        = mtValidRows.length;
+                document.getElementById('mtSkippedSection').style.display = skipped.length ? 'block' : 'none';
+                document.getElementById('mtSkippedCount').textContent      = skipped.length;
+                document.getElementById('mtConfirmBtn').disabled           = mtValidRows.length === 0;
+
+                showStep(2);
+            })
+            .catch(function () {
+                document.getElementById('mtPreviewSpinner').style.display = 'none';
+                document.getElementById('mtPreviewBtn').disabled = false;
+                document.getElementById('mtFileError').textContent = 'Failed to parse file. Please try again.';
+                document.getElementById('mtFileError').style.display = 'block';
+            });
+    });
+
+    // Confirm transfer
+    document.getElementById('mtConfirmBtn')?.addEventListener('click', function () {
+        showStep(3);
+        document.getElementById('mtTransferring').style.display = 'block';
+        document.getElementById('mtResults').style.display      = 'none';
+        document.getElementById('mtTransferringMsg').textContent = 'Transferring ' + mtValidRows.length + ' item' + (mtValidRows.length > 1 ? 's' : '') + '…';
+
+        var payload = {
+            _token:                CSRF_TOKEN,
+            destination_store_id:  mtDestId,
+            serials:               mtValidRows.map(function (r) { return r.serial; })
+        };
+
+        fetch('/store/' + STORE_ID + '/transfer/confirm', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': CSRF_TOKEN },
+            body: JSON.stringify(payload)
+        })
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                document.getElementById('mtTransferring').style.display = 'none';
+                document.getElementById('mtResults').style.display      = 'block';
+
+                var transferred = data.transferred || [];
+                var failed      = data.failed      || [];
+
+                var bannerCls = failed.length === 0 ? 'mt-result-success' : 'mt-result-partial';
+                var bannerMsg = transferred.length + ' item' + (transferred.length !== 1 ? 's' : '') + ' transferred successfully';
+                if (failed.length) bannerMsg += ', ' + failed.length + ' failed.';
+                document.getElementById('mtResultBanner').className = 'mt-result-banner ' + bannerCls + ' mb-4';
+                document.getElementById('mtResultBanner').textContent = bannerMsg;
+
+                var tBody = document.getElementById('mtResultTransferredBody');
+                tBody.innerHTML = '';
+                transferred.forEach(function (r) {
+                    tBody.insertAdjacentHTML('beforeend',
+                        '<tr><td><code>' + escHtml(r.serial) + '</code></td><td>' + escHtml(r.item) + ' <span class="text-success">✓</span></td></tr>');
+                });
+
+                var fBody = document.getElementById('mtResultFailedBody');
+                fBody.innerHTML = '';
+                failed.forEach(function (r) {
+                    fBody.insertAdjacentHTML('beforeend',
+                        '<tr><td><code>' + escHtml(r.serial) + '</code></td><td class="text-danger">' + escHtml(r.reason) + '</td></tr>');
+                });
+
+                document.getElementById('mtResultTransferredSection').style.display = transferred.length ? 'block' : 'none';
+                document.getElementById('mtResultTransferredCount').textContent      = transferred.length;
+                document.getElementById('mtResultFailedSection').style.display       = failed.length ? 'block' : 'none';
+                document.getElementById('mtResultFailedCount').textContent           = failed.length;
+            })
+            .catch(function () {
+                document.getElementById('mtTransferring').style.display = 'none';
+                document.getElementById('mtResults').style.display      = 'block';
+                document.getElementById('mtResultBanner').className     = 'mt-result-banner mt-result-partial mb-4';
+                document.getElementById('mtResultBanner').textContent   = 'Transfer failed. Please try again.';
+            });
+    });
+
+    function escHtml(str) {
+        return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+}());
+</script>
+@endpush
+
 @push('styles')
     <style>
         .import-overlay {
@@ -3053,5 +3624,88 @@
         .bulk-upload-instructions .small {
             font-size: 0.8125rem;
         }
+
+        /* Override template style.css which hides .offcanvas without a .show counterpart */
+        #inventoryHistoryCanvas.show,
+        #materialTransferCanvas.show { visibility: visible !important; }
+
+        /* ── Material Transfer Offcanvas ── */
+        .mt-file-drop {
+            border: 2px dashed #dee2e6; border-radius: 10px;
+            padding: 28px 20px; text-align: center; cursor: pointer;
+            transition: border-color .2s, background .2s;
+            background: #fafafa;
+        }
+        .mt-file-drop:hover, .mt-file-drop.dragover { border-color: #0d6efd; background: #eef3ff; }
+        .mt-drop-icon { font-size: 2rem; color: #0d6efd; display: block; margin-bottom: 8px; }
+        .mt-drop-text { font-size: .9rem; font-weight: 600; color: #333; }
+        .mt-drop-sub { font-size: .78rem; color: #999; margin-top: 3px; }
+        .mt-file-name {
+            margin-top: 10px; padding: 8px 12px; background: #eaf7ef;
+            border-radius: 8px; font-size: .85rem; color: #1a5e36;
+            display: flex; align-items: center;
+        }
+        .btn-clear-file {
+            background: none; border: none; color: #666; font-size: 1rem;
+            line-height: 1; padding: 0; cursor: pointer;
+        }
+        .mt-section-header {
+            font-size: .8rem; font-weight: 600; padding: 7px 12px;
+            border-radius: 6px 6px 0 0; margin-bottom: 0;
+        }
+        .mt-section-valid { background: #eaf7ef; color: #155724; }
+        .mt-section-skipped { background: #fdeaea; color: #721c24; }
+        .mt-table-wrap {
+            border: 1px solid #e0e0e0; border-top: none;
+            border-radius: 0 0 6px 6px; overflow: hidden; max-height: 220px; overflow-y: auto;
+        }
+        .mt-preview-table { margin: 0; font-size: .8rem; }
+        .mt-preview-table thead th { font-size: .72rem; text-transform: uppercase; letter-spacing: .04em; color: #888; background: #f8f9fa; border-bottom: 1px solid #e0e0e0; }
+        .mt-preview-table tbody tr:last-child td { border-bottom: none; }
+        .mt-preview-banner {
+            background: #f0f4ff; border-left: 4px solid #0d6efd;
+            border-radius: 6px; padding: 10px 14px; font-size: .875rem;
+        }
+        .mt-result-banner {
+            border-radius: 8px; padding: 12px 16px; font-size: .9rem; font-weight: 500;
+        }
+        .mt-result-success { background: #eaf7ef; color: #155724; border-left: 4px solid #198754; }
+        .mt-result-partial { background: #fff3cd; color: #856404; border-left: 4px solid #fd7e14; }
+
+        /* Offcanvas summary header */
+        .inv-hp-summary {
+            padding: 14px 16px; border-bottom: 1px solid #e8e8e8;
+            background: #f9f9fb;
+        }
+        .inv-hp-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .inv-hp-field { display: flex; flex-direction: column; margin-bottom: 8px; }
+        .inv-hp-field:last-child { margin-bottom: 0; }
+        .inv-hp-label { font-size: .68rem; text-transform: uppercase; letter-spacing: .06em; color: #9e9e9e; margin-bottom: 2px; }
+        .inv-hp-value { font-size: .9rem; font-weight: 600; color: #212121; }
+        .inv-hp-serial { font-size: .85rem; font-weight: 700; color: #1a237e; letter-spacing: .03em; }
+
+        /* ── Inventory history timeline ── */
+        .inv-timeline { position: relative; padding-left: 36px; }
+        .inv-timeline::before {
+            content: '';
+            position: absolute; left: 11px; top: 6px; bottom: 6px;
+            width: 2px; background: #e0e0e0; border-radius: 2px;
+        }
+        .inv-tl-item { position: relative; margin-bottom: 14px; }
+        .inv-tl-dot {
+            position: absolute; left: -29px; top: 5px;
+            width: 12px; height: 12px; border-radius: 50%;
+            border: 2.5px solid #fff;
+            box-shadow: 0 0 0 2px var(--dot-color, #6c757d);
+            background: var(--dot-color, #6c757d);
+        }
+        .inv-tl-time { font-size: .7rem; color: #9e9e9e; margin-bottom: 4px; letter-spacing: .01em; }
+        .inv-tl-card {
+            border-radius: 8px;
+            padding: 10px 13px;
+            border-left: 3px solid var(--dot-color, #6c757d);
+        }
+        .inv-tl-label { margin-bottom: 4px; line-height: 1.3; }
+        .inv-tl-detail { font-size: .82rem; color: #555; line-height: 1.4; }
     </style>
 @endpush

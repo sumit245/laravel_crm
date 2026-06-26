@@ -112467,3 +112467,159 @@ DST Off\">2026-05-26 16:08:48.0 UTC (+00:00)</span>
 [2026-06-01 09:38:32] local.INFO: Task stakeholder reassignment {"task_id":"1552","project_id":"19","reassignments":{"vendor":{"old":767,"new":"127","reassigned_at":"2026-06-01 09:38:32"}},"reason":null,"reassigned_by":11} 
 [2026-06-01 09:38:53] local.INFO: Target date extended {"task_id":"1533","project_id":"19","original_end_date":"2026-05-23 00:00:00","new_end_date":"2026-05-23","extension_reason":null,"extended_by":11} 
 [2026-06-01 09:38:53] local.INFO: Task stakeholder reassignment {"task_id":"1533","project_id":"19","reassignments":{"vendor":{"old":767,"new":"127","reassigned_at":"2026-06-01 09:38:53"}},"reason":null,"reassigned_by":11} 
+[2026-06-01 10:19:12] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 
+[2026-06-26 07:51:21] local.INFO: Inventory Total: 24316  
+[2026-06-26 07:52:18] local.INFO: Inventory Items: 3  
+[2026-06-26 07:52:18] local.INFO: Inventory Total: 24316  
+[2026-06-26 07:53:15] local.INFO: Inventory Items: 3  
+[2026-06-26 07:53:25] local.INFO: Inventory Total: 24316  
+[2026-06-26 07:54:22] local.INFO: Inventory Items: 3  
+[2026-06-26 07:54:22] local.INFO: Inventory Total: 39121  
+[2026-06-26 07:56:45] local.INFO: Inventory Items: 3  
+[2026-06-26 07:57:14] local.INFO: Inventory Total: 12943  
+[2026-06-26 07:57:31] local.INFO: Inventory Items: 3  
+[2026-06-26 08:03:09] local.INFO: Inventory Total: 12943  
+[2026-06-26 08:03:25] local.INFO: Inventory Items: 3  
+[2026-06-26 08:03:53] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:04:50] local.INFO: Inventory Items: 3  
+[2026-06-26 08:05:49] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:06:46] local.INFO: Inventory Items: 3  
+[2026-06-26 08:08:05] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:09:01] local.INFO: Inventory Items: 3  
+[2026-06-26 08:12:40] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:12:41] local.INFO: Inventory Items: 3  
+[2026-06-26 08:12:50] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:12:51] local.INFO: Inventory Items: 3  
+[2026-06-26 08:12:51] local.INFO: Inventory Total: 39121  
+[2026-06-26 08:12:51] local.INFO: Inventory Items: 3  
+[2026-06-26 08:12:51] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:12:51] local.INFO: Inventory Items: 3  
+[2026-06-26 08:12:51] local.INFO: Inventory Total: 39121  
+[2026-06-26 08:12:51] local.INFO: Inventory Items: 3  
+[2026-06-26 08:13:09] local.INFO: Inventory Total: 39121  
+[2026-06-26 08:13:10] local.INFO: Inventory Items: 3  
+[2026-06-26 08:13:22] local.INFO: Inventory Total: 24316  
+[2026-06-26 08:13:22] local.INFO: Inventory Items: 3  
+[2026-06-26 08:20:06] local.INFO: Ajax request received for inventory data  
+[2026-06-26 08:20:06] local.INFO: Store ID: 29  
+[2026-06-26 08:20:06] local.INFO: Ajax request received for inventory data  
+[2026-06-26 08:20:06] local.INFO: Store ID: 29  
+[2026-06-26 08:20:06] local.INFO: Ajax request received for inventory data  
+[2026-06-26 08:20:06] local.INFO: Store ID: 29  
+[2026-06-26 08:49:44] local.ERROR: Maximum execution time of 3600 seconds exceeded {"exception":"[object] (Symfony\\Component\\ErrorHandler\\Error\\FatalError(code: 0): Maximum execution time of 3600 seconds exceeded at /Applications/XAMPP/xamppfiles/htdocs/laravel_crm/vendor/laravel/framework/src/Illuminate/Foundation/Console/ServeCommand.php:116)
+[stacktrace]
+#0 {main}
+"} 
+[2026-06-26 08:58:43] local.INFO: Ajax request received for inventory data  
+[2026-06-26 08:58:43] local.INFO: Store ID: 29  
+[2026-06-26 08:58:56] local.INFO: Ajax request received for inventory data  
+[2026-06-26 08:58:56] local.INFO: Store ID: 29  
+[2026-06-26 09:01:28] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:01:29] local.INFO: Inventory Items: 3  
+[2026-06-26 09:02:14] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:02:14] local.INFO: Store ID: 29  
+[2026-06-26 09:02:14] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:02:14] local.INFO: Store ID: 29  
+[2026-06-26 09:02:14] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:02:14] local.INFO: Store ID: 29  
+[2026-06-26 09:02:48] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:02:48] local.INFO: Inventory Items: 3  
+[2026-06-26 09:02:52] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:02:52] local.INFO: Store ID: 29  
+[2026-06-26 09:02:52] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:02:52] local.INFO: Store ID: 29  
+[2026-06-26 09:02:52] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:02:52] local.INFO: Store ID: 29  
+[2026-06-26 09:03:01] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:03:01] local.INFO: Store ID: 29  
+[2026-06-26 09:03:06] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:03:07] local.INFO: Inventory Items: 3  
+[2026-06-26 09:03:09] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:03:09] local.INFO: Store ID: 29  
+[2026-06-26 09:03:10] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:03:10] local.INFO: Store ID: 29  
+[2026-06-26 09:03:10] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:03:10] local.INFO: Store ID: 29  
+[2026-06-26 09:04:55] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:04:55] local.INFO: Inventory Items: 3  
+[2026-06-26 09:05:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:05:00] local.INFO: Store ID: 29  
+[2026-06-26 09:05:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:05:00] local.INFO: Store ID: 29  
+[2026-06-26 09:05:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:05:00] local.INFO: Store ID: 29  
+[2026-06-26 09:05:52] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:05:53] local.INFO: Inventory Items: 3  
+[2026-06-26 09:06:52] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:06:52] local.INFO: Inventory Items: 3  
+[2026-06-26 09:09:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:00] local.INFO: Store ID: 29  
+[2026-06-26 09:09:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:00] local.INFO: Store ID: 29  
+[2026-06-26 09:09:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:00] local.INFO: Store ID: 29  
+[2026-06-26 09:09:02] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:02] local.INFO: Store ID: 29  
+[2026-06-26 09:09:24] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:09:24] local.INFO: Inventory Items: 3  
+[2026-06-26 09:09:28] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:28] local.INFO: Store ID: 29  
+[2026-06-26 09:09:28] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:28] local.INFO: Store ID: 29  
+[2026-06-26 09:09:29] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:29] local.INFO: Store ID: 29  
+[2026-06-26 09:09:47] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:09:47] local.INFO: Store ID: 29  
+[2026-06-26 09:13:21] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:13:21] local.INFO: Inventory Items: 3  
+[2026-06-26 09:13:27] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:13:27] local.INFO: Store ID: 29  
+[2026-06-26 09:13:27] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:13:27] local.INFO: Store ID: 29  
+[2026-06-26 09:13:27] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:13:27] local.INFO: Store ID: 29  
+[2026-06-26 09:13:36] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:13:36] local.INFO: Store ID: 29  
+[2026-06-26 09:14:55] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:14:55] local.INFO: Inventory Items: 3  
+[2026-06-26 09:15:54] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:15:54] local.INFO: Store ID: 29  
+[2026-06-26 09:15:54] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:15:54] local.INFO: Store ID: 29  
+[2026-06-26 09:15:54] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:15:54] local.INFO: Store ID: 29  
+[2026-06-26 09:16:00] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:16:00] local.INFO: Store ID: 29  
+[2026-06-26 09:40:05] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:40:05] local.INFO: Inventory Items: 3  
+[2026-06-26 09:40:47] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:40:47] local.INFO: Inventory Items: 3  
+[2026-06-26 09:42:23] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:42:23] local.INFO: Store ID: 29  
+[2026-06-26 09:42:23] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:42:23] local.INFO: Store ID: 29  
+[2026-06-26 09:42:24] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:42:24] local.INFO: Store ID: 29  
+[2026-06-26 09:42:25] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:42:25] local.INFO: Store ID: 29  
+[2026-06-26 09:42:27] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:42:27] local.INFO: Store ID: 29  
+[2026-06-26 09:47:03] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:47:03] local.INFO: Inventory Items: 3  
+[2026-06-26 09:48:04] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:48:04] local.INFO: Inventory Items: 3  
+[2026-06-26 09:48:09] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:48:09] local.INFO: Store ID: 29  
+[2026-06-26 09:48:09] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:48:09] local.INFO: Store ID: 29  
+[2026-06-26 09:48:09] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:48:09] local.INFO: Store ID: 29  
+[2026-06-26 09:48:19] local.INFO: Ajax request received for inventory data  
+[2026-06-26 09:48:19] local.INFO: Store ID: 29  
+[2026-06-26 09:59:00] local.INFO: Inventory Total: 24316  
+[2026-06-26 09:59:00] local.INFO: Inventory Items: 3  
+[2026-06-26 09:59:30] local.INFO: Inventory Total: 24248  
+[2026-06-26 09:59:30] local.INFO: Inventory Items: 3  

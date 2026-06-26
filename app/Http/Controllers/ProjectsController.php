@@ -123,7 +123,7 @@ class ProjectsController extends Controller
      */
     public function show(Request $request, string $id)
     {
-        $project = Project::with(['stores', 'sites.districtRelation', 'sites.stateRelation'])->findOrFail($id);
+        $project = Project::with(['stores.storeIncharge', 'sites.districtRelation', 'sites.stateRelation'])->findOrFail($id);
         $user = auth()->user();
 
         $isAdmin = $user->role === UserRole::ADMIN->value;
